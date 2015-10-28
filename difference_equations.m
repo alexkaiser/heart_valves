@@ -15,14 +15,14 @@ function F = difference_equations(params, filter_params)
 
 [X,alpha,beta,N,p_0,R] = unpack_params(params); 
 
-left_papillary  = [0; -a; 0]; 
-right_papillary = [0;  a; 0]; 
-
+left_papillary  = [0; -filter_params.a; 0]; 
+right_papillary = [0;  filter_params.a; 0]; 
 
 F = zeros(size(X)); 
 
 % always 6 pressure neighbors, which may or may not be in bounds
 % relative indices of pressure here 
+% numbered counter clockwise 
 % ignore out of bounds indices, they are not in the pressure 
 % bearing part of the surface 
 pressure_nbrs = [ 0, -1; 
@@ -33,14 +33,13 @@ pressure_nbrs = [ 0, -1;
                  -1,  0]; 
 
 
-
 for j=1:N
     for k=1:N
 
         % in the triangle?
-        if ((j+k) < (N+2))
+        if (j+k) < (N+2)
 
-            % pressure term firse 
+            % pressure term first  
 
             pressure_term = zeros(3,1); 
             
