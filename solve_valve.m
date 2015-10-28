@@ -22,8 +22,7 @@ function [params pass err_over_time] = solve_valve(params, filter_params, tol_gl
 
 pass = true; 
 
-
-err = total_global_err(); 
+err = total_global_err(params, filter_params); 
 
 it = start_it; 
 fig = figure; 
@@ -33,6 +32,19 @@ while err > tol_global
     tic 
    
     % newton step here 
+    % may want to pass back the difference equation evaluation for simplicity
+    
+    % build the jacobian 
+    J = build_jacobian(params, filter_params); 
+    
+    F = difference_equations(params, filter_params)
+    F_linearized = linearize_internal_points(F, params); 
+    
+    % solve the system,
+    soln = J \ (-F); 
+    
+    % add in to get the next iterate 
+    F_linearized = F_linearized + soln; 
     
     
     it = it + 1;
@@ -43,10 +55,12 @@ while err > tol_global
         break; 
     end  
     
-    err = total_global_err(  ); 
+    % copy data back to 2d 
+    params = internal_points_to_2d(v_linearized, params); 
+    
+    err = total_global_err(params, filter_params); 
     
     err_over_time(it) = err; 
-    
     fprintf('Global iteration = %d, \tnorm %g, \telapsed = %f\n', it, err, toc)
     
     
