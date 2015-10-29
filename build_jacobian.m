@@ -48,41 +48,41 @@ function J = build_jacobian(params, filter_params)
                 
                 % pressure portion 
                 % zero indexed loop because we are computing indices with mod n 
-%                 for n=0:5
-% 
-%                     j_nbr      = j + pressure_nbrs(1,mod(n  ,6)+1); 
-%                     k_nbr      = k + pressure_nbrs(2,mod(n  ,6)+1); 
-%                     j_nbr_next = j + pressure_nbrs(1,mod(n+1,6)+1); 
-%                     k_nbr_next = k + pressure_nbrs(2,mod(n+1,6)+1);
-% 
-%                     % if any index is zero, then 
-%                     % the pressure term does not include this triangle
-%                     if j_nbr_next && k_nbr_next && j_nbr && k_nbr
-%                                             
-%                         % Current has two terms from a product rule 
-%                         J(range_current, range_current) = J(range_current, range_current) ... 
-%                                                             - (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k)) ... 
-%                                                             + (p_0/6) * cross_matrix(X(:,j_nbr     ,k_nbr     ) - X(:,j,k)); 
-%                         
-%                         % nbr_next term
-%                         % nbr_next gets differentiated away, and nbr stays and gets a sign 
-%                         % only added if this is internal 
-%                         if is_internal(j_nbr_next,k_nbr_next,N)
-%                             range_nbr_next  = linear_index_offset(j_nbr_next,k_nbr_next,N) + (1:3);
-%                             J(range_current, range_nbr_next) = J(range_current, range_nbr_next) - (p_0/6) * cross_matrix(X(:,j_nbr,k_nbr) - X(:,j,k));    
-%                         end 
-%                         
-%                         
-%                         % nbr term
-%                         % nbr gets differentiated away, and nbr_next stays 
-%                         % only added if this is internal 
-%                         if is_internal(j_nbr,k_nbr,N)
-%                             range_nbr       = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
-%                             J(range_current, range_nbr) = J(range_current, range_nbr) - (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));
-%                         end 
-%                         
-%                     end
-%                 end 
+                for n=0:5
+
+                    j_nbr      = j + pressure_nbrs(1,mod(n  ,6)+1); 
+                    k_nbr      = k + pressure_nbrs(2,mod(n  ,6)+1); 
+                    j_nbr_next = j + pressure_nbrs(1,mod(n+1,6)+1); 
+                    k_nbr_next = k + pressure_nbrs(2,mod(n+1,6)+1);
+
+                    % if any index is zero, then 
+                    % the pressure term does not include this triangle
+                    if j_nbr_next && k_nbr_next && j_nbr && k_nbr
+                                            
+                        % Current has two terms from a product rule 
+                        J(range_current, range_current) = J(range_current, range_current) ... 
+                                                            - (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k)) ... 
+                                                            + (p_0/6) * cross_matrix(X(:,j_nbr     ,k_nbr     ) - X(:,j,k)); 
+                        
+                        % nbr_next term
+                        % nbr_next gets differentiated away, and nbr stays and gets a sign 
+                        % only added if this is internal 
+                        if is_internal(j_nbr_next,k_nbr_next,N)
+                            range_nbr_next  = linear_index_offset(j_nbr_next,k_nbr_next,N) + (1:3);
+                            J(range_current, range_nbr_next) = J(range_current, range_nbr_next) - (p_0/6) * cross_matrix(X(:,j_nbr,k_nbr) - X(:,j,k));    
+                        end 
+                        
+                        
+                        % nbr term
+                        % nbr gets differentiated away, and nbr_next stays 
+                        % only added if this is internal 
+                        if is_internal(j_nbr,k_nbr,N)
+                            range_nbr       = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
+                            J(range_current, range_nbr) = J(range_current, range_nbr) - (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));
+                        end 
+                        
+                    end
+                end 
                 
                 
                 
