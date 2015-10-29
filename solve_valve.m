@@ -1,4 +1,4 @@
-function [params pass err_over_time] = solve_valve(params, filter_params, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time)
+function [params pass err_over_time it] = solve_valve(params, filter_params, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time)
 %
 % Full valve build. 
 % Solves the nonlinear difference equations at each component. 
@@ -37,11 +37,39 @@ while err > tol_global
     % build the jacobian 
     J = build_jacobian(params, filter_params); 
     
-    F = difference_equations(params, filter_params)
+    jacobian_det_info = true 
+    if jacobian_det_info
+        'full determinant'
+        det(J)
+        
+        'on diagonal blocks'
+        total_internal = 3*params.N*(params.N+1)/2; 
+        for block_start = 1:3:(total_internal - 1)
+            
+            if abs(det(J(block_start + (0:2), block_start + (0:2)))) < 1e-2
+                block_start
+                det(J(block_start + (0:2), block_start + (0:2)))
+            end 
+            
+        end 
+        
+    end 
+    
+    
+    
+    F = difference_equations(params, filter_params); 
     F_linearized = linearize_internal_points(F, params); 
     
+    if it == 0 
+        spy(J)
+        title('jacobian nonzero pattern on iteration zero');
+        
+        % open a new figure 
+        fig = figure;
+    end 
+    
     % solve the system,
-    soln = J \ (-F); 
+    soln = J \ (-F_linearized); 
     
     % add in to get the next iterate 
     F_linearized = F_linearized + soln; 
@@ -56,7 +84,7 @@ while err > tol_global
     end  
     
     % copy data back to 2d 
-    params = internal_points_to_2d(v_linearized, params); 
+    params = internal_points_to_2d(F_linearized, params); 
     
     err = total_global_err(params, filter_params); 
     
@@ -80,11 +108,7 @@ while err > tol_global
         title_str = sprintf('Surface at iteration %d', it); 
         title(title_str); 
         
-        if ~isempty(chordae)
-            tree_plot(params, fig);
-        end 
-        
-        %input('stopped for fun...'); 
+        input('stopped for fun...'); 
             
     end 
         

@@ -18,7 +18,7 @@ function J = build_jacobian(params, filter_params)
 %    F = zeros(size(X)); 
 
     % total internal points in triangular domain 
-    total_internal = 3*N*(N+2)/2; 
+    total_internal = 3*N*(N+1)/2; 
     
     J = zeros(total_internal,total_internal); 
 
@@ -33,7 +33,7 @@ function J = build_jacobian(params, filter_params)
                       1,  0; 
                       0,  1; 
                      -1,  1; 
-                     -1,  0];  
+                     -1,  0]';   
                 
                  
     for j=1:N
@@ -48,35 +48,41 @@ function J = build_jacobian(params, filter_params)
                 
                 % pressure portion 
                 % zero indexed loop because we are computing indices with mod n 
-                for n=0:5
-
-                    j_nbr      = j + pressure_nbrs(1,mod(n  ,6)+1); 
-                    k_nbr      = k + pressure_nbrs(2,mod(n  ,6)+1); 
-                    j_nbr_next = j + pressure_nbrs(1,mod(n+1,6)+1); 
-                    k_nbr_next = k + pressure_nbrs(2,mod(n+1,6)+1);
-
-                    % if any index is zero, then 
-                    % the pressure term does not include this triangle
-                    if j_nbr_next && k_nbr_next && j_nbr && k_nbr
-                                            
-                        % Current has two terms from a product rule 
-                        J(range_current, range_current) = J(range_current, range_current) ... 
-                                                            - cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k)) ... 
-                                                            + cross_matrix(X(:,j_nbr     ,k_nbr     ) - X(:,j,k)); 
-                        
-                        % nbr_next term
-                        % nbr_next gets differentiated away, and nbr stays and gets a sign 
-                        range_nbr_next  = linear_index_offset(j_nbr_next,k_nbr_next,N) + (1:3);
-                        J(range_current, range_nbr_next) = J(range_current, range_nbr_next) - cross_matrix(X(:,j_nbr,k_nbr) - X(:,j,k));    
-                        
-                        % nbr term
-                        % nbr gets differentiated away, and nbr_next stays 
-                        range_nbr       = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
-                        J(range_current, range_nbr) = J(range_current, range_nbr) - cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));
-                        
-                    end 
-
-                end 
+%                 for n=0:5
+% 
+%                     j_nbr      = j + pressure_nbrs(1,mod(n  ,6)+1); 
+%                     k_nbr      = k + pressure_nbrs(2,mod(n  ,6)+1); 
+%                     j_nbr_next = j + pressure_nbrs(1,mod(n+1,6)+1); 
+%                     k_nbr_next = k + pressure_nbrs(2,mod(n+1,6)+1);
+% 
+%                     % if any index is zero, then 
+%                     % the pressure term does not include this triangle
+%                     if j_nbr_next && k_nbr_next && j_nbr && k_nbr
+%                                             
+%                         % Current has two terms from a product rule 
+%                         J(range_current, range_current) = J(range_current, range_current) ... 
+%                                                             - (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k)) ... 
+%                                                             + (p_0/6) * cross_matrix(X(:,j_nbr     ,k_nbr     ) - X(:,j,k)); 
+%                         
+%                         % nbr_next term
+%                         % nbr_next gets differentiated away, and nbr stays and gets a sign 
+%                         % only added if this is internal 
+%                         if is_internal(j_nbr_next,k_nbr_next,N)
+%                             range_nbr_next  = linear_index_offset(j_nbr_next,k_nbr_next,N) + (1:3);
+%                             J(range_current, range_nbr_next) = J(range_current, range_nbr_next) - (p_0/6) * cross_matrix(X(:,j_nbr,k_nbr) - X(:,j,k));    
+%                         end 
+%                         
+%                         
+%                         % nbr term
+%                         % nbr gets differentiated away, and nbr_next stays 
+%                         % only added if this is internal 
+%                         if is_internal(j_nbr,k_nbr,N)
+%                             range_nbr       = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
+%                             J(range_current, range_nbr) = J(range_current, range_nbr) - (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));
+%                         end 
+%                         
+%                     end
+%                 end 
                 
                 
                 
@@ -103,7 +109,7 @@ function J = build_jacobian(params, filter_params)
                     
                     % If the neighbor is an internal point, it also gets a Jacobian contribution 
                     % This takes a positive sign
-                    if (1 <= j_nbr) && (j_nbr <= N)
+                    if is_internal(j_nbr,k_nbr,N)
                         range_nbr  = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
                         J(range_current, range_nbr) = J(range_current, range_nbr) + J_tension; 
                     end 
@@ -133,7 +139,7 @@ function J = build_jacobian(params, filter_params)
                     
                     % If the neighbor is an internal point, it also gets a Jacobian contribution 
                     % This takes a positive sign
-                    if (1 <= j_nbr) && (j_nbr <= N)
+                    if is_internal(j_nbr,k_nbr,N)
                         range_nbr  = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
                         J(range_current, range_nbr) = J(range_current, range_nbr) + J_tension; 
                     end 
@@ -150,14 +156,31 @@ function J = build_jacobian(params, filter_params)
 end 
 
 
+function val = is_internal(j,k,N)
+%  
+% Checks whether a given index is an internal point 
+% 
+
+    if (j < 1) || (k < 1)
+        val = false; 
+        return 
+    elseif (j+k) >= (N+2)   
+        val = false; 
+        return; 
+    end 
+    
+    val = true; 
+end 
+
+
 function idx = linear_index_offset(j,k,N)
     %
     % Maps j,k in 3d to correct offset in flattened array 
     % Assumse N internal points with triangle domain 
     % 
-
-    prev_values = N*(N+1)/2 + (N-k+1)*(N-k+2)/2; 
-    idx = 3 * (j-1 - prev_values); 
+      
+    prev_values = N*(N+1)/2 - (N-k+1)*(N-k+2)/2; 
+    idx = 3 * (j-1 + prev_values); 
 end 
 
 
@@ -196,13 +219,13 @@ function J_tension = tension_term(X_current,X_nbr,R_current,R_nbr,k_spr)
         end
     end
     
-    J_tension = k_spr * J_tension; 
+    J_tension = k_spr * J_tension;
     
 end 
 
 function C = cross_matrix(x)
 %
-% Returns the 3x3 matrix which has the action of taking the cross with x
+% Returns the 3x3 matrix which has the action of applying x cross 
 % 
     C = [   0   x(3) -x(2); 
          -x(3)    0   x(1); 

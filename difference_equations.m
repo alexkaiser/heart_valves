@@ -30,7 +30,7 @@ pressure_nbrs = [ 0, -1;
                   1,  0; 
                   0,  1; 
                  -1,  1; 
-                 -1,  0]; 
+                 -1,  0]'; 
 
 
 for j=1:N
@@ -40,24 +40,23 @@ for j=1:N
         if (j+k) < (N+2)
 
             % pressure term first  
-
             pressure_term = zeros(3,1); 
             
-            % zero indexed loop because we are computing indices with mod n 
-            for n=0:5
-
-                j_nbr      = j + pressure_nbrs(1,mod(n  ,6)+1); 
-                k_nbr      = k + pressure_nbrs(2,mod(n  ,6)+1); 
-                j_nbr_next = j + pressure_nbrs(1,mod(n+1,6)+1); 
-                k_nbr_next = k + pressure_nbrs(2,mod(n+1,6)+1);
-                
-                % if any index is zero, then 
-                % the pressure term does not include
-                if j_nbr_next && k_nbr_next && j_nbr && k_nbr
-                    pressure_term = pressure_term + (p_0/6) * cross(X(:,j_nbr_next,k_nbr_next) - X(:,j,k), X(:,j_nbr,k_nbr) - X(:,j,k));                     
-                end 
-                
-            end 
+%             % zero indexed loop because we are computing indices with mod n 
+%             for n=0:5
+% 
+%                 j_nbr      = j + pressure_nbrs(1,mod(n  ,6)+1); 
+%                 k_nbr      = k + pressure_nbrs(2,mod(n  ,6)+1); 
+%                 j_nbr_next = j + pressure_nbrs(1,mod(n+1,6)+1); 
+%                 k_nbr_next = k + pressure_nbrs(2,mod(n+1,6)+1);
+%                 
+%                 % if any index is zero, then 
+%                 % the pressure term does not include this value
+%                 if j_nbr_next && k_nbr_next && j_nbr && k_nbr
+%                     pressure_term = pressure_term + (p_0/6) * cross(X(:,j_nbr_next,k_nbr_next) - X(:,j,k), X(:,j_nbr,k_nbr) - X(:,j,k));                     
+%                 end 
+%                 
+%             end 
             
 
             % plus term always is included  
@@ -65,7 +64,7 @@ for j=1:N
             
             % minus term may be a separate boundary condition 
             if j==1
-                u_tangent_term = u_tangent_term - alpha * ( 1.0/norm(R(:,j,k) - left_papillary) - 1.0/norm(X(:,j,k) - left_papillary) * (X(:,j,k) - left_papillary) );
+                u_tangent_term = u_tangent_term - alpha * ( 1.0/norm(R(:,j,k) - left_papillary) - 1.0/norm(X(:,j,k) - left_papillary)) * (X(:,j,k) - left_papillary);
             else 
                 u_tangent_term = u_tangent_term - alpha * ( 1.0/norm(R(:,j,k) - R(:,j-1,k)) - 1.0/norm(X(:,j,k) - X(:,j-1,k)) ) * (X(:,j,k) - X(:,j-1,k)) ;
             end 

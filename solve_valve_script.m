@@ -11,7 +11,7 @@ else
     a = 1; 
     r = 1.5;
     h = 2; 
-    N = 32; 
+    N = 6; 
 
     filter_params.a = a; 
     filter_params.r = r; 
@@ -24,7 +24,7 @@ else
     X = R; 
     alpha =  1.0; % spring constants in two directions 
     beta  =  1.0;
-    p_0   = -1.0; % check signs on this 
+    p_0   =  0.0; 
 
     params = pack_params(X,alpha,beta,N,p_0,R); 
 
@@ -32,20 +32,52 @@ else
     title('Reference configuration of surface'); 
     
     'initial difference equation norm'
-    err = total_global_err(params, triangle_domain, linear_constitutive)
+    err = total_global_err(params, filter_params)
     
-    tol_global = 1e-1; 
+    J = build_jacobian(params, filter_params); 
+    fig = figure; 
+    spy(J); 
+    title('jacobian non zero pattern on exact solution')
+    
+    tol_global = 1e-5; 
     max_it_global = 100000; 
     
+    plot_and_save_freq = 1; 
+    start_it = 0; 
     
-    
+    err_over_time = zeros(max_it_global,1); 
     
 end 
 
+random_preturbed_start = true; 
+if random_preturbed_start
+%     for j=1:N
+%         for k=1:N
+% 
+%             % in the triangle?
+%             if (j+k) < (N+2)
+%                 X(:,j,k) = X(:,j,k) + 0.001*randn(); 
+%             end 
+%             
+%         end 
+%     end 
+
+    X(:,1,1) = X(:,1,1) + 0.1 * randn(); 
+
+    params = pack_params(X,alpha,beta,N,p_0,R); 
+end 
 
 
-[params pass err_over_time] = solve_valve(params, filter_params, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time)
+J = build_jacobian(params, filter_params); 
+fig = figure; 
+spy(J); 
+title('jacobian non zero pattern on preturbed solution')
 
+
+
+
+
+[params pass err_over_time it] = solve_valve(params, filter_params, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time); 
 
 if pass 
     disp('Global solve passed')
@@ -55,7 +87,7 @@ end
 
 
 'difference equation norm'
-err = total_global_err() 
+err = total_global_err(params, filter_params)
 
 
 fig = surf_plot(params, filter_params); 
@@ -63,6 +95,7 @@ title('Final time difference equation solution');
 
 
 fig = figure; 
+err_over_time = err_over_time(1:it); 
 plot(err_over_time); 
 title('error through iterations')
 

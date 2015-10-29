@@ -10,8 +10,8 @@ idx = 1;
 for k=1:params.N
     for j=1:params.N
         % in the triangle?
-        if (j+k) < (N+2)
-            params.X(:,j,k) = v_linearized(idx + (0:3)); 
+        if (j+k) < (params.N+2)
+            params.X(:,j,k) = v_linearized(idx + (0:2)); 
             idx = idx + 3; 
         end 
     end 
