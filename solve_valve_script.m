@@ -11,7 +11,7 @@ else
     a = 1; 
     r = 1.5;
     h = 2; 
-    N = 8; 
+    N = 32; 
 
     filter_params.a = a; 
     filter_params.r = r; 
@@ -39,17 +39,17 @@ else
     spy(J); 
     title('jacobian non zero pattern on exact solution')
     
-    tol_global = 1e-5; 
+    tol_global = 1e-1; 
     max_it_global = 100000; 
     
-    plot_and_save_freq = 1; 
+    plot_and_save_freq = 10; 
     start_it = 0; 
     
     err_over_time = zeros(max_it_global,1); 
     
 end 
 
-random_preturbed_start = true; 
+random_preturbed_start = false; 
 if random_preturbed_start
 %     for j=1:N
 %         for k=1:N

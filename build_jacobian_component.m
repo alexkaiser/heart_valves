@@ -18,7 +18,7 @@ function J = build_jacobian_component(params, filter_params,j,k)
 %    F = zeros(size(X)); 
 
     % total internal points in triangular domain 
-    total_internal = 3*N*(N+1)/2; 
+    % total_internal = 3*N*(N+1)/2; 
     
     J = zeros(3,3); 
 
@@ -40,7 +40,7 @@ function J = build_jacobian_component(params, filter_params,j,k)
     if (j+k) < (N+2)
 
         % vertical offset does not change while differentiating this equation 
-        range_current = linear_index_offset(j,k,N) + (1:3); 
+        % range_current = linear_index_offset(j,k,N) + (1:3); 
 
 
         % pressure portion 
