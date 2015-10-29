@@ -53,7 +53,7 @@ for j=1:N
                 % if any index is zero, then 
                 % the pressure term does not include this value
                 if j_nbr_next && k_nbr_next && j_nbr && k_nbr
-                    pressure_term = pressure_term + (p_0/6) * cross(X(:,j_nbr_next,k_nbr_next) - X(:,j,k), X(:,j_nbr,k_nbr) - X(:,j,k));                     
+                    pressure_term = pressure_term + (p_0/6) * cross(X(:,j_nbr,k_nbr) - X(:,j,k), X(:,j_nbr_next,k_nbr_next) - X(:,j,k));                     
                 end 
                 
             end 

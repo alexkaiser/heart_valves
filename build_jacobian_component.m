@@ -57,31 +57,13 @@ function J = build_jacobian_component(params, filter_params,j,k)
             if j_nbr_next && k_nbr_next && j_nbr && k_nbr
 
                 % Current has two terms from a product rule 
-                J = J - (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k)) ... 
-                      + (p_0/6) * cross_matrix(X(:,j_nbr     ,k_nbr     ) - X(:,j,k)); 
+                J = J - (p_0/6) * cross_matrix(X(:,j_nbr     ,k_nbr     ) - X(:,j,k)) ...
+                      + (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));  
+                      
 
-
-% 
-% No neighbors for these terms 
-% 
-                                                
-%                 % nbr_next term
-%                 % nbr_next gets differentiated away, and nbr stays and gets a sign 
-%                 % only added if this is internal 
-%                 if is_internal(j_nbr_next,k_nbr_next,N)
-%                     range_nbr_next  = linear_index_offset(j_nbr_next,k_nbr_next,N) + (1:3);
-%                     J(range_current, range_nbr_next) = J(range_current, range_nbr_next) - (p_0/6) * cross_matrix(X(:,j_nbr,k_nbr) - X(:,j,k));    
-%                 end 
-% 
-% 
-%                 % nbr term
-%                 % nbr gets differentiated away, and nbr_next stays 
-%                 % only added if this is internal 
-%                 if is_internal(j_nbr,k_nbr,N)
-%                     range_nbr       = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
-%                     J(range_current, range_nbr) = J(range_current, range_nbr) - (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));
-%                 end 
-
+                % 
+                % No neighbors for these terms 
+                % 
             end
         end 
 
@@ -103,17 +85,7 @@ function J = build_jacobian_component(params, filter_params,j,k)
 
             J_tension = tension_term(X(:,j,k),X_nbr,R(:,j,k),R_nbr,alpha); 
 
-            % current term is always added in 
-            % this gets a negative sign 
-            % this is always at the current,current block in the matrix 
             J = J - J_tension; 
-
-%             % If the neighbor is an internal point, it also gets a Jacobian contribution 
-%             % This takes a positive sign
-%             if is_internal(j_nbr,k_nbr,N)
-%                 range_nbr  = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
-%                 J(range_current, range_nbr) = J(range_current, range_nbr) + J_tension; 
-%             end 
 
         end 
 
@@ -132,23 +104,10 @@ function J = build_jacobian_component(params, filter_params,j,k)
             end 
 
             J_tension = tension_term(X(:,j,k),X_nbr,R(:,j,k),R_nbr,beta); 
-
-            % current term is always added in 
-            % this gets a negative sign 
-            % this is always at the current,current block in the matrix 
             J = J - J_tension; 
-
-%             % If the neighbor is an internal point, it also gets a Jacobian contribution 
-%             % This takes a positive sign
-%             if is_internal(j_nbr,k_nbr,N)
-%                 range_nbr  = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
-%                 J(range_current, range_nbr) = J(range_current, range_nbr) + J_tension; 
-%             end 
-
+ 
         end 
-
     end
-    
 end 
 
 
