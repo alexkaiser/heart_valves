@@ -29,6 +29,12 @@ err = total_global_err(params, filter_params);
 it = start_it; 
 fig = figure; 
 
+
+
+newton_step_coefficient = 1.0/64.0; 
+
+
+
 while err > tol_global
     
     tic 
@@ -69,7 +75,7 @@ while err > tol_global
 
         F = difference_equations(params, filter_params); 
         F_linearized = linearize_internal_points(F, params); 
-        X_linearized = linearize_internal_points(params.X, params); 
+        X_linearized_prev = linearize_internal_points(params.X, params); 
 
         if it == 0 
             spy(J)
@@ -83,15 +89,40 @@ while err > tol_global
         soln = J \ (-F_linearized); 
 
         % add in to get the next iterate 
-        X_linearized = X_linearized + 0.1*soln; 
+        X_linearized = X_linearized_prev + newton_step_coefficient*soln; 
         
         % copy data back to 2d 
         params = internal_points_to_2d(X_linearized, params); 
+        err = total_global_err(params, filter_params);
         
+        % check if step size should be increased
+        if newton_step_coefficient < 1
+            
+            newton_step_coefficient_next = max(1, 2*newton_step_coefficient); 
+            
+            err_prev = err; 
+            
+            X_linearized_large_step = X_linearized_prev + newton_step_coefficient_next*soln; 
+            params = internal_points_to_2d(X_linearized_large_step, params); 
+            err = total_global_err(params, filter_params);
+            
+            if err < err_prev
+                % use it
+                newton_step_coefficient = newton_step_coefficient_next
+            else
+                % old version was better
+                params = internal_points_to_2d(X_linearized, params); 
+                err = err_prev; 
+            end 
+            
+            
+            
+        end     
     else 
         tol_local = 1e-3 * tol_global; 
         max_it_local = 100; 
         params = update_leaflet_red_black(params, filter_params, tol_local, max_it_local); 
+        err = total_global_err(params, filter_params);
     end 
     
     
@@ -105,9 +136,6 @@ while err > tol_global
     if it > 10
         full_newton = true; 
     end 
-    
-    
-    err = total_global_err(params, filter_params); 
 
     err_over_time(it) = err; 
     fprintf('Global iteration = %d, \tnorm %g, \telapsed = %f\n', it, err, toc)
