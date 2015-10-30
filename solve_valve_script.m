@@ -9,7 +9,7 @@ if restart_number ~= 0
 %     plot_and_save_freq = 1; 
     
     if tol_global > 1e-2
-        tol_global = 1e-2; 
+        tol_global = 1e-12; 
     end 
     
 else 
@@ -17,7 +17,7 @@ else
     a = 1; 
     r = 1.5;
     h = 2; 
-    N = 32; 
+    N = 64; 
 
     filter_params.a = a; 
     filter_params.r = r; 
@@ -28,11 +28,12 @@ else
     R = build_reference_surface(filter_params); 
 
     X = R; 
-    alpha =  1.0; % spring constants in two directions 
-    beta  =  1.0;
-    p_0   = -1.0; 
+    alpha     =  1.0; % spring constants in two directions 
+    beta      =  1.0;
+    p_0       = -1.0; 
+    ref_frac  =  0.9; 
 
-    params = pack_params(X,alpha,beta,N,p_0,R); 
+    params = pack_params(X,alpha,beta,N,p_0,R,ref_frac); 
 
     fig = surf_plot(params, filter_params); 
     title('Reference configuration of surface'); 
@@ -45,7 +46,7 @@ else
     spy(J); 
     title('jacobian non zero pattern on initial')
     
-    tol_global = 1e-1; 
+    tol_global = 1e-12; 
     max_it_global = 100000; 
     
     plot_and_save_freq = 10; 
@@ -58,32 +59,28 @@ else
 end 
 
 
-
-random_preturbed_start = false; 
-if random_preturbed_start
-%     for j=1:N
-%         for k=1:N
+% random_preturbed_start = false; 
+% if random_preturbed_start
+% %     for j=1:N
+% %         for k=1:N
+% % 
+% %             % in the triangle?
+% %             if (j+k) < (N+2)
+% %                 X(:,j,k) = X(:,j,k) + 0.001*randn(); 
+% %             end 
+% %             
+% %         end 
+% %     end 
 % 
-%             % in the triangle?
-%             if (j+k) < (N+2)
-%                 X(:,j,k) = X(:,j,k) + 0.001*randn(); 
-%             end 
-%             
-%         end 
-%     end 
-
-    X(:,1,1) = X(:,1,1) + 0.1 * randn(); 
-
-    params = pack_params(X,alpha,beta,N,p_0,R); 
-end 
-
-
-J = build_jacobian(params, filter_params); 
-fig = figure; 
-spy(J); 
-title('jacobian non zero pattern on preturbed solution')
-
-
+%     X(:,1,1) = X(:,1,1) + 0.1 * randn(); 
+% 
+%     params = pack_params(X,alpha,beta,N,p_0,R,ref_frac); 
+% end 
+%
+% J = build_jacobian(params, filter_params); 
+% fig = figure; 
+% spy(J); 
+% title('jacobian non zero pattern on preturbed solution')
 
 
 

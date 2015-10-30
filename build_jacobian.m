@@ -10,7 +10,7 @@ function J = build_jacobian(params, filter_params)
 %      J         Jacobian of difference equations 
 
 
-    [X,alpha,beta,N,p_0,R] = unpack_params(params); 
+    [X,alpha,beta,N,p_0,R,ref_frac] = unpack_params(params); 
 
     left_papillary  = [0; -filter_params.a; 0]; 
     right_papillary = [0;  filter_params.a; 0]; 
@@ -99,7 +99,7 @@ function J = build_jacobian(params, filter_params)
                         R_nbr = R(:,j_nbr,k_nbr); 
                     end 
                     
-                    J_tension = tension_term(X(:,j,k),X_nbr,R(:,j,k),R_nbr,alpha); 
+                    J_tension = tension_term(X(:,j,k),X_nbr,R(:,j,k),R_nbr,alpha,ref_frac); 
                     
                     % current term is always added in 
                     % this gets a negative sign 
@@ -129,7 +129,7 @@ function J = build_jacobian(params, filter_params)
                         R_nbr = R(:,j_nbr,k_nbr); 
                     end 
                     
-                    J_tension = tension_term(X(:,j,k),X_nbr,R(:,j,k),R_nbr,beta); 
+                    J_tension = tension_term(X(:,j,k),X_nbr,R(:,j,k),R_nbr,beta,ref_frac); 
                     
                     % current term is always added in 
                     % this gets a negative sign 

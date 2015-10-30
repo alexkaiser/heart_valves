@@ -19,8 +19,9 @@ X = R;
 alpha =  1.0; % spring constants in two directions 
 beta  =  1.0;
 p_0   = -1.0; % check signs on this 
+ref_frac = 0.8; 
 
-params = pack_params(X,alpha,beta,N,p_0,R); 
+params = pack_params(X,alpha,beta,N,p_0,R,ref_frac); 
 
 fig = surf_plot(params, filter_params); 
 

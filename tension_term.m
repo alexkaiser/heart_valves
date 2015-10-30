@@ -1,4 +1,4 @@
-function J_tension = tension_term(X_current,X_nbr,R_current,R_nbr,k_spr)
+function J_tension = tension_term(X_current,X_nbr,R_current,R_nbr,k_spr, ref_frac)
 % 
 % Computes the contribution to the Jacobian for X and its neighbor
 % 
@@ -18,7 +18,7 @@ function J_tension = tension_term(X_current,X_nbr,R_current,R_nbr,k_spr)
 
     % u difference norms which are used repeatedly
     X_norm = norm(X_nbr - X_current);
-    R_norm = norm(R_nbr - R_current);
+    R_norm = ref_frac * norm(R_nbr - R_current);
 
    
     for l=1:3

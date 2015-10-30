@@ -12,7 +12,7 @@ function F = difference_equations_component(params, filter_params,j,k)
 % 
 
 
-[X,alpha,beta,N,p_0,R] = unpack_params(params); 
+[X,alpha,beta,N,p_0,R,ref_frac] = unpack_params(params); 
 
 left_papillary  = [0; -filter_params.a; 0]; 
 right_papillary = [0;  filter_params.a; 0]; 
@@ -55,13 +55,13 @@ if (j+k) < (N+2)
 
 
     % plus term always is included  
-    u_tangent_term =  alpha * ( 1.0/norm(R(:,j+1,k) - R(:,j,k)) - 1.0/norm(X(:,j+1,k) - X(:,j,k)) ) * (X(:,j+1,k) - X(:,j,k)); 
+    u_tangent_term =  alpha * ( 1.0/(ref_frac*norm(R(:,j+1,k) - R(:,j,k))) - 1.0/norm(X(:,j+1,k) - X(:,j,k)) ) * (X(:,j+1,k) - X(:,j,k)); 
 
     % minus term may be a separate boundary condition 
     if j==1
-        u_tangent_term = u_tangent_term - alpha * ( 1.0/norm(R(:,j,k) - left_papillary) - 1.0/norm(X(:,j,k) - left_papillary)) * (X(:,j,k) - left_papillary);
+        u_tangent_term = u_tangent_term - alpha * ( 1.0/(ref_frac*norm(R(:,j,k) - left_papillary)) - 1.0/norm(X(:,j,k) - left_papillary)) * (X(:,j,k) - left_papillary);
     else 
-        u_tangent_term = u_tangent_term - alpha * ( 1.0/norm(R(:,j,k) - R(:,j-1,k)) - 1.0/norm(X(:,j,k) - X(:,j-1,k)) ) * (X(:,j,k) - X(:,j-1,k)) ;
+        u_tangent_term = u_tangent_term - alpha * ( 1.0/(ref_frac*norm(R(:,j,k) - R(:,j-1,k))) - 1.0/norm(X(:,j,k) - X(:,j-1,k)) ) * (X(:,j,k) - X(:,j-1,k)) ;
     end 
 
 
@@ -70,9 +70,9 @@ if (j+k) < (N+2)
 
     % minus term may be a separate boundary condition 
     if k==1
-        v_tangent_term = v_tangent_term - beta * ( 1.0/norm(R(:,j,k) - right_papillary) - 1.0/norm(X(:,j,k) - right_papillary) ) * (X(:,j,k) - right_papillary);
+        v_tangent_term = v_tangent_term - beta * ( 1.0/(ref_frac*norm(R(:,j,k) - right_papillary)) - 1.0/norm(X(:,j,k) - right_papillary) ) * (X(:,j,k) - right_papillary);
     else 
-        v_tangent_term = v_tangent_term - beta * ( 1.0/norm(R(:,j,k) - R(:,j,k-1)) - 1.0/norm(X(:,j,k  ) - X(:,j,k-1)) ) * (X(:,j,k) - X(:,j,k-1));
+        v_tangent_term = v_tangent_term - beta * ( 1.0/(ref_frac*norm(R(:,j,k) - R(:,j,k-1))) - 1.0/norm(X(:,j,k  ) - X(:,j,k-1)) ) * (X(:,j,k) - X(:,j,k-1));
     end 
 
     F = pressure_term + u_tangent_term + v_tangent_term;

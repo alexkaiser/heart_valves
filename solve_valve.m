@@ -43,6 +43,12 @@ while err > tol_global
 
         % build the jacobian 
         J = sparse(build_jacobian(params, filter_params)); 
+        
+        jacobian_cond_info = false; 
+        if jacobian_cond_info
+            condition_num = cond(J)
+        end 
+        
 
         jacobian_det_info = false;  
         if jacobian_det_info

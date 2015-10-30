@@ -69,11 +69,6 @@ else
     params.X(:,j,k) = X_initial; 
 end
 
-
-% 'solution immediately before exit'
-% [X,S,T,N,du,dv,p_0] = unpack_params(params); 
-% X(:,j,k)
-
 if any(isnan(params.X(:,j,k)))
     error('STILL HAVE NANs on function exit, (j,k) = (%d,%d)\n', it, j, k);
 end 
