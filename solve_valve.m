@@ -31,7 +31,7 @@ fig = figure;
 
 
 
-max_coeff = 1.0/2.0; 
+max_coeff = 1.0; % 1.0/2.0; 
 
 
 while err > tol_global

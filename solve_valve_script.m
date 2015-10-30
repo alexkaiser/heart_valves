@@ -5,12 +5,6 @@ if restart_number ~= 0
     data_str = sprintf('data_iteration_%d', restart_number); 
     load(data_str); 
     start_it = restart_number; 
-    max_it_global = 100000; 
-%     plot_and_save_freq = 1; 
-    
-    if tol_global > 1e-2
-        tol_global = 1e-12; 
-    end 
     
 else 
 
@@ -30,8 +24,8 @@ else
     X = R; 
     alpha     =  1.0; % spring constants in two directions 
     beta      =  1.0;
-    p_0       = -1.0; 
-    ref_frac  =  0.9; 
+    p_0       = -2.0; 
+    ref_frac  =  0.8; 
 
     params = pack_params(X,alpha,beta,N,p_0,R,ref_frac); 
 
@@ -105,5 +99,42 @@ fig = figure;
 err_over_time = err_over_time(1:it); 
 plot(err_over_time); 
 title('error through iterations')
+
+fig = figure; 
+semilogy(err_over_time); 
+hold on 
+semilogy(2.^(-(1:it)) , '--'); 
+
+legend('error', '2^-iteration')
+title('convergence comparison with 2^{-(iteration)}')
+xlabel('iteration')
+ylabel('log(err)')
+
+
+continuation = true; 
+if continuation
+    
+    pressure_vals = [-4.0, -6.0, -8.0]
+    
+    for p_0 = pressure_vals
+    
+        params.p_0 = p_0
+    
+        if pass 
+
+            start_it = 0; 
+            
+            [params pass err_over_time it] = solve_valve(params, filter_params, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time, newton_step_coeff); 
+
+
+        else 
+            error('cannot run continuation without success ')
+        end 
+    end 
+end 
+
+
+
+
 
 
