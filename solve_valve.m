@@ -19,7 +19,7 @@ function [params pass err_over_time it] = solve_valve(params, filter_params, tol
 %     pass                  Whether solution has been computed to desired tolerance 
 % 
 
-full_newton = false; 
+full_newton = true; 
 
 
 pass = true; 
@@ -48,10 +48,20 @@ while err > tol_global
             total_internal = 3*params.N*(params.N+1)/2; 
             for block_start = 1:3:(total_internal - 1)
 
-                if abs(det(J(block_start + (0:2), block_start + (0:2)))) < 1e-2
+%                 if abs(det(J(block_start + (0:2), block_start + (0:2)))) < 1e-2
+%                     block_start
+%                     det(J(block_start + (0:2), block_start + (0:2)))
+%                 end 
+                
+                tol = 1e2 * eps; 
+                col_rank = rank(J(:,block_start + (0:2)), tol);  
+                
+                if col_rank < 3
+                    'found a rank deficient 3x3 block of columns'
                     block_start
-                    det(J(block_start + (0:2), block_start + (0:2)))
+                    col_rank
                 end 
+                
 
             end 
 
@@ -59,6 +69,7 @@ while err > tol_global
 
         F = difference_equations(params, filter_params); 
         F_linearized = linearize_internal_points(F, params); 
+        X_linearized = linearize_internal_points(params.X, params); 
 
         if it == 0 
             spy(J)
@@ -72,10 +83,10 @@ while err > tol_global
         soln = J \ (-F_linearized); 
 
         % add in to get the next iterate 
-        F_linearized = F_linearized + soln; 
+        X_linearized = X_linearized + 0.1 * soln; 
         
         % copy data back to 2d 
-        params = internal_points_to_2d(F_linearized, params); 
+        params = internal_points_to_2d(X_linearized, params); 
         
     else 
         tol_local = 1e-3 * tol_global; 
@@ -84,14 +95,16 @@ while err > tol_global
     end 
     
     
-    
-    
     it = it + 1; 
     if it > max_it_global
         warning('Global solve failed to converge in %d iterations\n', it);
         pass = false; 
         break; 
     end  
+    
+%     if it > 10
+%         full_newton = true; 
+%     end 
     
     
     err = total_global_err(params, filter_params); 
@@ -115,7 +128,7 @@ while err > tol_global
         title_str = sprintf('Surface at iteration %d', it); 
         title(title_str); 
         
-        input('stopped for fun...'); 
+        % input('stopped for fun...'); 
     end         
 end 
 

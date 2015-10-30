@@ -6,6 +6,7 @@ if restart_number ~= 0
     load(data_str); 
     start_it = restart_number; 
     max_it_global = 100000; 
+    plot_and_save_freq = 1; 
 else 
 
     a = 1; 
@@ -42,12 +43,14 @@ else
     tol_global = 1e-1; 
     max_it_global = 100000; 
     
-    plot_and_save_freq = 10; 
+    plot_and_save_freq = 1; 
     start_it = 0; 
     
     err_over_time = zeros(max_it_global,1); 
     
 end 
+
+
 
 random_preturbed_start = false; 
 if random_preturbed_start
