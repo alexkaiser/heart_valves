@@ -19,7 +19,7 @@ function [params pass err_over_time it] = solve_valve(params, filter_params, tol
 %     pass                  Whether solution has been computed to desired tolerance 
 % 
 
-full_newton = false; 
+full_newton = true; 
 
 
 pass = true; 
@@ -31,7 +31,7 @@ fig = figure;
 
 
 
-max_coeff = 1.0/4.0; 
+max_coeff = 1.0/2.0; 
 
 
 while err > tol_global
@@ -42,7 +42,7 @@ while err > tol_global
         % newton step here 
 
         % build the jacobian 
-        J = build_jacobian(params, filter_params); 
+        J = sparse(build_jacobian(params, filter_params)); 
 
         jacobian_det_info = false;  
         if jacobian_det_info
@@ -85,7 +85,7 @@ while err > tol_global
         end 
 
         % solve the system,
-        soln = J \ (-F_linearized); 
+        soln = J \ (-F_linearized);
 
         % add in to get the next iterate 
         X_linearized = X_linearized_prev + newton_step_coeff*soln; 

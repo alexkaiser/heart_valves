@@ -43,7 +43,7 @@ else
     J = build_jacobian(params, filter_params); 
     fig = figure; 
     spy(J); 
-    title('jacobian non zero pattern on exact solution')
+    title('jacobian non zero pattern on initial')
     
     tol_global = 1e-1; 
     max_it_global = 100000; 
@@ -51,7 +51,7 @@ else
     plot_and_save_freq = 10; 
     start_it = 0; 
     
-    newton_step_coeff = 1.0/64.0; 
+    newton_step_coeff = 1.0/256.0; 
     
     err_over_time = zeros(max_it_global,1); 
     
