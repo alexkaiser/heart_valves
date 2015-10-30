@@ -19,7 +19,7 @@ function [params pass err_over_time it] = solve_valve(params, filter_params, tol
 %     pass                  Whether solution has been computed to desired tolerance 
 % 
 
-full_newton = true; 
+full_newton = false; 
 
 
 pass = true; 
@@ -39,7 +39,7 @@ while err > tol_global
         % build the jacobian 
         J = build_jacobian(params, filter_params); 
 
-        jacobian_det_info = true 
+        jacobian_det_info = false;  
         if jacobian_det_info
             'full determinant'
             det(J)
@@ -83,7 +83,7 @@ while err > tol_global
         soln = J \ (-F_linearized); 
 
         % add in to get the next iterate 
-        X_linearized = X_linearized + 0.1 * soln; 
+        X_linearized = X_linearized + 0.1*soln; 
         
         % copy data back to 2d 
         params = internal_points_to_2d(X_linearized, params); 
@@ -102,9 +102,9 @@ while err > tol_global
         break; 
     end  
     
-%     if it > 10
-%         full_newton = true; 
-%     end 
+    if it > 10
+        full_newton = true; 
+    end 
     
     
     err = total_global_err(params, filter_params); 
