@@ -126,7 +126,15 @@ if continuation
             
             [params pass err_over_time it] = solve_valve(params, filter_params, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time, newton_step_coeff); 
 
+            'difference equation norm'
+            err = total_global_err(params, filter_params)
 
+
+            fig = surf_plot(params, filter_params); 
+            
+            title(sprintf('Final time difference equation solution, p_0 = %f', p_0)); 
+            
+            
         else 
             error('cannot run continuation without success ')
         end 
