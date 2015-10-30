@@ -6,7 +6,12 @@ if restart_number ~= 0
     load(data_str); 
     start_it = restart_number; 
     max_it_global = 100000; 
-    plot_and_save_freq = 1; 
+%     plot_and_save_freq = 1; 
+    
+    if tol_global > 1e-2
+        tol_global = 1e-2; 
+    end 
+    
 else 
 
     a = 1; 
@@ -43,8 +48,10 @@ else
     tol_global = 1e-1; 
     max_it_global = 100000; 
     
-    plot_and_save_freq = 1; 
+    plot_and_save_freq = 10; 
     start_it = 0; 
+    
+    newton_step_coeff = 1.0/64.0; 
     
     err_over_time = zeros(max_it_global,1); 
     
@@ -80,7 +87,7 @@ title('jacobian non zero pattern on preturbed solution')
 
 
 
-[params pass err_over_time it] = solve_valve(params, filter_params, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time); 
+[params pass err_over_time it] = solve_valve(params, filter_params, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time, newton_step_coeff); 
 
 if pass 
     disp('Global solve passed')

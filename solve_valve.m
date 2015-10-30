@@ -1,4 +1,4 @@
-function [params pass err_over_time it] = solve_valve(params, filter_params, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time)
+function [params pass err_over_time it] = solve_valve(params, filter_params, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time, newton_step_coeff)
 %
 % Full valve build. 
 % Solves the nonlinear difference equations at each component. 
@@ -31,8 +31,7 @@ fig = figure;
 
 
 
-newton_step_coefficient = 1.0/64.0; 
-
+max_coeff = 1.0/4.0; 
 
 
 while err > tol_global
@@ -89,26 +88,26 @@ while err > tol_global
         soln = J \ (-F_linearized); 
 
         % add in to get the next iterate 
-        X_linearized = X_linearized_prev + newton_step_coefficient*soln; 
+        X_linearized = X_linearized_prev + newton_step_coeff*soln; 
         
         % copy data back to 2d 
         params = internal_points_to_2d(X_linearized, params); 
-        err = total_global_err(params, filter_params);
+        newton_step_coeff
+        err = total_global_err(params, filter_params)
         
         % check if step size should be increased
-        if newton_step_coefficient < 1
-            
-            newton_step_coefficient_next = max(1, 2*newton_step_coefficient); 
+        if newton_step_coeff < max_coeff
             
             err_prev = err; 
             
-            X_linearized_large_step = X_linearized_prev + newton_step_coefficient_next*soln; 
+            newton_step_coeff_next = min(max_coeff, 2*newton_step_coeff) 
+            X_linearized_large_step = X_linearized_prev + newton_step_coeff_next*soln; 
             params = internal_points_to_2d(X_linearized_large_step, params); 
-            err = total_global_err(params, filter_params);
+            err = total_global_err(params, filter_params)
             
             if err < err_prev
                 % use it
-                newton_step_coefficient = newton_step_coefficient_next
+                newton_step_coeff = newton_step_coeff_next
             else
                 % old version was better
                 params = internal_points_to_2d(X_linearized, params); 
