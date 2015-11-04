@@ -41,6 +41,6 @@ function J_tension = tension_term(X_current,X_nbr,R_current,R_nbr,k_spr, ref_fra
     % jacobian is an outer product 
     % plus a multiple of the identity 
     J_tension = -k_spr / (X_norm^3) * (X_nbr - X_current)*((X_nbr - X_current)') ... 
-                -k_spr * (1/R_norm - 1/X_norm) * eye(3); 
+                -tension_linear(X_current,X_nbr,R_current,R_nbr,k_spr,ref_frac) * eye(3); 
      
 end 

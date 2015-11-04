@@ -7,7 +7,7 @@
 
 
 
-epsilon_vals = 10.^(-0:-1:-8); 
+epsilon_vals = 10.^(-1:-1:-8); 
 
 errors = zeros(size(epsilon_vals)); 
 
@@ -27,7 +27,7 @@ R = build_reference_surface(filter_params);
 
 X = R; 
 alpha     =  1.0; % spring constants in two directions 
-beta      =  0.0;
+beta      =  1.0;
 p_0       = -0.0; 
 ref_frac  =  0.5; 
 
@@ -78,10 +78,8 @@ legend('error', 'eps^2')
 
 figure; 
 
-linear_idx = 1; 
-for j=1:params.N
-    for k=1:params.N
-     
+for k=1:params.N
+    for j=1:params.N
             % in the triangle?
             if (j+k) < (params.N+2)
                 
@@ -103,7 +101,8 @@ for j=1:params.N
 
                     diffs = F_preturbed_linearized - F_linearized - ep*J*Z_linearized; 
 
-                    errors(i) = norm(diffs(linear_idx), 2); 
+                    idx = linear_index_offset(j,k,N); 
+                    errors(i) = norm(diffs(idx + 1:3), 2); 
 
                     fprintf('%e\t | %e \n', ep, errors(i)); 
 
@@ -116,8 +115,6 @@ for j=1:params.N
                 loglog(epsilon_vals, epsilon_vals.^2, '--'); 
 
                 legend('error', 'eps^2')
-
-                linear_idx = linear_idx + 1;
 
             end 
     end 
