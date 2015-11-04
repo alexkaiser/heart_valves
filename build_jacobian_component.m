@@ -85,7 +85,7 @@ function J = build_jacobian_component(params, filter_params,j,k)
 
             J_tension = tension_term(X(:,j,k),X_nbr,R(:,j,k),R_nbr,alpha,ref_frac); 
 
-            J = J - J_tension; 
+            J = J + J_tension; 
 
         end 
 
@@ -104,7 +104,7 @@ function J = build_jacobian_component(params, filter_params,j,k)
             end 
 
             J_tension = tension_term(X(:,j,k),X_nbr,R(:,j,k),R_nbr,beta,ref_frac); 
-            J = J - J_tension; 
+            J = J + J_tension; 
  
         end 
     end

@@ -104,13 +104,13 @@ function J = build_jacobian(params, filter_params)
                     % current term is always added in 
                     % this gets a negative sign 
                     % this is always at the current,current block in the matrix 
-                    J(range_current, range_current) = J(range_current, range_current) - J_tension; 
+                    J(range_current, range_current) = J(range_current, range_current) + J_tension; 
                     
                     % If the neighbor is an internal point, it also gets a Jacobian contribution 
                     % This takes a positive sign
                     if is_internal(j_nbr,k_nbr,N)
                         range_nbr  = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
-                        J(range_current, range_nbr) = J(range_current, range_nbr) + J_tension; 
+                        J(range_current, range_nbr) = J(range_current, range_nbr) - J_tension; 
                     end 
                     
                 end 
@@ -134,13 +134,13 @@ function J = build_jacobian(params, filter_params)
                     % current term is always added in 
                     % this gets a negative sign 
                     % this is always at the current,current block in the matrix 
-                    J(range_current, range_current) = J(range_current, range_current) - J_tension; 
+                    J(range_current, range_current) = J(range_current, range_current) + J_tension; 
                     
                     % If the neighbor is an internal point, it also gets a Jacobian contribution 
                     % This takes a positive sign
                     if is_internal(j_nbr,k_nbr,N)
                         range_nbr  = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
-                        J(range_current, range_nbr) = J(range_current, range_nbr) + J_tension; 
+                        J(range_current, range_nbr) = J(range_current, range_nbr) - J_tension; 
                     end 
                     
                 end 

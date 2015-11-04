@@ -66,7 +66,7 @@ if (j+k) < (N+2)
 
 
     % plus term always is included  
-    v_tangent_term =   beta * ( 1.0/norm(R(:,j,k+1) - R(:,j,k  )) - 1.0/norm(X(:,j,k+1) - X(:,j,k  )) ) * (X(:,j,k+1) - X(:,j,k  )) ; 
+    v_tangent_term =   beta * ( 1.0/(ref_frac*norm(R(:,j,k+1) - R(:,j,k  ))) - 1.0/norm(X(:,j,k+1) - X(:,j,k  )) ) * (X(:,j,k+1) - X(:,j,k  )) ; 
 
     % minus term may be a separate boundary condition 
     if k==1

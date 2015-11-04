@@ -24,8 +24,8 @@ else
     X = R; 
     alpha     =  1.0; % spring constants in two directions 
     beta      =  1.0;
-    p_0       = -2.0; 
-    ref_frac  =  0.8; 
+    p_0       = -20.0; 
+    ref_frac  =  0.5; 
 
     params = pack_params(X,alpha,beta,N,p_0,R,ref_frac); 
 
@@ -92,13 +92,16 @@ err = total_global_err(params, filter_params)
 
 
 fig = surf_plot(params, filter_params); 
-title('Final time difference equation solution'); 
+title(sprintf('Final time difference equation solution, p = %f, ref_frac = %f' , params.p_0, params.ref_frac )); 
+name = sprintf('surf_p_%f', params.p_0); 
+printfig(fig, strcat(name, '.eps'));
+saveas(fig, strcat(name, '.fig'),'fig'); 
 
 
 fig = figure; 
 err_over_time = err_over_time(1:it); 
 plot(err_over_time); 
-title('error through iterations')
+
 
 fig = figure; 
 semilogy(err_over_time); 
@@ -110,11 +113,15 @@ title('convergence comparison with 2^{-(iteration)}')
 xlabel('iteration')
 ylabel('log(err)')
 
+title(sprintf('error through iterations, p = %f, ref_frac = %f', params.p_0, params.ref_frac))
+name = sprintf('error_p_%f', params.p_0)
+printfig(fig, strcat(name, '.eps')); 
+saveas(fig, strcat(name, '.fig'),'fig'); 
 
-continuation = true; 
+continuation = false; 
 if continuation
     
-    pressure_vals = [-4.0, -6.0, -8.0]
+    pressure_vals = [-5.5, -6.0, -6.5, -7.0, -7.5, -8.0]
     
     for p_0 = pressure_vals
     
