@@ -26,9 +26,9 @@ filter_params.N = N;
 R = build_reference_surface(filter_params); 
 
 X = R; 
-alpha     =  0.0; % spring constants in two directions 
+alpha     =  1.0; % spring constants in two directions 
 beta      =  0.0;
-p_0       = -1.0; 
+p_0       = -0.0; 
 ref_frac  =  0.5; 
 
 params = pack_params(X,alpha,beta,N,p_0,R,ref_frac); 
@@ -68,12 +68,15 @@ end
 
 fprintf('\n\n\n\n'); 
 
+figure; 
 loglog(epsilon_vals, errors, '-*'); 
 hold on 
 loglog(epsilon_vals, epsilon_vals.^2, '--'); 
 
 legend('error', 'eps^2')
 
+
+figure; 
 
 linear_idx = 1; 
 for j=1:params.N

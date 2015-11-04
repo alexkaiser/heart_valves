@@ -39,6 +39,19 @@ axis equal
 axis auto 
 hold on 
 
+% clean up the bc on the whole surface 
+string_x = [X_copy(1,1,N), X_copy(1,1,N+1)];
+string_y = [X_copy(2,1,N), X_copy(2,1,N+1)];
+string_z = [X_copy(3,1,N), X_copy(3,1,N+1)];
+plot3(string_x, string_y, string_z, 'k', 'LineWidth',width); 
+
+string_x = [X_copy(1,N,1), X_copy(1,N+1,1)];
+string_y = [X_copy(2,N,1), X_copy(2,N+1,1)];
+string_z = [X_copy(3,N,1), X_copy(3,N+1,1)];
+plot3(string_x, string_y, string_z, 'k', 'LineWidth',width); 
+
+
+
 % add chordae as line segments 
 j = 1; 
 for k=1:N
