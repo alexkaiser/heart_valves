@@ -19,7 +19,7 @@ function [params pass err_over_time it] = solve_valve(params, filter_params, tol
 %     pass                  Whether solution has been computed to desired tolerance 
 % 
 
-full_newton = true; 
+full_newton = false; 
 
 
 pass = true; 

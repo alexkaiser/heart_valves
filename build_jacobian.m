@@ -61,15 +61,15 @@ function J = build_jacobian(params, filter_params)
                                             
                         % Current has two terms from a product rule 
                         J(range_current, range_current) = J(range_current, range_current) ... 
-                                                            + (p_0/6) * cross_matrix(X(:,j_nbr     ,k_nbr     ) - X(:,j,k)) ... 
-                                                            - (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k)); 
+                                                            - (p_0/6) * cross_matrix(X(:,j_nbr     ,k_nbr     ) - X(:,j,k)) ... 
+                                                            + (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k)); 
                                                         
                         % nbr term
                         % nbr gets differentiated away, and nbr_next stays 
                         % only added if this is internal 
                         if is_internal(j_nbr,k_nbr,N)
                             range_nbr       = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
-                            J(range_current, range_nbr) = J(range_current, range_nbr) + (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));
+                            J(range_current, range_nbr) = J(range_current, range_nbr) - (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));
                         end 
                         
                         % nbr_next term
@@ -77,7 +77,7 @@ function J = build_jacobian(params, filter_params)
                         % only added if this is internal 
                         if is_internal(j_nbr_next,k_nbr_next,N)
                             range_nbr_next  = linear_index_offset(j_nbr_next,k_nbr_next,N) + (1:3);
-                            J(range_current, range_nbr_next) = J(range_current, range_nbr_next) - (p_0/6) * cross_matrix(X(:,j_nbr,k_nbr) - X(:,j,k));    
+                            J(range_current, range_nbr_next) = J(range_current, range_nbr_next) + (p_0/6) * cross_matrix(X(:,j_nbr,k_nbr) - X(:,j,k));    
                         end 
                         
                     end
