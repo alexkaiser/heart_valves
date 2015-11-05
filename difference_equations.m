@@ -45,10 +45,12 @@ for j=1:N
             % zero indexed loop because we are computing indices with mod n 
             for n=0:5
 
-                j_nbr      = j + pressure_nbrs(1,mod(n  ,6)+1); 
-                k_nbr      = k + pressure_nbrs(2,mod(n  ,6)+1); 
-                j_nbr_next = j + pressure_nbrs(1,mod(n+1,6)+1); 
+                j_nbr      = j + pressure_nbrs(1,mod(n  ,6)+1);
+                k_nbr      = k + pressure_nbrs(2,mod(n  ,6)+1);
+                j_nbr_next = j + pressure_nbrs(1,mod(n+1,6)+1);
                 k_nbr_next = k + pressure_nbrs(2,mod(n+1,6)+1);
+                
+                % fprintf('idx = %d,\t(j,k)=(%d,%d),\t(j_nbr,k_nbr)=(%d,%d),\t(j_nbr_next,k_nbr_next)=(%d,%d)\n', n, j,k, j_nbr,k_nbr, j_nbr_next,k_nbr_next); 
                 
                 % if any index is zero, then 
                 % the pressure term does not include this value
