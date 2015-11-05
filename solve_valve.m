@@ -98,8 +98,8 @@ while err > tol_global
         
         % copy data back to 2d 
         params = internal_points_to_2d(X_linearized, params); 
-        newton_step_coeff
-        err = total_global_err(params, filter_params)
+        % newton_step_coeff
+        err = total_global_err(params, filter_params); 
         
         % check if step size should be increased
         if newton_step_coeff < max_coeff
