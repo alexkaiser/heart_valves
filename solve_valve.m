@@ -124,7 +124,7 @@ while err > tol_global
             
         end     
     else 
-        tol_local = 1e-10; 
+        tol_local = 1e-13; 
 
         max_it_local = 100; 
         params = update_leaflet_red_black(params, filter_params, tol_local, max_it_local); 

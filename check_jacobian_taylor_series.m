@@ -15,7 +15,7 @@ errors = zeros(size(epsilon_vals));
 a = 1; 
 r = 1.5;
 h = 2; 
-N = 4; 
+N = 8; 
 
 filter_params.a = a; 
 filter_params.r = r; 
@@ -41,7 +41,16 @@ F_linearized = linearize_internal_points(F, params);
 J = build_jacobian(params, filter_params); 
 
 % perturbation also does not change 
-Z = rand(size(X)); 
+Z = zeros(size(X)); 
+for j=1:params.N
+    for k=1:params.N
+        % in the triangle?
+        if (j+k) < (params.N+2)
+            Z(:,j,k) = rand(3,1);  
+        end 
+    end 
+end 
+
 params_Z = pack_params(Z,alpha,beta,N,p_0,R,ref_frac); 
 Z_linearized = linearize_internal_points(Z, params_Z); 
 
@@ -101,9 +110,9 @@ for k=1:params.N
                     F_preturbed_linearized = linearize_internal_points(F_preturbed, params); 
 
                     diffs = F_preturbed_linearized - F_linearized - ep*J*Z_linearized; 
-                    
+                      
                     range = linear_index_offset(j,k,N) + (1:3);                     
-                    errors(i) = norm(diffs(range), 2); 
+                    errors(i) = norm(diffs(range)); 
 
                     fprintf('%e\t | %e \n', ep, errors(i)); 
 

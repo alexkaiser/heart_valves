@@ -37,6 +37,8 @@ while residual > tol
     F = difference_equations_component(params, filter_params,j,k); 
     residual = norm(F); 
     
+    fprintf('it = %d, \tresidual = %e\n', it, residual); 
+    
     if it > max_it 
         warning('Newton solve failed to converge in %d iterations, (j,k) = (%d,%d)\n', it, j, k);
         pass = false; 
@@ -56,6 +58,8 @@ while residual > tol
     end
     
 end 
+
+fprintf('\n'); 
 
 % current version will 
 
