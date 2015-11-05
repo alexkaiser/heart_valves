@@ -138,9 +138,6 @@ while err > tol_global
         break; 
     end  
     
-    if it > 10
-        full_newton = true; 
-    end 
 
     err_over_time(it) = err; 
     fprintf('Global iteration = %d, \tnorm %g, \telapsed = %f\n', it, err, toc)

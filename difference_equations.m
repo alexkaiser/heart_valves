@@ -58,26 +58,37 @@ for j=1:N
                 
             end 
             
+            u_tangent_term = zeros(3,1); 
+            for j_nbr = [j-1,j+1]
+                    
+                k_nbr = k; 
 
-            % plus term always is included  
-            u_tangent_term =  alpha * ( 1.0/(ref_frac*norm(R(:,j+1,k) - R(:,j,k))) - 1.0/norm(X(:,j+1,k) - X(:,j,k)) ) * (X(:,j+1,k) - X(:,j,k)); 
-            
-            % minus term may be a separate boundary condition 
-            if j==1
-                u_tangent_term = u_tangent_term - alpha * ( 1.0/(ref_frac*norm(R(:,j,k) - left_papillary)) - 1.0/norm(X(:,j,k) - left_papillary)) * (X(:,j,k) - left_papillary);
-            else 
-                u_tangent_term = u_tangent_term - alpha * ( 1.0/(ref_frac*norm(R(:,j,k) - R(:,j-1,k))) - 1.0/norm(X(:,j,k) - X(:,j-1,k)) ) * (X(:,j,k) - X(:,j-1,k)) ;
+                if j_nbr == 0
+                    X_nbr = left_papillary;
+                    R_nbr = left_papillary;
+                else 
+                    X_nbr = X(:,j_nbr,k_nbr); 
+                    R_nbr = R(:,j_nbr,k_nbr); 
+                end 
+                
+                u_tangent_term = u_tangent_term + tension_linear(X(:,j,k),X_nbr,R(:,j,k),R_nbr,alpha,ref_frac) * (X_nbr - X(:,j,k));
+
             end 
-                
-                
-            % plus term always is included  
-            v_tangent_term =   beta * ( 1.0/(ref_frac*norm(R(:,j,k+1) - R(:,j,k  ))) - 1.0/norm(X(:,j,k+1) - X(:,j,k  )) ) * (X(:,j,k+1) - X(:,j,k  )) ; 
             
-            % minus term may be a separate boundary condition 
-            if k==1
-                v_tangent_term = v_tangent_term - beta * ( 1.0/(ref_frac*norm(R(:,j,k) - right_papillary)) - 1.0/norm(X(:,j,k) - right_papillary) ) * (X(:,j,k) - right_papillary);
-            else 
-                v_tangent_term = v_tangent_term - beta * ( 1.0/(ref_frac*norm(R(:,j,k) - R(:,j,k-1))) - 1.0/norm(X(:,j,k  ) - X(:,j,k-1)) ) * (X(:,j,k) - X(:,j,k-1));
+            v_tangent_term = zeros(3,1); 
+            for k_nbr = [k-1,k+1]
+                    
+                j_nbr = j; 
+
+                if k_nbr == 0
+                    X_nbr = right_papillary;
+                    R_nbr = right_papillary;
+                else 
+                    X_nbr = X(:,j_nbr,k_nbr); 
+                    R_nbr = R(:,j_nbr,k_nbr); 
+                end
+                
+                v_tangent_term = v_tangent_term + tension_linear(X(:,j,k),X_nbr,R(:,j,k),R_nbr,beta,ref_frac) * (X_nbr - X(:,j,k));
             end 
 
             F(:,j,k) = pressure_term + u_tangent_term + v_tangent_term;

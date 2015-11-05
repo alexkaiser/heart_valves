@@ -88,6 +88,7 @@ for k=1:params.N
                 
                 errors = zeros(size(epsilon_vals)); 
                 
+                
                 for i = 1:length(epsilon_vals)
 
                     ep = epsilon_vals(i); 
@@ -100,9 +101,9 @@ for k=1:params.N
                     F_preturbed_linearized = linearize_internal_points(F_preturbed, params); 
 
                     diffs = F_preturbed_linearized - F_linearized - ep*J*Z_linearized; 
-
-                    idx = linear_index_offset(j,k,N); 
-                    errors(i) = norm(diffs(idx + 1:3), 2); 
+                    
+                    range = linear_index_offset(j,k,N) + (1:3);                     
+                    errors(i) = norm(diffs(range), 2); 
 
                     fprintf('%e\t | %e \n', ep, errors(i)); 
 

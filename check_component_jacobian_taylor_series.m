@@ -27,7 +27,7 @@ R = build_reference_surface(filter_params);
 
 X = R; 
 alpha     =  1.0; % spring constants in two directions 
-beta      =  0.0;
+beta      =  1.0;
 p_0       =  0.0; 
 ref_frac  =  0.5; 
 

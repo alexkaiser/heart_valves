@@ -1,4 +1,4 @@
-function J_tension = tension_term(X_current,X_nbr,R_current,R_nbr,k_spr, ref_frac)
+function J_tension = tension_jacobian(X_current,X_nbr,R_current,R_nbr,k_spr,ref_frac)
 % 
 % Computes the contribution to the Jacobian for X and its neighbor
 % 
@@ -36,7 +36,7 @@ function J_tension = tension_term(X_current,X_nbr,R_current,R_nbr,k_spr, ref_fra
 %     J_tension = k_spr * J_tension;
 
     X_norm = norm(X_nbr - X_current);
-    R_norm = ref_frac * norm(R_nbr - R_current);
+%    R_norm = ref_frac * norm(R_nbr - R_current);
     
     % jacobian is an outer product 
     % plus a multiple of the identity 
@@ -44,3 +44,4 @@ function J_tension = tension_term(X_current,X_nbr,R_current,R_nbr,k_spr, ref_fra
                 -tension_linear(X_current,X_nbr,R_current,R_nbr,k_spr,ref_frac) * eye(3); 
      
 end 
+

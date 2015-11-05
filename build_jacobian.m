@@ -99,7 +99,7 @@ function J = build_jacobian(params, filter_params)
                         R_nbr = R(:,j_nbr,k_nbr); 
                     end 
                     
-                    J_tension = tension_term(X(:,j,k),X_nbr,R(:,j,k),R_nbr,alpha,ref_frac); 
+                    J_tension = tension_jacobian(X(:,j,k),X_nbr,R(:,j,k),R_nbr,alpha,ref_frac); 
                     
                     % current term is always added in 
                     % this gets no sign 
@@ -129,7 +129,7 @@ function J = build_jacobian(params, filter_params)
                         R_nbr = R(:,j_nbr,k_nbr); 
                     end 
                     
-                    J_tension = tension_term(X(:,j,k),X_nbr,R(:,j,k),R_nbr,beta,ref_frac); 
+                    J_tension = tension_jacobian(X(:,j,k),X_nbr,R(:,j,k),R_nbr,beta,ref_frac); 
                     
                     % current term is always added in 
                     % this gets no sign 
