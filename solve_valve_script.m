@@ -11,7 +11,7 @@ else
     a = 1; 
     r = 1.5;
     h = 2; 
-    N = 64; 
+    N = 32; 
 
     filter_params.a = a; 
     filter_params.r = r; 

@@ -19,7 +19,7 @@ function [params pass err_over_time it] = solve_valve(params, filter_params, tol
 %     pass                  Whether solution has been computed to desired tolerance 
 % 
 
-full_newton = true; 
+full_newton = false; 
 
 
 pass = true; 
@@ -124,7 +124,8 @@ while err > tol_global
             
         end     
     else 
-        tol_local = 1e-3 * tol_global; 
+        tol_local = 1e-10; 
+
         max_it_local = 100; 
         params = update_leaflet_red_black(params, filter_params, tol_local, max_it_local); 
         err = total_global_err(params, filter_params);
