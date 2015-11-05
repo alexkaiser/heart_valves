@@ -24,8 +24,8 @@ else
     X = R; 
     alpha     =  1.0; % spring constants in two directions 
     beta      =  1.0;
-    p_0       = -1.0; 
-    ref_frac  =  0.8; 
+    p_0       = -0.0; 
+    ref_frac  =  0.5; 
 
     params = pack_params(X,alpha,beta,N,p_0,R,ref_frac); 
 
@@ -46,7 +46,7 @@ else
     plot_and_save_freq = 10; 
     start_it = 0; 
     
-    newton_step_coeff = 1.0/256.0; 
+    newton_step_coeff = 1.0; %1.0/256.0; 
     
     err_over_time = zeros(max_it_global,1); 
     

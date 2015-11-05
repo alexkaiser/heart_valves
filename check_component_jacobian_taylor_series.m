@@ -76,7 +76,9 @@ for j=1:params.N
                     ep = epsilon_vals(i); 
 
                     % make a new structure for the perturbation 
-                    params_perturbation = pack_params(X + ep*Z,alpha,beta,N,p_0,R,ref_frac); 
+                    perturbed = X; 
+                    perturbed(:,j,k) = perturbed(:,j,k) + eps * Z(:,j,k); 
+                    params_perturbation = pack_params(perturbed,alpha,beta,N,p_0,R,ref_frac); 
 
                     % eval the difference eqns on the perturbation 
                     F_preturbed = difference_equations_component(params_perturbation, filter_params,j,k); 
