@@ -12,11 +12,15 @@ else
     r = 1.5;
     h = 2; 
     N = 64; 
+    min_angle = -pi/3; 
+    max_angle =  pi/3; 
 
     filter_params.a = a; 
     filter_params.r = r; 
     filter_params.h = h;
     filter_params.N = N;
+    filter_params.min_angle = min_angle;
+    filter_params.max_angle = max_angle;
 
     % reference and initial surfaces are the same 
     R = build_reference_surface(filter_params); 

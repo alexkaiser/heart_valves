@@ -12,11 +12,12 @@ function X = build_reference_surface(filter_params)
     N = filter_params.N; 
     r = filter_params.r; 
     h = filter_params.h; 
+    
 
     X      = zeros(3,N+1,N+1); 
     X_flat = zeros(2,N+1,N+1); 
 
-    mesh = linspace(-pi/2,pi/2,N+1); 
+    mesh = linspace(filter_params.min_angle,filter_params.max_angle,N+1); 
     ring_half = [r*cos(mesh); r*sin(mesh); h*ones(size(mesh))]; 
 
     % set the valve ring 
