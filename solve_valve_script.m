@@ -11,9 +11,9 @@ else
     a = 1; 
     r = 1.5;
     h = 2; 
-    N = 64; 
-    min_angle = -3*pi/4; 
-    max_angle =  3*pi/4; 
+    N = 32; 
+    min_angle = -pi/2 - .4; 
+    max_angle =  pi/2 + .4; 
 
     filter_params.a = a; 
     filter_params.r = r; 

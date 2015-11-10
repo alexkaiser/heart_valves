@@ -80,7 +80,7 @@ if cone_only
 end 
 
 
-
+tic 
 
 N = 32; 
 x = linspace(-3*pi/4,3*pi/4,N); 
@@ -166,7 +166,8 @@ axis equal
 title('rays in plane plus valve ring - Computed by inversion')
 
 
-
+'total time for surf build'
+toc
 
 
 
