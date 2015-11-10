@@ -12,8 +12,8 @@ else
     r = 1.5;
     h = 2; 
     N = 64; 
-    min_angle = -pi/3; 
-    max_angle =  pi/3; 
+    min_angle = -3*pi/4; 
+    max_angle =  3*pi/4; 
 
     filter_params.a = a; 
     filter_params.r = r; 
@@ -28,7 +28,7 @@ else
     X = R; 
     alpha     =  1.0; % spring constants in two directions 
     beta      =  1.0;
-    p_0       = -50.0; 
+    p_0       = -10.0; 
     ref_frac  =  0.5; 
 
     params = pack_params(X,alpha,beta,N,p_0,R,ref_frac); 

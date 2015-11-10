@@ -30,11 +30,11 @@ function X = cone_filter(xi, eta, filter_params)
     end 
 
     % maximum angle in both coordinate systems 
-    theta_0 = acos(-a / sqrt(a^2 + r^2 + h^2)); 
+    theta_0 = acos(-a / sqrt(a^2 + r^2 + h^2));
 
     % minimum angle in both coordinate systems to be on the front sheet
     integrand = @(phi) - sqrt( (1 - (a/r) * sin(phi)).^2 + (h/r)^2) ./ (1 - (2*a/r) * sin(phi) + (a/r)^2 + (h/r)^2) ; 
-    theta_min = theta_0 + quadgk(integrand,0,pi/2,'RelTol',tol,'AbsTol',tol); 
+    theta_min = theta_0 + quadgk(integrand,0,pi/2,'RelTol',tol,'AbsTol',tol);
     
     % right polar coordinate angle first 
     theta_right = atan2(eta, xi - a);
@@ -45,7 +45,7 @@ function X = cone_filter(xi, eta, filter_params)
     theta_left = atan2(eta, -xi - a);
 
     % are we in the triangle portion, which simply gets rotated out? 
-    if (theta_left > theta_0) && (theta_right > theta_0)
+    if (theta_0 <= theta_left) && (theta_0 <= theta_right)
 
         % we are on the triangle, rotate out 
         psi = asin(r / sqrt(h^2 + r^2)); 
@@ -58,12 +58,12 @@ function X = cone_filter(xi, eta, filter_params)
 
     % If angle is less than the leftmost ray on the front 
     % then point is on the right, front sheet 
-    elseif (theta_0 <= theta_right) && (theta_right <= theta_min)
+    elseif (theta_min <= theta_right) && (theta_right <= theta_0)
         X = cone_filter_right_cone(xi, eta, filter_params); 
         return 
 
     % are we on the back of the right sheet 
-    elseif (theta_min <= theta_right) && (theta_right <= (2*theta_min - theta_0))
+    elseif ((2*theta_min - theta_0) <= theta_right) && (theta_right <= theta_min)
 
         % translate, rotate and reflect to use the other coordinates 
         
@@ -96,7 +96,7 @@ function X = cone_filter(xi, eta, filter_params)
 
 
     % left front sheet 
-    elseif (theta_0 <= theta_left) && (theta_left <= theta_min)
+    elseif (theta_min <= theta_left) && (theta_left <= theta_0)
         % apply the reflection in xi to get the corresponding preimage 
         X = cone_filter_right_cone(-xi, eta, filter_params); 
 
@@ -104,7 +104,7 @@ function X = cone_filter(xi, eta, filter_params)
         X(2) = -X(2); 
         return; 
 
-    elseif (theta_min <= theta_left) && (theta_left <= (2*theta_min - theta_0))
+    elseif ((2*theta_min - theta_0) <= theta_left) && (theta_left <= theta_min)
         
         % same as above but various signs are swapped 
         
@@ -139,6 +139,13 @@ function X = cone_filter(xi, eta, filter_params)
         return 
         
     else 
+        theta 
+        theta_min
+        theta_0
+        'min back sheet boundary'
+        2*theta_min - theta_0
+        theta_right
+        theta_left
         error('should not have gotten here, coordinates not in any acceptable regions'); 
     end 
 
@@ -146,12 +153,6 @@ end
 
 
 
-
-function Rot = rotation_matrix(angle)
-% returns counter clockwise rotation matrix by angle 
-
-    Rot = [cos(angle) sin(angle); -sin(angle) cos(angle)]; 
-end 
 
 
 

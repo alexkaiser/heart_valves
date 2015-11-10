@@ -13,6 +13,9 @@ function X = build_reference_surface(filter_params)
     r = filter_params.r; 
     h = filter_params.h; 
     
+    if (filter_params.min_angle < -pi) || (filter_params.max_angle > pi) 
+        error('outside allowable range of angles for current parameters'); 
+    end 
 
     X      = zeros(3,N+1,N+1); 
     X_flat = zeros(2,N+1,N+1); 

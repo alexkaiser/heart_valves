@@ -24,15 +24,17 @@ if z < 0.0
     error('cannot evaluate cone for negative z'); 
 end 
 
-if x < 0
-    error('other sheet not yet implemented')
-end 
+% maximum angle in both coordinate systems 
+theta_0 = acos(-a / sqrt(a^2 + r^2 + h^2));
+
+% minimum angle in both coordinate systems to be on the front sheet
+integrand = @(phi) - sqrt( (1 - (a/r) * sin(phi)).^2 + (h/r)^2) ./ (1 - (2*a/r) * sin(phi) + (a/r)^2 + (h/r)^2) ; 
+theta_min = theta_0 + quadgk(integrand,0,pi/2,'RelTol',tol,'AbsTol',tol);
+
 
 % rotate in to check if we are on the
 psi = asin(r / sqrt(h^2 + r^2)); 
-
 rot = [cos(psi), 0, -sin(psi); 0, 1, 0; sin(psi), 0, cos(psi)]; 
-
 rotated = rot * X; 
 
 % Are we anywhere near the triangle? 
@@ -41,8 +43,7 @@ if abs(rotated(1)) < tol
     xi  = rotated(2); 
     eta = rotated(3); 
     
-    % maximum angle in both coordinate systems 
-    theta_0 = acos(-a / sqrt(a^2 + r^2 + h^2)); 
+
 
     % only check if we are not on the bottom 
     if eta > 0
@@ -59,11 +60,26 @@ if abs(rotated(1)) < tol
 
     val = [xi; eta]; 
     
-elseif y >= 0
-    % right cone 
+elseif (y >= 0) && (x >= 0) 
+    
+    % right cone, just use the inverse    
     val = cone_filter_inv_right_cone(X, filter_params); 
     
-else 
+elseif (y >= 0) && (x < 0) 
+    
+    % reflect back to the right front and apply the map
+    X(1) = -X(1); 
+    val = cone_filter_inv_right_cone(X, filter_params); 
+    
+    % map the right front preimage to the right back preimage 
+    val(1) = val(1) - a; 
+    val = rotation_matrix(theta_min - pi/2) * val; 
+    val(1) = -val(1); 
+    val = rotation_matrix(-(theta_min - pi/2)) * val; 
+    val(1) = val(1) + a; 
+    
+    
+elseif (y < 0) && (x >= 0)     
     % left cone 
     
     % reflect to use the right cone inverse 
@@ -72,8 +88,57 @@ else
     
     % and back to the left 
     val(1) = -val(1); 
+    
+elseif (y < 0) && (x < 0)     
+    
+    % reflect back to the left front 
+    X(1) = -X(1);
+    
+    % now use the left front inverse
+    X(2) = -X(2); 
+    val = cone_filter_inv_right_cone(X, filter_params); 
+    val(1) = -val(1); 
+    
+    % map the left front preimage to the leftå back preimage 
+    val(1) = val(1) + a; 
+    val = rotation_matrix(-(theta_min - pi/2)) * val; 
+    val(1) = -val(1); 
+    val = rotation_matrix(theta_min - pi/2) * val; 
+    val(1) = val(1) - a; 
+    
+else 
+    error('No valid parameter range found, out of range or bugs'); 
+    
 end 
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
