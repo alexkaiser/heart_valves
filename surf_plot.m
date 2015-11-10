@@ -1,4 +1,4 @@
-function fig = surf_plot(params, filter_params)
+function fig = surf_plot(params, filter_params, fig)
 % 
 % Plots the surface and connective chordae
 % 
@@ -26,8 +26,11 @@ for j=1:N+1
     end 
 end
 
+% open the figure if not passed in 
+if nargin < 3
+    fig = figure; 
+end 
 
-fig = figure; 
 x_component = squeeze(X_copy(1,:,:)); 
 y_component = squeeze(X_copy(2,:,:)); 
 z_component = squeeze(X_copy(3,:,:)); 
