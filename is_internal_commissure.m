@@ -7,7 +7,7 @@ function val = is_internal_commissure(j,k,N)
     if (j < 1) || (k < 1)
         val = false; 
         return 
-    elseif j >= k
+    elseif k >= j
         val = false; 
         return; 
     elseif ((j+k) >= (N+3))

@@ -17,12 +17,6 @@ if (filter_params.min_angle < -pi) || (filter_params.max_angle > pi)
     error('outside allowable range of angles for current parameters'); 
 end 
 
-if left 
-    papillary = [0; -filter_params.a; 0]; 
-else 
-    papillary = [0;  filter_params.a; 0]; 
-end 
-
 if mod(N,2) ~= 1
     error('must use odd N for commisural leaflet')
 end 
@@ -40,7 +34,7 @@ for j=1:((N+3)/2)
     X(:,j,k)      = cone_filter(X_flat(1,j,k), X_flat(2,j,k), filter_params); 
 end 
 
-for j=((N+3)/2 - 1):(N+2)
+for j=((N+3)/2 + 1):(N+2)
     k = N + 3 - j; 
     X_flat(:,j,k) = cone_filter_inv(ring_half(:,j), filter_params); 
     X(:,j,k)      = cone_filter(X_flat(1,j,k), X_flat(2,j,k), filter_params); 
@@ -50,7 +44,7 @@ end
 for j=1:N+2
     for k=1:((N+3)/2)
         if is_internal_commissure(j,k,N)
-            X_flat(:,j,k) = compute_intersection(X_flat, j, k, filter_params); 
+            X_flat(:,j,k) = compute_intersection_commissure(X_flat, j, k, filter_params, left); 
             X(:,j,k)      = cone_filter(X_flat(1,j,k), X_flat(2,j,k), filter_params); 
         end
 
