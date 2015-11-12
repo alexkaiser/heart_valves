@@ -82,14 +82,6 @@ while err > tol_global
         F_linearized = linearize_internal_points(F, params); 
         X_linearized_prev = linearize_internal_points(params.X, params); 
 
-        if it == 0 
-            spy(J)
-            title('jacobian nonzero pattern on iteration zero');
-
-            % open a new figure 
-            fig = figure;
-        end 
-
         % solve the system,
         soln = J \ (-F_linearized);
 

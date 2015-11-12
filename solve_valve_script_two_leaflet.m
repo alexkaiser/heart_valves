@@ -11,7 +11,7 @@ else
     a = 1; 
     r = 1.5;
     h = 2; 
-    N = 64; 
+    N = 32; 
     extra = .5*pi/4; 
     min_angle_posterior = -pi/2 - extra; 
     max_angle_posterior =  pi/2 + extra; 
@@ -29,7 +29,7 @@ else
     X = R; 
     alpha     =  1.0; % spring constants in two directions 
     beta      =  1.0;
-    p_0       = -10.0; 
+    p_0       = -20.0; 
     ref_frac  =  0.5; 
 
     params_posterior = pack_params(X,alpha,beta,N,p_0,R,ref_frac); 
@@ -52,9 +52,9 @@ else
     
     
     % anterior 
-    extra = 0; 
-    min_angle_anterior = -pi/2 - extra; 
-    max_angle_anterior =  pi/2 + extra; 
+    less = .2*pi/4; % shrink by this much 
+    min_angle_anterior = -pi/2 + less; 
+    max_angle_anterior =  pi/2 - less; 
 
     filter_params_anterior.a = a; 
     filter_params_anterior.r = r; 

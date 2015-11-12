@@ -85,6 +85,7 @@ tic
 N = 32; 
 x = linspace(-3*pi/4,3*pi/4,N); 
 
+
 ring_half = [r*cos(x); r*sin(x); h*ones(size(x))]; 
 ring_plane = zeros(2,N); 
 

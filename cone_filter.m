@@ -139,7 +139,6 @@ function X = cone_filter(xi, eta, filter_params)
         return 
         
     else 
-        theta 
         theta_min
         theta_0
         'min back sheet boundary'
