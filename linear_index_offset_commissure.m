@@ -8,8 +8,16 @@ if mod(N,2) ~= 1
     error('Must use odd N on commissural leaflets'); 
 end 
 
-prev_values = ((N+1)/2)^2 - ((N - 2*k + 1)/2)^2 - k; 
-idx = 3*prev_values; 
+% values in previous rows 
+if k == 1
+    prev_rows = 0; 
+else 
+    prev_rows = ((N+1)/2)^2 - ((N - 2*k + 3)/2)^2; 
+end 
+
+prev_this_row = j - k - 1; 
+
+idx = 3*(prev_rows + prev_this_row); 
 
 
 

@@ -13,7 +13,7 @@ v_linearized = zeros(total_internal,1);
 for k=1:params.N
     for j=1:params.N
         % in the triangle?
-        if is_internal_commissure(j,k,N) 
+        if is_internal_commissure(j,k,params.N) 
             v_linearized(idx + (0:2)) = v(:,j,k); 
             idx = idx + 3; 
         end 

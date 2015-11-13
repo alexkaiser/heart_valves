@@ -8,5 +8,5 @@ if mod(N,2) ~= 1
     error('N must be odd for commisural leaflets'); 
 end 
 
-tot = ((N+1)/2)^2 + 1; 
+tot = 3*((N+1)/2)^2; 
 

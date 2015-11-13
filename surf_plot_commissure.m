@@ -48,7 +48,7 @@ axis equal
 axis auto 
 hold on 
 
-% clean up the bc on the whole surface 
+% clean up the boundaries which are ignored by surf 
 string_x = [X_copy(1,1,1), X_copy(1,2,1)];
 string_y = [X_copy(2,1,1), X_copy(2,2,1)];
 string_z = [X_copy(3,1,1), X_copy(3,2,1)];

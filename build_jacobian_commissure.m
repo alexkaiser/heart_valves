@@ -95,7 +95,7 @@ for j=1:N+2
                     % nbr gets differentiated away, and nbr_next stays 
                     % only added if this is internal 
                     if is_internal_commissure(j_nbr,k_nbr,N)
-                        range_nbr       = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
+                        range_nbr       = linear_index_offset_commissure(j_nbr,k_nbr,N) + (1:3);
                         J(range_current, range_nbr) = J(range_current, range_nbr) - (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));
                     end 
 
@@ -103,7 +103,7 @@ for j=1:N+2
                     % nbr_next gets differentiated away, and nbr stays and gets a sign 
                     % only added if this is internal 
                     if is_internal_commissure(j_nbr_next,k_nbr_next,N)
-                        range_nbr_next  = linear_index_offset(j_nbr_next,k_nbr_next,N) + (1:3);
+                        range_nbr_next  = linear_index_offset_commissure(j_nbr_next,k_nbr_next,N) + (1:3);
                         J(range_current, range_nbr_next) = J(range_current, range_nbr_next) + (p_0/6) * cross_matrix(X(:,j_nbr,k_nbr) - X(:,j,k));    
                     end 
 
@@ -135,7 +135,7 @@ for j=1:N+2
                 % If the neighbor is an internal point, it also gets a Jacobian contribution 
                 % This takes a sign
                 if is_internal_commissure(j_nbr,k_nbr,N)
-                    range_nbr  = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
+                    range_nbr  = linear_index_offset_commissure(j_nbr,k_nbr,N) + (1:3);
                     J(range_current, range_nbr) = J(range_current, range_nbr) - J_tension; 
                 end 
 
@@ -165,7 +165,7 @@ for j=1:N+2
                 % If the neighbor is an internal point, it also gets a Jacobian contribution 
                 % This takes a sign
                 if is_internal_commissure(j_nbr,k_nbr,N)
-                    range_nbr  = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
+                    range_nbr  = linear_index_offset_commissure(j_nbr,k_nbr,N) + (1:3);
                     J(range_current, range_nbr) = J(range_current, range_nbr) - J_tension; 
                 end 
 
