@@ -6,9 +6,11 @@ function params = internal_points_to_2d_commissure(v_linearized, params)
 
 idx = 1; 
 
+N = params.N; 
+
 % here k is required to be the outer loop 
-for k=1:params.N
-    for j=1:params.N
+for k=1:((N+3)/2)
+    for j=1:N+2
         if is_internal_commissure(j,k,N)
             params.X(:,j,k) = v_linearized(idx + (0:2)); 
             idx = idx + 3; 

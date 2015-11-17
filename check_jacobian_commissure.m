@@ -1,10 +1,6 @@
 % check_jacobian_taylor_series
 
-
 % checks that the taylor series, using the jacobian included, really works 
-
-
-
 
 
 epsilon_vals = 10.^(-1:-1:-8); 
@@ -15,7 +11,7 @@ errors = zeros(size(epsilon_vals));
 a = 1; 
 r = 1.5;
 h = 2; 
-N = 3; 
+N = 5; 
 extra = pi/4; 
 min_angle = -pi/2 - extra; 
 max_angle = -pi/2 + extra; 

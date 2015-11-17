@@ -4,16 +4,16 @@ function v_linearized = linearize_internal_points_commissure(v, params)
 %  
 
 % total internal points in triangular domain 
-total_internal = total_internal_commissure(params.N); 
+N = params.N; 
+total_internal = total_internal_commissure(N); 
 idx = 1; 
 
 v_linearized = zeros(total_internal,1); 
 
 % here k is required to be the outer loop 
-for k=1:params.N
-    for j=1:params.N
-        % in the triangle?
-        if is_internal_commissure(j,k,params.N) 
+for k=1:((N+3)/2)
+    for j=1:N+2
+        if is_internal_commissure(j,k,N)
             v_linearized(idx + (0:2)) = v(:,j,k); 
             idx = idx + 3; 
         end 
