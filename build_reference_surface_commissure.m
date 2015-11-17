@@ -24,7 +24,7 @@ end
 X      = zeros(3,N+2,(N+3)/2); 
 X_flat = zeros(2,N+2,(N+3)/2); 
 
-mesh = linspace(filter_params.min_angle,filter_params.max_angle,N+3); 
+mesh = linspace(filter_params.min_angle,filter_params.max_angle,N+2); 
 ring_half = [r*cos(mesh); r*sin(mesh); h*ones(size(mesh))]; 
 
 % set the valve ring 

@@ -11,8 +11,8 @@ else
     a = 1; 
     r = 1.5;
     h = 2; 
-    N = 16 + 1; 
-    extra = pi/4; 
+    N = 4 + 1; 
+    extra = pi/2; 
     center = -pi/2; 
     min_angle =  center - extra; 
     max_angle =  center + extra; 
@@ -73,8 +73,8 @@ err = total_global_err_commissure(params_left, filter_params, left)
 
 
 fig = surf_plot_commissure(params_left, filter_params, left); 
-title(sprintf('Final time difference equation solution, p = %f, ref_frac = %f' , params.p_0, params.ref_frac )); 
-name = sprintf('surf_p_%f', params.p_0); 
+title(sprintf('Final time difference equation solution, p = %f, ref_frac = %f' , params_left.p_0, params_left.ref_frac )); 
+name = sprintf('surf_p_%f', params_left.p_0); 
 printfig(fig, strcat(name, '.eps'));
 saveas(fig, strcat(name, '.fig'),'fig'); 
 
@@ -94,7 +94,7 @@ title('convergence comparison with 2^{-(iteration)}')
 xlabel('iteration')
 ylabel('log(err)')
 
-title(sprintf('error through iterations, p = %f, ref_frac = %f', params.p_0, params.ref_frac))
-name = sprintf('error_p_%f', params.p_0)
+title(sprintf('error through iterations, p = %f, ref_frac = %f', params_left.p_0, params_left.ref_frac))
+name = sprintf('error_p_%f', params_left.p_0)
 printfig(fig, strcat(name, '.eps')); 
 saveas(fig, strcat(name, '.fig'),'fig'); 
