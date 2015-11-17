@@ -11,7 +11,7 @@ errors = zeros(size(epsilon_vals));
 a = 1; 
 r = 1.5;
 h = 2; 
-N = 5; 
+N = 9; 
 extra = pi/4; 
 min_angle = -pi/2 - extra; 
 max_angle = -pi/2 + extra; 
@@ -29,8 +29,8 @@ left = true;
 R = build_reference_surface_commissure(filter_params, left); 
 
 X = R; 
-alpha     =  0.0; % spring constants in two directions 
-beta      =  0.0;
+alpha     =  1.0; % spring constants in two directions 
+beta      =  1.0;
 p_0       = -1.0; 
 ref_frac  =  0.5; 
 
@@ -42,6 +42,11 @@ F_linearized = linearize_internal_points_commissure(F, params);
 
 % jacobian does not change 
 J = build_jacobian_commissure(params, filter_params, left); 
+
+figure; 
+spy(J); 
+title('Jacobian spy plot for commissural leaflet')
+
 
 % perturbation also does not change 
 Z = zeros(size(X)); 

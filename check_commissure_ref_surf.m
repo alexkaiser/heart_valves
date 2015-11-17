@@ -21,7 +21,7 @@ filter_params.max_angle = max_angle;
 
 
 % reference and initial surfaces are the same 
-R = build_reference_surface_commissure(filter_params, left );
+R = build_reference_surface_commissure(filter_params, left);
     
 X = R; 
 alpha =  1.0; % spring constants in two directions 
