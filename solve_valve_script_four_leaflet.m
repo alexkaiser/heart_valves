@@ -1,4 +1,4 @@
-function [] = solve_valve_script_two_leaflet(restart_number)
+function [] = solve_valve_script_four_leaflet(restart_number)
 
 
 if restart_number ~= 0
@@ -8,13 +8,16 @@ if restart_number ~= 0
     
 else 
 
+    % symmetric no overlap geometry for now 
+    commissural_angle = pi/6; 
+    
+    
     a = 1; 
     r = 1.5;
     h = 2; 
     N = 32; 
-    extra = .5*pi/4; 
-    min_angle_posterior = -pi/2 - extra; 
-    max_angle_posterior =  pi/2 + extra; 
+    min_angle_posterior = -(pi/2 - commissural_angle/2); 
+    max_angle_posterior =   pi/2 - commissural_angle/2; 
 
     filter_params_posterior.a = a; 
     filter_params_posterior.r = r; 
@@ -46,13 +49,15 @@ else
     plot_and_save_freq = 10; 
     start_it = 0; 
     
+    newton_step_coeff = 1.0; %1.0/256.0; 
+    
     err_over_time_posterior = zeros(max_it_global,1); 
     
     
     % anterior 
     less = .2*pi/4; % shrink by this much 
-    min_angle_anterior = -pi/2 + less; 
-    max_angle_anterior =  pi/2 - less; 
+    min_angle_anterior = -pi/2 + commissural_angle/2; 
+    max_angle_anterior =  pi/2 + commissural_angle/2; 
 
     filter_params_anterior.a = a; 
     filter_params_anterior.r = r; 
@@ -81,9 +86,6 @@ end
 
 [params_posterior pass err_over_time_posterior it] = solve_valve(params_posterior, filter_params_posterior, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time_posterior); 
 
-'difference equation norm'
-err_posterior = total_global_err(params_posterior, filter_params_posterior)
-
 % reflect posterior to actually have two leaflets
 params_posterior.X(1,:,:) = -params_posterior.X(1,:,:); 
 
@@ -94,10 +96,7 @@ else
 end
 
 
-[params_anterior pass err_over_time_anterior it] = solve_valve(params_anterior, filter_params_anterior, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time_anterior); 
-
-'difference equation norm'
-err_anterior = total_global_err(params_anterior, filter_params_anterior)
+[params_anterior pass err_over_time_anterior it] = solve_valve(params_anterior, filter_params_anterior, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time_anterior, newton_step_coeff); 
 
 if pass 
     disp('Global solve passed anterior')
@@ -105,6 +104,9 @@ else
     disp('Global solve failed')
 end 
 
+
+'difference equation norm'
+err = total_global_err(params_posterior, filter_params_posterior)
 
 fig = figure; 
 fig = surf_plot(params_posterior, filter_params_posterior, fig);
@@ -114,6 +116,7 @@ title(sprintf('Final time difference equation solution, p = %f, ref_frac = %f' ,
 name = sprintf('surf_p_%f', params_posterior.p_0); 
 printfig(fig, strcat(name, '.eps'));
 saveas(fig, strcat(name, '.fig'),'fig'); 
+
 
 
 fig = figure; 
@@ -132,7 +135,36 @@ saveas(fig, strcat(name, '.fig'),'fig');
 
 
 
-
+% continuation = false; 
+% if continuation
+%     
+%     pressure_vals = [-5.5, -6.0, -6.5, -7.0, -7.5, -8.0]
+%     
+%     for p_0 = pressure_vals
+%     
+%         params.p_0 = p_0
+%     
+%         if pass 
+% 
+%             start_it = 0; 
+%             
+%             [params pass err_over_time it] = solve_valve(params, filter_params_posterior, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time, newton_step_coeff); 
+% 
+%             'difference equation norm'
+%             err = total_global_err(params, filter_params_posterior)
+% 
+% 
+%             fig = surf_plot(params, filter_params_posterior); 
+%             
+%             title(sprintf('Final time difference equation solution, p_0 = %f', p_0)); 
+%             
+%             
+%         else 
+%             error('cannot run continuation without success ')
+%         end 
+%     end 
+% end 
+% 
 
 
 

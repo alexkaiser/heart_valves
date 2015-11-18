@@ -58,32 +58,7 @@ else
 end 
 
 
-% random_preturbed_start = false; 
-% if random_preturbed_start
-% %     for j=1:N
-% %         for k=1:N
-% % 
-% %             % in the triangle?
-% %             if (j+k) < (N+2)
-% %                 X(:,j,k) = X(:,j,k) + 0.001*randn(); 
-% %             end 
-% %             
-% %         end 
-% %     end 
-% 
-%     X(:,1,1) = X(:,1,1) + 0.1 * randn(); 
-% 
-%     params = pack_params(X,alpha,beta,N,p_0,R,ref_frac); 
-% end 
-%
-% J = build_jacobian(params, filter_params); 
-% fig = figure; 
-% spy(J); 
-% title('jacobian non zero pattern on preturbed solution')
-
-
-
-[params pass err_over_time it] = solve_valve(params, filter_params, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time, newton_step_coeff); 
+[params pass err_over_time it] = solve_valve(params, filter_params, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time); 
 
 if pass 
     disp('Global solve passed')
@@ -104,17 +79,9 @@ saveas(fig, strcat(name, '.fig'),'fig');
 
 
 fig = figure; 
-err_over_time = err_over_time(1:it); 
-plot(err_over_time); 
-
-
-fig = figure; 
-semilogy(err_over_time); 
+semilogy(err_over_time, '*-'); 
 hold on 
-semilogy(2.^(-(1:it)) , '--'); 
-
-legend('error', '2^-iteration')
-title('convergence comparison with 2^{-(iteration)}')
+title('Convergence of Newton iteration')
 xlabel('iteration')
 ylabel('log(err)')
 

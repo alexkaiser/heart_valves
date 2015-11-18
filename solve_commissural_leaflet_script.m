@@ -11,8 +11,8 @@ else
     a = 1; 
     r = 1.5;
     h = 2; 
-    N = 4 + 1; 
-    extra = pi/2; 
+    N = 16 + 1; 
+    extra = pi/4; 
     center = -pi/2; 
     min_angle =  center - extra; 
     max_angle =  center + extra; 
@@ -25,7 +25,6 @@ else
     filter_params.N = N;
     filter_params.min_angle = min_angle;
     filter_params.max_angle = max_angle;
-
 
     % reference and initial surfaces are the same 
     R = build_reference_surface_commissure(filter_params, left);
