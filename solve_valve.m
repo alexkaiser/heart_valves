@@ -25,7 +25,6 @@ pass = true;
 err = total_global_err(params, filter_params); 
 
 it = start_it; 
-fig = figure; 
 
 
 while err > tol_global
@@ -106,9 +105,11 @@ while err > tol_global
         % plot for entertainment... 
         
         % close if open
-        if ishandle(fig)
-            close(fig)
-        end 
+        if exist('fig', 'var') 
+            if ishandle(fig)
+                close(fig)
+            end
+        end
         
         fig = surf_plot(params, filter_params); 
         title_str = sprintf('Surface at iteration %d', it); 
