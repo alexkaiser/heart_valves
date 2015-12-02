@@ -9,19 +9,22 @@ if restart_number ~= 0
 else 
 
     % symmetric for now 
-    commissure_angle = 0.0; 
+    commissure_angle = 0; 
     
     % note that if extra posterior is equal to commissure angle
     % then the poster leaflet has angle pi 
-    extra_posterior = pi/6; 
+    extra_posterior = 0; 
+    
+    % each the posterior and anterior get this much extra
+    overlap = pi/3; 
     
     a = 1; 
     r = 1.5;
     h = 2; 
     N = 32; 
 
-    min_angle_posterior = -(pi/2 - commissure_angle/2 + extra_posterior/2); 
-    max_angle_posterior =  (pi/2 - commissure_angle/2 + extra_posterior/2); 
+    min_angle_posterior = -(pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
+    max_angle_posterior =  (pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
 
     filter_params_posterior.a = a; 
     filter_params_posterior.r = r; 
@@ -36,8 +39,8 @@ else
     
     alpha     =  1.0; % spring constants in two directions 
     beta      =  1.0;
-    p_0       = -10.0; 
-    ref_frac  =  0.5; 
+    p_0       = -0.0; 
+    ref_frac  =  0.7; 
 
     params_posterior = pack_params(X_posterior,alpha,beta,N,p_0,R_posterior,ref_frac); 
 
@@ -57,8 +60,8 @@ else
     
     
     % anterior 
-    min_angle_anterior = -(pi/2 - commissure_angle/2 - extra_posterior/2); 
-    max_angle_anterior =  (pi/2 - commissure_angle/2 - extra_posterior/2); 
+    min_angle_anterior = -(pi/2 - commissure_angle/2 - extra_posterior/2 + overlap/2); 
+    max_angle_anterior =  (pi/2 - commissure_angle/2 - extra_posterior/2 + overlap/2); 
 
     filter_params_anterior.a = a; 
     filter_params_anterior.r = r; 
@@ -142,12 +145,15 @@ else
     
 end 
 
+% p_range = p_0; 
+ref_frac_range = ref_frac; 
 
-% p_range = -(0:2.5:50); 
+p_range = -(0:1:10); 
 % ref_frac_range = .1:.1:1; 
 
-p_range = -(0:2.5:5); 
-ref_frac_range = .5:.1:.6; 
+% debug values 
+% p_range = -(0:2.5:5); 
+% ref_frac_range = .5:.1:.6; 
 
 
 for ref_frac = ref_frac_range
@@ -286,7 +292,7 @@ for ref_frac = ref_frac_range
         % re-reflect posterior to be back where is needed to run the thing 
         params_posterior.X(1,:,:) = -params_posterior.X(1,:,:); 
         
-        close all 
+        % close all 
     end
 end
 
