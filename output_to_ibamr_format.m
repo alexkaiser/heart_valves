@@ -51,16 +51,26 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     total_targets = target_string(target, global_idx, k_target, total_targets);     
     global_idx = global_idx + 1;     
         
-    
+    % leaflets 
     [global_idx, total_vertices, total_springs, total_targets] = ...
         add_leaflet(params_posterior, left_papillary, right_papillary, spring, vertex, target, ...
                     global_idx, total_vertices, total_springs, total_targets, k_rel, k_target); 
         
-     [global_idx, total_vertices, total_springs, total_targets] = ...
+    [global_idx, total_vertices, total_springs, total_targets] = ...
          add_leaflet(params_anterior, left_papillary, right_papillary, spring, vertex, target, ...
                      global_idx, total_vertices, total_springs, total_targets, k_rel, k_target);    
 
-
+    % flat part of mesh 
+    L = 3.0; 
+    r = filter_params_posterior.r; 
+    N_ring = 2 * params_anterior.N;
+    h = filter_params_posterior.h; 
+    ref_frac = params_posterior.ref_frac; 
+    
+    [global_idx, total_vertices, total_springs, total_targets] = ...
+                            place_net(r, h, L, N_ring, spring, vertex, target, ...
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac); 
+                        
 
     % clean up files with totals 
     fclose(vertex); 
@@ -222,7 +232,7 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
     % 
 
     % mesh spacing on the valve ring 
-    ds = 2*pi*r / N; 
+    ds = 2*pi / N; 
 
     % maximum number of points in radial direction 
     % this gets a sqrt(2) because we are placing the net in a square 
@@ -246,7 +256,7 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
             
             % if one norm is less than L, then the point is within the domain  
             if norm(coords, inf) < L 
-                points(:,j,k) = [coords; inf]; 
+                points(:,j,k) = coords; 
                 indices(j,k) = idx; 
                 idx = idx + 1;                 
             else 
@@ -270,7 +280,7 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
             if ~isnan(indices(j,k))
  
                 last_idx = idx; 
-                idx = indices(j,k); 
+                idx = indices(j,k) + global_idx; 
                 
                 if last_idx >= idx
                     error('should always be placing points in order, something wrong'); 
@@ -278,14 +288,16 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                 
                 % every valid vertex is a target here 
                 total_vertices = vertex_string(vertex, points(:,j,k), total_vertices); 
+                points_placed = points_placed + 1; 
                 total_targets = target_string(target, idx, k_target, total_targets);     
                 
                 % check up directions for springs 
                 if (j+1) < N
                     if ~isnan(indices(j+1,k))
                         rest_len = ref_frac * norm(points(:,j,k) - points(:,j+1,k)); 
-                        kappa = k_rel / rest_len; 
-                        total_springs = spring_string(spring, idx, indices(j+1,k), kappa, rest_len, total_springs); 
+                        kappa = k_rel / rest_len;
+                        nbr_idx = indices(j+1,k) + global_idx; 
+                        total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
                     end 
                 end 
                 
@@ -294,8 +306,9 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                    % need to make sure that the 1,k point is also not a NaN  
                    if ~isnan(indices(1,k)) 
                         rest_len = ref_frac * norm(points(:,j,k) - points(:,1,k)); 
-                        kappa = k_rel / rest_len; 
-                       total_springs = spring_string(spring, indices(1,k), idx, kappa, rest_len, total_springs); 
+                        kappa = k_rel / rest_len;
+                        nbr_idx = indices(1,k) + global_idx; 
+                       total_springs = spring_string(spring, nbr_idx, idx, kappa, rest_len, total_springs); 
                    end 
                 end 
                 
@@ -304,7 +317,8 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                     if ~isnan(indices(j,k+1))
                         rest_len = ref_frac * norm(points(:,j,k) - points(:,j,k+1)); 
                         kappa = k_rel / rest_len; 
-                        total_springs = spring_string(spring, idx, indices(j,k+1), kappa, rest_len, total_springs); 
+                        nbr_idx = indices(j,k+1) + global_idx; 
+                        total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
                     end 
                 end 
                 
@@ -315,8 +329,6 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
         end 
     end 
     
-    
-
     global_idx = global_idx + points_placed; 
 
 end 
