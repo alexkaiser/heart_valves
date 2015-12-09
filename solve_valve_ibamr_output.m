@@ -13,10 +13,12 @@ extra_posterior = 0;
 % each the posterior and anterior get this much extra
 overlap = pi/3; 
 
+chordae_tree = true; 
+
 a = 1; 
 r = 1.5;
 h = 2; 
-N = 32; 
+N = 8; 
 
 min_angle_posterior = -(pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
 max_angle_posterior =  (pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
@@ -38,6 +40,13 @@ p_0       = -0.0;
 ref_frac  =  0.7; 
 
 params_posterior = pack_params(X_posterior,alpha,beta,N,p_0,R_posterior,ref_frac); 
+
+if chordae_tree
+    k_0 = alpha; 
+    k_multiplier = 2; 
+    tree_frac = 0.5; 
+    params_posterior = add_chordae(params_posterior, filter_params_posterior, k_0, k_multiplier, tree_frac); 
+end 
 
 fig = surf_plot(params_posterior, filter_params_posterior); 
 title('Reference configuration of posterior surface'); 
@@ -70,6 +79,10 @@ R_anterior = build_reference_surface(filter_params_anterior);
 X_anterior = R_anterior; 
 
 params_anterior = pack_params(X_anterior,alpha,beta,N,p_0,R_anterior,ref_frac); 
+
+if chordae_tree
+    params_anterior = add_chordae(params_anterior, filter_params_anterior, k_0, k_multiplier, tree_frac); 
+end 
 
 fig = surf_plot(params_anterior, filter_params_anterior); 
 title('Reference configuration of anterior surface'); 

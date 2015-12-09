@@ -55,24 +55,27 @@ plot3(string_x, string_y, string_z, 'k', 'LineWidth',width);
 
 
 
-% add chordae as line segments 
-j = 1; 
-for k=1:N
-    string_x = [left_papillary(1), X_copy(1,j,k)];
-    string_y = [left_papillary(2), X_copy(2,j,k)];
-    string_z = [left_papillary(3), X_copy(3,j,k)];
-    plot3(string_x, string_y, string_z, 'k', 'LineWidth',width); 
+if (~isfield(params, 'chordae')) || isempty(params.chordae)
+    % add chordae as line segments 
+    j = 1; 
+    for k=1:N
+        string_x = [left_papillary(1), X_copy(1,j,k)];
+        string_y = [left_papillary(2), X_copy(2,j,k)];
+        string_z = [left_papillary(3), X_copy(3,j,k)];
+        plot3(string_x, string_y, string_z, 'k', 'LineWidth',width); 
+    end 
+
+    k = 1; 
+    for j=1:N
+        string_x = [right_papillary(1), X_copy(1,j,k)];
+        string_y = [right_papillary(2), X_copy(2,j,k)];
+        string_z = [right_papillary(3), X_copy(3,j,k)];
+        plot3(string_x, string_y, string_z, 'k', 'LineWidth',width); 
+    end 
+    
+else 
+    tree_plot(params, fig); 
 end 
-
-k = 1; 
-for j=1:N
-    string_x = [right_papillary(1), X_copy(1,j,k)];
-    string_y = [right_papillary(2), X_copy(2,j,k)];
-    string_z = [right_papillary(3), X_copy(3,j,k)];
-    plot3(string_x, string_y, string_z, 'k', 'LineWidth',width); 
-end 
-
-
 
 
 

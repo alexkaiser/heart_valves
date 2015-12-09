@@ -1,4 +1,4 @@
-function params = pack_params(X,alpha,beta,N,p_0,R,ref_frac)
+function params = pack_params(X,alpha,beta,N,p_0,R,ref_frac,chordae)
 %
 % Builds a single struct with all of the current parameters 
 % 
@@ -11,3 +11,10 @@ params.p_0       = p_0;
 params.N         = N; 
 params.R         = R; 
 params.ref_frac  = ref_frac; 
+
+if nargin > 8 
+    params.chordae   = chordae; 
+end 
+    
+    
+    
