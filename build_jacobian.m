@@ -12,16 +12,10 @@ function J = build_jacobian(params, filter_params)
 
     [X,alpha,beta,N,p_0,R,ref_frac] = unpack_params(params); 
 
-    left_papillary  = [0; -filter_params.a; 0]; 
-    right_papillary = [0;  filter_params.a; 0]; 
-
-%    F = zeros(size(X)); 
-
     % total internal points in triangular domain 
     total_internal = 3*N*(N+1)/2; 
     
     J = zeros(total_internal,total_internal); 
-
     
     % always 6 pressure neighbors, which may or may not be in bounds
     % relative indices of pressure here 
@@ -84,20 +78,12 @@ function J = build_jacobian(params, filter_params)
                 end 
                 
                 
-                
-                
                 % u tension terms 
                 for j_nbr = [j-1,j+1]
                     
                     k_nbr = k; 
                     
-                    if j_nbr == 0
-                        X_nbr = left_papillary;
-                        R_nbr = left_papillary;
-                    else 
-                        X_nbr = X(:,j_nbr,k_nbr); 
-                        R_nbr = R(:,j_nbr,k_nbr); 
-                    end 
+                    [X_nbr R_nbr] = get_neighbor(params, filter_params, j_nbr, k_nbr); 
                     
                     J_tension = tension_jacobian(X(:,j,k),X_nbr,R(:,j,k),R_nbr,alpha,ref_frac); 
                     
@@ -121,13 +107,7 @@ function J = build_jacobian(params, filter_params)
                     
                     j_nbr = j; 
                     
-                    if k_nbr == 0
-                        X_nbr = right_papillary;
-                        R_nbr = right_papillary;
-                    else 
-                        X_nbr = X(:,j_nbr,k_nbr); 
-                        R_nbr = R(:,j_nbr,k_nbr); 
-                    end 
+                    [X_nbr R_nbr] = get_neighbor(params, filter_params, j_nbr, k_nbr); 
                     
                     J_tension = tension_jacobian(X(:,j,k),X_nbr,R(:,j,k),R_nbr,beta,ref_frac); 
                     
@@ -145,13 +125,9 @@ function J = build_jacobian(params, filter_params)
                     
                 end 
                 
-                
-                
-
             end
         end
     end
-
 end 
 
 

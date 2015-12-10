@@ -50,15 +50,6 @@ function chordae = build_3d_trees(chordae_flat, filter_params, k_0, k_multiplier
         C_right(:,i) = cone_filter(C_right_flat(1,i), C_right_flat(2,i), filter_params); 
     end 
         
-    % set refernce lengths 
-%     for i=1:total_len
-%         p = get_parent(C_left, i, left_papillary);         
-%         Ref_l(i) = len_multiplier * norm(C_left(:,i) - p);
-%         
-%         p = get_parent(C_right, i, right_papillary); 
-%         Ref_r(i) = len_multiplier * norm(C_right(:,i) - p); 
-%     end 
-    
     % set spring constant data structures 
     num_at_level = N/2; 
     idx = max_internal; 
@@ -83,27 +74,18 @@ function chordae = build_3d_trees(chordae_flat, filter_params, k_0, k_multiplier
     chordae.C_right          = C_right; 
     chordae.left_papillary   = left_papillary;
     chordae.right_papillary  = right_papillary;
-%     chordae.Ref_l            = Ref_l; 
-%     chordae.Ref_r            = Ref_r; 
+    
+    % reference configuration (ignoring the length multiplier) is the initial configuration 
+    % copy it 
+    chordae.Ref_l            = C_left; 
+    chordae.Ref_r            = C_right; 
+    
     chordae.k_l              = k_l; 
     chordae.k_r              = k_r; 
     chordae.k_0              = k_0; 
     chordae.k_multiplier     = k_multiplier; 
 end 
 
-
-% function p = get_parent(C, i, papillary)
-% % returns parent coordinates
-% % if i==1 then returns papillary 
-% 
-%     if i==1
-%         p = papillary; 
-%     else 
-%         p = C(:,floor(i/2));  
-%     end 
-% end 
-% 
-% 
 
 
 

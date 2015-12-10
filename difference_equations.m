@@ -1,4 +1,4 @@
-function F = difference_equations(params, filter_params)
+function [F F_chordae_left F_chordae_right] = difference_equations(params, filter_params)
 % 
 % Evaluation of the global difference equations at j,k
 % Uses 
@@ -14,9 +14,6 @@ function F = difference_equations(params, filter_params)
 
 
 [X,alpha,beta,N,p_0,R,ref_frac] = unpack_params(params); 
-
-left_papillary  = [0; -filter_params.a; 0]; 
-right_papillary = [0;  filter_params.a; 0]; 
 
 F = zeros(size(X)); 
 
@@ -50,8 +47,6 @@ for j=1:N
                 j_nbr_next = j + pressure_nbrs(1,mod(n+1,6)+1);
                 k_nbr_next = k + pressure_nbrs(2,mod(n+1,6)+1);
                 
-                % fprintf('idx = %d,\t(j,k)=(%d,%d),\t(j_nbr,k_nbr)=(%d,%d),\t(j_nbr_next,k_nbr_next)=(%d,%d)\n', n, j,k, j_nbr,k_nbr, j_nbr_next,k_nbr_next); 
-                
                 % if any index is zero, then 
                 % the pressure term does not include this value
                 if j_nbr_next && k_nbr_next && j_nbr && k_nbr
@@ -65,13 +60,7 @@ for j=1:N
                     
                 k_nbr = k; 
 
-                if j_nbr == 0
-                    X_nbr = left_papillary;
-                    R_nbr = left_papillary;
-                else 
-                    X_nbr = X(:,j_nbr,k_nbr); 
-                    R_nbr = R(:,j_nbr,k_nbr); 
-                end 
+                [X_nbr R_nbr] = get_neighbor(params, filter_params, j_nbr, k_nbr); 
                 
                 u_tangent_term = u_tangent_term + tension_linear(X(:,j,k),X_nbr,R(:,j,k),R_nbr,alpha,ref_frac) * (X_nbr - X(:,j,k));
 
@@ -81,14 +70,8 @@ for j=1:N
             for k_nbr = [k-1,k+1]
                     
                 j_nbr = j; 
-
-                if k_nbr == 0
-                    X_nbr = right_papillary;
-                    R_nbr = right_papillary;
-                else 
-                    X_nbr = X(:,j_nbr,k_nbr); 
-                    R_nbr = R(:,j_nbr,k_nbr); 
-                end
+                
+                [X_nbr R_nbr] = get_neighbor(params, filter_params, j_nbr, k_nbr); 
                 
                 v_tangent_term = v_tangent_term + tension_linear(X(:,j,k),X_nbr,R(:,j,k),R_nbr,beta,ref_frac) * (X_nbr - X(:,j,k));
             end 
@@ -100,4 +83,55 @@ for j=1:N
 end 
     
 
+% additional tension terms for chordae if appropriate 
+if (~isfield(params, 'chordae')) || isempty(params.chordae)
+    F_chordae_left = 0; 
+    F_chordae_right = 0; 
+else 
+    
+    F_chordae_left  = zeros(size(params.chordae.C_left )); 
+    F_chordae_right = zeros(size(params.chordae.C_right)); 
+    
+    [C_left, C_right, left_papillary, right_papillary, Ref_l, Ref_r, k_l, k_r, k_0, k_multiplier] = unpack_chordae(chordae); 
+    
+    [m max_internal] = size(C_left); 
+    
+    % left side first 
+    left_side = true; 
+    for i=1:max_internal
 
+        left   = 2*i; 
+        right  = 2*i + 1;
+        parent = floor(i/2); 
+
+        for nbr_idx = [left,right,parent]
+
+            % get the neighbors coordinates, reference coordinate and spring constants
+            [nbr R_nbr k_val] = get_nbr_chordae(params, i, nbr_idx, left_side); 
+
+            F_chordae_left(:,i) = F_chordae_left(:,i) + tension_linear(C_left(:,i), nbr, Ref_l(:,i), R_nbr, k_val, ref_frac) * (nbr - C_left(:,i));  
+
+        end 
+
+    end 
+    
+    
+    left_side = false; 
+    for i=1:max_internal
+
+        left   = 2*i; 
+        right  = 2*i + 1;
+        parent = floor(i/2); 
+
+        for nbr_idx = [left,right,parent]
+
+            % get the neighbors coordinates, reference coordinate and spring constants
+            [nbr R_nbr k_val] = get_nbr_chordae(params, i, nbr_idx, left_side); 
+
+            F_chordae_right(:,i) = F_chordae_right(:,i) + tension_linear(C_right(:,i), nbr, Ref_r(:,i), R_nbr, k_val, ref_frac) * (nbr - C_right(:,i));  
+
+        end 
+
+    end 
+    
+end 

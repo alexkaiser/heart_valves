@@ -61,8 +61,9 @@ function [chordae_flat] = build_2d_trees(params, left_papillary_flat, right_papi
         
     end 
     
-    % do not actually want the leaves (which are copied )
-    C_left_flat = C_left_flat(:,1:max_internal); 
+    % do not actually want the leaves (which are copied)
+    % remove them 
+    C_left_flat  = C_left_flat (:,1:max_internal); 
     C_right_flat = C_right_flat(:,1:max_internal); 
     
     % set up return structure 
@@ -82,18 +83,6 @@ function leaf = is_leaf(i, max_internal)
         leaf = true; 
     else 
         leaf = false; 
-    end 
-end 
-
-
-function p = get_parent(C, i, papillary)
-% returns parent coordinates
-% if i==1 then returns papillary 
-
-    if i==1
-        p = papillary; 
-    else 
-        p = C(:,floor(i/2));  
     end 
 end 
 
