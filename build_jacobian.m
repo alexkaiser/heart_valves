@@ -10,7 +10,7 @@ function J = build_jacobian(params, filter_params)
 %      J         Jacobian of difference equations 
 
 
-    [X,alpha,beta,N,p_0,R,ref_frac] = unpack_params(params); 
+    [X,alpha,beta,N,p_0,R,ref_frac,chordae] = unpack_params(params); 
 
     % total internal points in triangular domain 
     total_internal = 3*N*(N+1)/2; 

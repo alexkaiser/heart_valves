@@ -11,6 +11,8 @@ function [nbr R_nbr k_val] = get_nbr_chordae(params, i, nbr_idx, left_side)
 
 [C_left, C_right, left_papillary, right_papillary, Ref_l, Ref_r, k_l, k_r, k_0, k_multiplier] = unpack_chordae(chordae); 
 
+[m max_internal] = size(C_left); 
+
 if left_side 
     C     = chordae.C_left; 
     R_ch  = chordae.Ref_l; 

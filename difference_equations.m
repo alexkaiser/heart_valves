@@ -92,7 +92,7 @@ else
     F_chordae_left  = zeros(size(params.chordae.C_left )); 
     F_chordae_right = zeros(size(params.chordae.C_right)); 
     
-    [C_left, C_right, left_papillary, right_papillary, Ref_l, Ref_r, k_l, k_r, k_0, k_multiplier] = unpack_chordae(chordae); 
+    [C_left, C_right, left_papillary, right_papillary, Ref_l, Ref_r, k_l, k_r, k_0, k_multiplier] = unpack_chordae(params.chordae); 
     
     [m max_internal] = size(C_left); 
     

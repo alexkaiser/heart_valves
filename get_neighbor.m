@@ -46,7 +46,14 @@ else
         
         % use the left chordae 
         [m max_internal] = size(params.chordae.C_left); 
-        idx_chordae = max_internal + k_nbr;
+        
+        % if the tree and the chordae overlapped 
+        % what would the index (in tree numbering) be? 
+        tree_idx_on_leaflet = max_internal + k_nbr; 
+        
+        % then take the parent index of that number in chordae variables 
+        idx_chordae = floor(tree_idx_on_leaflet /2);  
+        
         X_nbr = params.chordae.C_left(:,idx_chordae); 
         R_nbr = params.chordae.Ref_l(:,idx_chordae); 
 
@@ -54,7 +61,8 @@ else
         
         % use the right chordae 
         [m max_internal] = size(params.chordae.C_right); 
-        idx_chordae = max_internal + j_nbr;
+        tree_idx_on_leaflet = max_internal + k_nbr; 
+        idx_chordae = floor(tree_idx_on_leaflet/2); 
         X_nbr = params.chordae.C_right(:,idx_chordae); 
         R_nbr = params.chordae.Ref_r(:,idx_chordae); 
         
