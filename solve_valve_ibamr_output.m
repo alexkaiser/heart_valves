@@ -18,7 +18,7 @@ chordae_tree = true;
 a = 1; 
 r = 1.5;
 h = 2; 
-N = 8; 
+N = 4; 
 
 min_angle_posterior = -(pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
 max_angle_posterior =  (pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
@@ -53,6 +53,14 @@ title('Reference configuration of posterior surface');
 
 'initial difference equation norm'
 err = total_global_err(params_posterior, filter_params_posterior)
+
+if chordae_tree 
+    figure; 
+    J = build_jacobian(params_posterior, filter_params_posterior); 
+    spy(J); 
+    title('initial nonzero pattern of jacobian')
+end 
+
 
 tol_global = 1e-11; 
 max_it_global = 10; 

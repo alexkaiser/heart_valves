@@ -1,11 +1,26 @@
-function [nbr R_nbr k_val] = get_nbr_chordae(params, i, nbr_idx, left_side)
+function [nbr R_nbr k_val j k] = get_nbr_chordae(params, i, nbr_idx, left_side)
 % 
 % Given a current index and nieghbor index 
 % Returns the coordinates, reference coordinates and spring constant
 % Takes into account all boundary conditions 
 % 
+% Input
+%     params      Current main data structure 
+%     i           Index in the chordae tree 
+%     nbr_idx     Index of the neighbor in chordae tree 
+%     left_side   True if on the left tree 
 % 
+% Output 
+%     nbr         Coordinates of the neighbor
+%     R_nbr       Reference coordinate of the neighbor
+%     k_val       Spring constant of the connector 
+%     j,k         If the neighbor is on the leaflet, these are its coordinates 
+%                 Empty if the neighbor is not on the leaflet 
 
+
+% default empty values 
+j=[]; 
+k=[]; 
 
 [X,alpha,beta,N,p_0,R,ref_frac,chordae] = unpack_params(params); 
 
@@ -37,11 +52,11 @@ if nbr_idx == 0
 elseif nbr_idx > max_internal
     
     if left_side 
-        j = nbr_idx - max_internal; 
-        k = 1;
-    else 
         j = 1; 
         k = nbr_idx - max_internal; 
+    else 
+        j = nbr_idx - max_internal; 
+        k = 1; 
     end 
     
     nbr   = X(:,j,k); 

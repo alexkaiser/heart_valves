@@ -45,6 +45,7 @@ else
     if (j_nbr == 0) && (k_nbr > 0)
         
         % use the left chordae 
+        left = true; 
         [m max_internal] = size(params.chordae.C_left); 
         
         % if the tree and the chordae overlapped 
@@ -56,12 +57,12 @@ else
         
         X_nbr = params.chordae.C_left(:,idx_chordae); 
         R_nbr = params.chordae.Ref_l(:,idx_chordae); 
-
+        
     elseif (k_nbr == 0) && (j_nbr > 0)
         
         % use the right chordae 
         [m max_internal] = size(params.chordae.C_right); 
-        tree_idx_on_leaflet = max_internal + k_nbr; 
+        tree_idx_on_leaflet = max_internal + j_nbr; 
         idx_chordae = floor(tree_idx_on_leaflet/2); 
         X_nbr = params.chordae.C_right(:,idx_chordae); 
         R_nbr = params.chordae.Ref_r(:,idx_chordae); 
