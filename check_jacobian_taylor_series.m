@@ -44,6 +44,7 @@ if chordae_tree
     k_multiplier = 2; 
     tree_frac = 0.5; 
     params = add_chordae(params, filter_params, k_0, k_multiplier, tree_frac); 
+    chordae = params.chordae; 
 else 
     chordae = []; 
     params = pack_params(X,alpha,beta,N,p_0,R,ref_frac,chordae); 
@@ -72,7 +73,7 @@ for j=1:params.N
     end 
 end 
 
-params_Z = pack_params(Z,alpha,beta,N,p_0,R,ref_frac); 
+params_Z = pack_params(Z,alpha,beta,N,p_0,R,ref_frac,chordae); 
 
 if chordae_tree
     params_Z = add_chordae(params_Z, filter_params, k_0, k_multiplier, tree_frac); 
@@ -91,7 +92,7 @@ for i = 1:length(epsilon_vals)
     ep = epsilon_vals(i); 
     
     % make a new structure for the perturbation 
-    params_perturbation = pack_params(X + ep*Z,alpha,beta,N,p_0,R,ref_frac,params.chordae); 
+    params_perturbation = pack_params(X + ep*Z,alpha,beta,N,p_0,R,ref_frac,chordae); 
     
     if chordae_tree 
         params_perturbation.chordae.C_left = params.chordae.C_left + ep*params_Z.chordae.C_left; 
