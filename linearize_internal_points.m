@@ -18,6 +18,13 @@ for k=1:params.N
             idx = idx + 3; 
         end 
     end 
+end
+
+% add chordae in here 
+if isfield(params, 'chordae') 
+    if ~isempty(params.chordae)
+        v_linearized = [v_linearized; params.chordae.C_left(:); params.chordae.C_right(:)]; 
+    end 
 end 
 
 

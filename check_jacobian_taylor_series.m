@@ -37,12 +37,29 @@ ref_frac  =  0.5;
 
 params = pack_params(X,alpha,beta,N,p_0,R,ref_frac); 
 
+chordae_tree = true; 
+
+if chordae_tree
+    k_0 = 1; 
+    k_multiplier = 2; 
+    tree_frac = 0.5; 
+    params = add_chordae(params, filter_params, k_0, k_multiplier, tree_frac); 
+else 
+    chordae = []; 
+    params = pack_params(X,alpha,beta,N,p_0,R,ref_frac,chordae); 
+end 
+
+
 % difference eqns at center do not change 
 F = difference_equations(params, filter_params); 
 F_linearized = linearize_internal_points(F, params); 
 
 % jacobian does not change 
 J = build_jacobian(params, filter_params); 
+
+figure; 
+spy(J); 
+title('jacobian nonzero structure in jacobian tester')
 
 % perturbation also does not change 
 Z = zeros(size(X)); 
@@ -56,6 +73,13 @@ for j=1:params.N
 end 
 
 params_Z = pack_params(Z,alpha,beta,N,p_0,R,ref_frac); 
+
+if chordae_tree
+    params_Z = add_chordae(params_Z, filter_params, k_0, k_multiplier, tree_frac); 
+    params_Z.chordae.C_left  = rand(size(params_Z.chordae.C_left)); 
+    params_Z.chordae.C_right = rand(size(params_Z.chordae.C_right)); 
+end 
+
 Z_linearized = linearize_internal_points(Z, params_Z); 
 
 
@@ -67,7 +91,12 @@ for i = 1:length(epsilon_vals)
     ep = epsilon_vals(i); 
     
     % make a new structure for the perturbation 
-    params_perturbation = pack_params(X + ep*Z,alpha,beta,N,p_0,R,ref_frac); 
+    params_perturbation = pack_params(X + ep*Z,alpha,beta,N,p_0,R,ref_frac,params.chordae); 
+    
+    if chordae_tree 
+        params_perturbation.chordae.C_left = params.chordae.C_left + ep*params_Z.chordae.C_left; 
+        params_perturbation.chordae.C_right = params.chordae.C_right + ep*params_Z.chordae.C_right; 
+    end 
     
     % eval the difference eqns on the perturbation 
     F_preturbed = difference_equations(params_perturbation, filter_params); 

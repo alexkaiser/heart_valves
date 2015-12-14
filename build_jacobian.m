@@ -209,28 +209,28 @@ if N_chordae > 0
 end 
 
 
-nonzero_blocks = zeros(total_points/3); 
-
-j = 1; 
-for j_block=1:3:total_points
-    k=1; 
-    for k_block=1:3:total_points
-        if J(j_block + (0:2), k_block + (0:2)) ~= zeros(3,3)
-            nonzero_blocks(j,k) = 1; 
-        end 
-        k=k+1; 
-    end
-    j=j+1; 
-end 
-
-figure; 
-spy(nonzero_blocks); 
-title('single dot places at all nonzero blocks')
-'whoa'
-
-
-
-
+% nonzero_blocks = zeros(total_points/3); 
+% 
+% j = 1; 
+% for j_block=1:3:total_points
+%     k=1; 
+%     for k_block=1:3:total_points
+%         if J(j_block + (0:2), k_block + (0:2)) ~= zeros(3,3)
+%             nonzero_blocks(j,k) = 1; 
+%         end 
+%         k=k+1; 
+%     end
+%     j=j+1; 
+% end 
+% 
+% figure; 
+% spy(nonzero_blocks); 
+% title('single dot places at all nonzero blocks')
+% 'whoa'
+% 
+% 
+% 
+% 
 
 
 
