@@ -71,7 +71,7 @@ while err > tol_global
     end 
     
     
-    if isfield(params, 'chordae') && ~isempty(chordae)
+    if isfield(params, 'chordae') && ~isempty(params.chordae)
         
         [F F_chordae_left F_chordae_right] = difference_equations(params, filter_params); 
         F_linearized = linearize_internal_points(F, params, F_chordae_left, F_chordae_right); 

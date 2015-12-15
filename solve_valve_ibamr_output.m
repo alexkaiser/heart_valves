@@ -11,14 +11,14 @@ commissure_angle = 0;
 extra_posterior = 0; 
 
 % each the posterior and anterior get this much extra
-overlap = pi/3; 
+overlap = pi/6; 
 
 chordae_tree = true; 
 
 a = 1; 
 r = 1.5;
 h = 2; 
-N = 8; 
+N = 32; 
 
 min_angle_posterior = -(pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
 max_angle_posterior =  (pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
@@ -164,7 +164,7 @@ end
 % p_range = p_0; 
 ref_frac_range = ref_frac; 
 
-p_range = -(0); 
+p_range = -0; 
 % ref_frac_range = .1:.1:1; 
 
 % debug values 
@@ -177,9 +177,20 @@ for ref_frac = ref_frac_range
     % reset the whole thing when the reference fraction changes
     params_posterior = pack_params(X_posterior,alpha,beta,N,p_0,R_posterior,ref_frac); 
     params_anterior = pack_params(X_anterior,alpha,beta,N,p_0,R_anterior,ref_frac); 
+    
+    if chordae_tree
+        params_posterior = add_chordae(params_posterior, filter_params_posterior, k_0, k_multiplier, tree_frac); 
+        params_anterior  = add_chordae(params_anterior,  filter_params_anterior , k_0, k_multiplier, tree_frac); 
+    end 
+    
     if commissure_angle > 0.0
         params_left = pack_params(X_left,alpha,beta,N_left,p_0,R_left,ref_frac); 
         params_right = pack_params(X_right,alpha,beta,N_right,p_0,R_right,ref_frac); 
+        
+        if chordae_tree
+            error('chordae tree not yet supported for commissural leaflets'); 
+        end 
+        
     end 
     
     for p_0 = p_range
@@ -203,6 +214,12 @@ for ref_frac = ref_frac_range
 
         % reflect posterior to actually have two leaflets
         params_posterior.X(1,:,:) = -params_posterior.X(1,:,:); 
+        
+        if chordae_tree
+            params_posterior.chordae.C_left(1,:,:)  = -params_posterior.chordae.C_left(1,:,:); 
+            params_posterior.chordae.C_right(1,:,:) = -params_posterior.chordae.C_right(1,:,:); 
+        end 
+        
 
         if pass 
             disp('Global solve passed posterior')
@@ -220,8 +237,8 @@ for ref_frac = ref_frac_range
             disp('Global solve passed anterior')
         else 
             disp('Global solve failed')
-        end 
-
+        end        
+        
         if commissure_angle > 0.0
             left = true; 
             [params_left pass err_over_time_left it] = solve_commissure_leaflet(params_left, filter_params_left, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time_left, left); 
@@ -256,6 +273,12 @@ for ref_frac = ref_frac_range
     end
 end
 
+
+fig = figure; 
+fig = surf_plot(params_posterior, filter_params_posterior, fig);
+hold on 
+fig = surf_plot(params_anterior, filter_params_anterior, fig);
+title('final surface')
 
 
 
