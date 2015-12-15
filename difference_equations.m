@@ -85,53 +85,49 @@ end
 
 % additional tension terms for chordae if appropriate 
 if (~isfield(params, 'chordae')) || isempty(params.chordae)
-    F_chordae_left = 0; 
+    F_chordae_left  = 0; 
     F_chordae_right = 0; 
 else 
     
-    F_chordae_left  = zeros(size(params.chordae.C_left )); 
-    F_chordae_right = zeros(size(params.chordae.C_right)); 
-    
     [C_left, C_right, left_papillary, right_papillary, Ref_l, Ref_r, k_l, k_r, k_0, k_multiplier] = unpack_chordae(params.chordae); 
     
-    [m max_internal] = size(C_left); 
+    F_chordae_left  = zeros(size(C_left )); 
+    F_chordae_right = zeros(size(C_right)); 
     
-    % left side first 
-    left_side = true; 
-    for i=1:max_internal
+    [m N_chordae] = size(C_left); 
+    
+    for left_side = [true false];  
+        
+        if left_side
+            C = C_left; 
+            Ref = Ref_l; 
+        else 
+            C = C_right; 
+            Ref = Ref_r; 
+        end
+        
+        for i=1:N_chordae
 
-        left   = 2*i; 
-        right  = 2*i + 1;
-        parent = floor(i/2); 
+            left   = 2*i; 
+            right  = 2*i + 1;
+            parent = floor(i/2); 
 
-        for nbr_idx = [left,right,parent]
+            for nbr_idx = [left,right,parent]
 
-            % get the neighbors coordinates, reference coordinate and spring constants
-            [nbr R_nbr k_val] = get_nbr_chordae(params, i, nbr_idx, left_side); 
+                % get the neighbors coordinates, reference coordinate and spring constants
+                [nbr R_nbr k_val] = get_nbr_chordae(params, i, nbr_idx, left_side); 
 
-            F_chordae_left(:,i) = F_chordae_left(:,i) + tension_linear(C_left(:,i), nbr, Ref_l(:,i), R_nbr, k_val, ref_frac) * (nbr - C_left(:,i));  
+                tension = tension_linear(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac) * (nbr - C(:,i));  
+
+                if left_side
+                    F_chordae_left(:,i)  = F_chordae_left(:,i)  + tension; 
+                else 
+                    F_chordae_right(:,i) = F_chordae_right(:,i) + tension; 
+                end 
+                
+            end 
 
         end 
-
     end 
-    
-    
-    left_side = false; 
-    for i=1:max_internal
-
-        left   = 2*i; 
-        right  = 2*i + 1;
-        parent = floor(i/2); 
-
-        for nbr_idx = [left,right,parent]
-
-            % get the neighbors coordinates, reference coordinate and spring constants
-            [nbr R_nbr k_val] = get_nbr_chordae(params, i, nbr_idx, left_side); 
-
-            F_chordae_right(:,i) = F_chordae_right(:,i) + tension_linear(C_right(:,i), nbr, Ref_r(:,i), R_nbr, k_val, ref_frac) * (nbr - C_right(:,i));  
-
-        end 
-
-    end 
-    
+        
 end 

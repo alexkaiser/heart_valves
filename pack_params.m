@@ -12,7 +12,7 @@ params.N         = N;
 params.R         = R; 
 params.ref_frac  = ref_frac; 
 
-if nargin > 8 
+if nargin > 7 
     params.chordae   = chordae; 
 end 
     
