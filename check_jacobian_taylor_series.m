@@ -52,10 +52,17 @@ else
 end 
 
 
-% difference eqns at center do not change 
-F = difference_equations(params, filter_params); 
-F_linearized = linearize_internal_points(F, params); 
-
+    if chordae_tree 
+        
+        % eval the difference eqns on the perturbation 
+        [F F_chordae_left F_chordae_right] = difference_equations(params, filter_params); 
+        F_linearized = linearize_internal_points(F, params, F_chordae_left, F_chordae_right); 
+                    
+    else 
+        % difference eqns at center do not change 
+        F = difference_equations(params, filter_params); 
+        F_linearized = linearize_internal_points(F, params); 
+    end 
 % jacobian does not change 
 J = build_jacobian(params, filter_params); 
 
@@ -80,10 +87,10 @@ if chordae_tree
     params_Z.chordae         = params.chordae; 
     params_Z.chordae.C_left  = rand(size(params.chordae.C_left)); 
     params_Z.chordae.C_right = rand(size(params.chordae.C_right)); 
+    Z_linearized = linearize_internal_points(Z, params_Z, params_Z.chordae.C_left, params_Z.chordae.C_right); 
+else 
+    Z_linearized = linearize_internal_points(Z, params_Z); 
 end 
-
-Z_linearized = linearize_internal_points(Z, params_Z); 
-
 
 fprintf('eps\t | taylor series remainder\n'); 
 
@@ -98,12 +105,16 @@ for i = 1:length(epsilon_vals)
     if chordae_tree 
         params_perturbation.chordae.C_left = params.chordae.C_left + ep*params_Z.chordae.C_left; 
         params_perturbation.chordae.C_right = params.chordae.C_right + ep*params_Z.chordae.C_right; 
+                        
+        % eval the difference eqns on the perturbation 
+        [F_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations(params_perturbation, filter_params); 
+        F_perturbed_linearized = linearize_internal_points(F_perturbed, params_perturbation, F_chordae_left_perturbed, F_chordae_right_perturbed); 
+                    
+    else 
+        % eval the difference eqns on the perturbation 
+        F_perturbed = difference_equations(params_perturbation, filter_params); 
+        F_perturbed_linearized = linearize_internal_points(F_perturbed, params); 
     end 
-    
-    % eval the difference eqns on the perturbation 
-    F_perturbed = difference_equations(params_perturbation, filter_params); 
-    F_perturbed_linearized = linearize_internal_points(F_perturbed, params); 
-
     errors(i) = norm(F_perturbed_linearized - F_linearized - ep*J*Z_linearized, 2); 
     
     fprintf('%e\t | %e \n', ep, errors(i)); 
@@ -144,12 +155,18 @@ for k=1:params.N
                     if chordae_tree 
                         params_perturbation.chordae.C_left  = params.chordae.C_left  + ep*params_Z.chordae.C_left; 
                         params_perturbation.chordae.C_right = params.chordae.C_right + ep*params_Z.chordae.C_right; 
+                        
+                        % eval the difference eqns on the perturbation 
+                        [F_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations(params_perturbation, filter_params); 
+                        F_perturbed_linearized = linearize_internal_points(F_perturbed, params_perturbation, F_chordae_left_perturbed, F_chordae_right_perturbed); 
+                    
+                    else 
+
+                        % eval the difference eqns on the perturbation 
+                        F_perturbed = difference_equations(params_perturbation, filter_params); 
+                        F_perturbed_linearized = linearize_internal_points(F_perturbed, params); 
                     end 
-
-                    % eval the difference eqns on the perturbation 
-                    F_perturbed = difference_equations(params_perturbation, filter_params); 
-                    F_perturbed_linearized = linearize_internal_points(F_perturbed, params); 
-
+                    
                     diffs = F_perturbed_linearized - F_linearized - ep*J*Z_linearized; 
                       
                     range = linear_index_offset(j,k,N) + (1:3);                     
@@ -193,15 +210,14 @@ if chordae_tree
                 % make a new structure for the perturbation 
                 params_perturbation = pack_params(X + ep*Z,alpha,beta,N,p_0,R,ref_frac,chordae);
 
-                if chordae_tree 
-                    params_perturbation.chordae.C_left  = params.chordae.C_left  + ep*params_Z.chordae.C_left; 
-                    params_perturbation.chordae.C_right = params.chordae.C_right + ep*params_Z.chordae.C_right; 
-                end 
-
+                params_perturbation.chordae.C_left  = params.chordae.C_left  + ep*params_Z.chordae.C_left; 
+                params_perturbation.chordae.C_right = params.chordae.C_right + ep*params_Z.chordae.C_right; 
+               
                 % eval the difference eqns on the perturbation 
-                F_perturbed = difference_equations(params_perturbation, filter_params); 
-                F_perturbed_linearized = linearize_internal_points(F_perturbed, params); 
-
+                [F_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations(params_perturbation, filter_params); 
+                F_perturbed_linearized = linearize_internal_points(F_perturbed, params_perturbation, F_chordae_left_perturbed, F_chordae_right_perturbed); 
+                    
+                
                 diffs = F_perturbed_linearized - F_linearized - ep*J*Z_linearized; 
 
                 range = range_chordae(total_internal, N_chordae, i, left_side); 

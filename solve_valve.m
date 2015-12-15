@@ -69,11 +69,20 @@ while err > tol_global
         end 
 
     end 
-
-    F = difference_equations(params, filter_params); 
-    F_linearized = linearize_internal_points(F, params); 
-    X_linearized_prev = linearize_internal_points(params.X, params); 
-
+    
+    
+    if isfield(params, 'chordae') && ~isempty(chordae)
+        
+        [F F_chordae_left F_chordae_right] = difference_equations(params, filter_params); 
+        F_linearized = linearize_internal_points(F, params, F_chordae_left, F_chordae_right); 
+        X_linearized_prev = linearize_internal_points(params.X, params, params.chordae.C_left, params.chordae.C_right);         
+        
+    else 
+        F = difference_equations(params, filter_params); 
+        F_linearized = linearize_internal_points(F, params); 
+        X_linearized_prev = linearize_internal_points(params.X, params); 
+    end 
+    
     % solve the system,
     soln = J \ (-F_linearized);
 

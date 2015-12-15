@@ -21,23 +21,28 @@ end
 
 
 % copy chordae 
-if isfield(params, 'chordae') && ~isempty(chordae)
+if isfield(params, 'chordae') && ~isempty(params.chordae)
     
-    [m N_chordae] = size(chordae.C_left); 
+    [C_left, C_right] = unpack_chordae(params.chordae); 
+    
+    [m N_chordae] = size(C_left); 
     total_internal = 3*N*(N+1)/2; 
     
     idx = total_internal + 1; 
     for i=1:N_chordae
-        params.chordae.C_left(:,i)  = v_linearized(idx + (0:2));  
+        C_left(:,i)  = v_linearized(idx + (0:2));  
         idx = idx + 3; 
     end 
     
-    idx = total_internal + N_chordae + 1; 
+    idx = total_internal + 3*N_chordae + 1; 
     for i=1:N_chordae
-        params.chordae.C_right(:,i) = v_linearized(idx + (0:2));  
+        C_right(:,i) = v_linearized(idx + (0:2));  
         idx = idx + 3; 
     end 
         
+    params.chordae.C_left  = C_left; 
+    params.chordae.C_right = C_right; 
+    
 end 
 
 
