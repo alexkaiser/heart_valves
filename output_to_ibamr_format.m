@@ -80,10 +80,10 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     h = filter_params_posterior.h; 
     ref_frac = params_posterior.ref_frac; 
     
-%     [global_idx, total_vertices, total_springs, total_targets] = ...
-%                             place_net(r, h, L, N_ring, spring, vertex, target, ...
-%                             global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac); 
-%                         
+    [global_idx, total_vertices, total_springs, total_targets] = ...
+                            place_net(r, h, L, N_ring, spring, vertex, target, ...
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac); 
+                        
 
     % clean up files with totals 
     fclose(vertex); 
