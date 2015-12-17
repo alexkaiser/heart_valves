@@ -18,7 +18,7 @@ chordae_tree = true;
 a = 1; 
 r = 1.5;
 h = 2; 
-N = 32; 
+N = 8; 
 
 min_angle_posterior = -(pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
 max_angle_posterior =  (pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
@@ -164,7 +164,7 @@ end
 % p_range = p_0; 
 ref_frac_range = ref_frac; 
 
-p_range = -2.0; 
+p_range = -0.0; 
 % ref_frac_range = .1:.1:1; 
 
 % debug values 
@@ -287,11 +287,11 @@ base_name = 'mitral';
 L = 3; 
 ratio = 6; 
 p_physical = 10; 
-target_multiplier = 100; 
+target_multiplier = 10; 
 
 
 
-output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_0, target_multiplier); 
+output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_physical, target_multiplier); 
 
 
 

@@ -51,21 +51,23 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     total_vertices = vertex_string(vertex, right_papillary, total_vertices); 
     total_targets = target_string(target, global_idx, k_target, total_targets);     
     global_idx = global_idx + 1;     
-        
+    
+    % posterior first 
     % leaflets 
     [global_idx, total_vertices, total_springs, total_targets] = ...
         add_leaflet(params_posterior, filter_params_posterior, spring, vertex, target, ...
                     global_idx, total_vertices, total_springs, total_targets, k_rel, k_target); 
-        
-    [global_idx, total_vertices, total_springs, total_targets] = ...
-        add_leaflet(params_anterior, filter_params_posterior, spring, vertex, target, ...
-                     global_idx, total_vertices, total_springs, total_targets, k_rel, k_target);    
 
     % if chordae exist, then add them 
     if isfield(params_posterior, 'chordae') && ~isempty(params_posterior.chordae)
         [global_idx, total_vertices, total_springs] = ...
                 add_chordae_tree(params_posterior, spring, vertex, global_idx, total_vertices, total_springs, k_rel);  
-    end 
+    end
+    
+    % anterior 
+    [global_idx, total_vertices, total_springs, total_targets] = ...
+        add_leaflet(params_anterior, filter_params_posterior, spring, vertex, target, ...
+                     global_idx, total_vertices, total_springs, total_targets, k_rel, k_target);   
     
     if isfield(params_anterior, 'chordae') && ~isempty(params_anterior.chordae)
         [global_idx, total_vertices, total_springs] = ...
@@ -78,10 +80,10 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     h = filter_params_posterior.h; 
     ref_frac = params_posterior.ref_frac; 
     
-    [global_idx, total_vertices, total_springs, total_targets] = ...
-                            place_net(r, h, L, N_ring, spring, vertex, target, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac); 
-                        
+%     [global_idx, total_vertices, total_springs, total_targets] = ...
+%                             place_net(r, h, L, N_ring, spring, vertex, target, ...
+%                             global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac); 
+%                         
 
     % clean up files with totals 
     fclose(vertex); 
@@ -193,7 +195,7 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                             k_nbr = k; 
                             [X_nbr R_nbr idx_chordae left_side] = get_neighbor(params, filter_params, j_nbr, k_nbr); 
 
-                            nbr_idx = global_idx + total_leaflet + idx_chordae; 
+                            nbr_idx = global_idx + total_leaflet + idx_chordae - 1; 
 
                             % right gets incremented by N_chordae again 
                             if ~left_side
@@ -224,11 +226,11 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                         % there is one point which is a b.c. which is not included 
                         if is_internal(j,k,N)
                         
-                            j_nbr = j
-                            k_nbr = 0 
+                            j_nbr = j; 
+                            k_nbr = 0; 
                             [X_nbr R_nbr idx_chordae left_side] = get_neighbor(params, filter_params, j_nbr, k_nbr); 
 
-                            nbr_idx = global_idx + total_leaflet + idx_chordae; 
+                            nbr_idx = global_idx + total_leaflet + idx_chordae - 1; 
 
                             % right gets incremented by N_chordae again 
                             if ~left_side
@@ -295,9 +297,9 @@ function [global_idx, total_vertices, total_springs] = ...
     
     [X,alpha,beta,N,p_0,R,ref_frac,chordae] = unpack_params(params); 
     
-    [m N_chordae] = size(params.chordae.C_left); 
+    [m N_chordae] = size(chordae.C_left); 
     
-    [C_left, C_right, left_papillary, right_papillary, Ref_l, Ref_r] = unpack_chordae(params.chordae); 
+    [C_left, C_right, left_papillary, right_papillary, Ref_l, Ref_r] = unpack_chordae(chordae); 
     
     
     for left_side = [true false];  
@@ -312,7 +314,7 @@ function [global_idx, total_vertices, total_springs] = ...
         
         for i=1:N_chordae
 
-            idx = global_idx + i; 
+            idx = global_idx + i - 1; % subtract one ibamr is zero indexed 
             
             % right side gets an extra factor of N_chordae
             if ~left_side
@@ -335,7 +337,7 @@ function [global_idx, total_vertices, total_springs] = ...
                 end
                 
             else
-                nbr_idx = parent + global_idx; 
+                nbr_idx = parent + global_idx - 1; % subtract one, ibamr zero indexed  
                 if ~left_side
                     nbr_idx = nbr_idx + N_chordae; 
                 end 
