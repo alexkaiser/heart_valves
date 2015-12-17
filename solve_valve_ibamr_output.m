@@ -8,7 +8,7 @@ commissure_angle = 0;
 
 % note that if extra posterior is equal to commissure angle
 % then the poster leaflet has angle pi 
-extra_posterior = 0; 
+extra_posterior = pi/6; 
 
 % each the posterior and anterior get this much extra
 overlap = pi/6; 
@@ -63,7 +63,7 @@ end
 
 
 tol_global = 1e-11; 
-max_it_global = 10; 
+max_it_global = 20; 
 
 plot_and_save_freq = 10; 
 start_it = 0; 
@@ -164,7 +164,7 @@ end
 % p_range = p_0; 
 ref_frac_range = ref_frac; 
 
-p_range = -0; 
+p_range = -2.0; 
 % ref_frac_range = .1:.1:1; 
 
 % debug values 
@@ -286,8 +286,12 @@ title('final surface')
 base_name = 'mitral'; 
 L = 3; 
 ratio = 6; 
+p_physical = 10; 
+target_multiplier = 100; 
 
-output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, filter_params_anterior)
+
+
+output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_0, target_multiplier); 
 
 
 

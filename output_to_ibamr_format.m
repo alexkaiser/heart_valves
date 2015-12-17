@@ -1,4 +1,4 @@
-function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, filter_params_anterior)
+function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_physical, target_multiplier)
     % 
     % Outputs the current configuration of the leaflets to IBAMR format
     % Spring constants are computed in dimensional form 
@@ -6,12 +6,13 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     %
     % Input: 
     %    base_name                  File base name
-    %    L                          Outputs extra mesh to use a [-L,L]^3 cube (not implemented)
+    %    L                          Outputs extra mesh to use a [-L,L]^3 cube
     %    ratio                      Ratio of pressure to nondimensionalized spring constant   
     %    params_posterior           Parameters for various leaflets 
     %    filter_params_posterior
     %    params_anterior
-    %    filter_params_anterior 
+    %    p_physical                 Pressure in mmHg
+    %    target_multiplier          Target spring strength is target_multiplier * p_physical/ratio
     % 
     % Output: 
     %    Files written in IBAMR format 
@@ -31,14 +32,14 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
 
     % compute some needed constants 
     MMHG_TO_CGS = 1333.22368; 
-    p_cgs = 10 * MMHG_TO_CGS; 
+    p_cgs = p_physical * MMHG_TO_CGS; 
 
     % value of the relative spring constant is determined by the ratio 
     k_rel = p_cgs / ratio; 
     
     % turn these up because they are supposed to really be boundary conditions 
     % but we are using a penalty method here 
-    k_target = 100 * k_rel; 
+    k_target = target_multiplier * k_rel; 
 
     % output the left and right papillary as the first two vertices and targets 
     left_papillary  = [0; -filter_params_posterior.a; 0]; 
@@ -53,15 +54,25 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
         
     % leaflets 
     [global_idx, total_vertices, total_springs, total_targets] = ...
-        add_leaflet(params_posterior, left_papillary, right_papillary, spring, vertex, target, ...
+        add_leaflet(params_posterior, filter_params_posterior, spring, vertex, target, ...
                     global_idx, total_vertices, total_springs, total_targets, k_rel, k_target); 
         
     [global_idx, total_vertices, total_springs, total_targets] = ...
-         add_leaflet(params_anterior, left_papillary, right_papillary, spring, vertex, target, ...
+        add_leaflet(params_anterior, filter_params_posterior, spring, vertex, target, ...
                      global_idx, total_vertices, total_springs, total_targets, k_rel, k_target);    
 
+    % if chordae exist, then add them 
+    if isfield(params_posterior, 'chordae') && ~isempty(params_posterior.chordae)
+        [global_idx, total_vertices, total_springs] = ...
+                add_chordae_tree(params_posterior, spring, vertex, global_idx, total_vertices, total_springs, k_rel);  
+    end 
+    
+    if isfield(params_anterior, 'chordae') && ~isempty(params_anterior.chordae)
+        [global_idx, total_vertices, total_springs] = ...
+                add_chordae_tree(params_anterior, spring, vertex, global_idx, total_vertices, total_springs, k_rel);  
+    end 
+    
     % flat part of mesh 
-    L = 3.0; 
     r = filter_params_posterior.r; 
     N_ring = 2 * params_anterior.N;
     h = filter_params_posterior.h; 
@@ -138,17 +149,29 @@ function [] = prepend_line_with_int(file_name, val)
 end 
 
 function [global_idx, total_vertices, total_springs, total_targets] = ...
-                add_leaflet(params, left_papillary, right_papillary, spring, vertex, target, ...
+                add_leaflet(params, filter_params, spring, vertex, target, ...
                             global_idx, total_vertices, total_springs, total_targets, k_rel, k_target)
                                                                                 
 % Places all main data into IBAMR format for this leaflet
 % Updates running totals on the way 
-                                                                                
-                                                                                
+
 
     [X,alpha,beta,N,p_0,R,ref_frac] = unpack_params(params); 
     
+    left_papillary  = [0; -filter_params.a; 0]; 
+    right_papillary = [0;  filter_params.a; 0]; 
+    
     pts_placed = 0; 
+    
+
+    if isfield(params, 'chordae') && ~isempty(params.chordae)
+        chordae_tree = true;
+        [m N_chordae] = size(params.chordae.C_left); 
+        total_leaflet = (N+1)*(N+2)/2; 
+    else 
+        chordae_tree = false;
+    end 
+    
     
     for k=1:N+1
         for j=1:N+1
@@ -158,22 +181,74 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                 
                 total_vertices = vertex_string(vertex, X(:,j,k), total_vertices); 
                 
-                % if j==1, connect to the left papillary 
+                % if j==1, connect to the left papillary or chordae tree 
                 if j==1
-                    nbr_idx = 0; 
-                    rest_len = ref_frac * norm(left_papillary - R(:,j,k)); 
-                    kappa = k_rel / rest_len; 
                     
-                    total_springs = spring_string(spring, nbr_idx, idx, kappa, rest_len, total_springs); 
+                    if chordae_tree
+                        
+                        % there is one point which is a b.c. which is not included 
+                        if is_internal(j,k,N)
+                        
+                            j_nbr = 0; 
+                            k_nbr = k; 
+                            [X_nbr R_nbr idx_chordae left_side] = get_neighbor(params, filter_params, j_nbr, k_nbr); 
+
+                            nbr_idx = global_idx + total_leaflet + idx_chordae; 
+
+                            % right gets incremented by N_chordae again 
+                            if ~left_side
+                                nbr_idx = nbr_idx + N_chordae; 
+                            end 
+
+                            rest_len = ref_frac * norm(R_nbr - R(:,j,k)); 
+                            kappa = k_rel * params.chordae.k_0 / rest_len; 
+
+                            total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
+                        
+                        end 
+                    
+                    else 
+                        nbr_idx = 0; 
+                        rest_len = ref_frac * norm(left_papillary - R(:,j,k)); 
+                        kappa = k_rel / rest_len; 
+
+                        total_springs = spring_string(spring, nbr_idx, idx, kappa, rest_len, total_springs); 
+                    end 
                 end 
                 
-                % if k==1, connect to the right papillary 
+                % if k==1, connect to the right papillary or chordae tree 
                 if k==1
-                    nbr_idx = 1; 
-                    rest_len = ref_frac * norm(right_papillary - R(:,j,k)); 
-                    kappa = k_rel / rest_len; 
                     
-                    total_springs = spring_string(spring, nbr_idx, idx, kappa, rest_len, total_springs); 
+                    if chordae_tree
+                        
+                        % there is one point which is a b.c. which is not included 
+                        if is_internal(j,k,N)
+                        
+                            j_nbr = j
+                            k_nbr = 0 
+                            [X_nbr R_nbr idx_chordae left_side] = get_neighbor(params, filter_params, j_nbr, k_nbr); 
+
+                            nbr_idx = global_idx + total_leaflet + idx_chordae; 
+
+                            % right gets incremented by N_chordae again 
+                            if ~left_side
+                                nbr_idx = nbr_idx + N_chordae; 
+                            end 
+
+                            rest_len = ref_frac * norm(R_nbr - R(:,j,k)); 
+                            kappa = k_rel * params.chordae.k_0 / rest_len; 
+
+                            total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
+                        
+                        end 
+                    else
+                    
+                        nbr_idx = 1; 
+                        rest_len = ref_frac * norm(right_papillary - R(:,j,k)); 
+                        kappa = k_rel / rest_len; 
+                    
+                        total_springs = spring_string(spring, nbr_idx, idx, kappa, rest_len, total_springs); 
+                    end 
                 end                 
                 
                 % if on boundary, this is a target point 
@@ -207,6 +282,83 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
 end 
 
 
+
+function [global_idx, total_vertices, total_springs] = ...
+                add_chordae_tree(params, spring, vertex, global_idx, total_vertices, total_springs, k_rel)
+
+    % Adds chordae tree to IBAMR format files 
+    % No targets here, so files and and count not included 
+                        
+    if ~isfield(params, 'chordae') || isempty(params.chordae)
+        error('cannot place chordae with empty array'); 
+    end 
+    
+    [X,alpha,beta,N,p_0,R,ref_frac,chordae] = unpack_params(params); 
+    
+    [m N_chordae] = size(params.chordae.C_left); 
+    
+    [C_left, C_right, left_papillary, right_papillary, Ref_l, Ref_r] = unpack_chordae(params.chordae); 
+    
+    
+    for left_side = [true false];  
+        
+        if left_side
+            C = C_left; 
+            Ref = Ref_l; 
+        else 
+            C = C_right; 
+            Ref = Ref_r; 
+        end 
+        
+        for i=1:N_chordae
+
+            idx = global_idx + i; 
+            
+            % right side gets an extra factor of N_chordae
+            if ~left_side
+                idx = idx + N_chordae; 
+            end 
+            
+            % the vertex is always placed 
+            total_vertices = vertex_string(vertex, C(:,i), total_vertices); 
+            
+            % place the spring which goes to the parent 
+            parent = floor(i/2); 
+            
+            if parent == 0
+                
+                % zero index means papillary muscles, which are zero and one by convention 
+                if left_side 
+                    nbr_idx = 0; 
+                else 
+                    nbr_idx = 1; 
+                end
+                
+            else
+                nbr_idx = parent + global_idx; 
+                if ~left_side
+                    nbr_idx = nbr_idx + N_chordae; 
+                end 
+            end 
+            
+            % get the neighbors coordinates, reference coordinate and spring constants
+            [nbr R_nbr k_val j_nbr k_nbr] = get_nbr_chordae(params, i, parent, left_side); 
+            
+            rest_len = ref_frac * norm(R_nbr - Ref(:,i)); 
+            kappa = k_rel * k_val / rest_len; 
+
+            % list nbr index first because nbr is parent and has lower index
+            total_springs = spring_string(spring, nbr_idx, idx, kappa, rest_len, total_springs);        
+
+        end 
+        
+    end 
+    
+    global_idx = global_idx + 2*N_chordae; 
+
+end 
+                        
+                        
 function [global_idx, total_vertices, total_springs, total_targets] = ...
                             place_net(r, h, L, N, spring, vertex, target, ...
                             global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac)
