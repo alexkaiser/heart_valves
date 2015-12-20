@@ -164,7 +164,7 @@ end
 % p_range = p_0; 
 ref_frac_range = ref_frac; 
 
-p_range = -0.0; 
+p_range = 0; %-(0:2.5:7.5); 
 % ref_frac_range = .1:.1:1; 
 
 % debug values 
@@ -268,9 +268,31 @@ for ref_frac = ref_frac_range
             err_right = total_global_err_commissure(params_right, filter_params_right, left)
         end 
 
+        
+        fig = figure; 
+        fig = surf_plot(params_posterior, filter_params_posterior, fig);
+        hold on 
+        fig = surf_plot(params_anterior, filter_params_anterior, fig);
+        title(sprintf('valve at p = %f', abs(p_0))); 
 
-
+        % reflect back for solves 
+        params_posterior.X(1,:,:) = -params_posterior.X(1,:,:); 
+        if chordae_tree
+            params_posterior.chordae.C_left(1,:,:)  = -params_posterior.chordae.C_left(1,:,:); 
+            params_posterior.chordae.C_right(1,:,:) = -params_posterior.chordae.C_right(1,:,:); 
+        end
+        
+        
     end
+end
+
+
+% final reflection to ensure in right place 
+params_posterior.X(1,:,:) = -params_posterior.X(1,:,:); 
+
+if chordae_tree
+    params_posterior.chordae.C_left(1,:,:)  = -params_posterior.chordae.C_left(1,:,:); 
+    params_posterior.chordae.C_right(1,:,:) = -params_posterior.chordae.C_right(1,:,:); 
 end
 
 
@@ -284,11 +306,15 @@ title('final surface')
 
 
 base_name = 'mitral'; 
+
+if chordae_tree
+    base_name = strcat(base_name, '_tree'); 
+end 
+
 L = 3; 
 ratio = 6; 
-p_physical = 10; 
-target_multiplier = 10; 
-
+p_physical = 100; 
+target_multiplier = 100; 
 
 
 output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_physical, target_multiplier); 
