@@ -42,7 +42,7 @@ ref_frac  =  0.7;
 params_posterior = pack_params(X_posterior,alpha,beta,N,p_0,R_posterior,ref_frac); 
 
 if chordae_tree
-    k_0 = alpha; 
+    k_0 = 0.000001; 
     k_multiplier = 2; 
     tree_frac = 0.5; 
     params_posterior = add_chordae(params_posterior, filter_params_posterior, k_0, k_multiplier, tree_frac); 
@@ -164,7 +164,7 @@ end
 % p_range = p_0; 
 ref_frac_range = ref_frac; 
 
-p_range = 0; %-(0:2.5:7.5); 
+p_range = .075; %-(0:2.5:7.5); 
 % ref_frac_range = .1:.1:1; 
 
 % debug values 
