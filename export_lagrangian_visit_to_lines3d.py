@@ -36,8 +36,8 @@ for state in range(TimeSliderGetNStates()):
     exp_db.filename = "mitral_mesh_lines3d_" + str('%010d' % state)   
     ExportDatabase(exp_db)  
     
-    if state >= 0:
-         break
+    #if state >= 0:
+    #     break
     
     
 print 'script cleared without crash'

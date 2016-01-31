@@ -85,7 +85,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
                             global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac); 
 
     if nargin >= 9
-        [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L); 
+        [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L, parmas_posterior); 
         particles = fopen(strcat(base_name, '.particles'), 'w'); 
         fprintf(particles, '%d\n' ,total_lagrangian_placed); 
     end 
@@ -494,7 +494,7 @@ end
 
 
 
-function [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L)
+function [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L, params)
     % Places a uniform cartesian mesh of lagrangian particle tracers 
     % Simple lopp implementation 
     %
@@ -507,13 +507,15 @@ function [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangia
     dx = L / n_lagrangian_tracers; 
     total_lagrangian_placed = 0; 
     
+    z_extra_offset = params.h / 2; 
+    
     for i = 0:n_lagrangian_tracers
         for j = 0:n_lagrangian_tracers
             for k = 0:n_lagrangian_tracers
                 
                 x = i * dx - L/2; 
                 y = j * dx - L/2; 
-                z = k * dx - L/2; 
+                z = k * dx - L/2 + z_extra_offset; 
                 
                 total_vertices = vertex_string(vertex, [x y z], total_vertices); 
     

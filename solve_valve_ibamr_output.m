@@ -17,7 +17,7 @@ chordae_tree = true;
 
 a = 1; 
 r = 1.5;
-h = 2; 
+h = 3; 
 N = 32; 
 
 min_angle_posterior = -(pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
