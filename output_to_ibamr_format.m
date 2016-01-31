@@ -85,7 +85,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
                             global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac); 
 
     if nargin >= 9
-        [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L, parmas_posterior); 
+        [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L, filter_params_posterior); 
         particles = fopen(strcat(base_name, '.particles'), 'w'); 
         fprintf(particles, '%d\n' ,total_lagrangian_placed); 
     end 
@@ -411,11 +411,11 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
         for j=1:N
             
             theta = (j-1) * ds; 
-            coords = [rad*cos(theta); rad*sin(theta); h]; 
+            coords_horiz = [rad*cos(theta); rad*sin(theta)]; 
             
             % if one norm is less than L, then the point is within the domain  
-            if norm(coords, inf) < L 
-                points(:,j,k) = coords; 
+            if norm(coords_horiz, inf) < L 
+                points(:,j,k) = [coords_horiz; h]; 
                 indices(j,k) = idx; 
                 idx = idx + 1;                 
             else 
@@ -494,7 +494,7 @@ end
 
 
 
-function [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L, params)
+function [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L, filter_params)
     % Places a uniform cartesian mesh of lagrangian particle tracers 
     % Simple lopp implementation 
     %
@@ -507,7 +507,7 @@ function [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangia
     dx = L / n_lagrangian_tracers; 
     total_lagrangian_placed = 0; 
     
-    z_extra_offset = params.h / 2; 
+    z_extra_offset = filter_params.h / 2; 
     
     for i = 0:n_lagrangian_tracers
         for j = 0:n_lagrangian_tracers
