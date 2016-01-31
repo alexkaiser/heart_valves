@@ -44,7 +44,7 @@ def read_springs(spring_name):
     return spring_list
 
 
-def print_lines3d_header(lines3d_file, spring_list): 
+def print_lines3d_header(lines3d_file, spring_list, n_particles=None): 
     '''
     Prints the header for the list of springs 
     
@@ -54,9 +54,15 @@ def print_lines3d_header(lines3d_file, spring_list):
     # always a 2 since springs have two ends  
     spring_str = '2 ' + str(len(spring_list)) + '\n'
     lines3d_file.write( spring_str )
+    
+    if n_particles is not None: 
+        # always a 1 for particles 
+        part_str = '1 ' + str(n_particles) + '\n'
+        lines3d_file.write(part_str)
+    
+    
 
-
-def prepend_header(lines3d_file_name, spring_list, n_frames): 
+def prepend_header(lines3d_file_name, spring_list, n_frames, n_particles=None): 
     ''' 
     Adds the number of vertices and the number of frames to 
     the lines3d file. 
@@ -73,8 +79,14 @@ def prepend_header(lines3d_file_name, spring_list, n_frames):
     temp = open(temp_name, 'w')
     lines_file = open(lines3d_file_name, 'r')
 
-    # write the header 
-    header = str(len(spring_list)) + ' ' + str(n_frames) + '\n'
+    # total fibers is the number of springs 
+    total_fibers = len(spring_list)
+    
+    # plus particles if they are there 
+    if n_particles is not None: 
+        total_fibers += n_particles
+     
+    header = str(total_fibers) + ' ' + str(n_frames) + '\n'
     temp.write(header)
     
     # write the whole old file onto the new one 
@@ -120,7 +132,7 @@ def xyz_to_string_array(file, lines3d_file, spring_list, num_vertices_prev=None)
     return vertex_strings, n_vertices
     
     
-def write_vertices(lines3d_file, vertex_strings, spring_list): 
+def write_vertices(lines3d_file, vertex_strings, spring_list, n_particles=None): 
     '''
     Writes vertex strings according to what is listed 
     in the spring list. 
@@ -134,7 +146,10 @@ def write_vertices(lines3d_file, vertex_strings, spring_list):
     for pair in spring_list: 
         lines3d_file.write(vertex_strings[pair[0]])
         lines3d_file.write(vertex_strings[pair[1]])
-
+        
+    if n_particles is not None: 
+        for i in range(len(vertex_strings) - n_particles, len(vertex_strings)): 
+            lines3d_file.write(vertex_strings[i])
 
 
 
@@ -148,8 +163,20 @@ if __name__ == '__main__':
     lines3d_file_name = 'mitral_tree.3D'
     lines3d_file      = open(lines3d_file_name, 'w')
     
+    
+    # find out how many particles there are
+    # particles are always placed last 
+    try: 
+        particles_file_name = '../mitral_tree.particles'
+        particles_file = open(particles_file_name, 'r')
+        n_particles = int(particles_file.readline())
+        particles_file.close()
+    except: 
+        n_particles = None
+    
+    
     # print the header 
-    print_lines3d_header(lines3d_file, spring_list)
+    print_lines3d_header(lines3d_file, spring_list, n_particles)
 
     n_vertices = None
     n_frames = 0 
@@ -164,8 +191,7 @@ if __name__ == '__main__':
             temp_file = open(f_name, 'r')
             
             vertex_strings, n_vertices = xyz_to_string_array(temp_file, lines3d_file, spring_list, n_vertices)
-            write_vertices(lines3d_file, vertex_strings, spring_list) 
-            
+            write_vertices(lines3d_file, vertex_strings, spring_list, n_particles)             
             temp_file.close()
             
             
@@ -174,7 +200,7 @@ if __name__ == '__main__':
     lines3d_file.close()
     
     # fix the header with the number of fibers (here all length two springs) and frames 
-    prepend_header(lines3d_file_name, spring_list, n_frames)
+    prepend_header(lines3d_file_name, spring_list, n_frames, n_particles)
 
     print 'but we out here'
 

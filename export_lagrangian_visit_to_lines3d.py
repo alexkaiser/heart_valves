@@ -16,7 +16,7 @@ print 'data base open line passed'
 
 
 # make a mesh plot for dumb reasons
-AddPlot("Mesh", "mitral_tree_mesh")
+AddPlot("Mesh", "mitral_tree_vertices")
 DrawPlots()
 
 exp_db = ExportDBAttributes() 
@@ -36,8 +36,8 @@ for state in range(TimeSliderGetNStates()):
     exp_db.filename = "mitral_mesh_lines3d_" + str('%010d' % state)   
     ExportDatabase(exp_db)  
     
-    if state > 100:
-        break
+    if state >= 0:
+         break
     
     
 print 'script cleared without crash'

@@ -11,7 +11,7 @@ commissure_angle = 0;
 extra_posterior = pi/6; 
 
 % each the posterior and anterior get this much extra
-overlap = pi/6; 
+overlap = pi/12; 
 
 chordae_tree = true; 
 
@@ -42,8 +42,8 @@ ref_frac  =  0.7;
 params_posterior = pack_params(X_posterior,alpha,beta,N,p_0,R_posterior,ref_frac); 
 
 if chordae_tree
-    k_0 = 0.000001; 
-    k_multiplier = 2; 
+    k_0 = 1; %0.000001; 
+    k_multiplier = 1.75; 
     tree_frac = 0.5; 
     params_posterior = add_chordae(params_posterior, filter_params_posterior, k_0, k_multiplier, tree_frac); 
 end 
@@ -164,7 +164,7 @@ end
 % p_range = p_0; 
 ref_frac_range = ref_frac; 
 
-p_range = .075; %-(0:2.5:7.5); 
+p_range = 0.0; %-(0:2.5:7.5); 
 % ref_frac_range = .1:.1:1; 
 
 % debug values 
@@ -316,8 +316,11 @@ ratio = 6;
 p_physical = 100; 
 target_multiplier = 100; 
 
+% number of lagrangian tracers in each dimension 
+% arranged in a mesh near the origin
+n_lagrangian_tracers = N / 2; 
 
-output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_physical, target_multiplier); 
+output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_physical, target_multiplier, n_lagrangian_tracers); 
 
 
 

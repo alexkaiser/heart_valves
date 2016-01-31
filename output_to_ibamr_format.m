@@ -1,4 +1,4 @@
-function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_physical, target_multiplier)
+function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_physical, target_multiplier, n_lagrangian_tracers)
     % 
     % Outputs the current configuration of the leaflets to IBAMR format
     % Spring constants are computed in dimensional form 
@@ -83,7 +83,12 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     [global_idx, total_vertices, total_springs, total_targets] = ...
                             place_net(r, h, L, N_ring, spring, vertex, target, ...
                             global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac); 
-                        
+
+    if nargin >= 9
+        [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L); 
+        particles = fopen(strcat(base_name, '.particles'), 'w'); 
+        fprintf(particles, '%d\n' ,total_lagrangian_placed); 
+    end 
 
     % clean up files with totals 
     fclose(vertex); 
@@ -489,7 +494,36 @@ end
 
 
 
+function [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L)
+    % Places a uniform cartesian mesh of lagrangian particle tracers 
+    % Simple lopp implementation 
+    %
+    %     global_idx               Running totals  
+    %     total_vertices 
+    %     vertex                   vertex file for writing  
+    %     n_lagrangian_tracers
+    %     L                        mesh placed in L/2
 
+    dx = L / n_lagrangian_tracers; 
+    total_lagrangian_placed = 0; 
+    
+    for i = 0:n_lagrangian_tracers
+        for j = 0:n_lagrangian_tracers
+            for k = 0:n_lagrangian_tracers
+                
+                x = i * dx - L/2; 
+                y = j * dx - L/2; 
+                z = k * dx - L/2; 
+                
+                total_vertices = vertex_string(vertex, [x y z], total_vertices); 
+    
+                total_lagrangian_placed = total_lagrangian_placed + 1; 
+                global_idx = global_idx + 1; 
+            end 
+        end 
+    end 
+
+end 
 
 
 
