@@ -318,7 +318,7 @@ target_multiplier = 100;
 
 % number of lagrangian tracers in each dimension 
 % arranged in a mesh near the origin
-n_lagrangian_tracers = N / 2; 
+n_lagrangian_tracers = N / 4; 
 
 output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_physical, target_multiplier, n_lagrangian_tracers); 
 
