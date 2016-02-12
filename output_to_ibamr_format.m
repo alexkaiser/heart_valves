@@ -505,6 +505,12 @@ function [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangia
     %     n_lagrangian_tracers
     %     L                        mesh placed in L/2
 
+    % junk hack exit 
+    if n_lagrangian_tracers == 0
+        total_lagrangian_placed = 0; 
+        return; 
+    end 
+    
     dx = L / n_lagrangian_tracers; 
     total_lagrangian_placed = 0; 
     

@@ -30,10 +30,11 @@ for j=1:N+1
     X(:,j,k)      = cone_filter(X_flat(1,j,k), X_flat(2,j,k), filter_params); 
 end 
 
+
 % fill in the 3d array 
 for j=1:N
     for k=1:N
-
+        
         % in the triangle? 
         if ((j+k) < (N+2))
             X_flat(:,j,k) = compute_intersection(X_flat, j, k, filter_params); 

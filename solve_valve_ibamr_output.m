@@ -18,7 +18,8 @@ chordae_tree = true;
 a = 1; 
 r = 1.5;
 h = 3; 
-N = 32; 
+N = 32 * 4; 
+
 
 min_angle_posterior = -(pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
 max_angle_posterior =  (pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
@@ -311,14 +312,29 @@ if chordae_tree
     base_name = strcat(base_name, '_tree'); 
 end 
 
+base_name = strcat(base_name, sprintf('_%d', N)); 
+
+
 L = 3; 
+
+% pressure / spring constant ratio  
+% ratio 6 is for N=32
 ratio = 6; 
+
+
+% original spring constants were for N = 32 debug width
+% spring constants get multiplied by 32/N, so they are halfed if N==64
+% the ratio appears in the denominator of the spring constant 
+ratio = ratio * (32.0/N); 
+
+
 p_physical = 100; 
 target_multiplier = 100; 
 
 % number of lagrangian tracers in each dimension 
 % arranged in a mesh near the origin
-n_lagrangian_tracers = N / 4; 
+% z direction is doubled 
+n_lagrangian_tracers = 8; 
 
 output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_physical, target_multiplier, n_lagrangian_tracers); 
 

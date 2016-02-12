@@ -43,10 +43,12 @@ end
 theta_span = [theta_0, theta]; 
 phi_0 = 0;  
 
-if abs(theta - theta_0) > eps 
+if abs(theta - theta_0) > tol 
 
     % solve ODE for phi
-    options = odeset('RelTol',tol,'AbsTol',tol);
+    ode_solve_tol = 1e-10; 
+    options = odeset('RelTol', ode_solve_tol, 'AbsTol', ode_solve_tol);
+    
     [theta_vec phi_vec] = ode45(dphi_dtheta, theta_span, phi_0, options); 
     phi = phi_vec(length(phi_vec)); 
 else 
@@ -70,8 +72,8 @@ else
     z1 = h * (xi - a) / (R * cos(theta)); 
     z2 = h * eta / (R * sin(theta)); 
 
-    if abs(z1 - z2) > 10*tol  
-        error('two formulas for z disagree'); 
+    if abs(z1 - z2) > 100*tol  
+        error(sprintf('two formulas for z disagree, z1 = %f, z2 = %f', z1, z2)); 
     else 
         z = z1; 
     end 
