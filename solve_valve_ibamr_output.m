@@ -8,10 +8,13 @@ commissure_angle = 0;
 
 % note that if extra posterior is equal to commissure angle
 % then the poster leaflet has angle pi 
-extra_posterior = pi/6; 
+% extra_posterior = pi/6; 
+extra_posterior = 0; 
+
 
 % each the posterior and anterior get this much extra
-overlap = pi/12; 
+% overlap = pi/12; 
+overlap = 0; 
 
 chordae_tree = true; 
 
@@ -163,10 +166,10 @@ end
 
 
 % p_range = p_0; 
-ref_frac_range = ref_frac; 
+ %ref_frac_range = ref_frac; 
 
 p_range = 0.0; %-(0:2.5:7.5); 
-% ref_frac_range = .1:.1:1; 
+ref_frac_range = .2; % .95:-.05:ref_frac; 
 
 % debug values 
 % p_range = -(0:2.5:5); 
@@ -334,7 +337,7 @@ target_multiplier = 100;
 % number of lagrangian tracers in each dimension 
 % arranged in a mesh near the origin
 % z direction is doubled 
-n_lagrangian_tracers = 8; 
+n_lagrangian_tracers = 0; 
 
 output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_physical, target_multiplier, n_lagrangian_tracers); 
 

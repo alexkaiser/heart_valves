@@ -24,7 +24,8 @@ end
 
 total_points = total_internal + 3*2*N_chordae; 
 
-J = zeros(total_points,total_points); 
+J = sparse([],[],[],total_points,total_points, 15 * total_points); 
+%J = zeros(total_points,total_points); 
 
 % always 6 pressure neighbors, which may or may not be in bounds
 % relative indices of pressure here 
