@@ -169,7 +169,8 @@ ref_frac_range = ref_frac;
 p_range = 0.0; %-(0:2.5:7.5); 
 
 if N >= 128
-    ref_frac_range = .5;  % .5 works here...  
+    % ref_frac_range = .5:.1:ref_frac;  % .5 works here...  
+    ref_frac_range = .6:.05:ref_frac;  % .5 works here...  
 end 
 
 % debug values 
@@ -180,23 +181,28 @@ end
 for ref_frac = ref_frac_range
     
     % reset the whole thing when the reference fraction changes
-    params_posterior = pack_params(X_posterior,alpha,beta,N,p_0,R_posterior,ref_frac); 
-    params_anterior = pack_params(X_anterior,alpha,beta,N,p_0,R_anterior,ref_frac); 
-    
-    if chordae_tree
-        params_posterior = add_chordae(params_posterior, filter_params_posterior, k_0, k_multiplier, tree_frac); 
-        params_anterior  = add_chordae(params_anterior,  filter_params_anterior , k_0, k_multiplier, tree_frac); 
-    end 
-    
-    if commissure_angle > 0.0
-        params_left = pack_params(X_left,alpha,beta,N_left,p_0,R_left,ref_frac); 
-        params_right = pack_params(X_right,alpha,beta,N_right,p_0,R_right,ref_frac); 
-        
-        if chordae_tree
-            error('chordae tree not yet supported for commissural leaflets'); 
-        end 
-        
-    end 
+%     params_posterior = pack_params(X_posterior,alpha,beta,N,p_0,R_posterior,ref_frac); 
+%     params_anterior = pack_params(X_anterior,alpha,beta,N,p_0,R_anterior,ref_frac); 
+%     
+%     if chordae_tree
+%         params_posterior = add_chordae(params_posterior, filter_params_posterior, k_0, k_multiplier, tree_frac); 
+%         params_anterior  = add_chordae(params_anterior,  filter_params_anterior , k_0, k_multiplier, tree_frac); 
+%     end 
+%     
+%     if commissure_angle > 0.0
+%         params_left = pack_params(X_left,alpha,beta,N_left,p_0,R_left,ref_frac); 
+%         params_right = pack_params(X_right,alpha,beta,N_right,p_0,R_right,ref_frac); 
+%         
+%         if chordae_tree
+%             error('chordae tree not yet supported for commissural leaflets'); 
+%         end 
+%         
+%     end 
+
+    % reset the reference fraction in updates 
+    fprintf(1, 'solving at ref_frac = %f\n' , ref_frac); 
+    params_posterior.ref_frac = ref_frac; 
+    params_anterior.ref_frac  = ref_frac; 
     
     for p_0 = p_range
 

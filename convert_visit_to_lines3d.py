@@ -5,12 +5,10 @@ Takes a series of silo files containing Lagrangian mesh.
 Converts them into a single lines3d file.
 Topology is read from spring file. 
 
-Names are currently hardcoded, should fix this. 
-
 '''
 
 import os 
-
+import sys 
 
 
 def read_springs(spring_name): 
@@ -157,17 +155,23 @@ if __name__ == '__main__':
 
     print 'it is crowded...'
 
-    spring_name = '../mitral_tree.spring'
+    if len(sys.argv) <= 1:
+        print 'defaulting to default file name'
+        base_name = "mitral_tree"
+    else: 
+        base_name = str(sys.argv[1])
+
+    spring_name = '../' + base_name + '.spring'
     spring_list = read_springs(spring_name)
 
-    lines3d_file_name = 'mitral_tree.3D'
+    lines3d_file_name = base_name + '.3D'
     lines3d_file      = open(lines3d_file_name, 'w')
     
     
     # find out how many particles there are
     # particles are always placed last 
     try: 
-        particles_file_name = '../mitral_tree.particles'
+        particles_file_name = '../' + base_name + '.particles'
         particles_file = open(particles_file_name, 'r')
         n_particles = int(particles_file.readline())
         particles_file.close()
@@ -183,7 +187,7 @@ if __name__ == '__main__':
 
     # for all the sorted files... 
     for f_name in sorted(os.listdir(os.getcwd())): 
-        if f_name.endswith('.xyz'):
+        if f_name.startswith(base_name) and f_name.endswith('.xyz'):
                         
             # have a valid file 
             n_frames += 1 
