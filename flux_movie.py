@@ -6,7 +6,6 @@
 # 
 
 
-
 print 'we out here'
 
 OpenDatabase("dumps.visit")
@@ -22,9 +21,6 @@ SetActivePlots(1)
 
 
 p = PseudocolorAttributes()
-
-print p 
-
 p.min     = -10.0
 p.minFlag = 1 
 p.max     = 10.0
@@ -43,31 +39,35 @@ slice.project2d   = 2
 slice.normal      = (0, 0, 1)
 SetOperatorOptions(slice)
 
-
 DrawPlots()
-
-Query('Variable Sum')
-sum = GetQueryOutputValue()
-print 'sum = ', sum  
 
 
 # set things to be fairly high resolution 
 s = SaveWindowAttributes()
-print 'window attributes: ', s
+# print 'window attributes: ', s
 s.width = 4096
 SetSaveWindowAttributes(s)
 
 
+# get the dimensions 
+Query("SpatialExtents", use_actual_data=0)
+coords = GetQueryOutputValue()
+x_width = coords[1] - coords[0]
+y_width = coords[3] - coords[2]
 
-# geometry parameters 
-output_stride = 10
-dt = output_stride * 0.00002
+print 'x_width = ', x_width 
+print 'y_width = ', y_width 
 
 # x,y domain is [-L, L] total 
-L = 3.0
-N = 32
-dx = 2.0 * L / N 
+len_total = x_width
 
+# make sure things are equal, otherwise need to fix 
+assert y_width == len_total
+    
+area = len_total**2
+print 'area = ', area 
+
+ 
 times    = []
 flux     = []
 net_flux = []
@@ -87,7 +87,11 @@ for state in range(TimeSliderGetNStates()):
         # since there are not enough states 
         pass 
         
-        
+    t_prev = t 
+    Query('Time')
+    t  = GetQueryOutputValue()
+    dt = t - t_prev    
+    
     SetTimeSliderState(state)
     times.append(t)
 
@@ -96,19 +100,24 @@ for state in range(TimeSliderGetNStates()):
     # add the z velocity components in the slice 
     Query('Variable Sum')
     
-    # multiplying by dx^2 gives a second order midpoint approx 
-    # to the current flux
-    # add a sign because we want inward flux  
-    flux_current = -dx * dx * GetQueryOutputValue()
+    # add the z velocity components in the slice 
+    Query('Average Value')
+    
+    # Average value gives second order midpoint 
+    #     to the current average value
+    # Multiply by area to get integral 
+    # Add a sign because we want inward flux  
+    avg = GetQueryOutputValue()
+    flux_current = -area * avg  
 
     flux.append(flux_current)
+    print 'flux = ', flux_current
 
     # simple trapezoidal rule for net flux 
     total_flux += 0.5 * dt * (flux_current + flux_prev)
     net_flux.append(total_flux)
     
     # variable update for next step 
-    t += dt 
     flux_prev = flux_current
     
     #if state > 200:
@@ -152,7 +161,3 @@ f.close()
 # os.system('ffmpeg -framerate 2 -i visit%04d.png -c:v libx264 -r 30 -pix_fmt yuv420p -vf "scale=4096:trunc(ow/a/2)*2" visit_movie.mp4') 
 
 print 'script cleared without crash'
- 
- 
- 
- 
