@@ -5,12 +5,8 @@
 # must be in the current directory 
 # 
 
-# import matplotlib 
-
 
 print 'we out here'
-
-
 
 OpenDatabase("dumps.visit")
  
@@ -20,97 +16,107 @@ print 'data base open line passed'
 DeleteAllPlots()
 
 
-
-
 AddPlot("Pseudocolor", "U_z")
 AddOperator("Slice")
-# SetActivePlots(plot)
-
 SetActivePlots(1)
 
 # print "supported queries: ", Queries()
 
 
 slice = SliceAttributes()
-
 # print 'slice attributes, before modification'
 # print slice
 # print 'slice.originType = ', slice.originType, 'its type = ', type(slice.originType)
-
 slice.originType  = 0  # point, required to be an int
-slice.originPoint = (0, 0, 9) 
+slice.originPoint = (0, 0, 3) 
 slice.project2d   = 0
-slice.normal      = (0, 0, -1)
-# print 'after setting, but before call to set options'
-# print slice
+slice.normal      = (0, 0, 1)
 SetOperatorOptions(slice)
-# print 'after setting and call to set options'
-# print slice
+
 
 DrawPlots()
 
-# exp_db = ExportDBAttributes() 
-# exp_db.db_type = "XYZ" 
-# exp_db.variables = ("mitral_tree_mesh")
 
-# ExportDatabase(exp_db)  
+# Using this is bad, sometimes visit considers different 
+# numbers of cells to be "in" the slice, 
+# depending on alignment in some complicated way
+# Use average instead 
+# Query('Variable Sum')
 
-Query('Variable Sum')
-sum = GetQueryOutputValue()
-print 'sum = ', sum  
+# get the dimensions 
+Query("SpatialExtents", use_actual_data=0)
+coords = GetQueryOutputValue()
+x_width = coords[1] - coords[0]
+y_width = coords[3] - coords[2]
 
-
-
-
-# geometry parameters 
-output_stride = 10
-dt = output_stride * 0.00002
+print 'x_width = ', x_width 
+print 'y_width = ', y_width 
 
 # x,y domain is [-L, L] total 
-L = 3.0
-N = 32
-dx = 2.0 * L / N 
+len_total = x_width
+
+# make sure things are equal, otherwise need to fix 
+assert y_width == len_total
+    
+area = len_total**2
+print 'area = ', area 
+
+Query("NumNodes", use_actual_data=1)
+total_nodes_in_slice = GetQueryOutputValue()
+print 'total_nodes_in_slice = ', total_nodes_in_slice
+
 
 times    = []
 flux     = []
 net_flux = []
 
-t          = 0.0
+Query('Time')
+t          = GetQueryOutputValue()
+t_prev     = t 
 flux_prev  = 0.0 
 total_flux = 0.0
 
 
 for state in range(TimeSliderGetNStates()):
     
-    if state % (TimeSliderGetNStates()/20) == 0:
-        print 'On state ', state, 'of ', TimeSliderGetNStates()
+    try: 
+        if state % (TimeSliderGetNStates()/20) == 0:
+            print 'On state ', state, 'of ', TimeSliderGetNStates()
+    except: 
+        # ignore message if it gives a divide by zero 
+        # since there are not enough states 
+        pass 
     
+    t_prev = t 
+    Query('Time')
+    t  = GetQueryOutputValue()
+    dt = t - t_prev
+        
     SetTimeSliderState(state)
     times.append(t)
 
-    DrawPlots()
+    # Don't need to draw the plot to get the flux 
+    # DrawPlots()
     
     # add the z velocity components in the slice 
-    Query('Variable Sum')
+    Query('Average Value')
     
-    # multiplying by dx^2 gives a second order midpoint approx 
-    # to the current flux
-    # add a sign because we want inward flux  
-    flux_current = -dx * dx * GetQueryOutputValue()
+    # Average value gives second order midpoint 
+    #     to the current average value
+    # Multiply by area to get integral 
+    # Add a sign because we want inward flux  
+    avg = GetQueryOutputValue()
+    flux_current = -area * avg  
 
     flux.append(flux_current)
+    print 'flux = ', flux_current 
 
     # simple trapezoidal rule for net flux 
     total_flux += 0.5 * dt * (flux_current + flux_prev)
     net_flux.append(total_flux)
     
     # variable update for next step 
-    t += dt 
     flux_prev = flux_current
-    
-    #if state > 200:
-    #     break
-
     
 
 
@@ -143,32 +149,10 @@ ylabel('net flux (cm^3)');
 '''
 
 f.write(plot_code) 
-
-
-
-
 f.close()
-
     
 print 'script cleared without crash'
  
  
  
 
-
-'''
-# set the active plot to the mesh plot 
-# SetActivePlots(1)
-AddPlot("Mesh", "amr_mesh")
-
-options = GetPlotOptions()
-print 'plot options = ', options
-
-mesh_attributes = GetMeshManagementAttributes()
-print "mesh_attributes = ", mesh_attributes
-print "discretizationTolernace = ", mesh_attributes.discretizationTolerance
-'''
-'''
-box = BoxAttributes()
-print 'box = ', box 
-''' 
