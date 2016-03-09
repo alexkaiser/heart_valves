@@ -333,9 +333,9 @@ ratio = 6;
 
 
 % original spring constants were for N = 32 debug width
-% spring constants get multiplied by 32/N, so they are halfed if N==64
+% spring constants get multiplied by N/32, so they are halfed if N==64
 % the ratio appears in the denominator of the spring constant 
-ratio = ratio * (32.0/N); 
+ratio = ratio * (N/32.0); 
 
 
 p_physical = 100; 

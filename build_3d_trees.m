@@ -55,8 +55,8 @@ function chordae = build_3d_trees(chordae_flat, filter_params, k_0, k_multiplier
     idx = max_internal; 
     
     % constants connecting to the leaflet are inherited
-    % first internal constant to the tree is twice that 
-    k_running = 2*k_0; 
+    % first internal constant to the tree is k_multiplier times that 
+    k_running = k_multiplier*k_0; 
     while num_at_level >= 1
     
         for j=1:num_at_level
