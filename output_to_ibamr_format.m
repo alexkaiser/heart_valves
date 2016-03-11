@@ -1,4 +1,4 @@
-function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_physical, target_multiplier, n_lagrangian_tracers)
+function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_physical, target_multiplier, refinement, n_lagrangian_tracers)
     % 
     % Outputs the current configuration of the leaflets to IBAMR format
     % Spring constants are computed in dimensional form 
@@ -40,6 +40,9 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     % turn these up because they are supposed to really be boundary conditions 
     % but we are using a penalty method here 
     k_target = target_multiplier * k_rel; 
+    
+    % relative spring constants drop when the mesh is refined 
+    k_rel = k_rel / refinement; 
 
     % output the left and right papillary as the first two vertices and targets 
     left_papillary  = [0; -filter_params_posterior.a; 0]; 
@@ -84,7 +87,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
                             place_net(r, h, L, N_ring, spring, vertex, target, ...
                             global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac); 
 
-    if nargin >= 9
+    if nargin >= 10
         double_z = true; 
         [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L, filter_params_posterior, double_z); 
         particles = fopen(strcat(base_name, '.particles'), 'w'); 

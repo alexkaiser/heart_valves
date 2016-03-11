@@ -53,7 +53,7 @@ def print_lines3d_header(lines3d_file, spring_list, n_particles=None):
     spring_str = '2 ' + str(len(spring_list)) + '\n'
     lines3d_file.write( spring_str )
     
-    if n_particles is not None: 
+    if (n_particles is not None) and (n_particles > 0): 
         # always a 1 for particles 
         part_str = '1 ' + str(n_particles) + '\n'
         lines3d_file.write(part_str)
@@ -81,7 +81,7 @@ def prepend_header(lines3d_file_name, spring_list, n_frames, n_particles=None):
     total_fibers = len(spring_list)
     
     # plus particles if they are there 
-    if n_particles is not None: 
+    if (n_particles is not None) and (n_particles > 0): 
         total_fibers += n_particles
      
     header = str(total_fibers) + ' ' + str(n_frames) + '\n'

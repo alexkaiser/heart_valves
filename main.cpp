@@ -64,6 +64,10 @@
 #include <timing.h>
 
 
+#if defined(IBAMR_HAVE_SILO)
+#include <silo.h>
+#endif
+
 void init_source_variables(vector<double>& Q_src, const vector<double>& P_src); 
 
 void set_source_variables(vector<double>& Q_src, const vector<double>& P_src, double current_time, double dt, bool sink_on); 

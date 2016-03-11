@@ -3,8 +3,8 @@
 MU  = 0.04                            // viscosity
 RHO = 1.0
 
-L = 3.0   // box sizing 
-
+L = 2.5   // box sizing 
+N = 128
 
 
 // grid spacing parameters
@@ -24,7 +24,7 @@ CONVECTIVE_OP_TYPE  = "PPM"               // convective differencing discretizat
 CONVECTIVE_FORM     = "ADVECTIVE"         // how to compute the convective terms
 NORMALIZE_PRESSURE  = FALSE               // whether to explicitly force the pressure to have mean zero
 CFL_MAX             = 0.3                 // maximum CFL number
-DT                  = 0.00002             // maximum timestep size
+DT                  = 1.0e-5              // maximum timestep size
 ERROR_ON_DT_CHANGE  = TRUE                // whether to emit an error message if the time step size changes
 VORTICITY_TAGGING   = TRUE                // whether to tag cells for refinement based on vorticity thresholds
 TAG_BUFFER          = 2                   // size of tag buffer used by grid generation algorithm
@@ -178,8 +178,8 @@ IBMethod {
 
 IBStandardInitializer {
    max_levels      = MAX_LEVELS
-   structure_names = "mitral_tree"
-   mitral_tree {
+   structure_names = "mitral_tree_128"
+   mitral_tree_128 {
       level_number = MAX_LEVELS - 1
    }
 }
@@ -217,12 +217,12 @@ Main {
 
 // visualization dump parameters
    viz_writer                  = "VisIt"
-   viz_dump_interval           = 10
-   viz_dump_dirname            = "viz_IB3d_tree_cycle"
+   viz_dump_interval           = 100
+   viz_dump_dirname            = "viz_IB3d_tree_cycle_128"
    visit_number_procs_per_file = 1
 
 // restart dump parameters
-   restart_dump_interval       = 500
+   restart_dump_interval       = 1000
    restart_dump_dirname        = "restart_IB3d_tree_cycle"
 
 // hierarchy data dump parameters
@@ -234,9 +234,9 @@ Main {
 }
 
 CartesianGeometry {
-domain_boxes = [ (0,0,0),(31,31,63) ]
-x_lo =  -L, -L , -L 
-x_up =   L,  L,   L + 2*L
+domain_boxes = [ (0,0,0),(N-1,N-1,2*N-1) ]
+x_lo =  -L, -L , -L - 0.5*L
+x_up =   L,  L,   L + 1.5*L
    periodic_dimension = 0,0,0
 }
 
