@@ -19,7 +19,7 @@ chordae_tree = true;
 a = 1; 
 r = 1.5;
 h = 3; 
-N = 64; 
+N = 128; 
 
 
 min_angle_posterior = -(pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
@@ -65,7 +65,7 @@ end
 
 
 tol_global = 1e-11; 
-max_it_global = 20; 
+max_it_global = 30; 
 
 plot_and_save_freq = 10; 
 start_it = 0; 
