@@ -57,8 +57,11 @@ title('Reference configuration of posterior surface');
 err = total_global_err(params_posterior, filter_params_posterior)
 
 if chordae_tree 
-    figure; 
-    J = build_jacobian(params_posterior, filter_params_posterior); 
+    figure;
+    'Jacobian build time = '
+    tic; 
+    J = build_jacobian(params_posterior, filter_params_posterior);
+    toc; 
     spy(J); 
     title('initial nonzero pattern of jacobian')
 end 
@@ -168,10 +171,16 @@ ref_frac_range = ref_frac;
 
 p_range = 0.0; %-(0:2.5:7.5); 
 
-if N >= 128
+if N == 128
     % ref_frac_range = .5:.1:ref_frac;  % .5 works here...  
     ref_frac_range = .6:.05:ref_frac;  % .5 works here...  
+    % converges under 25 iterations, maybe conside a finer continuation step 
 end 
+
+if N == 256
+    ref_frac_range = .6:.05:ref_frac;  % .5 works here...  
+end 
+
 
 % debug values 
 % p_range = -(0:2.5:5); 

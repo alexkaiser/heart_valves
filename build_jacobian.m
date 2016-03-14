@@ -24,7 +24,10 @@ end
 
 total_points = total_internal + 3*2*N_chordae; 
 
-J = sparse([],[],[],total_points,total_points, 15 * total_points); 
+total_jacobian_space = 15 * total_points; 
+fprintf(1,'total allocation for Jacobian = %d', total_jacobian_space); 
+
+J = sparse([],[],[],total_points,total_points, total_jacobian_space); 
 %J = zeros(total_points,total_points); 
 
 % always 6 pressure neighbors, which may or may not be in bounds

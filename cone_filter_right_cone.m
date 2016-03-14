@@ -15,7 +15,7 @@ a = filter_params.a;
 r = filter_params.r; 
 h = filter_params.h; 
 
-tol = 1e2 * eps;
+tol = 1e3 * eps;
 
 % If on the pole return it
 if abs(eta) < tol && abs(xi-a) < tol 
@@ -72,7 +72,7 @@ else
     z1 = h * (xi - a) / (R * cos(theta)); 
     z2 = h * eta / (R * sin(theta)); 
 
-    if abs(z1 - z2) > 100*tol  
+    if abs(z1 - z2) > 1e3*tol  
         error(sprintf('two formulas for z disagree, z1 = %f, z2 = %f', z1, z2)); 
     else 
         z = z1; 
