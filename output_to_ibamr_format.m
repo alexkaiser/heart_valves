@@ -37,9 +37,15 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     % value of the relative spring constant is determined by the ratio 
     k_rel = p_cgs / ratio; 
     
-    % turn these up because they are supposed to really be boundary conditions 
-    % but we are using a penalty method here 
+    % base rate for target spring constants
+    % target constant for a single point 
     k_target = target_multiplier * k_rel; 
+    
+    % the valve ring is 1d, should be halfed with doubling of mesh 
+    k_target_ring = k_target / refinement; 
+    
+    % there are four times as many, so they get multiplied by refinement squared 
+    k_target_net = k_target / refinement^2; 
     
     % relative spring constants drop when the mesh is refined 
     k_rel = k_rel / refinement; 
@@ -59,7 +65,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     % leaflets 
     [global_idx, total_vertices, total_springs, total_targets] = ...
         add_leaflet(params_posterior, filter_params_posterior, spring, vertex, target, ...
-                    global_idx, total_vertices, total_springs, total_targets, k_rel, k_target); 
+                    global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_ring); 
 
     % if chordae exist, then add them 
     if isfield(params_posterior, 'chordae') && ~isempty(params_posterior.chordae)
@@ -70,7 +76,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     % anterior 
     [global_idx, total_vertices, total_springs, total_targets] = ...
         add_leaflet(params_anterior, filter_params_posterior, spring, vertex, target, ...
-                     global_idx, total_vertices, total_springs, total_targets, k_rel, k_target);   
+                     global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_ring);   
     
     if isfield(params_anterior, 'chordae') && ~isempty(params_anterior.chordae)
         [global_idx, total_vertices, total_springs] = ...
@@ -85,7 +91,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     
     [global_idx, total_vertices, total_springs, total_targets] = ...
                             place_net(r, h, L, N_ring, spring, vertex, target, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac); 
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac); 
 
     if nargin >= 10
         double_z = true; 

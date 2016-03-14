@@ -19,7 +19,7 @@ chordae_tree = true;
 a = 1; 
 r = 1.5;
 h = 3; 
-N = 128; 
+N = 64; 
 
 
 min_angle_posterior = -(pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
@@ -329,7 +329,9 @@ L = 2.5;
 
 % pressure / spring constant ratio  
 % ratio 6 is for N=32
-ratio = 6; 
+% ratio = 6 seems to make everything very stiff 
+% turn down by order of magnitude, see if it helps 
+ratio = 60; 
 
 
 % original spring constants were for N = 32 debug width
@@ -339,6 +341,7 @@ refinement = N/32.0;
 
 
 p_physical = 100; 
+
 target_multiplier = 20; 
 
 % number of lagrangian tracers in each dimension 
