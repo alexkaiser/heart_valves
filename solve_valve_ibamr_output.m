@@ -70,7 +70,7 @@ end
 tol_global = 1e-11; 
 max_it_global = 30; 
 
-plot_and_save_freq = 10; 
+plot_and_save_freq = 100; 
 start_it = 0; 
 
 err_over_time_posterior = zeros(max_it_global,1); 
@@ -172,9 +172,9 @@ ref_frac_range = ref_frac;
 p_range = 0.0; %-(0:2.5:7.5); 
 
 if N == 128
-    % ref_frac_range = .5:.1:ref_frac;  % .5 works here...  
-    ref_frac_range = .6:.05:ref_frac;  % .5 works here...  
-    % converges under 25 iterations, maybe conside a finer continuation step 
+    ref_frac_range = [.6,.65,.67,ref_frac];  
+    % with ref_frac_range = [.6,.65,.67,ref_frac];  
+    % this converges without any "scares" with highly increasing errors 
 end 
 
 if N == 256
