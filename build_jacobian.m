@@ -26,7 +26,7 @@ function J = build_jacobian(params, filter_params)
 
     % there are fewer than 15 nnz per row
     % if using the redundant features on sparse creation use more 
-    capacity = 10 * 15 * total_points; 
+    capacity = 5 * 15 * total_points; 
     
    
     
