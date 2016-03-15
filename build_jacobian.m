@@ -64,15 +64,6 @@ function J = build_jacobian(params, filter_params)
     for j=1:N
         for k=1:N
             
-            % reallocate if too big 
-            if nnz_placed >= capacity
-                capacity = 2*capacity; 
-                j_idx(capacity) = 0.0; 
-                k_idx(capacity) = 0.0; 
-                vals(capacity)  = 0.0; 
-                fprintf(1, 'Hit reallocation, adjust the initial parameter up so this does not happen.\n'); 
-            end 
-
             % in the triangle?
             if (j+k) < (N+2)
 
@@ -285,6 +276,15 @@ function [] = place_tmp_block(range_current_loc, range_nbr_loc, block_loc)
     
     if (n ~= 3) || (m ~= 3)
         error('Must place a 3x3 block'); 
+    end 
+    
+    % reallocate if too big 
+    if nnz_placed + 9 >= capacity
+        capacity = 2*capacity; 
+        j_idx(capacity) = 0.0; 
+        k_idx(capacity) = 0.0; 
+        vals(capacity)  = 0.0; 
+        fprintf(1, 'Hit reallocation, adjust the initial parameter up so this does not happen.\n'); 
     end 
     
 %    nnz_placed_orig = nnz_placed; 
