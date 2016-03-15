@@ -39,20 +39,22 @@ for j=1:N
             % pressure term first  
             pressure_term = zeros(3,1); 
             
-            % zero indexed loop because we are computing indices with mod n 
-            for n=0:5
+            if p_0 ~= 0
+                % zero indexed loop because we are computing indices with mod n 
+                for n=0:5
 
-                j_nbr      = j + pressure_nbrs(1,mod(n  ,6)+1);
-                k_nbr      = k + pressure_nbrs(2,mod(n  ,6)+1);
-                j_nbr_next = j + pressure_nbrs(1,mod(n+1,6)+1);
-                k_nbr_next = k + pressure_nbrs(2,mod(n+1,6)+1);
-                
-                % if any index is zero, then 
-                % the pressure term does not include this value
-                if j_nbr_next && k_nbr_next && j_nbr && k_nbr
-                    pressure_term = pressure_term + (p_0/6) * cross(X(:,j_nbr,k_nbr) - X(:,j,k), X(:,j_nbr_next,k_nbr_next) - X(:,j,k));                     
+                    j_nbr      = j + pressure_nbrs(1,mod(n  ,6)+1);
+                    k_nbr      = k + pressure_nbrs(2,mod(n  ,6)+1);
+                    j_nbr_next = j + pressure_nbrs(1,mod(n+1,6)+1);
+                    k_nbr_next = k + pressure_nbrs(2,mod(n+1,6)+1);
+
+                    % if any index is zero, then 
+                    % the pressure term does not include this value
+                    if j_nbr_next && k_nbr_next && j_nbr && k_nbr
+                        pressure_term = pressure_term + (p_0/6) * cross(X(:,j_nbr,k_nbr) - X(:,j,k), X(:,j_nbr_next,k_nbr_next) - X(:,j,k));                     
+                    end 
+
                 end 
-                
             end 
             
             u_tangent_term = zeros(3,1); 
