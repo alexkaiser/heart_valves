@@ -66,43 +66,45 @@ function J = build_jacobian(params, filter_params)
 
                 % pressure portion 
                 % zero indexed loop because we are computing indices with mod n 
-                for n=0:5
+                if p_0 ~= 0.0
+                    for n=0:5
 
-                    j_nbr      = j + pressure_nbrs(1,mod(n  ,6)+1); 
-                    k_nbr      = k + pressure_nbrs(2,mod(n  ,6)+1); 
-                    j_nbr_next = j + pressure_nbrs(1,mod(n+1,6)+1); 
-                    k_nbr_next = k + pressure_nbrs(2,mod(n+1,6)+1);
+                        j_nbr      = j + pressure_nbrs(1,mod(n  ,6)+1); 
+                        k_nbr      = k + pressure_nbrs(2,mod(n  ,6)+1); 
+                        j_nbr_next = j + pressure_nbrs(1,mod(n+1,6)+1); 
+                        k_nbr_next = k + pressure_nbrs(2,mod(n+1,6)+1);
 
-                    % if any index is zero, then 
-                    % the pressure term does not include this triangle
-                    if j_nbr_next && k_nbr_next && j_nbr && k_nbr
+                        % if any index is zero, then 
+                        % the pressure term does not include this triangle
+                        if j_nbr_next && k_nbr_next && j_nbr && k_nbr
 
-                        % Current has two terms from a product rule 
-                        block     =  - (p_0/6) * cross_matrix(X(:,j_nbr     ,k_nbr     ) - X(:,j,k)) ... 
-                                     + (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));                            
+                            % Current has two terms from a product rule 
+                            block     =  - (p_0/6) * cross_matrix(X(:,j_nbr     ,k_nbr     ) - X(:,j,k)) ... 
+                                         + (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));                            
 
-                        place_tmp_block(range_current, range_current, block); 
+                            place_tmp_block(range_current, range_current, block); 
 
 
-                        % nbr term
-                        % nbr gets differentiated away, and nbr_next stays 
-                        % only added if this is internal 
-                        if is_internal(j_nbr,k_nbr,N)
-                            range_nbr       = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
-                            block = - (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));
-                            place_tmp_block(range_current, range_nbr, block); 
-                        end 
+                            % nbr term
+                            % nbr gets differentiated away, and nbr_next stays 
+                            % only added if this is internal 
+                            if is_internal(j_nbr,k_nbr,N)
+                                range_nbr       = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
+                                block = - (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));
+                                place_tmp_block(range_current, range_nbr, block); 
+                            end 
 
-                        % nbr_next term
-                        % nbr_next gets differentiated away, and nbr stays and gets a sign 
-                        % only added if this is internal 
-                        if is_internal(j_nbr_next,k_nbr_next,N)
-                            range_nbr_next  = linear_index_offset(j_nbr_next,k_nbr_next,N) + (1:3);
-                            block = (p_0/6) * cross_matrix(X(:,j_nbr,k_nbr) - X(:,j,k)); 
-                            place_tmp_block(range_current, range_nbr_next, block); 
-                        end 
+                            % nbr_next term
+                            % nbr_next gets differentiated away, and nbr stays and gets a sign 
+                            % only added if this is internal 
+                            if is_internal(j_nbr_next,k_nbr_next,N)
+                                range_nbr_next  = linear_index_offset(j_nbr_next,k_nbr_next,N) + (1:3);
+                                block = (p_0/6) * cross_matrix(X(:,j_nbr,k_nbr) - X(:,j,k)); 
+                                place_tmp_block(range_current, range_nbr_next, block); 
+                            end 
 
-                    end
+                        end
+                    end 
                 end 
 
 
@@ -235,99 +237,38 @@ function J = build_jacobian(params, filter_params)
 %%%%%%%%%%
 
 
-function [] = place_tmp_block(range_current_loc, range_nbr_loc, block_loc)
-    % 
-    % Places a 3x3 block in a vectors associated with a sparse matrix 
-    % This function is NESTED which means that 
-    % it has access to the entire workspace of the 
-    % 
-    % Input:  
-    %   range_current   indices to place in j direction  
-    %   range_nbr       indices to place in k direction  
-    %   block           block to place 
-    % 
-    
-    [n,m] = size(block_loc); 
-    
-    if (n ~= 3) || (m ~= 3)
-        error('Must place a 3x3 block'); 
+    function [] = place_tmp_block(range_current_loc, range_nbr_loc, block_loc)
+        % 
+        % Places a 3x3 block in a vectors associated with a sparse matrix 
+        % This function is NESTED which means that 
+        % it has access to the entire workspace of the calling function 
+        % 
+        % Input:  
+        %   range_current_loc   indices to place in j direction  
+        %   range_nbr_loc       indices to place in k direction  
+        %   block_loc           block to place 
+        % 
+
+        if ~all(size(block_loc) == [3,3])
+            error('Must place a 3x3 block'); 
+        end 
+
+        % reallocate if too big 
+        if nnz_placed + 9 >= capacity
+            capacity = 2*capacity; 
+            j_idx(capacity) = 0.0; 
+            k_idx(capacity) = 0.0; 
+            vals(capacity)  = 0.0; 
+            fprintf(1, 'Hit reallocation, adjust the initial parameter up so this does not happen.\n'); 
+        end 
+
+        j_idx(nnz_placed+1 : nnz_placed+9) = range_current_loc(1) + j_offsets; 
+        k_idx(nnz_placed+1 : nnz_placed+9) = range_nbr_loc(1)     + k_offsets; 
+        vals (nnz_placed+1 : nnz_placed+9) = block_loc(:); 
+
+        nnz_placed = nnz_placed+9; 
+
     end 
-    
-    % reallocate if too big 
-    if nnz_placed + 9 >= capacity
-        capacity = 2*capacity; 
-        j_idx(capacity) = 0.0; 
-        k_idx(capacity) = 0.0; 
-        vals(capacity)  = 0.0; 
-        fprintf(1, 'Hit reallocation, adjust the initial parameter up so this does not happen.\n'); 
-    end 
-    
-%    nnz_placed_orig = nnz_placed; 
-    
-    
-%     for j=1:3
-%         for k=1:3
-%             nnz_placed = nnz_placed+1; 
-%             j_idx(nnz_placed)  = range_current(j); 
-%             k_idx(nnz_placed)  = range_nbr(k); 
-%             vals (nnz_placed)  = block(j,k); 
-%         end    
-%     end
-%     
-%     % reset this here... 
-%     nnz_placed = nnz_placed-9;
-%     
-%     'working loop way:'
-%     j_idx(nnz_placed+1 : nnz_placed+9) 
-%     k_idx(nnz_placed+1 : nnz_placed+9) 
-%     vals (nnz_placed+1 : nnz_placed+9) 
-
-
-%     nnz_placed_tmp = nnz_placed_orig; 
-%     j_idx_tmp = zeros(nnz_placed_orig + 20, 1); 
-%     k_idx_tmp = zeros(nnz_placed_orig + 20, 1); 
-%     vals_tmp  = zeros(nnz_placed_orig + 20, 1); 
-%     for j=1:3
-%         for k=1:3
-%             nnz_placed_tmp = nnz_placed_tmp+1; 
-%             j_idx_tmp(nnz_placed_tmp)  = range_current(j); 
-%             k_idx_tmp(nnz_placed_tmp)  = range_nbr(k); 
-%             vals_tmp (nnz_placed_tmp)  = block(j,k); 
-%         end    
-%     end
-%         
-%     'working loop way:'
-%     j_idx_tmp(nnz_placed_orig+1 : nnz_placed_orig+9) 
-%     k_idx_tmp(nnz_placed_orig+1 : nnz_placed_orig+9) 
-%     vals_tmp (nnz_placed_orig+1 : nnz_placed_orig+9) 
-     
-
-    j_idx(nnz_placed+1 : nnz_placed+9) = range_current_loc(1) + j_offsets; 
-    k_idx(nnz_placed+1 : nnz_placed+9) = range_nbr_loc(1)     + k_offsets; 
-    vals (nnz_placed+1 : nnz_placed+9) = block_loc(:); 
-    
-%     'not working vectorized way'
-%     j_idx(nnz_placed+1 : nnz_placed+9) 
-%     k_idx(nnz_placed+1 : nnz_placed+9) 
-%     vals (nnz_placed+1 : nnz_placed+9) 
-    
-    nnz_placed = nnz_placed+9; 
-    
-
-%     if ~all(j_idx_tmp(nnz_placed_orig+1 : nnz_placed_orig+9) == j_idx(nnz_placed_orig+1 : nnz_placed_orig+9))
-%         'problems'
-%     end 
-%     if ~all(k_idx_tmp(nnz_placed_orig+1 : nnz_placed_orig+9) == k_idx(nnz_placed_orig+1 : nnz_placed_orig+9))
-%         'problems'
-%     end 
-%     if ~all(vals_tmp(nnz_placed_orig+1 : nnz_placed_orig+9) == vals(nnz_placed_orig+1 : nnz_placed_orig+9))
-%         'problems'
-%     end 
-    
-%    'whoa'
-    
-end 
-
 
 
 end 
