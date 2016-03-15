@@ -28,12 +28,7 @@ function J = build_jacobian(params, filter_params)
     % if using the redundant features on sparse creation use more 
     capacity = 10 * 15 * total_points; 
     
-   
     
-    % fprintf(1,'total allocation for Jacobian = %d', total_jacobian_space); 
-
-    %J = sparse([],[],[],total_points,total_points, total_jacobian_space); 
-
     % build with indices, then add all at once 
     nnz_placed = 0; 
     j_idx      = zeros(capacity, 1); 
@@ -45,9 +40,7 @@ function J = build_jacobian(params, filter_params)
     j_offsets = [0 1 2 0 1 2 0 1 2]'; 
     k_offsets = [0 0 0 1 1 1 2 2 2]';
     
-
-    %J = zeros(total_points,total_points); 
-
+    
     % always 6 pressure neighbors, which may or may not be in bounds
     % relative indices of pressure here 
     % numbered counter clockwise 
@@ -85,14 +78,10 @@ function J = build_jacobian(params, filter_params)
                     if j_nbr_next && k_nbr_next && j_nbr && k_nbr
 
                         % Current has two terms from a product rule 
-                        %J(range_current, range_current) = J(range_current, range_current) ... 
-                        %                                    - (p_0/6) * cross_matrix(X(:,j_nbr     ,k_nbr     ) - X(:,j,k)) ... 
-                        %                                    + (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k)); 
                         block     =  - (p_0/6) * cross_matrix(X(:,j_nbr     ,k_nbr     ) - X(:,j,k)) ... 
                                      + (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));                            
 
                         place_tmp_block(range_current, range_current, block); 
-
 
 
                         % nbr term
@@ -100,8 +89,6 @@ function J = build_jacobian(params, filter_params)
                         % only added if this is internal 
                         if is_internal(j_nbr,k_nbr,N)
                             range_nbr       = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
-                            % J(range_current, range_nbr) = J(range_current, range_nbr) - (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));
-
                             block = - (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));
                             place_tmp_block(range_current, range_nbr, block); 
                         end 
@@ -111,8 +98,6 @@ function J = build_jacobian(params, filter_params)
                         % only added if this is internal 
                         if is_internal(j_nbr_next,k_nbr_next,N)
                             range_nbr_next  = linear_index_offset(j_nbr_next,k_nbr_next,N) + (1:3);
-                            %J(range_current, range_nbr_next) = J(range_current, range_nbr_next) + (p_0/6) * cross_matrix(X(:,j_nbr,k_nbr) - X(:,j,k));   
-
                             block = (p_0/6) * cross_matrix(X(:,j_nbr,k_nbr) - X(:,j,k)); 
                             place_tmp_block(range_current, range_nbr_next, block); 
                         end 
@@ -133,21 +118,18 @@ function J = build_jacobian(params, filter_params)
                     % current term is always added in 
                     % this gets no sign 
                     % this is always at the current,current block in the matrix 
-                    % J(range_current, range_current) = J(range_current, range_current) + J_tension; 
                     place_tmp_block(range_current, range_current, J_tension); 
                     
                     % If the neighbor is an internal point, it also gets a Jacobian contribution 
                     % This takes a sign
                     if is_internal(j_nbr,k_nbr,N)
                         range_nbr  = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
-                        %J(range_current, range_nbr) = J(range_current, range_nbr) - J_tension; 
-                        place_tmp_block(range_current, range_nbr, - J_tension); 
+                        place_tmp_block(range_current, range_nbr, -J_tension); 
 
                     % If neighbor is on the chordae, it has a non zero index 
                     % This is included here 
                     elseif idx_chordae ~= 0
                         range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side);
-                        %J(range_current, range_nbr) = J(range_current, range_nbr) - J_tension; 
                         place_tmp_block(range_current, range_nbr, - J_tension); 
                     end 
                 end 
@@ -165,21 +147,18 @@ function J = build_jacobian(params, filter_params)
                     % current term is always added in 
                     % this gets no sign 
                     % this is always at the current,current block in the matrix 
-                    % J(range_current, range_current) = J(range_current, range_current) + J_tension; 
                     place_tmp_block(range_current, range_current, J_tension); 
 
                     % If the neighbor is an internal point, it also gets a Jacobian contribution 
                     % This takes a sign
                     if is_internal(j_nbr,k_nbr,N)
                         range_nbr  = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
-                        %J(range_current, range_nbr) = J(range_current, range_nbr) - J_tension; 
                         place_tmp_block(range_current, range_nbr, - J_tension); 
 
                     % If neighbor is on the chordae, it has a non zero index 
                     % This is included here 
                     elseif idx_chordae ~= 0
                         range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side); 
-                        % J(range_current, range_nbr) = J(range_current, range_nbr) - J_tension; 
                         place_tmp_block(range_current, range_nbr, - J_tension); 
                     end 
 
@@ -234,12 +213,10 @@ function J = build_jacobian(params, filter_params)
                     J_tension = tension_jacobian(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac); 
 
                     % current always gets a contribution from this spring 
-                    %J(range_current, range_current) = J(range_current, range_current) + J_tension; 
                     place_tmp_block(range_current, range_current, J_tension); 
 
                     % range may be empty if papillary muscle, in which case do nothing 
                     if ~isempty(range_nbr)
-                        %J(range_current, range_nbr) = J(range_current, range_nbr) - J_tension; 
                         place_tmp_block(range_current, range_nbr, - J_tension); 
                     end 
                 end 
@@ -269,8 +246,6 @@ function [] = place_tmp_block(range_current_loc, range_nbr_loc, block_loc)
     %   range_nbr       indices to place in k direction  
     %   block           block to place 
     % 
-    
-    
     
     [n,m] = size(block_loc); 
     
