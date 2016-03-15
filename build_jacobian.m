@@ -176,7 +176,7 @@ function J = build_jacobian(params, filter_params)
     % chordae internal terms 
     if N_chordae > 0
 
-        [C_left, C_right, left_papillary, right_papillary, Ref_l, Ref_r, k_l, k_r, k_0, k_multiplier] = unpack_chordae(params.chordae); 
+        [C_left, C_right, left_papillary, right_papillary, Ref_l, Ref_r] = unpack_chordae(params.chordae); 
 
         for left_side = [true false];  
 
