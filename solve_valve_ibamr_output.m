@@ -19,7 +19,7 @@ chordae_tree = true;
 a = 1; 
 r = 1.5;
 h = 3; 
-N = 128; 
+N = 256; 
 
 
 min_angle_posterior = -(pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
@@ -67,7 +67,14 @@ if chordae_tree
 end 
 
 
-tol_global = 1e-11; 
+tol_global = 1e-11;
+
+% when resolution increases 
+% need to up the tolerance a little because of conditioning 
+if N >= 256 
+    tol_global = 1e-10;
+end 
+
 max_it_global = 30; 
 
 plot_and_save_freq = 100; 
@@ -178,7 +185,7 @@ if N == 128
 end 
 
 if N == 256
-    ref_frac_range = .6:.05:ref_frac;  % .5 works here...  
+    ref_frac_range = [.5, .55, .6,.65,.67,ref_frac];  
 end 
 
 
