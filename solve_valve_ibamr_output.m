@@ -340,6 +340,7 @@ end
 
 base_name = strcat(base_name, sprintf('_%d', N)); 
 
+save(strcat(base_name, '_final_data')); 
 
 L = 2.5; 
 
