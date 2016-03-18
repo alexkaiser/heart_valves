@@ -58,6 +58,7 @@
 #include <ibtk/muParserRobinBcCoefs.h>
 
 // added this header
+#include <ibamr/IBInstrumentPanel.h>
 #include <ibamr/IBStandardSourceGen.h>
 #include <vector>
 #include <queue>
@@ -69,29 +70,14 @@
 #endif
 
 void init_source_variables(vector<double>& Q_src, const vector<double>& P_src); 
-
-void set_source_variables(vector<double>& Q_src, const vector<double>& P_src, double current_time, double dt, bool sink_on); 
-
-
-void compute_lagrangian_volume(Pointer<PatchHierarchy<NDIM> > patch_hierarchy,
-                                 LDataManager* l_data_manager, 
-                                 Pointer<CartesianGridGeometry<NDIM> > grid_geometry,
-                                 const double *internal_point,
-                                 double &internal_vol,
-                                 double &total_vol);
-
-void update_rest_lengths(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager* const l_data_manager, const double alpha); 
+void set_source_variables(vector<double>& Q_src, const vector<double>& P_src, double current_time, double dt, bool sink_on);
+void update_rest_lengths(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager* const l_data_manager, const double alpha);
                                  
-unsigned int get_global_idx(const double *point, const double *bdry_low, const unsigned int *N, const double dx);  
-unsigned int get_global_from_local(const unsigned int *N, const int *idx); 
-void get_local_idx(const unsigned int global_idx, const unsigned int *N, unsigned int *idx);  
-bool in_bounds(const unsigned int *N, const int *idx); 
 
 
 //#define ENABLE_SOURCES 
 //#define COMPARE_TO_ZERO_FLOW
 #define DEBUG_OUTPUT 0 
-// #define COMPUTE_LAG_VOLUME
 
 // #define UPDATE_REST_LEN 
 
@@ -434,23 +420,6 @@ int main(int argc, char* argv[])
             silo_data_writer->writePlotData(iteration_num, loop_time);
         }
 
-        #ifdef COMPUTE_LAG_VOLUME
-            double internal_point[3];
-            internal_point[0] =  1.5913553813280985;   
-            internal_point[1] = -1.1977912126743595;
-            internal_point[2] =  0.32802946876616201;
-    /*        internal_point[0] =  0.0;
-            internal_point[1] =  0.0; 
-            internal_point[2] =  0.0;
-    */
-            double internal_vol, total_vol;
-            
-            compute_lagrangian_volume(patch_hierarchy, l_data_manager, grid_geometry, internal_point, internal_vol, total_vol);
-
-            pout << "Initial volume estimated to be = " << internal_vol << "\n";
-            pout << "Initial volume including shell estimated to be = " << total_vol << "\n";
-        #endif
-
 
         #ifdef UPDATE_REST_LEN
             
@@ -628,13 +597,6 @@ int main(int argc, char* argv[])
             
             
             
-            #ifdef COMPUTE_LAG_VOLUME
-                compute_lagrangian_volume(patch_hierarchy, l_data_manager, grid_geometry, internal_point, internal_vol, total_vol);
-                pout << "Initial volume estimated to be = " << internal_vol << "\n";
-                pout << "Initial volume including shell estimated to be = " << total_vol << "\n";
-            #endif
-            
-
             pout << "+++++++++++++++++++++++++++++++++++++++++++++++++++\n";
             pout << "\n";
 
@@ -829,344 +791,9 @@ void set_source_variables(vector<double>& Q_src, const vector<double>& P_src, do
 }
 
 
-void compute_lagrangian_volume(Pointer<PatchHierarchy<NDIM> > patch_hierarchy,
-                                 LDataManager* l_data_manager, 
-                                 Pointer<CartesianGridGeometry<NDIM> > grid_geometry,
-                                 const double *internal_point,
-                                 double &internal_vol,
-                                 double &total_vol){
-    
-    // Assumes serial!!!
-    //
-    // Estimate Lagrangian 
-    // Provides a crude estimate of the three space volume 
-    
-    // pout << "in the lagrangian volume calculator\n";
-    
-    // set up the data
-    const int finest_hier_level = patch_hierarchy->getFinestLevelNumber();
-    Pointer<LData> X_data = l_data_manager->getLData("X", finest_hier_level);
-    Vec X_petsc_vec = X_data->getVec();
-    Vec X_lag_vec;
-    VecDuplicate(X_petsc_vec, &X_lag_vec);
-    l_data_manager->scatterPETScToLagrangian(X_petsc_vec, X_lag_vec, finest_hier_level);
-    
-    // pout << "got some data from the ldata manager\n";
-    
-    // get data from petsc arrays
-    int N_Lagrangian;            // keeps the full list of all three components 
-    PetscScalar *x;
-    VecGetLocalSize(X_lag_vec,&N_Lagrangian);
-    VecGetArray(X_lag_vec,&x);
-    
-    
-    // pout << "petsc calls passed\n";
-    
-    const double *dx_each   = grid_geometry->getDx(); 
-    const double *bdry_low  = grid_geometry->getXLower(); 
-    const double *bdry_up   = grid_geometry->getXUpper(); 
-    
-    // pout << "grid geometry call passed\n";
-    
-    if ( (dx_each[0] - dx_each[1] > 1e-12) || (dx_each[0] - dx_each[2] > 1e-12) ){
-        pout << "All meshes must be the same size to compute Lagrangian error\n" ; 
-        pout << "Mesh dimensions = (" << dx_each[0] << ", " << dx_each[1] << ", " << dx_each[2] << ")\n"; 
-        abort(); 
-    } 
-    const double dx = dx_each[0]; 
-        
-    
-    // allocate for keeping track of indices 
-    if ((N_Lagrangian%3) != 0){
-        pout << "total number of elements in flattened Lagrangian array must be a multiple of three.\n" ;  
-        abort(); 
-    }
-    
-    unsigned int N[NDIM]; 
-    for(int i=0; i<NDIM; i++){
-        N[i] = (int) ((bdry_up[i] - bdry_low[i]) / dx); 
-    }
-    
-    if(DEBUG_OUTPUT){
-        for(int i=0; i<NDIM; i++){
-            pout << "idx = " << i << "N = " << N[i] << ", dx = " << dx << " bdry_low = " << bdry_low[i] << " bdry_up = " << bdry_up[i] << "\n"; 
-        }
-    }
-    
-    int N_Eulerian_total = N[0] * N[1] * N[2]; 
-
-    int *indices = new int[N_Eulerian_total]; 
-    
-    /*
-    pout << "length of Eulerian indices = " << N_Eulerian_total << "\n";  
-    pout << "est Eulerian vol = " << N_Eulerian_total * dx*dx*dx << "\n"; 
-    
-    pout << "length of Lagrangian points = " << N_Lagrangian/3 << "\n";  
-    pout << "Lagrangian shell vol upper bound = " << (N_Lagrangian/3) * dx*dx*dx << "\n"; 
-    */
-    
-    for(int i=0; i<N_Eulerian_total; i++){
-        indices[i] = 0; 
-    }
-    // pout << "allocation of indices passed\n";
-    
-    
-
-    
-    unsigned int idx[3]; 
-    int idx_nbr[3];             // may be negative but then this is out of bounds 
-    unsigned int idx_global; 
-    unsigned int idx_nbr_global; 
-    
-    // pout << "to loop on lagrangian boundary\n";
-    
-    
-    // Mark all elements near Lagrangian boundary. 
-    // This marks 8 points on the edges of the cube which contains the Lagrangian point. 
-    // Lower boundary is inclusive, upper exclusive. 
-    // 
-    
-    unsigned int eulerian_pts_marked = 0; 
-    
-    for(int idx_lag=0; idx_lag<N_Lagrangian; idx_lag+=3){
-        
-        idx_global = get_global_idx(x+idx_lag, bdry_low, N, dx); 
-        //pout << "in lagrangian boundary loop, i=" << i << " idx_global = " << idx_global << "\n"; 
-        
-        get_local_idx(idx_global, N, idx); 
-        
-        for(int i=0; i<=1; i++){
-            for(int j=0; j<=1; j++){
-                for(int k=0; k<=1; k++){
-                
-                    idx_nbr[0] = idx[0] + i; 
-                    idx_nbr[1] = idx[1] + j; 
-                    idx_nbr[2] = idx[2] + k;                     
-
-                    if( in_bounds(N, idx_nbr) ){
-                        
-                        idx_nbr_global = get_global_from_local(N, idx_nbr); 
-                        
-                        // mark it 
-                        if (indices[idx_nbr_global] == 0){
-                            indices[idx_nbr_global] = 2;
-                            eulerian_pts_marked++; 
-                            
-                            /*pout << "Lagrangian point index --\n"; 
-                            pout << "idx_global = " << idx_global ; 
-                            pout << "idx = (" << idx[0] << ", " << idx[1] << ", " << idx[2] << ")  "  ; 
-                            pout << "idx_nbr = (" << idx_nbr[0] << ", " << idx_nbr[1] << ", " << idx_nbr[2] << ")  \n"  ; 
-                            */ 
-                        }
-                        
- 
-                    }  
-                }
-            }
-        }
-    }
-
-    // pout << "total eulerian pts marked = " << eulerian_pts_marked << "\n" ;
-    // pout << "eulerian volume est of lagrangian shell = " << eulerian_pts_marked * dx*dx*dx << "\n" ;
-    
-    // pout << "passed lagrangian boundary loop\n";
-    
-    std::queue<unsigned int> indices_queue; 
-    
-    // pout << "internal point coordinates = (" << internal_point[0] << ", " << internal_point[1] << ", " << internal_point[2] << ")\n" ;
-    
-    idx_global = get_global_idx(internal_point, bdry_low, N, dx); 
-   
-    //idx_global = 0; 
-    //pout << "\n\nCHECKING OUTSIDE STARTING WITH ZERO\n\n" ; 
-      
-    if(indices[idx_global] != 0){
-        pout << "index of our internal point is aleardy marked \n" ; 
-        abort(); 
-    }
-    
-    indices_queue.push( idx_global ); 
-    indices[idx_global] = 1; 
-    
-    unsigned int total_internal = 0; 
- 
-    // pout << "to main loop\n" ;
- 
-    while( !indices_queue.empty() ){
-        
-        // got a point... 
-        total_internal++; 
-        
-        idx_global = indices_queue.front();
-        indices_queue.pop();
-
-        get_local_idx(idx_global, N, idx); 
-        
-        //pout << "idx_global = " << idx_global << ", indices[idx_global] = " << indices[idx_global] << "\n";  
-        //pout << "idx = (" << idx[0] << ", " << idx[1] << ", " << idx[2] << ")  "  ; 
-        
-        for(int i=-1; i<=1; i++){
-            for(int j=-1; j<=1; j++){
-                for(int k=-1; k<=1; k++){
-                    
-                    // pout << "i,j,k = " << i << " " << j << " " << k << "\n"; 
-                    
-                    // don't compare with self
-                    if((i==0) && (j==0) && (k==0))
-                        continue; 
-                
-                    idx_nbr[0] = idx[0] + i; 
-                    idx_nbr[1] = idx[1] + j; 
-                    idx_nbr[2] = idx[2] + k;                     
-                    
-
-                    
-                    // is this a vaild index? 
-                    if( in_bounds(N, idx_nbr) ){
-                        //pout << "in bounds passed...\n" ;  
-                        
-                        idx_nbr_global = get_global_from_local(N, idx_nbr); 
-                        
-                        // is it unfilled? 
-                        if(indices[idx_nbr_global] == 0){
-                        
-                        /*
-                            pout << "found an unfilled index\n"; 
-                            pout << "idx_global = " << idx_global ; 
-                            pout << "idx = (" << idx[0] << ", " << idx[1] << ", " << idx[2] << ")  "  ; 
-                            pout << "idx_nbr = (" << idx_nbr[0] << ", " << idx_nbr[1] << ", " << idx_nbr[2] << ")  \n"  ; 
-                        */ 
-                            // mark it 
-                            indices[idx_nbr_global] = 1; 
-                            
-                            // push on 
-                            indices_queue.push(idx_nbr_global); 
-                            
-                            //pout << "point added.\n" ; 
-
-                        }
-                        /*else if(indices[idx_nbr_global] == 2){
-                                                   
-                            pout << "Lagrangian point index --\n"; 
-                            pout << "idx_global = " << idx_global ; 
-                            pout << "idx = (" << idx[0] << ", " << idx[1] << ", " << idx[2] << ")  "  ; 
-                            pout << "idx_nbr = (" << idx_nbr[0] << ", " << idx_nbr[1] << ", " << idx_nbr[2] << ")  \n"  ; 
-                        
-                        }*/ 
-                    }  
-                }
-            }
-        }
-        
-        //pout << "end of the while loop body, number of elements in queue = " << indices_queue.size() << "\n" ;     
-        
-    }
- 
-    delete indices; 
-    
-    // pout << "total number of internal = " << total_internal << "\n";
-    
-    internal_vol = ((double) total_internal) * dx*dx*dx;
-    
-    total_vol = ((double) total_internal + eulerian_pts_marked) * dx*dx*dx;
-    
-    
-    // return ((double) total_internal) * dx*dx*dx;
-}
-
-
-unsigned int get_global_idx(const double *point, const double *bdry_low, const unsigned int *N, const double dx){
-    /*
-    Computes the global 1-d index of the given point. 
-    Assumes x,y,z order.  
-    
-    Input: 
-    const double *point      Cartesian coordinates of the point. 
-    const double *bdry_low   Lower boundary of domain 
-    const int *N             Number points in domain 
-    const double dx          Mesh width
-    
-    Output 
-    int (returned)           Global index 
-    */
-
-    int idx_x = (int) ((point[0] - bdry_low[0]) / dx); 
-    int idx_y = (int) ((point[1] - bdry_low[1]) / dx);         
-    int idx_z = (int) ((point[2] - bdry_low[2]) / dx); 
-    
-    return idx_x + idx_y * N[0] + idx_z * N[0] * N[1];
-}
-
-
-unsigned int get_global_from_local(const unsigned int *N, const int *idx){
-    /*
-    Computes the global 1-d index from the 3 variable local index
-    Assumes x,y,z order.  
-    
-    Input: 
-    const int *N               Number points in domain 
-    const unsigned int *idx    Index in 3 coordinates  
-    
-    Output 
-    int (returned)             Global index 
-    */
-
-    int idx_x = (unsigned int) idx[0]; 
-    int idx_y = (unsigned int) idx[1]; 
-    int idx_z = (unsigned int) idx[2]; 
-
-    return idx_x + idx_y * N[0] + idx_z * N[0] * N[1];
-}
 
 
 
-
-void get_local_idx(const unsigned int global_idx, const unsigned int *N, unsigned int *idx){
-    /*
-    Computes the 3 coordinates from the one idex
-    Assumes x,y,z order.  
-    
-    Input: 
-    const unsigned int global_idx      Cartesian coordinates of the point. 
-    const int *N                       Number points in domain 
-
-    Output:
-    unsigned int *idx                  Three coordinates of the index. 
-    */
-
-    unsigned int temp; 
-    unsigned int i,j,k;
-    i      = global_idx % N[0];           // first index from modding out the first dimension 
-    temp   = (global_idx-i) / N[0];       // subtract from global and divide out first, gives   temp = j + k*N[1]  
-    j      = temp % N[1];                 // get j 
-    k      = (temp - j)/N[1];             // temp - j = k*N[1]
-    
-    idx[0] = i; 
-    idx[1] = j; 
-    idx[2] = k;     
-}
-
-bool in_bounds(const unsigned int *N, const int *idx){
-    /*
-    Checks whether the index is in bounds or not. 
-    
-    Input: 
-    const int *N                       Number points in domain 
-    unsigned int *idx                  Three coordinates of the index. 
-    
-    Output:
-    True if in bounds. 
-    */
-
-    if((idx[0] < 0) || (idx[1] < 0) || (idx[2] < 0))
-        return false; 
-        
-    if((idx[0] >= ((int) N[0]))  ||  (idx[1] >= ((int) N[1]))  ||  (idx[2] >= ((int) N[2]))) 
-        return false; 
-        
-    return true; 
-    
-}
 
 
 void update_rest_lengths(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager* const l_data_manager, const double alpha){
