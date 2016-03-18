@@ -78,6 +78,7 @@ void update_rest_lengths(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager*
 //#define ENABLE_SOURCES 
 //#define COMPARE_TO_ZERO_FLOW
 #define DEBUG_OUTPUT 0 
+#define ENABLE_INSTRUMENTS
 
 // #define UPDATE_REST_LEN 
 
@@ -218,6 +219,10 @@ int main(int argc, char* argv[])
                 
         #endif
         
+        #ifdef ENABLE_INSTRUMENTS
+            Pointer<IBInstrumentPanel> instruments = new IBInstrumentPanel("meter_0", input_db);
+        #endif
+        
         
         
         LDataManager* l_data_manager = ib_method_ops->getLDataManager();
@@ -336,6 +341,12 @@ int main(int argc, char* argv[])
         #endif
 
 
+        #ifdef ENABLE_INSTRUMENTS
+            // do this after initialize patch hierarchy
+            instruments->initializeHierarchyIndependentData(patch_hierarchy, l_data_manager);
+        #endif
+
+
         // For debug, compare to zero flow 
         // Use an ifdef to avoid having things go out of scope 
         #ifdef COMPARE_TO_ZERO_FLOW
@@ -418,6 +429,10 @@ int main(int argc, char* argv[])
             time_integrator->setupPlotData();
             visit_data_writer->writePlotData(patch_hierarchy, iteration_num, loop_time);
             silo_data_writer->writePlotData(iteration_num, loop_time);
+            
+            #ifdef ENABLE_INSTRUMENTS
+                instruments->writePlotData (iteration_num, loop_time);
+            #endif
         }
 
 
@@ -630,6 +645,10 @@ int main(int argc, char* argv[])
                         source_output_stream.flush(); 
                     }
             
+                #endif
+                
+                #ifdef ENABLE_INSTRUMENTS
+                    instruments->writePlotData (iteration_num, loop_time);
                 #endif
                 
                 
