@@ -19,7 +19,7 @@ chordae_tree = true;
 a = 1; 
 r = 1.5;
 h = 3; 
-N = 256; 
+N = 32; 
 
 
 min_angle_posterior = -(pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
@@ -348,7 +348,7 @@ L = 2.5;
 % ratio 6 is for N=32
 % ratio = 6 seems to make everything very stiff 
 % turn down by order of magnitude, see if it helps 
-ratio = 60; 
+ratio = 6; 
 
 
 % original spring constants were for N = 32 debug width
@@ -364,7 +364,7 @@ target_multiplier = 20;
 % number of lagrangian tracers in each dimension 
 % arranged in a mesh near the origin
 % z direction is doubled 
-n_lagrangian_tracers = 0; 
+n_lagrangian_tracers = 8; 
 
 output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_physical, target_multiplier, refinement, n_lagrangian_tracers); 
 

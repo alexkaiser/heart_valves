@@ -21,6 +21,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     vertex = fopen(strcat(base_name, '.vertex'), 'w'); 
     spring = fopen(strcat(base_name, '.spring'), 'w'); 
     target = fopen(strcat(base_name, '.target'), 'w'); 
+    inst = fopen(strcat(base_name, '.inst'  ), 'w'); 
 
     % keep one global index through the whole thing 
     global_idx = 0;
@@ -52,14 +53,14 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
 
     % output the left and right papillary as the first two vertices and targets 
     left_papillary  = [0; -filter_params_posterior.a; 0]; 
-    total_vertices = vertex_string(vertex, left_papillary, total_vertices); 
-    total_targets = target_string(target, global_idx, k_target, total_targets);     
-    global_idx = global_idx + 1; 
+    total_vertices  = vertex_string(vertex, left_papillary, total_vertices); 
+    total_targets   = target_string(target, global_idx, k_target, total_targets);     
+    global_idx      = global_idx + 1; 
     
     right_papillary = [0;  filter_params_posterior.a; 0]; 
-    total_vertices = vertex_string(vertex, right_papillary, total_vertices); 
-    total_targets = target_string(target, global_idx, k_target, total_targets);     
-    global_idx = global_idx + 1;     
+    total_vertices  = vertex_string(vertex, right_papillary, total_vertices); 
+    total_targets   = target_string(target, global_idx, k_target, total_targets);     
+    global_idx      = global_idx + 1;     
     
     % posterior first 
     % leaflets 
@@ -87,14 +88,23 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     r = filter_params_posterior.r; 
     N_ring = 2 * params_anterior.N;
     h = filter_params_posterior.h; 
-    ref_frac = params_posterior.ref_frac; 
+    ref_frac_net = 1.0; 
     
     [global_idx, total_vertices, total_springs, total_targets] = ...
-                            place_net(r, h, L, N_ring, spring, vertex, target, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac); 
+                            place_net(r, h, L, N_ring, spring, vertex, target, inst, ...
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net); 
 
+    % flat part of mesh with Cartesian coordinates
+    % twice as fine as the Cartesian mesh
+    % but leave 2 in for clarity  
+    ds = 2*L / (2*params_anterior.N);
+    r_cartesian = r + ds/2; 
+    [global_idx, total_vertices, total_springs, total_targets] = ...
+                            place_cartesian_net(r_cartesian, h, L, ds, spring, vertex, target, ...
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net); 
+                        
     if nargin >= 10
-        double_z = true; 
+        double_z = false; 
         [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L, filter_params_posterior, double_z); 
         particles = fopen(strcat(base_name, '.particles'), 'w'); 
         fprintf(particles, '%d\n' ,total_lagrangian_placed); 
@@ -104,6 +114,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     fclose(vertex); 
     fclose(spring); 
     fclose(target); 
+    fclose(inst  ); 
 
     prepend_line_with_int(strcat(base_name, '.vertex'), total_vertices); 
     prepend_line_with_int(strcat(base_name, '.spring'), total_springs); 
@@ -377,7 +388,7 @@ end
                         
                         
 function [global_idx, total_vertices, total_springs, total_targets] = ...
-                            place_net(r, h, L, N, spring, vertex, target, ...
+                            place_net(r, h, L, N, spring, vertex, target, inst, ...
                             global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac)
     % 
     % Places a polar coordinate mesh in a box 
@@ -394,6 +405,10 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
     %     h                Height of valve ring 
     %     L                Box width -- point must have max norm less than L to be included 
     %     N                Number of points placed on the initial circle (valve ring)
+    %     spring           Files for writing, must be open already 
+    %     vertex 
+    %     target
+    %     inst 
     %     global_idx       Running totals  
     %     total_vertices 
     %     total_springs 
@@ -439,6 +454,12 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
     end 
 
     
+    % write the instrument file header here 
+    fprintf(inst, '1   # num meters in file\n'); 
+    fprintf(inst, 'meter_0   # name\n'); 
+    fprintf(inst, '%d  # number of meter points\n', N); 
+    
+    
     % below the first possible point 
     idx = -1; 
     
@@ -450,6 +471,18 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
  
                 last_idx = idx; 
                 idx = indices(j,k) + global_idx; 
+                
+                % instrument file on 
+                if k == 1
+                
+                    if j ~= (indices(j,k)+1)
+                        error('local indices should go with j'); 
+                    end 
+                
+                    fprintf(inst, '%d \t0 \t %d\n', idx, indices(j,k)); 
+                    
+                end 
+                    
                 
                 if last_idx >= idx
                     error('should always be placing points in order, something wrong'); 
@@ -492,6 +525,266 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                 end 
                 
                 % no periodic direction in radial direction (k)
+                
+            end 
+           
+        end 
+    end 
+    
+    global_idx = global_idx + points_placed; 
+
+end 
+
+
+function [global_idx, total_vertices, total_springs, total_targets] = ...
+                            place_rays(params, filter_params, L, spring, vertex, target, ...
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac)
+    % 
+    % Places rays of fibers emenating from the leaflet 
+    % Angle of rays makes them (roughly) geodesics 
+    % on the valve surface and plane surface  
+    % 
+    % Spacing is determined by reflection 
+    %
+    % Mesh is placed with a rectangular topology
+    % Springs everywhere internal 
+    % All points are made targets
+    % 
+    % Input
+    %     r                Internal radius 
+    %     h                Height of valve ring 
+    %     L                Box width -- point must have max norm less than L to be included 
+    %     N                Number of points placed on the initial circle (valve ring)
+    %     spring           Files for writing, must be open already 
+    %     vertex 
+    %     target
+    %     inst 
+    %     global_idx       Running totals  
+    %     total_vertices 
+    %     total_springs 
+    %     total_targets 
+    % 
+
+    r = filter_params.r; 
+    h = filter_params.h; 
+    N = params.N; 
+    
+    for k=1:N
+        
+        % working with the ring coordinates here 
+        j = (N+2) - k; 
+            
+        pt_ring = params(:,j,k); 
+        
+        for x = [params.X(:,j-1,k), params.X(:,j,k-1)]
+            
+            % find the initial reflected point 
+            val = get_geodesic_continued_point(x, pt_ring, r, h); 
+            
+            % each point moves by this much from the initial point 
+            increment = val - x; 
+            
+            point = val; 
+            point_prev = pt_ring; 
+            
+            % just keep adding until points leave the domain 
+            while norm(point(1:2), inf) < L  
+                
+                rest_len = ref_frac * norm(point - point_prev); 
+                kappa = k_rel / rest_len;
+                nbr_idx = indices(1,k) + global_idx; 
+                total_springs = spring_string(spring, nbr_idx, idx, kappa, rest_len, total_springs);
+                
+                point_prev = point; 
+                point = point + increment; 
+            end 
+            
+            
+        end 
+    
+        
+    end 
+    
+
+
+end 
+
+
+function [val] = get_geodesic_continued_point(x, pt_ring, r, h)
+    %
+    % Takes a point inside the the valve ring
+    % Returns a point which allows a geodesic continuation 
+    % Taking a segment from the ring point to the wall creates a geodesic 
+    % 
+    % Input: 
+    %     x           Coordinates 
+    %     pt_ring     Point on the valve ring to reflect relative to 
+    %     r           Radius of valve ring 
+    %     h           height of valve ring 
+    %
+
+    if abs(pt_ring - h) > eps 
+        error('Initial ring point is not at the right height'); 
+    end 
+    
+    if abs(norm(pt_ring(1:2)) - r) > eps  
+        error('Initial ring point is not at the correct radius'); 
+    end 
+    
+    
+    % angle needed to send the ring point to the x axis 
+    theta = atan2(pt_ring(2), pt_ring(1)); 
+    
+    % rotate the point of inter
+    val = rotation_matrix_z(-theta) * x; 
+    
+    % ring point to origin, val to near origin to be reflected 
+    val = val - [r; 0; h]; 
+
+    % rotate val into the z = 0 plane, inside the transformed ring 
+    phi = atan2(val(3), val(1)); 
+    val = rotation_matrix_y( -(phi - pi)) * val;
+    
+    if abs(val(3)) > eps
+        error('should have landed in z=0 plane here...');
+    end 
+
+    % reflect, this would be the geodesic point if the system was flat 
+    val = -val; 
+    
+    % send back to original coordinates 
+    val = rotation_matrix_y(phi - pi) * val;
+    val = val + [r; 0; h]; 
+    val = rotation_matrix_z(-theta) * val; 
+    
+    if abs(val(3) - h) > eps 
+        error('rotated value is not in plane'); 
+    end 
+    
+    if norm(val(1:2)) <= r 
+        error('rotated value must be out of the plane'); 
+    end 
+    
+
+end 
+
+
+function R = rotation_matrix_z(theta)
+    % 
+    % Rotation matrix counter clockwise by theta 
+    % around z axis 
+
+    R = [cos(theta) -sin(theta) 0; 
+         sin(theta)  cos(theta) 0; 
+         0           0          1]; 
+end 
+
+
+function R = rotation_matrix_y(theta)
+    % 
+    % Rotation matrix counter clockwise by theta 
+    % around z axis 
+
+    R = [cos(theta)  0 -sin(theta); 
+         0           1  0         ; 
+         sin(theta)  0  cos(theta)]; 
+end 
+
+
+function [global_idx, total_vertices, total_springs, total_targets] = ...
+                            place_cartesian_net(r, h, L, ds, spring, vertex, target, ...
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac)
+    % 
+    % Places a cartesian coordinate mesh in a box 
+    % This is to avoid issues with the polar mesh at the edge 
+    % Mesh is placed on [-L + ds, L-ds]
+    % 
+    % Springs everywhere internal in 2d arrangement 
+    % All points are made targets
+    % 
+    % Input
+    %     r                Internal radius, it is advisible to make this larger than the valve ring 
+    %     h                Height of valve ring 
+    %     L                Box width -- point must have max norm less than L to be included 
+    %     ds               Mesh is placed starting ds from boundary 
+    %     global_idx       Running totals  
+    %     total_vertices 
+    %     total_springs 
+    %     total_targets 
+    % 
+
+ 
+    N = ceil(2*L / ds);  
+    points = zeros(3,N,N);
+
+    % just keep a list of valid indices, mark NAN if out of physical bounds 
+    indices = zeros(N,N); 
+    idx = 0; 
+    points_placed = 0; 
+    
+    
+    % This loop should be one indexed, 
+    % because we want to start not at the edge but ds in 
+    for k=1:N
+        for j=1:N
+            
+            coords_horiz = [j*ds - L; k*ds - L]; 
+            
+            % if one norm is less than L, then the point is within the domain  
+            if (norm(coords_horiz, inf) < L) && (norm(coords_horiz,2) > r) 
+                points(:,j,k) = [coords_horiz; h]; 
+                indices(j,k) = idx; 
+                idx = idx + 1;                 
+            else 
+                points(:,j,k) = NaN * ones(3,1);
+                indices(j,k) = NaN; 
+            end     
+            
+        end 
+        
+    end 
+
+    
+    % below the first possible point 
+    idx = -1; 
+    
+    for k=1:N
+        for j=1:N
+            
+            % just ignore the NaNs 
+            if ~isnan(indices(j,k))
+ 
+                last_idx = idx; 
+                idx = indices(j,k) + global_idx; 
+                
+                if last_idx >= idx
+                    error('should always be placing points in order, something wrong'); 
+                end 
+                
+                % every valid vertex is a target here 
+                total_vertices = vertex_string(vertex, points(:,j,k), total_vertices); 
+                points_placed = points_placed + 1; 
+                total_targets = target_string(target, idx, k_target, total_targets);     
+                
+                % check up directions for springs 
+                if (j+1) < N
+                    if ~isnan(indices(j+1,k))
+                        rest_len = ref_frac * norm(points(:,j,k) - points(:,j+1,k)); 
+                        kappa = k_rel / rest_len;
+                        nbr_idx = indices(j+1,k) + global_idx; 
+                        total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
+                    end 
+                end 
+                                
+                % check up directions for springs 
+                if (k+1) < N
+                    if ~isnan(indices(j,k+1))
+                        rest_len = ref_frac * norm(points(:,j,k) - points(:,j,k+1)); 
+                        kappa = k_rel / rest_len; 
+                        nbr_idx = indices(j,k+1) + global_idx; 
+                        total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
+                    end 
+                end 
                 
             end 
            
