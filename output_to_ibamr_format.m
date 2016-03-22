@@ -21,7 +21,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     vertex = fopen(strcat(base_name, '.vertex'), 'w'); 
     spring = fopen(strcat(base_name, '.spring'), 'w'); 
     target = fopen(strcat(base_name, '.target'), 'w'); 
-    inst = fopen(strcat(base_name, '.inst'  ), 'w'); 
+    % inst = fopen(strcat(base_name, '.inst'  ), 'w'); 
 
     % keep one global index through the whole thing 
     global_idx = 0;
@@ -46,7 +46,8 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     k_target_ring = k_target / refinement; 
     
     % there are four times as many, so they get multiplied by refinement squared 
-    k_target_net = k_target / refinement^2; 
+    % can also just divide by refinement because not want them to get stiffer
+    k_target_net = k_target / refinement; 
     
     % relative spring constants drop when the mesh is refined 
     k_rel = k_rel / refinement; 
@@ -64,7 +65,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     
     % posterior first 
     % leaflets 
-    [global_idx, total_vertices, total_springs, total_targets] = ...
+    [global_idx, total_vertices, total_springs, total_targets, params_posterior] = ...
         add_leaflet(params_posterior, filter_params_posterior, spring, vertex, target, ...
                     global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_ring); 
 
@@ -75,7 +76,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     end
     
     % anterior 
-    [global_idx, total_vertices, total_springs, total_targets] = ...
+    [global_idx, total_vertices, total_springs, total_targets, params_anterior] = ...
         add_leaflet(params_anterior, filter_params_posterior, spring, vertex, target, ...
                      global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_ring);   
     
@@ -89,20 +90,33 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     N_ring = 2 * params_anterior.N;
     h = filter_params_posterior.h; 
     ref_frac_net = 1.0; 
+
+    % turn the polar net off for now      
+%     [global_idx, total_vertices, total_springs, total_targets] = ...
+%                             place_net(r, h, L, N_ring, spring, vertex, target, inst, ...
+%                             global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net); 
+%                         
+                        
+    
+    % place rays for now 
+    [global_idx, total_vertices, total_springs, total_targets] = ...
+                            place_rays(params_anterior, filter_params_posterior, L, spring, vertex, target, ...
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net);                    
     
     [global_idx, total_vertices, total_springs, total_targets] = ...
-                            place_net(r, h, L, N_ring, spring, vertex, target, inst, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net); 
-
+                            place_rays(params_posterior, filter_params_posterior, L, spring, vertex, target, ...
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net);                    
+        
+                        
     % flat part of mesh with Cartesian coordinates
     % twice as fine as the Cartesian mesh
     % but leave 2 in for clarity  
     ds = 2*L / (2*params_anterior.N);
     r_cartesian = r + ds/2; 
-    [global_idx, total_vertices, total_springs, total_targets] = ...
-                            place_cartesian_net(r_cartesian, h, L, ds, spring, vertex, target, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net); 
-                        
+%     [global_idx, total_vertices, total_springs, total_targets] = ...
+%                             place_cartesian_net(r_cartesian, h, L, ds, spring, vertex, target, ...
+%                             global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net); 
+%                         
     if nargin >= 10
         double_z = false; 
         [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L, filter_params_posterior, double_z); 
@@ -114,7 +128,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     fclose(vertex); 
     fclose(spring); 
     fclose(target); 
-    fclose(inst  ); 
+    % fclose(inst  ); 
 
     prepend_line_with_int(strcat(base_name, '.vertex'), total_vertices); 
     prepend_line_with_int(strcat(base_name, '.spring'), total_springs); 
@@ -176,7 +190,7 @@ function [] = prepend_line_with_int(file_name, val)
 
 end 
 
-function [global_idx, total_vertices, total_springs, total_targets] = ...
+function [global_idx, total_vertices, total_springs, total_targets, params] = ...
                 add_leaflet(params, filter_params, spring, vertex, target, ...
                             global_idx, total_vertices, total_springs, total_targets, k_rel, k_target)
                                                                                 
@@ -185,6 +199,10 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
 
 
     [X,alpha,beta,N,p_0,R,ref_frac] = unpack_params(params); 
+    
+    % Keep track of indices 
+    indices_global = nan * zeros(N+1,N+1); 
+
     
     left_papillary  = [0; -filter_params.a; 0]; 
     right_papillary = [0;  filter_params.a; 0]; 
@@ -208,6 +226,8 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                 idx = global_idx + vertex_index_offset(j,k,N);    
                 
                 total_vertices = vertex_string(vertex, X(:,j,k), total_vertices); 
+                
+                indices_global(j,k) = idx; 
                 
                 % if j==1, connect to the left papillary or chordae tree 
                 if j==1
@@ -303,9 +323,10 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                 pts_placed = pts_placed + 1; 
             end 
         end 
-    end 
+    end
     
-    global_idx = global_idx + pts_placed; 
+    params.indices_global = indices_global; 
+    global_idx = global_idx + pts_placed;
 
 end 
 
@@ -569,14 +590,31 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
     h = filter_params.h; 
     N = params.N; 
     
-    for k=1:N
+    % max norm for included rays 
+    % limit = L - (2*L / (2*N)); % leave points half mesh width from edge 
+    
+    if ~isfield(params, 'indices_global')
+        error('Must place leaflets before placing rays'); 
+    end 
+    
+    for k=1:N+1
         
         % working with the ring coordinates here 
         j = (N+2) - k; 
             
-        pt_ring = params(:,j,k); 
+        pt_ring = params.X(:,j,k); 
         
-        for x = [params.X(:,j-1,k), params.X(:,j,k-1)]
+        % only get a fiber if the previous point is included in the leaflet  
+        neighbors = []; 
+        if j > 1
+            neighbors = [params.X(:,j-1,k), neighbors] ; 
+        end 
+        if k > 1
+            neighbors = [params.X(:,j,k-1), neighbors] ; 
+        end        
+        
+        
+        for x = neighbors 
             
             % find the initial reflected point 
             val = get_geodesic_continued_point(x, pt_ring, r, h); 
@@ -584,28 +622,41 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
             % each point moves by this much from the initial point 
             increment = val - x; 
             
+            % just zero this component, they are both near 3 but maybe not exactly 
+            increment(3) = 0.0; 
+
+            
             point = val; 
             point_prev = pt_ring; 
-            
+            nbr_idx = params.indices_global(j,k); 
+
             % just keep adding until points leave the domain 
-            while norm(point(1:2), inf) < L  
+            while norm(point(1:2), inf) < L   
+                
+                % grab the index 
+                idx = global_idx;
+                
+                % point 
+                total_vertices = vertex_string(vertex, point, total_vertices); 
+                
+                % it's a target too 
+                total_targets = target_string(target, idx, k_target, total_targets);  
                 
                 rest_len = ref_frac * norm(point - point_prev); 
                 kappa = k_rel / rest_len;
-                nbr_idx = indices(1,k) + global_idx; 
+                 
+
                 total_springs = spring_string(spring, nbr_idx, idx, kappa, rest_len, total_springs);
                 
                 point_prev = point; 
-                point = point + increment; 
+                point      = point + increment; 
+                global_idx = global_idx + 1; 
+                nbr_idx    = idx; 
             end 
-            
-            
+                    
         end 
     
-        
     end 
-    
-
 
 end 
 
@@ -623,11 +674,13 @@ function [val] = get_geodesic_continued_point(x, pt_ring, r, h)
     %     h           height of valve ring 
     %
 
-    if abs(pt_ring - h) > eps 
+    tol = 1e5 * eps; 
+    
+    if abs(pt_ring(3) - h) > tol 
         error('Initial ring point is not at the right height'); 
     end 
     
-    if abs(norm(pt_ring(1:2)) - r) > eps  
+    if abs(norm(pt_ring(1:2)) - r) > tol 
         error('Initial ring point is not at the correct radius'); 
     end 
     
@@ -653,11 +706,11 @@ function [val] = get_geodesic_continued_point(x, pt_ring, r, h)
     val = -val; 
     
     % send back to original coordinates 
-    val = rotation_matrix_y(phi - pi) * val;
+    % val = rotation_matrix_y(phi - pi) * val;
     val = val + [r; 0; h]; 
-    val = rotation_matrix_z(-theta) * val; 
+    val = rotation_matrix_z(theta) * val; 
     
-    if abs(val(3) - h) > eps 
+    if abs(val(3) - h) > tol 
         error('rotated value is not in plane'); 
     end 
     
