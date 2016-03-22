@@ -220,6 +220,14 @@ int main(int argc, char* argv[])
         #endif
         
         #ifdef ENABLE_INSTRUMENTS
+         
+            std::vector<double> flux_valve_ring;
+            std::ofstream flux_output_stream;
+            
+            // no idea what these do 
+            int u_data_idx = 0; 
+            int p_data_idx = 0; 
+            
             Pointer<IBInstrumentPanel> instruments = new IBInstrumentPanel("meter_0", input_db);
         #endif
         
@@ -344,6 +352,23 @@ int main(int argc, char* argv[])
         #ifdef ENABLE_INSTRUMENTS
             // do this after initialize patch hierarchy
             instruments->initializeHierarchyIndependentData(patch_hierarchy, l_data_manager);
+            
+            // Stream to write-out flux data 
+            if (!from_restart){
+                if (SAMRAI_MPI::getRank() == 0){
+                    flux_output_stream.open("flux_plot_IBAMR.m", ios_base::out | ios_base::trunc);
+                    flux_output_stream << "data = [" ; 
+                }
+            }
+            // if we are restarting, we want to append to the file 
+            // we are assuming that the pressure plot write was not interuppted here in the previous run 
+            else{
+                if (SAMRAI_MPI::getRank() == 0){
+                    flux_output_stream.open("flux_plot_IBAMR.m", ios_base::out | ios_base::app);
+                    flux_output_stream << "data = [" ; 
+                }
+            }
+            
         #endif
 
 
@@ -431,8 +456,25 @@ int main(int argc, char* argv[])
             silo_data_writer->writePlotData(iteration_num, loop_time);
             
             #ifdef ENABLE_INSTRUMENTS
-                instruments->writePlotData (iteration_num, loop_time);
+                
+                if (instruments->isInstrumented())
+                    pout << "is instrumented passed\n" ;
+                else
+                    pout << "is instrumented returned FALSE\n" ;  
+                    
+                instruments->initializeHierarchyDependentData(patch_hierarchy, l_data_manager, iteration_num, loop_time); 
+                instruments->readInstrumentData(u_data_idx, p_data_idx, patch_hierarchy, l_data_manager, iteration_num, loop_time); 
+                
+                flux_valve_ring = instruments->getFlowValues(); 
+                // pout << "flux at t = " << loop_time << ", Q = " << flux_valve_ring[0] << "\n"; 
+                
+                if (SAMRAI_MPI::getRank() == 0){
+                    flux_output_stream << loop_time << ",\t" << flux_valve_ring[0] << ";\n"; 
+                    flux_output_stream.flush(); 
+                }
+                
             #endif
+            
         }
 
 
@@ -648,7 +690,17 @@ int main(int argc, char* argv[])
                 #endif
                 
                 #ifdef ENABLE_INSTRUMENTS
-                    instruments->writePlotData (iteration_num, loop_time);
+                    
+                    instruments->initializeHierarchyDependentData(patch_hierarchy, l_data_manager, iteration_num, loop_time); 
+                    instruments->readInstrumentData(u_data_idx, p_data_idx, patch_hierarchy, l_data_manager, iteration_num, loop_time); 
+                    flux_valve_ring = instruments->getFlowValues(); 
+                    // pout << "flux at t = " << loop_time << ", Q = " << flux_valve_ring[0] << "\n";
+                    
+                    if (SAMRAI_MPI::getRank() == 0){
+                        flux_output_stream << loop_time << ",\t" << flux_valve_ring[0] << ";\n"; 
+                        flux_output_stream.flush(); 
+                    }                
+                                        
                 #endif
                 
                 
@@ -704,6 +756,12 @@ int main(int argc, char* argv[])
             }
         #endif
         
+        #ifdef ENABLE_INSTRUMENTS
+            if (SAMRAI_MPI::getRank() == 0){
+                flux_output_stream << "]; \n\n"; 
+                flux_output_stream.close();
+            }
+        #endif
 
         // Cleanup Eulerian boundary condition specification objects (when
         // necessary).
