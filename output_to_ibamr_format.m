@@ -21,7 +21,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     vertex = fopen(strcat(base_name, '.vertex'), 'w'); 
     spring = fopen(strcat(base_name, '.spring'), 'w'); 
     target = fopen(strcat(base_name, '.target'), 'w'); 
-    % inst = fopen(strcat(base_name, '.inst'  ), 'w'); 
+    inst = fopen(strcat(base_name, '.inst'  ), 'w'); 
 
     % keep one global index through the whole thing 
     global_idx = 0;
@@ -90,12 +90,15 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     N_ring = 2 * params_anterior.N;
     h = filter_params_posterior.h; 
     ref_frac_net = 1.0; 
-
+    
+    % no radial fibers, instead geodesics from the leaflet 
+    radial_fibers = false; 
+    
     % turn the polar net off for now      
-%     [global_idx, total_vertices, total_springs, total_targets] = ...
-%                             place_net(r, h, L, N_ring, spring, vertex, target, inst, ...
-%                             global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net); 
-%                         
+    [global_idx, total_vertices, total_springs, total_targets] = ...
+                            place_net(r, h, L, N_ring, radial_fibers, spring, vertex, target, inst, ...
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net); 
+                        
                         
     
     % place rays for now 
@@ -112,11 +115,14 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     % twice as fine as the Cartesian mesh
     % but leave 2 in for clarity  
     ds = 2*L / (2*params_anterior.N);
-    r_cartesian = r + ds/2; 
-%     [global_idx, total_vertices, total_springs, total_targets] = ...
-%                             place_cartesian_net(r_cartesian, h, L, ds, spring, vertex, target, ...
-%                             global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net); 
-%                         
+    
+    % inner radius, stop mesh here 
+    r_cartesian = r + 2*ds; 
+    [global_idx, total_vertices, total_springs, total_targets] = ...
+                            place_cartesian_net(r_cartesian, h, L, ds, spring, vertex, target, ...
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net); 
+ 
+                        
     if nargin >= 10
         double_z = false; 
         [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L, filter_params_posterior, double_z); 
@@ -128,7 +134,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     fclose(vertex); 
     fclose(spring); 
     fclose(target); 
-    % fclose(inst  ); 
+    fclose(inst  ); 
 
     prepend_line_with_int(strcat(base_name, '.vertex'), total_vertices); 
     prepend_line_with_int(strcat(base_name, '.spring'), total_springs); 
@@ -409,7 +415,7 @@ end
                         
                         
 function [global_idx, total_vertices, total_springs, total_targets] = ...
-                            place_net(r, h, L, N, spring, vertex, target, inst, ...
+                            place_net(r, h, L, N, radial_fibers, spring, vertex, target, inst, ...
                             global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac)
     % 
     % Places a polar coordinate mesh in a box 
@@ -441,8 +447,14 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
 
     % maximum number of points in radial direction 
     % this gets a sqrt(2) because we are placing the net in a square 
-    M = floor(sqrt(2) * L / ds); 
-
+    if radial_fibers
+        % place rings to edge 
+        M = floor(sqrt(2) * L / ds); 
+    else 
+        % only include those full rings which fit in the domain 
+        M = floor( (L-r) / ds); 
+    end 
+        
     points = zeros(3,N,M);
 
     % just keep a list of valid indices, mark NAN if out of physical bounds 
@@ -536,12 +548,14 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                 end 
                 
                 % check up directions for springs 
-                if (k+1) < M
-                    if ~isnan(indices(j,k+1))
-                        rest_len = ref_frac * norm(points(:,j,k) - points(:,j,k+1)); 
-                        kappa = k_rel / rest_len; 
-                        nbr_idx = indices(j,k+1) + global_idx; 
-                        total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
+                if radial_fibers
+                    if (k+1) < M
+                        if ~isnan(indices(j,k+1))
+                            rest_len = ref_frac * norm(points(:,j,k) - points(:,j,k+1)); 
+                            kappa = k_rel / rest_len; 
+                            nbr_idx = indices(j,k+1) + global_idx; 
+                            total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
+                        end 
                     end 
                 end 
                 
@@ -750,7 +764,7 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
     % 
     % Places a cartesian coordinate mesh in a box 
     % This is to avoid issues with the polar mesh at the edge 
-    % Mesh is placed on [-L + ds, L-ds]
+    % Mesh is placed on [-L + ds/2, L-ds/2]
     % 
     % Springs everywhere internal in 2d arrangement 
     % All points are made targets
@@ -766,7 +780,7 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
     %     total_targets 
     % 
 
- 
+    
     N = ceil(2*L / ds);  
     points = zeros(3,N,N);
 
@@ -781,7 +795,7 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
     for k=1:N
         for j=1:N
             
-            coords_horiz = [j*ds - L; k*ds - L]; 
+            coords_horiz = [ (j-1)*ds - L + ds/2; (k-1)*ds - L + ds/2]; 
             
             % if one norm is less than L, then the point is within the domain  
             if (norm(coords_horiz, inf) < L) && (norm(coords_horiz,2) > r) 
@@ -820,7 +834,7 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                 total_targets = target_string(target, idx, k_target, total_targets);     
                 
                 % check up directions for springs 
-                if (j+1) < N
+                if (j+1) <= N
                     if ~isnan(indices(j+1,k))
                         rest_len = ref_frac * norm(points(:,j,k) - points(:,j+1,k)); 
                         kappa = k_rel / rest_len;
@@ -830,7 +844,7 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                 end 
                                 
                 % check up directions for springs 
-                if (k+1) < N
+                if (k+1) <= N
                     if ~isnan(indices(j,k+1))
                         rest_len = ref_frac * norm(points(:,j,k) - points(:,j,k+1)); 
                         kappa = k_rel / rest_len; 
