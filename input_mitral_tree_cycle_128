@@ -24,14 +24,14 @@ CONVECTIVE_OP_TYPE  = "PPM"               // convective differencing discretizat
 CONVECTIVE_FORM     = "ADVECTIVE"         // how to compute the convective terms
 NORMALIZE_PRESSURE  = FALSE               // whether to explicitly force the pressure to have mean zero
 CFL_MAX             = 0.3                 // maximum CFL number
-DT                  = 1.0e-6              // maximum timestep size
-ERROR_ON_DT_CHANGE  = TRUE                // whether to emit an error message if the time step size changes
+DT                  = 1.0e-5              // maximum timestep size
+ERROR_ON_DT_CHANGE  = FALSE               // whether to emit an error message if the time step size changes
 VORTICITY_TAGGING   = TRUE                // whether to tag cells for refinement based on vorticity thresholds
 TAG_BUFFER          = 2                   // size of tag buffer used by grid generation algorithm
 REGRID_CFL_INTERVAL = 0.5                 // regrid whenever any material point could have moved 0.5 meshwidths since previous regrid
 OUTPUT_U            = TRUE
 OUTPUT_P            = TRUE
-OUTPUT_F            = TRUE
+OUTPUT_F            = FALSE
 OUTPUT_OMEGA        = FALSE
 OUTPUT_DIV_U        = FALSE
 ENABLE_LOGGING      = TRUE
@@ -122,22 +122,45 @@ VelocityBcCoefs_2 {
    // negative pressure on atrial side = positive on ventricular = closed 
    // 
    
-   MMHG_TO_CGS             =  1333.22368
-   SYSTOLIC_VENTRICULAR_P  =  100.0 * MMHG_TO_CGS
-   DIASTOLIC_ATRIAL_P      = -10.0  * MMHG_TO_CGS
+    MMHG_TO_CGS = 1333.22368
+    
+    // pressures, higher pressure in atrium is positive 
+    diastolic_p =   10.0 * MMHG_TO_CGS
+    systolic__p = -100.0 * MMHG_TO_CGS
 
-   // length of time to apply fwd pressure 
-   DIASTOLE_TIME = 0.5   
+    // times for opening, open, closing and closed  
+    t_opening  = 0.08
+    t_diastole = 0.5
+    t_closing  = 0.02
+    t_systole  = 0.2
 
-   // total beat time 
-   BEAT_TIME = 0.8
+    beat_time = t_diastole + t_systole + t_opening + t_closing
 
-   // SYSTOLE_TIME is remainder 
+    // slope on opening part of curve 
+    a_opening = (diastolic_p - systolic__p)/t_opening
+    a_closing = (systolic__p - diastolic_p)/t_closing
+    
+    // time at which valve is completely open 
+    t_1 = diastolic_p / a_opening
+    
+    // time at which closing begins 
+    t_2 = t_1 + t_diastole
+    
+    // linear offset for closing part of function 
+    b = diastolic_p - a_closing * t_2
+    
+    // time at which constant systolic pressure is achieved 
+    t_3 = t_2 + t_closing
+    
+    // time at which opening begins 
+    t_4 = t_3 + t_systole
+    
+    // linear offset for opening part of function at end 
+    c = systolic__p - a_opening * t_4
 
-   // gcoef_function_5 = "if( (t - BEAT_TIME*floor(t/BEAT_TIME)) < DIASTOLE_TIME, DIASTOLIC_ATRIAL_P, SYSTOLIC_VENTRICULAR_P)"  // face with normal  e_z
+    // apparently this all has to go on one line
+    gcoef_function_5 = "-1.0*if( (t - beat_time*rint(t/beat_time - 0.5)) < t_1, a_opening * (t - beat_time*rint(t/beat_time - 0.5)), if( (t - beat_time*rint(t/beat_time - 0.5)) < t_2, diastolic_p, if( (t - beat_time*rint(t/beat_time - 0.5)) < t_3, a_closing * (t - beat_time*rint(t/beat_time - 0.5)) + b, if( (t - beat_time*rint(t/beat_time - 0.5)) < t_4, systolic__p, a_opening * (t - beat_time*rint(t/beat_time - 0.5)) + c))))"
 
-   // muparser doesn't seem to have floor, so use rint and subtract a half 
-   gcoef_function_5 = "if( (t - BEAT_TIME*rint(t/BEAT_TIME - 0.5)) < DIASTOLE_TIME, DIASTOLIC_ATRIAL_P, SYSTOLIC_VENTRICULAR_P)"  // face with normal  e_z
 }
 
 
@@ -234,9 +257,9 @@ Main {
 }
 
 CartesianGeometry {
-domain_boxes = [ (0,0,0),(N - 1, N - 1, 2*N - 1) ]
-x_lo =  -L, -L , -L - L 
-x_up =   L,  L,   L + L
+domain_boxes = [ (0,0,0),(N - 1, N - 1, N/2 + N - 1) ]
+x_lo =  -L, -L, -L 
+x_up =   L,  L,  L + L
    periodic_dimension = 0,0,0
 }
 

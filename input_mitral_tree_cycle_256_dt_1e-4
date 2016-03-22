@@ -4,7 +4,7 @@ MU  = 0.04                            // viscosity
 RHO = 1.0
 
 L = 2.5   // box sizing 
-N = 32
+N = 256
 
 
 // grid spacing parameters
@@ -16,7 +16,7 @@ REF_RATIO  = 4                            // refinement ratio between levels
 DELTA_FUNCTION      = "IB_4"
 SOLVER_TYPE         = "STAGGERED"         // the fluid solver to use (STAGGERED or COLLOCATED)
 START_TIME          = 0.0e0               // initial simulation time
-END_TIME            = 2.4                 // final simulation time
+
 GROW_DT             = 2.0e0               // growth factor for timesteps
 NUM_CYCLES          = 1                   // number of cycles of fixed-point iteration
 CONVECTIVE_TS_TYPE = "ADAMS_BASHFORTH"    // convective time stepping type
@@ -24,8 +24,9 @@ CONVECTIVE_OP_TYPE  = "PPM"               // convective differencing discretizat
 CONVECTIVE_FORM     = "ADVECTIVE"         // how to compute the convective terms
 NORMALIZE_PRESSURE  = FALSE               // whether to explicitly force the pressure to have mean zero
 CFL_MAX             = 0.3                 // maximum CFL number
-DT                  = 5.0e-5              // maximum timestep size
-ERROR_ON_DT_CHANGE  = FALSE                // whether to emit an error message if the time step size changes
+DT                  = 1.0e-4              // maximum timestep size
+END_TIME            = 300 * DT                 // final simulation time
+ERROR_ON_DT_CHANGE  = TRUE                // whether to emit an error message if the time step size changes
 VORTICITY_TAGGING   = TRUE                // whether to tag cells for refinement based on vorticity thresholds
 TAG_BUFFER          = 2                   // size of tag buffer used by grid generation algorithm
 REGRID_CFL_INTERVAL = 0.5                 // regrid whenever any material point could have moved 0.5 meshwidths since previous regrid
@@ -121,7 +122,8 @@ VelocityBcCoefs_2 {
    // positive pressure on atrial side opens 
    // negative pressure on atrial side = positive on ventricular = closed 
    // 
-    
+   
+
     MMHG_TO_CGS = 1333.22368
     
     // pressures, higher pressure in atrium is positive 
@@ -161,8 +163,6 @@ VelocityBcCoefs_2 {
     // apparently this all has to go on one line
     gcoef_function_5 = "-1.0*if( (t - beat_time*rint(t/beat_time - 0.5)) < t_1, a_opening * (t - beat_time*rint(t/beat_time - 0.5)), if( (t - beat_time*rint(t/beat_time - 0.5)) < t_2, diastolic_p, if( (t - beat_time*rint(t/beat_time - 0.5)) < t_3, a_closing * (t - beat_time*rint(t/beat_time - 0.5)) + b, if( (t - beat_time*rint(t/beat_time - 0.5)) < t_4, systolic__p, a_opening * (t - beat_time*rint(t/beat_time - 0.5)) + c))))"
 
-
-  // face with normal  e_z
 }
 
 
@@ -203,8 +203,8 @@ IBMethod {
 
 IBStandardInitializer {
    max_levels      = MAX_LEVELS
-   structure_names = "mitral_tree_32"
-   mitral_tree_32 {
+   structure_names = "mitral_tree_256"
+   mitral_tree_256 {
       level_number = MAX_LEVELS - 1
    }
 }
@@ -243,11 +243,11 @@ Main {
 // visualization dump parameters
    viz_writer                  = "VisIt"
    viz_dump_interval           = 100
-   viz_dump_dirname            = "viz_IB3d_tree_cycle_32"
+   viz_dump_dirname            = "viz_IB3d_tree_cycle_256"
    visit_number_procs_per_file = 1
 
 // restart dump parameters
-   restart_dump_interval       = 2000
+   restart_dump_interval       = 1000
    restart_dump_dirname        = "restart_IB3d_tree_cycle"
 
 // hierarchy data dump parameters
@@ -259,9 +259,9 @@ Main {
 }
 
 CartesianGeometry {
-domain_boxes = [ (0,0,0),(N - 1,N - 1, N + N/2 - 1) ]
-x_lo =  -L, -L , -L 
-x_up =   L,  L,   L + L
+domain_boxes = [ (0,0,0),(N - 1, N - 1, N/2 + N - 1) ]
+x_lo =  -L, -L, -L 
+x_up =   L,  L,  L + L
    periodic_dimension = 0,0,0
 }
 
