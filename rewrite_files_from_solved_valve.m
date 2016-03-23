@@ -1,8 +1,6 @@
 function [] = rewrite_files_from_solved_valve(N)
 
 base_name = 'mitral_tree'; 
-
-
 base_name = strcat(base_name, sprintf('_%d', N)); 
 
 load(strcat(base_name, '_final_data')); 
@@ -13,7 +11,7 @@ L = 2.5;
 % ratio 6 is for N=32
 % ratio = 6 seems to make everything very stiff 
 % turn down by order of magnitude, see if it helps 
-ratio = 30; 
+ratio = 6; 
 
 
 % original spring constants were for N = 32 debug width

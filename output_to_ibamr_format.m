@@ -112,9 +112,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
         
                         
     % flat part of mesh with Cartesian coordinates
-    % twice as fine as the Cartesian mesh
-    % but leave 2 in for clarity  
-    ds = 2*L / (2*params_anterior.N);
+    ds = 2*L / params_anterior.N;
     
     % inner radius, stop mesh here 
     r_cartesian = r + 2*ds; 
