@@ -89,6 +89,8 @@ void update_rest_lengths(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager*
 #define CONST_SRC_TIME       0.3
 #define CONST_SRC_STRENGTH  93.0
 
+#define MAX_STEP_FOR_CHANGE 1000
+
 #define PI_DEFINED 3.1415926535897932384626433832795028841971693993751
 
 /*******************************************************************************
@@ -535,7 +537,11 @@ int main(int argc, char* argv[])
         // Main time step loop.
         double loop_time_end = time_integrator->getEndTime();
         double dt = 0.0;
+        double dt_prev = 0.0;
         
+        if (from_restart){
+            dt_prev = time_integrator->getMaximumTimeStepSize();
+        }
         
         get_timestamp(&time2_total);
         double total_init_time = timestamp_diff_in_seconds(time1_total, time2_total);
@@ -569,8 +575,13 @@ int main(int argc, char* argv[])
             pout << "At beginning of timestep # " << iteration_num << "\n";
             pout << "Simulation time is " << loop_time << "\n";
             
+            // save the last time step 
+            dt_prev = dt; 
+            
             // get current step 
             dt = time_integrator->getMaximumTimeStepSize();
+            
+            
             
             #ifdef ENABLE_SOURCES
                 // reset source and sink for current time
@@ -586,7 +597,7 @@ int main(int argc, char* argv[])
                 pout << "Sink, Q = " << Q_src[sink_idx] << ", P = " << P_src[sink_idx] << "\n" ;
                             
             #endif
-            
+
             
             // step the whole thing
             time_integrator->advanceHierarchy(dt);
@@ -725,6 +736,22 @@ int main(int argc, char* argv[])
                 
                 
             }
+            
+            
+            if (iteration_num > MAX_STEP_FOR_CHANGE){
+                // if there is a change 
+                if (dt != dt_prev){
+                    // ignore the first and last steps  
+                    if (!last_step){
+                        pout << "Timestep change encountered (manual, after max change step).\n" ; 
+                        SAMRAI_MPI::abort();
+                    }
+                }
+            }
+                        
+                        
+
+            
             if (dump_timer_data && (iteration_num % timer_dump_interval == 0 || last_step))
             {
                 pout << "\nWriting timer data...\n\n";
