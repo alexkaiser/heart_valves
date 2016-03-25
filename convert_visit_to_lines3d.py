@@ -88,7 +88,8 @@ def prepend_header(lines3d_file_name, spring_list, n_frames, n_particles=None):
     temp.write(header)
     
     # write the whole old file onto the new one 
-    temp.write(lines_file.read())
+    for line in lines_file:
+        temp.write(line)
     
     lines_file.close()
     temp.close()
