@@ -538,10 +538,7 @@ int main(int argc, char* argv[])
         double loop_time_end = time_integrator->getEndTime();
         double dt = 0.0;
         double dt_prev = 0.0;
-        
-        if (from_restart){
-            dt_prev = time_integrator->getMaximumTimeStepSize();
-        }
+        bool prev_step_initialized = false;
         
         get_timestamp(&time2_total);
         double total_init_time = timestamp_diff_in_seconds(time1_total, time2_total);
@@ -580,6 +577,11 @@ int main(int argc, char* argv[])
             
             // get current step 
             dt = time_integrator->getMaximumTimeStepSize();
+        
+            if((!prev_step_initialized) && from_restart){
+                    dt_prev = dt;
+                    prev_step_initialized = true;
+            }
             
             
             
@@ -743,7 +745,8 @@ int main(int argc, char* argv[])
                 if (dt != dt_prev){
                     // ignore the first and last steps  
                     if (!last_step){
-                        pout << "Timestep change encountered (manual, after max change step).\n" ; 
+                        pout << "Timestep change encountered (manual, after max change step).\n" ;
+                        pout << "dt = " << dt << ",\tdt_prev = " << dt_prev << "\n";
                         SAMRAI_MPI::abort();
                     }
                 }
