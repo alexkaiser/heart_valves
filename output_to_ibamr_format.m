@@ -40,18 +40,19 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     
     % base rate for target spring constants
     % target constant for a single point 
+    % this does not scale when the mesh is changed 
     k_target = target_multiplier * k_rel; 
     
     % the valve ring is 1d, should be halfed with doubling of mesh 
     % also set damping coefficients accordingly 
     k_target_ring = k_target; %  / refinement; 
-    m_ring = 0.1; 
+    m_ring = 0.001; 
     eta_ring = sqrt(m_ring * k_target_ring); 
     
     % there are four times as many, so they get multiplied by refinement squared 
     % can also just divide by refinement because not want them to get stiffer
     k_target_net = k_target; % / refinement; 
-    m_net = 0.1; 
+    m_net = 0.001; 
     eta_net = sqrt(m_net * k_target_net);    
     
     % relative spring constants drop when the mesh is refined 
@@ -172,12 +173,11 @@ end
 
 function total_targets = target_string(target, idx, kappa, total_targets, eta)
     % prints a target format string to target file 
-    if nargin == 4
-        fprintf(target, '%d\t %.14f\n', idx, kappa);
-    elseif nargin == 5
+    
+    if exist('eta', 'var') && (eta > 0.0)
         fprintf(target, '%d\t %.14f\t %.14f\n', idx, kappa, eta);
     else
-        error('must have four or five arguments for targets'); 
+        fprintf(target, '%d\t %.14f\n', idx, kappa);
     end 
     total_targets = total_targets + 1; 
 end 

@@ -16,7 +16,7 @@ REF_RATIO  = 4                            // refinement ratio between levels
 DELTA_FUNCTION      = "IB_4"
 SOLVER_TYPE         = "STAGGERED"         // the fluid solver to use (STAGGERED or COLLOCATED)
 START_TIME          = 0.0e0               // initial simulation time
-END_TIME            = 0.8                 // final simulation time
+END_TIME            = 0.5                 // final simulation time
 GROW_DT             = 2.0e0               // growth factor for timesteps
 NUM_CYCLES          = 1                   // number of cycles of fixed-point iteration
 CONVECTIVE_TS_TYPE = "ADAMS_BASHFORTH"    // convective time stepping type
@@ -123,44 +123,10 @@ VelocityBcCoefs_2 {
    // 
    
     MMHG_TO_CGS = 1333.22368
-    
-    // pressures, higher pressure in atrium is positive 
-    diastolic_p =    2.5 * MMHG_TO_CGS
     systolic__p = -100.0 * MMHG_TO_CGS
 
-    // times for opening, open, closing and closed  
-    t_opening  = 0.08
-    t_diastole = 0.5
-    t_closing  = 0.02
-    t_systole  = 0.2
-
-    beat_time = t_diastole + t_systole + t_opening + t_closing
-
-    // slope on opening part of curve 
-    a_opening = (diastolic_p - systolic__p)/t_opening
-    a_closing = (systolic__p - diastolic_p)/t_closing
-    
-    // time at which valve is completely open 
-    t_1 = diastolic_p / a_opening
-    
-    // time at which closing begins 
-    t_2 = t_1 + t_diastole
-    
-    // linear offset for closing part of function 
-    b = diastolic_p - a_closing * t_2
-    
-    // time at which constant systolic pressure is achieved 
-    t_3 = t_2 + t_closing
-    
-    // time at which opening begins 
-    t_4 = t_3 + t_systole
-    
-    // linear offset for opening part of function at end 
-    c = systolic__p - a_opening * t_4
-
-    // apparently this all has to go on one line
-    gcoef_function_5 = "-1.0*if( (t - beat_time*rint(t/beat_time - 0.5)) < t_1, a_opening * (t - beat_time*rint(t/beat_time - 0.5)), if( (t - beat_time*rint(t/beat_time - 0.5)) < t_2, diastolic_p, if( (t - beat_time*rint(t/beat_time - 0.5)) < t_3, a_closing * (t - beat_time*rint(t/beat_time - 0.5)) + b, if( (t - beat_time*rint(t/beat_time - 0.5)) < t_4, systolic__p, a_opening * (t - beat_time*rint(t/beat_time - 0.5)) + c))))"
-
+    // quick rise to systolic pressure 
+    gcoef_function_5 = "-1.0*if(t < 0.02,  systolic__p*t/0.02, systolic__p)"
 }
 
 
