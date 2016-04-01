@@ -43,31 +43,42 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     k_target = target_multiplier * k_rel; 
     
     % the valve ring is 1d, should be halfed with doubling of mesh 
-    k_target_ring = k_target / refinement; 
+    % also set damping coefficients accordingly 
+    k_target_ring = k_target; %  / refinement; 
+    m_ring = 0.1; 
+    eta_ring = sqrt(m_ring * k_target_ring); 
     
     % there are four times as many, so they get multiplied by refinement squared 
     % can also just divide by refinement because not want them to get stiffer
-    k_target_net = k_target / refinement; 
+    k_target_net = k_target; % / refinement; 
+    m_net = 0.1; 
+    eta_net = sqrt(m_net * k_target_net);    
     
     % relative spring constants drop when the mesh is refined 
     k_rel = k_rel / refinement; 
 
-    % output the left and right papillary as the first two vertices and targets 
+    % output the left and right papillary as the first two vertices and targets
+    
+    % Critical damping for given k, mass m is 2*sqrt(m*k) 
+    % Set to half critical for first test 
+    m_effective_papillary = .3; 
+    eta_papillary         = sqrt(k_target * m_effective_papillary); 
+    
     left_papillary  = [0; -filter_params_posterior.a; 0]; 
     total_vertices  = vertex_string(vertex, left_papillary, total_vertices); 
-    total_targets   = target_string(target, global_idx, k_target, total_targets);     
+    total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
     global_idx      = global_idx + 1; 
     
     right_papillary = [0;  filter_params_posterior.a; 0]; 
     total_vertices  = vertex_string(vertex, right_papillary, total_vertices); 
-    total_targets   = target_string(target, global_idx, k_target, total_targets);     
+    total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
     global_idx      = global_idx + 1;     
     
     % posterior first 
     % leaflets 
     [global_idx, total_vertices, total_springs, total_targets, params_posterior] = ...
         add_leaflet(params_posterior, filter_params_posterior, spring, vertex, target, ...
-                    global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_ring); 
+                    global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_ring, eta_ring); 
 
     % if chordae exist, then add them 
     if isfield(params_posterior, 'chordae') && ~isempty(params_posterior.chordae)
@@ -78,7 +89,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     % anterior 
     [global_idx, total_vertices, total_springs, total_targets, params_anterior] = ...
         add_leaflet(params_anterior, filter_params_posterior, spring, vertex, target, ...
-                     global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_ring);   
+                     global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_ring, eta_ring);   
     
     if isfield(params_anterior, 'chordae') && ~isempty(params_anterior.chordae)
         [global_idx, total_vertices, total_springs] = ...
@@ -97,18 +108,18 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     % turn the polar net off for now      
     [global_idx, total_vertices, total_springs, total_targets] = ...
                             place_net(r, h, L, N_ring, radial_fibers, spring, vertex, target, inst, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net); 
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net); 
                         
                         
     
     % place rays for now 
     [global_idx, total_vertices, total_springs, total_targets] = ...
                             place_rays(params_anterior, filter_params_posterior, L, spring, vertex, target, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net);                    
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net);                    
     
     [global_idx, total_vertices, total_springs, total_targets] = ...
                             place_rays(params_posterior, filter_params_posterior, L, spring, vertex, target, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net);                    
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net);                    
         
                         
     % flat part of mesh with Cartesian coordinates
@@ -118,7 +129,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     r_cartesian = r + 2*ds; 
     [global_idx, total_vertices, total_springs, total_targets] = ...
                             place_cartesian_net(r_cartesian, h, L, ds, spring, vertex, target, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net); 
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net); 
  
                         
     if nargin >= 10
@@ -159,9 +170,15 @@ function total_springs = spring_string(spring, idx, nbr, kappa, rest_len, total_
     total_springs = total_springs + 1; 
 end 
 
-function total_targets = target_string(target, idx, kappa, total_targets)
+function total_targets = target_string(target, idx, kappa, total_targets, eta)
     % prints a target format string to target file 
-    fprintf(target, '%d\t %.14f\n', idx, kappa); 
+    if nargin == 4
+        fprintf(target, '%d\t %.14f\n', idx, kappa);
+    elseif nargin == 5
+        fprintf(target, '%d\t %.14f\t %.14f\n', idx, kappa, eta);
+    else
+        error('must have four or five arguments for targets'); 
+    end 
     total_targets = total_targets + 1; 
 end 
 
@@ -196,7 +213,7 @@ end
 
 function [global_idx, total_vertices, total_springs, total_targets, params] = ...
                 add_leaflet(params, filter_params, spring, vertex, target, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target)
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, eta)
                                                                                 
 % Places all main data into IBAMR format for this leaflet
 % Updates running totals on the way 
@@ -305,7 +322,11 @@ function [global_idx, total_vertices, total_springs, total_targets, params] = ..
                 
                 % if on boundary, this is a target point 
                 if (j+k) == (N+2)
-                    total_targets = target_string(target, idx, k_target, total_targets);     
+                    if exist('eta', 'var')
+                        total_targets = target_string(target, idx, k_target, total_targets, eta);     
+                    else
+                        total_targets = target_string(target, idx, k_target, total_targets);     
+                    end 
                 end 
                 
                 % every internal point has springs up one index in j and k 
@@ -414,7 +435,7 @@ end
                         
 function [global_idx, total_vertices, total_springs, total_targets] = ...
                             place_net(r, h, L, N, radial_fibers, spring, vertex, target, inst, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac)
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac, eta)
     % 
     % Places a polar coordinate mesh in a box 
     % Starts with N points evenly spaced at radius R
@@ -522,7 +543,12 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                 % every valid vertex is a target here 
                 total_vertices = vertex_string(vertex, points(:,j,k), total_vertices); 
                 points_placed = points_placed + 1; 
-                total_targets = target_string(target, idx, k_target, total_targets);     
+                if exist('eta', 'var')
+                    total_targets = target_string(target, idx, k_target, total_targets, eta);     
+                else
+                    total_targets = target_string(target, idx, k_target, total_targets);     
+                end 
+                
                 
                 % check up directions for springs 
                 if (j+1) < N
@@ -538,9 +564,9 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                 if (j+1) == N
                    % need to make sure that the 1,k point is also not a NaN  
                    if ~isnan(indices(1,k)) 
-                        rest_len = ref_frac * norm(points(:,j,k) - points(:,1,k)); 
-                        kappa = k_rel / rest_len;
-                        nbr_idx = indices(1,k) + global_idx; 
+                       rest_len = ref_frac * norm(points(:,j,k) - points(:,1,k)); 
+                       kappa = k_rel / rest_len;
+                       nbr_idx = indices(1,k) + global_idx; 
                        total_springs = spring_string(spring, nbr_idx, idx, kappa, rest_len, total_springs); 
                    end 
                 end 
@@ -571,7 +597,7 @@ end
 
 function [global_idx, total_vertices, total_springs, total_targets] = ...
                             place_rays(params, filter_params, L, spring, vertex, target, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac)
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac, eta)
     % 
     % Places rays of fibers emenating from the leaflet 
     % Angle of rays makes them (roughly) geodesics 
@@ -652,7 +678,12 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                 total_vertices = vertex_string(vertex, point, total_vertices); 
                 
                 % it's a target too 
-                total_targets = target_string(target, idx, k_target, total_targets);  
+                if exist('eta', 'var')
+                    total_targets = target_string(target, idx, k_target, total_targets, eta);     
+                else
+                    total_targets = target_string(target, idx, k_target, total_targets);     
+                end 
+                
                 
                 rest_len = ref_frac * norm(point - point_prev); 
                 kappa = k_rel / rest_len;
@@ -758,7 +789,7 @@ end
 
 function [global_idx, total_vertices, total_springs, total_targets] = ...
                             place_cartesian_net(r, h, L, ds, spring, vertex, target, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac)
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac, eta)
     % 
     % Places a cartesian coordinate mesh in a box 
     % This is to avoid issues with the polar mesh at the edge 
@@ -829,7 +860,12 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                 % every valid vertex is a target here 
                 total_vertices = vertex_string(vertex, points(:,j,k), total_vertices); 
                 points_placed = points_placed + 1; 
-                total_targets = target_string(target, idx, k_target, total_targets);     
+                if exist('eta', 'var')
+                    total_targets = target_string(target, idx, k_target, total_targets, eta);     
+                else
+                    total_targets = target_string(target, idx, k_target, total_targets);     
+                end 
+
                 
                 % check up directions for springs 
                 if (j+1) <= N
