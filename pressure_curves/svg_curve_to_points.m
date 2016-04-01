@@ -9,12 +9,10 @@ function [x y] = svg_curve_to_points(curve_spec, x_0, y_0, min_x, max_x, min_y, 
 % 
 
 
-
-
 x_RELATIVE = zeros(length(curve_spec) / 6, 1); 
 y_RELATIVE = zeros(length(curve_spec) / 6, 1); 
 
-if mod(length(curve_spec,6)) ~= 0
+if mod(length(curve_spec),6) ~= 0
     error('must give 6 points per coordinate')
 end
 
@@ -39,15 +37,15 @@ for i=1:length(x_RELATIVE)
 end 
 
 % zero the minimum, scale the array, fix the real minimum
-x = x - min_x; 
+x = x - min(x); 
 range = max(x); 
-range_actual = max(x) - min(x); 
+range_actual = max_x - min_x; 
 x = (range_actual / range) * x;
 x = x + min_x; 
 
-y = y - min_y; 
+y = y - min(y); 
 range = max(y); 
-range_actual = max(y) - min(y); 
+range_actual = max_y - min_y; 
 y = (range_actual / range) * y; 
 y = y + min_y; 
 
