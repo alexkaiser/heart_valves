@@ -11,14 +11,14 @@ max_x =  1.6;
 min_y =  2.2; 
 max_y =  12.0; 
 
-dt = 0.005; 
+dt = 0.0001; 
 
 % [x_pressure_atrium y_pressure_atrium] = svg_curve_to_points(curve_spec_atrium, x_0, y_0, min_x, max_x, min_y, max_y); 
 [x_pressure_atrium y_pressure_atrium] = eval_bezier_curve_on_path(dt, curve_spec_atrium, x_0, y_0, min_x, max_x, min_y, max_y); 
 
-figure;
-plot(x_pressure_atrium, y_pressure_atrium)
-title('atrium, no smoothing')
+% figure;
+% plot(x_pressure_atrium, y_pressure_atrium)
+% title('atrium, no smoothing')
 
 % x_spline = 0:.001:1.6; 
 % y_spline_atrium = spline(x_pressure_atrium, y_pressure_atrium, x_spline); 
@@ -46,9 +46,9 @@ curve_spec_ventricle = [-32.566 -0.228 -48.238 -4.746 -52.626 -12.326 -13.488 -2
 
 [x_pressure_ventricle y_pressure_ventricle] = eval_bezier_curve_on_path(dt, curve_spec_ventricle, x_0, y_0, min_x, max_x, min_y, max_y); 
 
-figure; 
-plot(x_pressure_ventricle, y_pressure_ventricle); 
-title('ventricle')
+% figure; 
+% plot(x_pressure_ventricle, y_pressure_ventricle); 
+% title('ventricle')
 
 % y_spline_ventricle = spline(x_pressure_ventricle, y_pressure_ventricle, x_spline); 
 % 
@@ -56,11 +56,11 @@ title('ventricle')
 % plot(x_spline, y_spline_ventricle); 
 % title('ventricle pressure, with spline')
 
-figure; 
-plot(x_pressure_atrium, y_pressure_atrium, '--'); 
-hold on 
-plot(x_pressure_ventricle, y_pressure_ventricle); 
-legend('atrial pressure', 'ventricular pressure'); 
+% figure; 
+% plot(x_pressure_atrium, y_pressure_atrium, '--'); 
+% hold on 
+% plot(x_pressure_ventricle, y_pressure_ventricle); 
+% legend('atrial pressure', 'ventricular pressure'); 
 
 
 % manually selected interval, starts at zero p in early diastole  
@@ -134,7 +134,7 @@ n = 100;
 
 
 
-t = 0:.001:true_cycle_length; 
+t = 0:.0001:true_cycle_length; 
 vals_atrium_series    = Series_atrium(t); 
 vals_ventricle_series = Series_ventricle(t); 
 figure; 
@@ -145,7 +145,7 @@ legend('atrial pressure', 'ventricular pressure', 'location', 'NorthWest');
 title('curves from fourier seriess, one cycle')
 
 
-t = 0:.001:true_cycle_length*2; 
+t = 0:.0001:true_cycle_length*2; 
 vals_atrium_series    = Series_atrium(t); 
 vals_ventricle_series = Series_ventricle(t); 
 figure; 
