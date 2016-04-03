@@ -18,7 +18,7 @@ end
 
 p0 = [x_0, y_0]; 
 
-vals = zeros(length(curve_spec)/(6*dt),2); 
+vals = zeros(length(curve_spec)/6 * ceil(1/dt),2); 
 
 idx = 1; 
 
@@ -44,6 +44,9 @@ for i = 1:6:length(curve_spec)
     
     p0 = p3; 
 end 
+
+% crop unused from ceiling function or whatever sloppy allocation 
+vals = vals(1:idx-1,:); 
 
 % just append the zero-th point on at the end here 
 x = [x_0; vals(:,1)]; 

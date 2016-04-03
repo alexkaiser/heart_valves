@@ -11,7 +11,7 @@ max_x =  1.6;
 min_y =  2.2; 
 max_y =  12.0; 
 
-dt = 0.001; 
+dt = 0.005; 
 
 % [x_pressure_atrium y_pressure_atrium] = svg_curve_to_points(curve_spec_atrium, x_0, y_0, min_x, max_x, min_y, max_y); 
 [x_pressure_atrium y_pressure_atrium] = eval_bezier_curve_on_path(dt, curve_spec_atrium, x_0, y_0, min_x, max_x, min_y, max_y); 
@@ -66,6 +66,8 @@ legend('atrial pressure', 'ventricular pressure');
 % manually selected interval, starts at zero p in early diastole  
 min_t = 0.5873; 
 max_t = 1.4682; 
+true_cycle_length = 0.8; 
+current_cycle_length = max_t - min_t; 
 
 % traverse in reverse order since the curves are right to left 
 count = 1;
@@ -74,7 +76,7 @@ y_pressure_atrium_one_cycle = zeros(size(y_pressure_atrium));
 
 for i = length(x_pressure_atrium):-1:1
     
-    if (min_t <= x_pressure_atrium(i)) && (x_pressure_atrium(i) < max_t)
+    if (min_t <= x_pressure_atrium(i)) && (x_pressure_atrium(i) <= max_t)
         x_pressure_atrium_one_cycle(count) = x_pressure_atrium(i); 
         y_pressure_atrium_one_cycle(count) = y_pressure_atrium(i); 
         
@@ -86,6 +88,9 @@ end
 x_pressure_atrium_one_cycle = x_pressure_atrium_one_cycle(1:count-1); 
 y_pressure_atrium_one_cycle = y_pressure_atrium_one_cycle(1:count-1); 
 
+% scale to .8 s 
+x_pressure_atrium_one_cycle = x_pressure_atrium_one_cycle - min(x_pressure_atrium_one_cycle);
+x_pressure_atrium_one_cycle = (true_cycle_length / current_cycle_length) * x_pressure_atrium_one_cycle;  
 
 
 % traverse in reverse order since the curves are right to left 
@@ -95,7 +100,7 @@ y_pressure_ventricle_one_cycle = zeros(size(y_pressure_ventricle));
 
 for i = length(x_pressure_ventricle):-1:1
     
-    if (min_t <= x_pressure_ventricle(i)) && (x_pressure_ventricle(i) < max_t)
+    if (min_t <= x_pressure_ventricle(i)) && (x_pressure_ventricle(i) <= max_t)
         x_pressure_ventricle_one_cycle(count) = x_pressure_ventricle(i); 
         y_pressure_ventricle_one_cycle(count) = y_pressure_ventricle(i); 
         
@@ -107,17 +112,48 @@ end
 x_pressure_ventricle_one_cycle = x_pressure_ventricle_one_cycle(1:count-1); 
 y_pressure_ventricle_one_cycle = y_pressure_ventricle_one_cycle(1:count-1); 
 
+% scale to .8 s 
+x_pressure_ventricle_one_cycle = x_pressure_ventricle_one_cycle - min(x_pressure_ventricle_one_cycle);
+x_pressure_ventricle_one_cycle = (true_cycle_length / current_cycle_length) * x_pressure_ventricle_one_cycle;  
+
 
 
 figure; 
 plot(x_pressure_atrium_one_cycle, y_pressure_atrium_one_cycle , '--'); 
 hold on 
 plot(x_pressure_ventricle_one_cycle , y_pressure_ventricle_one_cycle); 
-legend('atrial pressure', 'ventricular pressure'); 
+legend('atrial pressure', 'ventricular pressure', 'location', 'NorthWest'); 
 title('single cycle starting at early diastole, zero pressure difference')
 
 
+% take 10 coeff series 
+n = 100; 
+[a_0_atrium a_n_atrium b_n_atrium Series_atrium] = fourier_series(x_pressure_atrium_one_cycle, y_pressure_atrium_one_cycle, true_cycle_length, n); 
 
+[a_0_ventricle a_n_ventricle b_n_ventricle Series_ventricle] = fourier_series(x_pressure_ventricle_one_cycle, y_pressure_ventricle_one_cycle, true_cycle_length, n); 
+
+
+
+t = 0:.001:true_cycle_length; 
+vals_atrium_series    = Series_atrium(t); 
+vals_ventricle_series = Series_ventricle(t); 
+figure; 
+plot(t, vals_atrium_series, '--'); 
+hold on; 
+plot(t, vals_ventricle_series); 
+legend('atrial pressure', 'ventricular pressure', 'location', 'NorthWest'); 
+title('curves from fourier seriess, one cycle')
+
+
+t = 0:.001:true_cycle_length*2; 
+vals_atrium_series    = Series_atrium(t); 
+vals_ventricle_series = Series_ventricle(t); 
+figure; 
+plot(t, vals_atrium_series, '--'); 
+hold on; 
+plot(t, vals_ventricle_series); 
+legend('atrial pressure', 'ventricular pressure', 'location', 'NorthWest'); 
+title('curves from fourier seriess, two cycles')
 
 
 
