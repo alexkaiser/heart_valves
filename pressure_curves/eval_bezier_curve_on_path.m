@@ -1,4 +1,4 @@
-function [x y] = eval_bezier_curve_on_path(dt, curve_spec, x_0, y_0, min_x, max_x, min_y, max_y)
+function [x y] = eval_bezier_curve_on_path(N_per_unit_length, curve_spec, x_0, y_0, min_x, max_x, min_y, max_y)
 % 
 % Takes coordinates from an svg curve and returns x,y pairs 
 %  
@@ -18,12 +18,12 @@ end
 
 p0 = [x_0, y_0]; 
 
-vals = zeros(length(curve_spec)/6 * ceil(1/dt),2); 
+vals = zeros(length(curve_spec)/6 * N_per_unit_length,2); 
 
 idx = 1; 
 
+dt = 1/N_per_unit_length; 
 
-N_per_unit_legnth = 1/dt; 
 
 for i = 1:6:length(curve_spec)
 
@@ -38,9 +38,9 @@ for i = 1:6:length(curve_spec)
                 +               t.^3  * p3; 
     
     % evaluate on mesh 
-    vals(idx : idx+N_per_unit_legnth-1,:) = curve( (dt:dt:1)' );         
+    vals(idx : idx+N_per_unit_length-1,:) = curve( (dt:dt:1)' );         
             
-    idx = idx + N_per_unit_legnth; 
+    idx = idx + N_per_unit_length; 
     
     p0 = p3; 
 end 

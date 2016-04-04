@@ -11,10 +11,13 @@ max_x =  1.6;
 min_y =  2.2; 
 max_y =  12.0; 
 
-dt = 0.0001; 
+dt = 1.0e-5; 
+% each unit length (in paramter space) is evaluated at this many points 
+N_per_unit_length = ceil(1/dt); 
+
 
 % [x_pressure_atrium y_pressure_atrium] = svg_curve_to_points(curve_spec_atrium, x_0, y_0, min_x, max_x, min_y, max_y); 
-[x_pressure_atrium y_pressure_atrium] = eval_bezier_curve_on_path(dt, curve_spec_atrium, x_0, y_0, min_x, max_x, min_y, max_y); 
+[x_pressure_atrium y_pressure_atrium] = eval_bezier_curve_on_path(N_per_unit_length, curve_spec_atrium, x_0, y_0, min_x, max_x, min_y, max_y); 
 
 % figure;
 % plot(x_pressure_atrium, y_pressure_atrium)
@@ -44,7 +47,7 @@ x_0 = 842.33797;
 y_0 = 432.988; 
 curve_spec_ventricle = [-32.566 -0.228 -48.238 -4.746 -52.626 -12.326 -13.488 -23.3 -7.064 -117.176 -15.472 -149.298 -4.922 -18.8 -34.346 -66.154 -70.43 -55.88 -64.85 18.462 -62.418 207.032 -69.06 209.32 -8.884 3.06 -14.372 -13.95 -28.584 -13.95 -25.34 0 -38.86 15.898 -71.528 16.738 -32.668 0.84 -115.414 4.812 -122.212 -6.93 -13.49 -23.3 -7.066 -117.176 -15.474 -149.298 -4.92 -18.8 -34.346 -66.154 -70.43 -55.88 -64.85 18.462 -62.418 207.032 -69.06 209.32 -8.886 3.06 -14.372 -13.95 -28.584 -13.95 -25.338 0 -40.17 16.738 -71.846 16.738]; 
 
-[x_pressure_ventricle y_pressure_ventricle] = eval_bezier_curve_on_path(dt, curve_spec_ventricle, x_0, y_0, min_x, max_x, min_y, max_y); 
+[x_pressure_ventricle y_pressure_ventricle] = eval_bezier_curve_on_path(N_per_unit_length, curve_spec_ventricle, x_0, y_0, min_x, max_x, min_y, max_y); 
 
 % figure; 
 % plot(x_pressure_ventricle, y_pressure_ventricle); 
@@ -76,7 +79,7 @@ y_pressure_atrium_one_cycle = zeros(size(y_pressure_atrium));
 
 for i = length(x_pressure_atrium):-1:1
     
-    if (min_t <= x_pressure_atrium(i)) && (x_pressure_atrium(i) <= max_t)
+    if (min_t <= x_pressure_atrium(i)) && (x_pressure_atrium(i) < max_t)
         x_pressure_atrium_one_cycle(count) = x_pressure_atrium(i); 
         y_pressure_atrium_one_cycle(count) = y_pressure_atrium(i); 
         
@@ -100,7 +103,7 @@ y_pressure_ventricle_one_cycle = zeros(size(y_pressure_ventricle));
 
 for i = length(x_pressure_ventricle):-1:1
     
-    if (min_t <= x_pressure_ventricle(i)) && (x_pressure_ventricle(i) <= max_t)
+    if (min_t <= x_pressure_ventricle(i)) && (x_pressure_ventricle(i) < max_t)
         x_pressure_ventricle_one_cycle(count) = x_pressure_ventricle(i); 
         y_pressure_ventricle_one_cycle(count) = y_pressure_ventricle(i); 
         
@@ -127,10 +130,13 @@ title('single cycle starting at early diastole, zero pressure difference')
 
 
 % take 10 coeff series 
-n = 100; 
+n = 1000; 
 [a_0_atrium a_n_atrium b_n_atrium Series_atrium] = fourier_series(x_pressure_atrium_one_cycle, y_pressure_atrium_one_cycle, true_cycle_length, n); 
 
 [a_0_ventricle a_n_ventricle b_n_ventricle Series_ventricle] = fourier_series(x_pressure_ventricle_one_cycle, y_pressure_ventricle_one_cycle, true_cycle_length, n); 
+
+% save for fun 
+save('series_data'); 
 
 
 
@@ -154,6 +160,18 @@ hold on;
 plot(t, vals_ventricle_series); 
 legend('atrial pressure', 'ventricular pressure', 'location', 'NorthWest'); 
 title('curves from fourier seriess, two cycles')
+
+
+figure; 
+semilogy( abs(a_n_atrium), '--' )
+hold on 
+semilogy( abs(b_n_atrium), '-.' )
+semilogy( abs(a_n_ventricle))
+semilogy( abs(b_n_ventricle), ':')
+legend('atrium cos', 'atrium sin', 'ventricle cos', 'ventricle sin')
+title('abs of coefficients')
+
+
 
 
 
