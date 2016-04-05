@@ -11,7 +11,7 @@ max_x =  1.6;
 min_y =  2.2; 
 max_y =  12.0; 
 
-dt = 1.0e-5; 
+dt = 1.0e-4; 
 % each unit length (in paramter space) is evaluated at this many points 
 N_per_unit_length = ceil(1/dt); 
 
@@ -151,6 +151,10 @@ legend('atrial pressure', 'ventricular pressure', 'location', 'NorthWest');
 title('curves from fourier seriess, one cycle')
 
 
+figure; 
+plot(t, vals_atrium_series - vals_ventricle_series); 
+title('Pressure difference, atrium positive')
+
 t = 0:.0001:true_cycle_length*2; 
 vals_atrium_series    = Series_atrium(t); 
 vals_ventricle_series = Series_ventricle(t); 
@@ -172,6 +176,8 @@ legend('atrium cos', 'atrium sin', 'ventricle cos', 'ventricle sin')
 title('abs of coefficients')
 
 
+n_output = 400; 
+output_series_to_parser_format(a_0_atrium, a_n_atrium, b_n_atrium, a_0_ventricle, a_n_ventricle, b_n_ventricle, n_output, true_cycle_length); 
 
 
 

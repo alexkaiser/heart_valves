@@ -55,6 +55,11 @@ function val = trap_intergral(x,y,f,L)
     
     % mesh spacing, throws out first value which is junk
     dx = x(2:N) - x(1:N-1); 
+    
+    if ~all(dx > 0)
+        error('Some intervals have zero or negative length'); 
+    end 
+    
     f_x = f(x); 
         
     val = 0.5 * sum(dx .* (y(2:N) .* f_x(2:N) + y(1:N-1) .* f_x(1:N-1))); 
