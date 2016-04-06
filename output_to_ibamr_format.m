@@ -46,13 +46,13 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     % the valve ring is 1d, should be halfed with doubling of mesh 
     % also set damping coefficients accordingly 
     k_target_ring = k_target; %  / refinement; 
-    m_ring = 0.001; 
+    m_ring = 0.0; 
     eta_ring = sqrt(m_ring * k_target_ring); 
     
     % there are four times as many, so they get multiplied by refinement squared 
     % can also just divide by refinement because not want them to get stiffer
     k_target_net = k_target; % / refinement; 
-    m_net = 0.001; 
+    m_net = 0.0; 
     eta_net = sqrt(m_net * k_target_net);    
     
     % relative spring constants drop when the mesh is refined 
@@ -61,9 +61,11 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     % output the left and right papillary as the first two vertices and targets
     
     % Critical damping for given k, mass m is 2*sqrt(m*k) 
-    % Set to half critical for first test 
-    m_effective_papillary = .3; 
-    eta_papillary         = sqrt(k_target * m_effective_papillary); 
+    % Set to half critical for first test
+    % don't scale eta for now 
+    m_effective_papillary = .1; 
+    % terrible hack for now 
+    eta_papillary         = 210; % sqrt(k_target * m_effective_papillary); 
     
     left_papillary  = [0; -filter_params_posterior.a; 0]; 
     total_vertices  = vertex_string(vertex, left_papillary, total_vertices); 
