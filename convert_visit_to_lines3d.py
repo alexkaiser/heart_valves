@@ -161,7 +161,12 @@ if __name__ == '__main__':
         base_name = "mitral_tree"
     else: 
         base_name = str(sys.argv[1])
-
+        
+    if len(sys.argv) >= 3: 
+        frame_stride = int(sys.argv[2])
+    else: 
+        frame_stride = 1
+    
     spring_name = '../' + base_name + '.spring'
     spring_list = read_springs(spring_name)
 
@@ -185,21 +190,23 @@ if __name__ == '__main__':
 
     n_vertices = None
     n_frames = 0 
+    valid_loop_count = 0
 
     # for all the sorted files... 
     for f_name in sorted(os.listdir(os.getcwd())): 
         if f_name.startswith(base_name) and f_name.endswith('.xyz'):
+            if (valid_loop_count % frame_stride) == 0:                
+                print 'printing frame', str(valid_loop_count), '\n'
                         
-            # have a valid file 
-            n_frames += 1 
+                # have a valid file 
+                n_frames += 1 
     
-            temp_file = open(f_name, 'r')
+                temp_file = open(f_name, 'r')
             
-            vertex_strings, n_vertices = xyz_to_string_array(temp_file, lines3d_file, spring_list, n_vertices)
-            write_vertices(lines3d_file, vertex_strings, spring_list, n_particles)             
-            temp_file.close()
-            
-            
+                vertex_strings, n_vertices = xyz_to_string_array(temp_file, lines3d_file, spring_list, n_vertices)
+                write_vertices(lines3d_file, vertex_strings, spring_list, n_particles)             
+                temp_file.close()
+            valid_loop_count += 1 
     
     # close before messing with things  
     lines3d_file.close()
