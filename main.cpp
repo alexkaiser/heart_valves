@@ -367,7 +367,6 @@ int main(int argc, char* argv[])
             else{
                 if (SAMRAI_MPI::getRank() == 0){
                     flux_output_stream.open("flux_plot_IBAMR.m", ios_base::out | ios_base::app);
-                    flux_output_stream << "data = [" ; 
                 }
             }
             
