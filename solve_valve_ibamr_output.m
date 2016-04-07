@@ -19,7 +19,7 @@ chordae_tree = true;
 a = 1; 
 r = 1.5; 
 h = 3; 
-N = 32; 
+N = 64; 
 
 
 arbitrary_papillary_points = true; 
@@ -93,7 +93,7 @@ if N >= 256
     tol_global = 1e-10;
 end 
 
-max_it_global = 30; 
+max_it_global = 100; 
 
 plot_and_save_freq = 100; 
 start_it = 0; 
