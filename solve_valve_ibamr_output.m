@@ -17,9 +17,21 @@ overlap = pi/12;
 chordae_tree = true; 
 
 a = 1; 
-r = 1.5;
+r = 1.5; 
 h = 3; 
 N = 32; 
+
+
+arbitrary_papillary_points = true; 
+if arbitrary_papillary_points 
+    % ct scan method 
+    r = 1.606587877768772; 
+    left_papillary  = [ -0.972055648767080; -1.611924550017006; -2.990100960298683]; 
+    right_papillary = [ -1.542417595752084;  1.611924550017006; -3.611254871967348]; 
+else 
+    left_papillary  = [0; -a; 0]; 
+    right_papillary = [0;  a; 0]; 
+end 
 
 
 min_angle_posterior = -(pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
@@ -31,6 +43,11 @@ filter_params_posterior.h = h;
 filter_params_posterior.N = N;
 filter_params_posterior.min_angle = min_angle_posterior;
 filter_params_posterior.max_angle = max_angle_posterior;
+
+% whole posterior leaflet is reflected after the computation
+% papillary points must be reflected in x before the solve 
+filter_params_posterior.left_papillary  = [-1; 1; 1] .* left_papillary; 
+filter_params_posterior.right_papillary = [-1; 1; 1] .* right_papillary; 
 
 % reference and initial surfaces are the same 
 R_posterior = build_reference_surface(filter_params_posterior); 
@@ -47,7 +64,7 @@ if chordae_tree
     k_0 = 1; %0.000001; 
     k_multiplier = 1.75; 
     tree_frac = 0.5; 
-    params_posterior = add_chordae(params_posterior, filter_params_posterior, k_0, k_multiplier, tree_frac); 
+    params_posterior = add_chordae(params_posterior, filter_params_posterior, k_0, k_multiplier, tree_frac, arbitrary_papillary_points); 
 end 
 
 fig = surf_plot(params_posterior, filter_params_posterior); 
@@ -94,6 +111,10 @@ filter_params_anterior.N = N;
 filter_params_anterior.min_angle = min_angle_anterior;
 filter_params_anterior.max_angle = max_angle_anterior;
 
+% anterior leaflet has no reflection 
+filter_params_anterior.left_papillary  = left_papillary;
+filter_params_anterior.right_papillary = right_papillary; 
+
 % reference and initial surfaces are the same 
 R_anterior = build_reference_surface(filter_params_anterior); 
 X_anterior = R_anterior; 
@@ -101,7 +122,7 @@ X_anterior = R_anterior;
 params_anterior = pack_params(X_anterior,alpha,beta,N,p_0,R_anterior,ref_frac); 
 
 if chordae_tree
-    params_anterior = add_chordae(params_anterior, filter_params_anterior, k_0, k_multiplier, tree_frac); 
+    params_anterior = add_chordae(params_anterior, filter_params_anterior, k_0, k_multiplier, tree_frac, arbitrary_papillary_points); 
 end 
 
 fig = surf_plot(params_anterior, filter_params_anterior); 
@@ -241,10 +262,14 @@ for ref_frac = ref_frac_range
 
         % reflect posterior to actually have two leaflets
         params_posterior.X(1,:,:) = -params_posterior.X(1,:,:); 
+        filter_params_posterior.left_papillary(1)  = -filter_params_posterior.left_papillary(1); 
+        filter_params_posterior.right_papillary(1) = -filter_params_posterior.right_papillary(1); 
         
         if chordae_tree
             params_posterior.chordae.C_left(1,:,:)  = -params_posterior.chordae.C_left(1,:,:); 
-            params_posterior.chordae.C_right(1,:,:) = -params_posterior.chordae.C_right(1,:,:); 
+            params_posterior.chordae.C_right(1,:,:) = -params_posterior.chordae.C_right(1,:,:);
+            params_posterior.chordae.left_papillary(1) = -params_posterior.chordae.left_papillary(1);  
+            params_posterior.chordae.right_papillary(1) = -params_posterior.chordae.right_papillary(1);  
         end 
         
 
@@ -304,10 +329,15 @@ for ref_frac = ref_frac_range
 
         % reflect back for solves 
         params_posterior.X(1,:,:) = -params_posterior.X(1,:,:); 
+        filter_params_posterior.left_papillary(1)  = -filter_params_posterior.left_papillary(1); 
+        filter_params_posterior.right_papillary(1) = -filter_params_posterior.right_papillary(1); 
+        
         if chordae_tree
             params_posterior.chordae.C_left(1,:,:)  = -params_posterior.chordae.C_left(1,:,:); 
-            params_posterior.chordae.C_right(1,:,:) = -params_posterior.chordae.C_right(1,:,:); 
-        end
+            params_posterior.chordae.C_right(1,:,:) = -params_posterior.chordae.C_right(1,:,:);
+            params_posterior.chordae.left_papillary(1) = -params_posterior.chordae.left_papillary(1);  
+            params_posterior.chordae.right_papillary(1) = -params_posterior.chordae.right_papillary(1);  
+        end 
         
         
     end
@@ -316,10 +346,14 @@ end
 
 % final reflection to ensure in right place 
 params_posterior.X(1,:,:) = -params_posterior.X(1,:,:); 
+filter_params_posterior.left_papillary(1)  = -filter_params_posterior.left_papillary(1); 
+filter_params_posterior.right_papillary(1) = -filter_params_posterior.right_papillary(1); 
 
 if chordae_tree
     params_posterior.chordae.C_left(1,:,:)  = -params_posterior.chordae.C_left(1,:,:); 
-    params_posterior.chordae.C_right(1,:,:) = -params_posterior.chordae.C_right(1,:,:); 
+    params_posterior.chordae.C_right(1,:,:) = -params_posterior.chordae.C_right(1,:,:);
+    params_posterior.chordae.left_papillary(1) = -params_posterior.chordae.left_papillary(1);  
+    params_posterior.chordae.right_papillary(1) = -params_posterior.chordae.right_papillary(1);  
 end
 
 

@@ -1,4 +1,4 @@
-function params = add_chordae(params, filter_params, k_0, k_multiplier, tree_frac)
+function params = add_chordae(params, filter_params, k_0, k_multiplier, tree_frac, arbitrary_papillary_points)
 % 
 % Adds a chordae data structure to the current parameters 
 % 
@@ -12,11 +12,17 @@ function params = add_chordae(params, filter_params, k_0, k_multiplier, tree_fra
 %     params           Current leaflet data structures with chordae added 
 % 
 
-left_papillary_flat  = [-filter_params.a; 0]; 
-right_papillary_flat = [ filter_params.a; 0]; 
 
-chordae_flat = build_2d_trees(params, left_papillary_flat, right_papillary_flat, tree_frac, filter_params); 
-chordae = build_3d_trees(chordae_flat, filter_params, k_0, k_multiplier); 
+if arbitrary_papillary_points
+    
+    params.chordae = build_3d_trees_arbitrary_coords(params, filter_params, tree_frac, k_0, k_multiplier); 
+    
+else 
+    left_papillary_flat  = [-filter_params.a; 0]; 
+    right_papillary_flat = [ filter_params.a; 0]; 
 
-params.chordae = chordae; 
+    chordae_flat = build_2d_trees(params, left_papillary_flat, right_papillary_flat, tree_frac, filter_params); 
+    chordae = build_3d_trees(chordae_flat, filter_params, k_0, k_multiplier); 
 
+    params.chordae = chordae; 
+end 

@@ -7,8 +7,8 @@ function fig = surf_plot(params, filter_params, fig)
 X_copy = params.X; 
 N      = params.N; 
 
-left_papillary = [0;-filter_params.a;0]; 
-right_papillary = [0; filter_params.a;0]; 
+left_papillary = filter_params.left_papillary; 
+right_papillary = filter_params.right_papillary; 
 
 % NaN mask in the copy 
 

@@ -54,7 +54,7 @@ normal_to_papillary_plane = cross(papillary_left, papillary_right);
 
 % compute the midpoint
 % rotate this to the negative x axis 
-midpoint = papillary_left(1:2) + papillary_right(1:2); 
+midpoint = 0.5 * (papillary_left(1:2) + papillary_right(1:2)); 
 theta = atan2(midpoint(2), midpoint(1)); 
 
 R = rotation_matrix_z(-theta + pi); 
