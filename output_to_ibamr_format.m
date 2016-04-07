@@ -767,26 +767,8 @@ function [val] = get_geodesic_continued_point(x, pt_ring, r, h)
 end 
 
 
-function R = rotation_matrix_z(theta)
-    % 
-    % Rotation matrix counter clockwise by theta 
-    % around z axis 
-
-    R = [cos(theta) -sin(theta) 0; 
-         sin(theta)  cos(theta) 0; 
-         0           0          1]; 
-end 
 
 
-function R = rotation_matrix_y(theta)
-    % 
-    % Rotation matrix counter clockwise by theta 
-    % around z axis 
-
-    R = [cos(theta)  0 -sin(theta); 
-         0           1  0         ; 
-         sin(theta)  0  cos(theta)]; 
-end 
 
 
 function [global_idx, total_vertices, total_springs, total_targets] = ...
