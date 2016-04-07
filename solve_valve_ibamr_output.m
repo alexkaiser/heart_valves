@@ -8,10 +8,10 @@ commissure_angle = 0;
 
 % note that if extra posterior is equal to commissure angle
 % then the poster leaflet has angle pi 
-extra_posterior = pi/6; 
+extra_posterior = pi/6 + pi/24; 
 
 % each the posterior and anterior get this much extra
-overlap = pi/12; 
+overlap = pi/24; 
 
 
 chordae_tree = true; 
