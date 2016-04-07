@@ -28,7 +28,7 @@ slice = SliceAttributes()
 # print slice
 # print 'slice.originType = ', slice.originType, 'its type = ', type(slice.originType)
 slice.originType  = 0  # point, required to be an int
-slice.originPoint = (0, 0, 3) 
+slice.originPoint = (0, 0, 0) 
 slice.project2d   = 0
 slice.normal      = (0, 0, 1)
 SetOperatorOptions(slice)
