@@ -8,10 +8,10 @@ commissure_angle = 0;
 
 % note that if extra posterior is equal to commissure angle
 % then the poster leaflet has angle pi 
-extra_posterior = pi/6 + pi/24; 
+extra_posterior = pi/6; 
 
 % each the posterior and anterior get this much extra
-overlap = pi/24; 
+overlap = pi/12; 
 
 
 chordae_tree = true; 
@@ -19,7 +19,7 @@ chordae_tree = true;
 a = 1; 
 r = 1.5; 
 h = 3; 
-N = 64; 
+N = 128; 
 
 
 arbitrary_papillary_points = true; 
@@ -205,10 +205,14 @@ ref_frac_range = ref_frac;
 
 p_range = 0.0; %-(0:2.5:7.5); 
 
-if N == 128
+if (N == 128) && ~arbitrary_papillary_points
     ref_frac_range = [.6,.65,.67,ref_frac];  
     % with ref_frac_range = [.6,.65,.67,ref_frac];  
     % this converges without any "scares" with highly increasing errors 
+end 
+
+if (N == 128) && arbitrary_papillary_points
+    ref_frac_range = [.4, .5, .55, .6, .625, .65, .675, ref_frac];  
 end 
 
 if N == 256
