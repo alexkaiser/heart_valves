@@ -28,6 +28,7 @@ if arbitrary_papillary_points
     r = 1.606587877768772; 
     left_papillary  = [ -0.972055648767080; -1.611924550017006; -2.990100960298683]; 
     right_papillary = [ -1.542417595752084;  1.611924550017006; -3.611254871967348]; 
+    h = 2; 
 else 
     left_papillary  = [0; -a; 0]; 
     right_papillary = [0;  a; 0]; 
@@ -84,7 +85,7 @@ if chordae_tree
 end 
 
 
-tol_global = 1e-11;
+tol_global = 1e-10;
 
 % when resolution increases 
 % need to up the tolerance a little because of conditioning 
@@ -98,6 +99,11 @@ plot_and_save_freq = 100;
 start_it = 0; 
 
 err_over_time_posterior = zeros(max_it_global,1); 
+
+if arbitrary_papillary_points
+    % little higher to make a taller leaflet 
+    h = 4; 
+end 
 
 
 % anterior 

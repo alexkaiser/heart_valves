@@ -21,7 +21,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     vertex = fopen(strcat(base_name, '.vertex'), 'w'); 
     spring = fopen(strcat(base_name, '.spring'), 'w'); 
     target = fopen(strcat(base_name, '.target'), 'w'); 
-    inst = fopen(strcat(base_name, '.inst'  ), 'w'); 
+    inst   = fopen(strcat(base_name, '.inst'  ), 'w'); 
 
     % keep one global index through the whole thing 
     global_idx = 0;
@@ -67,12 +67,21 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     % terrible hack for now 
     eta_papillary         = 210; % sqrt(k_target * m_effective_papillary); 
     
-    left_papillary  = [0; -filter_params_posterior.a; 0]; 
+    
+    % check for consistency, all data structures must 
+    if ~(    all(filter_params_posterior.left_papillary   == params_posterior.chordae.left_papillary)   ...
+          && all(params_anterior.chordae.left_papillary   == params_posterior.chordae.left_papillary)   ...
+          && all(filter_params_posterior.right_papillary  == params_posterior.chordae.right_papillary)  ...
+          && all(params_anterior.chordae.right_papillary  == params_posterior.chordae.right_papillary))
+        error('chordae are inconsistent'); 
+    end 
+        
+    left_papillary  = filter_params_posterior.left_papillary; 
     total_vertices  = vertex_string(vertex, left_papillary, total_vertices); 
     total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
     global_idx      = global_idx + 1; 
     
-    right_papillary = [0;  filter_params_posterior.a; 0]; 
+    right_papillary = filter_params_posterior.right_papillary; 
     total_vertices  = vertex_string(vertex, right_papillary, total_vertices); 
     total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
     global_idx      = global_idx + 1;     
@@ -102,7 +111,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     % flat part of mesh 
     r = filter_params_posterior.r; 
     N_ring = 2 * params_anterior.N;
-    h = filter_params_posterior.h; 
+    h = 0.0; % now ring always set at zero %filter_params_posterior.h; 
     ref_frac_net = 1.0; 
     
     % no radial fibers, instead geodesics from the leaflet 
@@ -627,7 +636,7 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
     % 
 
     r = filter_params.r; 
-    h = filter_params.h; 
+    h = 0.0; %ilter_params.h; 
     N = params.N; 
     
     % max norm for included rays 
@@ -901,7 +910,7 @@ function [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangia
     dx = L / n_lagrangian_tracers; 
     total_lagrangian_placed = 0; 
     
-    z_extra_offset = filter_params.h; 
+    z_extra_offset = 0.0; 
     
     n_z_dir = n_lagrangian_tracers; 
     z_min = -L/2; 
