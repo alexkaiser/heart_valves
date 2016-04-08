@@ -19,7 +19,7 @@ chordae_tree = true;
 a = 1; 
 r = 1.5; 
 h = 3; 
-N = 128; 
+N = 256; 
 
 
 arbitrary_papillary_points = true; 
@@ -205,7 +205,7 @@ ref_frac_range = ref_frac;
 
 p_range = 0.0; %-(0:2.5:7.5); 
 
-if (N == 128) && ~arbitrary_papillary_points
+if (N == 128) && (~arbitrary_papillary_points)
     ref_frac_range = [.6,.65,.67,ref_frac];  
     % with ref_frac_range = [.6,.65,.67,ref_frac];  
     % this converges without any "scares" with highly increasing errors 
@@ -215,8 +215,12 @@ if (N == 128) && arbitrary_papillary_points
     ref_frac_range = [.4, .5, .55, .6, .625, .65, .675, ref_frac];  
 end 
 
-if N == 256
+if (N == 256) && (~arbitrary_papillary_points)
     ref_frac_range = [.5, .55, .6,.65,.67,ref_frac];  
+end 
+
+if (N == 256) && arbitrary_papillary_points
+    ref_frac_range = [.3:.05:.55, .575, .6:.01:.67, .675:.005:ref_frac];  
 end 
 
 
@@ -287,6 +291,7 @@ for ref_frac = ref_frac_range
             disp('Global solve passed posterior')
         else 
             disp('Global solve failed')
+            return; 
         end
 
 
@@ -299,6 +304,7 @@ for ref_frac = ref_frac_range
             disp('Global solve passed anterior')
         else 
             disp('Global solve failed')
+            return; 
         end        
         
         if commissure_angle > 0.0
