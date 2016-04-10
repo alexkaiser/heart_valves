@@ -11,7 +11,7 @@ L = 2.5;
 % ratio 6 is for N=32
 % ratio = 6 seems to make everything very stiff 
 % turn down by order of magnitude, see if it helps 
-ratio = 6; 
+ratio = 3; 
 
 
 % original spring constants were for N = 32 debug width
