@@ -1,4 +1,4 @@
-function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_physical, target_multiplier, refinement, n_lagrangian_tracers)
+function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_physical, target_multiplier, refinement, n_lagrangian_tracers, X_config_is_reference)
     % 
     % Outputs the current configuration of the leaflets to IBAMR format
     % Spring constants are computed in dimensional form 
@@ -13,6 +13,11 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     %    params_anterior
     %    p_physical                 Pressure in mmHg
     %    target_multiplier          Target spring strength is target_multiplier * p_physical/ratio
+    %    refinement                 N/32. Mesh is this many times finer than original debug width 
+    %    n_lagrangian_tracers       Places a 3d uniform mesh of tracers, this many (plus one) per side
+    %    X_config_is_reference      Replaces the reference configuration with the current configuration
+    %                               This attempts to remove initial transients entirely 
+    % 
     % 
     % Output: 
     %    Files written in IBAMR format 
@@ -68,7 +73,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     eta_papillary         = 210; % sqrt(k_target * m_effective_papillary); 
     
     
-    % check for consistency, all data structures must 
+    % check for consistency in chordae , all data structures must match 
     if ~(    all(filter_params_posterior.left_papillary   == params_posterior.chordae.left_papillary)   ...
           && all(params_anterior.chordae.left_papillary   == params_posterior.chordae.left_papillary)   ...
           && all(filter_params_posterior.right_papillary  == params_posterior.chordae.right_papillary)  ...
@@ -76,6 +81,21 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
         error('chordae are inconsistent'); 
     end 
         
+    
+    if X_config_is_reference
+        params_anterior.R               = params_anterior.X; 
+        params_anterior.chordae.Ref_l   = params_anterior.chordae.C_left;  
+        params_anterior.chordae.Ref_r   = params_anterior.chordae.C_right;  
+        params_anterior.ref_frac        = 1.0; 
+        
+        params_posterior.R              = params_posterior.X; 
+        params_posterior.chordae.Ref_l  = params_posterior.chordae.C_left;  
+        params_posterior.chordae.Ref_r  = params_posterior.chordae.C_right;  
+        params_posterior.ref_frac       = 1.0;
+    end 
+    
+    
+    
     left_papillary  = filter_params_posterior.left_papillary; 
     total_vertices  = vertex_string(vertex, left_papillary, total_vertices); 
     total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
@@ -144,7 +164,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
                             global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net); 
  
                         
-    if nargin >= 10
+    if exist('n_lagrangian_tracers', 'var')
         double_z = false; 
         [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L, filter_params_posterior, double_z); 
         particles = fopen(strcat(base_name, '.particles'), 'w'); 
@@ -231,6 +251,7 @@ function [global_idx, total_vertices, total_springs, total_targets, params] = ..
 
 
     [X,alpha,beta,N,p_0,R,ref_frac] = unpack_params(params); 
+     
     
     % Keep track of indices 
     indices_global = nan * zeros(N+1,N+1); 

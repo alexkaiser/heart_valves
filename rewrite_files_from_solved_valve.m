@@ -29,4 +29,7 @@ target_multiplier = 20;
 % z direction is doubled 
 n_lagrangian_tracers = 8; 
 
-output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_physical, target_multiplier, refinement, n_lagrangian_tracers); 
+
+X_config_is_reference = true; 
+
+output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_physical, target_multiplier, refinement, n_lagrangian_tracers, X_config_is_reference); 
