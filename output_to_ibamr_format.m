@@ -68,8 +68,8 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     % Critical damping for given k, mass m is 2*sqrt(m*k) 
     % Set to half critical for first test
     % 
-    m_effective_papillary = 1.0 * pi * filter_params_posterior.r^2; 
-    eta_papillary         = sqrt(k_target/2 * m_effective_papillary); 
+    % m_effective_papillary = 1.0 * pi * filter_params_posterior.r^2; 
+    eta_papillary         = 0.0; %sqrt(k_target/2 * m_effective_papillary); 
     
     
     % check for consistency in chordae , all data structures must match 
