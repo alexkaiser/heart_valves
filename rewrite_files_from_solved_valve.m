@@ -22,7 +22,7 @@ refinement = N/32.0;
 
 p_physical = 100; 
 
-target_multiplier = 20; 
+target_multiplier = 40; 
 
 % number of lagrangian tracers in each dimension 
 % arranged in a mesh near the origin

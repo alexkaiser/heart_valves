@@ -63,7 +63,7 @@ params_posterior = pack_params(X_posterior,alpha,beta,N,p_0,R_posterior,ref_frac
 
 if chordae_tree
     k_0 = 1; %0.000001; 
-    k_multiplier = 1.75; 
+    k_multiplier = 2.0; 
     tree_frac = 0.5; 
     params_posterior = add_chordae(params_posterior, filter_params_posterior, k_0, k_multiplier, tree_frac, arbitrary_papillary_points); 
 end 
@@ -220,7 +220,7 @@ if (N == 256) && (~arbitrary_papillary_points)
 end 
 
 if (N == 256) && arbitrary_papillary_points
-    ref_frac_range = [.3:.05:.55, .575, .6:.01:.67, .675:.005:ref_frac];  
+    ref_frac_range = [.3:.05:.55, .575, .6:.01:.67, .675:.005:.69, .692:.002:ref_frac];  
 end 
 
 
