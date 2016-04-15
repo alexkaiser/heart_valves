@@ -8,7 +8,7 @@ y_0 = 419.006;
 % two beats in the current diagram 
 min_x =  0.0; 
 max_x =  1.6; 
-min_y =  2.2; 
+min_y =  2.0; 
 max_y =  12.0; 
 
 dt = 1.0e-4; 
@@ -33,8 +33,8 @@ N_per_unit_length = ceil(1/dt);
 
 min_x =  0.0; 
 max_x =  1.6; 
-min_y = -2.0; 
-max_y =  110.0; 
+min_y =  0.0; 
+max_y =  120.0; 
 
 
 % probably not the right curve, 
@@ -59,12 +59,13 @@ curve_spec_ventricle = [-32.566 -0.228 -48.238 -4.746 -52.626 -12.326 -13.488 -2
 % plot(x_spline, y_spline_ventricle); 
 % title('ventricle pressure, with spline')
 
-% figure; 
-% plot(x_pressure_atrium, y_pressure_atrium, '--'); 
-% hold on 
-% plot(x_pressure_ventricle, y_pressure_ventricle); 
-% legend('atrial pressure', 'ventricular pressure'); 
+figure; 
+plot(x_pressure_atrium, y_pressure_atrium, '--'); 
+hold on 
+plot(x_pressure_ventricle, y_pressure_ventricle); 
+legend('atrial pressure', 'ventricular pressure'); 
 
+return 
 
 % manually selected interval, starts at zero p in early diastole  
 min_t = 0.5873; 
@@ -176,7 +177,7 @@ legend('atrium cos', 'atrium sin', 'ventricle cos', 'ventricle sin')
 title('abs of coefficients')
 
 
-n_output = 400; 
+n_output = 200; 
 output_series_to_parser_format(a_0_atrium, a_n_atrium, b_n_atrium, a_0_ventricle, a_n_ventricle, b_n_ventricle, n_output, true_cycle_length); 
 
 
