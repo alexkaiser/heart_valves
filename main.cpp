@@ -65,6 +65,12 @@
 #include <timing.h>
 
 
+#define IMPLICIT_SOLVER 
+#ifdef IMPLICIT_SOLVER
+     #include <ibamr/IBImplicitStaggeredHierarchyIntegrator.h>
+#endif
+
+
 #if defined(IBAMR_HAVE_SILO)
 #include <silo.h>
 #endif
@@ -130,6 +136,18 @@ int main(int argc, char* argv[])
         if (argc >= 4)
             from_restart = true;
 
+        #ifdef IMPLICIT_SOLVER
+            // Read default Petsc options
+            if (input_db->keyExists("petsc_options_file"))
+            {
+                std::string PetscOptionsFile = input_db->getString("petsc_options_file");
+                #if (!PETSC_VERSION_RELEASE)
+                    PetscOptionsInsertFile(PETSC_COMM_WORLD, NULL, PetscOptionsFile.c_str(), PETSC_TRUE);
+                #else
+                    PetscOptionsInsertFile(PETSC_COMM_WORLD, PetscOptionsFile.c_str(), PETSC_TRUE);
+                #endif
+            }
+        #endif
 
         // Get various standard options set in the input file.
         const bool dump_viz_data = app_initializer->dumpVizData();
@@ -167,11 +185,23 @@ int main(int argc, char* argv[])
                                                    << "Valid options are: COLLOCATED, STAGGERED");
         }
         Pointer<IBMethod> ib_method_ops = new IBMethod("IBMethod", app_initializer->getComponentDatabase("IBMethod"));
-        Pointer<IBHierarchyIntegrator> time_integrator =
-            new IBExplicitHierarchyIntegrator("IBHierarchyIntegrator",
-                                              app_initializer->getComponentDatabase("IBHierarchyIntegrator"),
-                                              ib_method_ops,
-                                              navier_stokes_integrator);
+        
+        
+        #ifdef IMPLICIT_SOLVER
+            Pointer<IBHierarchyIntegrator> time_integrator =
+                new IBImplicitStaggeredHierarchyIntegrator("IBHierarchyIntegrator",
+                                                            app_initializer->getComponentDatabase("IBHierarchyIntegrator"),
+                                                            ib_method_ops,
+                                                            navier_stokes_integrator);
+        #else
+            Pointer<IBHierarchyIntegrator> time_integrator =
+                new IBExplicitHierarchyIntegrator("IBHierarchyIntegrator",
+                                                    app_initializer->getComponentDatabase("IBHierarchyIntegrator"),
+                                                    ib_method_ops,
+                                                    navier_stokes_integrator);
+        #endif
+        
+        
         Pointer<CartesianGridGeometry<NDIM> > grid_geometry = new CartesianGridGeometry<NDIM>(
             "CartesianGeometry", app_initializer->getComponentDatabase("CartesianGeometry"));
         Pointer<PatchHierarchy<NDIM> > patch_hierarchy = new PatchHierarchy<NDIM>("PatchHierarchy", grid_geometry);
