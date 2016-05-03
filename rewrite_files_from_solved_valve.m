@@ -32,4 +32,7 @@ n_lagrangian_tracers = 8;
 
 X_config_is_reference = true; 
 
-output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_physical, target_multiplier, refinement, n_lagrangian_tracers, X_config_is_reference); 
+output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, filter_params_anterior, p_physical, target_multiplier, refinement, n_lagrangian_tracers, X_config_is_reference); 
+
+
+

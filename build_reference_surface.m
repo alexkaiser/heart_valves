@@ -42,7 +42,7 @@ for j=1:N
         if ((j+k) < (N+2))
             X_flat(:,j,k) = compute_intersection(X_flat, j, k, filter_params); 
             X(:,j,k)      = cone_filter(X_flat(1,j,k), X_flat(2,j,k), filter_params); 
-            X(3,j,k) = X(3,j,k) - h; 
+            X(3,j,k)      = X(3,j,k) - h; 
         end
 
     end 

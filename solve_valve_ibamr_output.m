@@ -2,10 +2,6 @@ function [] = solve_valve_ibamr_output()
 
 
 
-
-% symmetric for now 
-commissure_angle = 0; 
-
 % note that if extra posterior is equal to commissure angle
 % then the poster leaflet has angle pi 
 extra_posterior = pi/6; 
@@ -14,12 +10,12 @@ extra_posterior = pi/6;
 overlap = pi/12; 
 
 
-chordae_tree = true; 
+chordae_tree = true;
 
 a = 1; 
 r = 1.5; 
 h = 3; 
-N = 256; 
+N = 128; 
 
 
 arbitrary_papillary_points = true; 
@@ -35,8 +31,8 @@ else
 end 
 
 
-min_angle_posterior = -(pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
-max_angle_posterior =  (pi/2 - commissure_angle/2 + extra_posterior/2 + overlap/2); 
+min_angle_posterior = -(pi/2 + extra_posterior/2 + overlap/2); 
+max_angle_posterior =  (pi/2 + extra_posterior/2 + overlap/2); 
 
 filter_params_posterior.a = a; 
 filter_params_posterior.r = r; 
@@ -66,6 +62,8 @@ if chordae_tree
     k_multiplier = 2.0; 
     tree_frac = 0.5; 
     params_posterior = add_chordae(params_posterior, filter_params_posterior, k_0, k_multiplier, tree_frac, arbitrary_papillary_points); 
+else 
+    warning('Running without tree-based chordae currently untested a likely broken')
 end 
 
 fig = surf_plot(params_posterior, filter_params_posterior); 
@@ -107,8 +105,8 @@ end
 
 
 % anterior 
-min_angle_anterior = -(pi/2 - commissure_angle/2 - extra_posterior/2 + overlap/2); 
-max_angle_anterior =  (pi/2 - commissure_angle/2 - extra_posterior/2 + overlap/2); 
+min_angle_anterior = -(pi/2 - extra_posterior/2 + overlap/2); 
+max_angle_anterior =  (pi/2 - extra_posterior/2 + overlap/2); 
 
 filter_params_anterior.a = a; 
 filter_params_anterior.r = r; 
@@ -117,9 +115,16 @@ filter_params_anterior.N = N;
 filter_params_anterior.min_angle = min_angle_anterior;
 filter_params_anterior.max_angle = max_angle_anterior;
 
-% anterior leaflet has no reflection 
-filter_params_anterior.left_papillary  = left_papillary;
-filter_params_anterior.right_papillary = right_papillary; 
+% anterior leaflet has no reflection
+% adjust papillary coordinates slightly 
+if arbitrary_papillary_points
+    adjustment_anterior_x_coord = 0.25; 
+else 
+    adjustment_anterior_x_coord = 0.0; 
+end 
+
+filter_params_anterior.left_papillary  = left_papillary  + [adjustment_anterior_x_coord; 0; 0] ;
+filter_params_anterior.right_papillary = right_papillary + [adjustment_anterior_x_coord; 0; 0] ;
 
 % reference and initial surfaces are the same 
 R_anterior = build_reference_surface(filter_params_anterior); 
@@ -141,69 +146,15 @@ err_over_time_anterior = zeros(max_it_global,1);
 
 
 
-% left commissural leaflet
-% only fill in if commissural leaflet has nonzero angle 
-if commissure_angle > 0.0
-    % total hack on dimensions here for now     
-    N_left = floor(N/2) + 1; 
-    center = -(pi/2 - extra_posterior/2); 
-    min_angle_left = center - commissure_angle/2; 
-    max_angle_left = center + commissure_angle/2;
-    left = true; 
-
-    filter_params_left.a = a; 
-    filter_params_left.r = r; 
-    filter_params_left.h = h;
-    filter_params_left.N = N_left;
-    filter_params_left.min_angle = min_angle_left;
-    filter_params_left.max_angle = max_angle_left;
-
-    R_left = build_reference_surface_commissure(filter_params_left, left);
-    X_left = R_left; 
-    params_left = pack_params(X_left,alpha,beta,N_left,p_0,R_left,ref_frac); 
-
-    fig = surf_plot_commissure(params_left, filter_params_left, left); 
-    title('Reference configuration of surface'); 
-
-    'initial difference equation norm'
-    err_left = total_global_err_commissure(params_left, filter_params_left, left)
-
-    err_over_time_left = zeros(max_it_global,1); 
-
-    % right commissural leaflet
-    % total hack on dimensions here for now 
-    N_right = floor(N/2) + 1; 
-    center = (pi/2 - extra_posterior/2); 
-    min_angle_right = center - commissure_angle/2; 
-    max_angle_right = center + commissure_angle/2;
-    left = false; 
-
-    filter_params_right.a = a; 
-    filter_params_right.r = r; 
-    filter_params_right.h = h;
-    filter_params_right.N = N_right;
-    filter_params_right.min_angle = min_angle_right;
-    filter_params_right.max_angle = max_angle_right;
-
-    R_right = build_reference_surface_commissure(filter_params_right, left);
-    X_right = R_right; 
-    params_right = pack_params(X_right,alpha,beta,N_right,p_0,R_right,ref_frac); 
-
-    fig = surf_plot_commissure(params_right, filter_params_right, left); 
-    title('Reference configuration of surface'); 
-
-    'initial difference equation norm'
-    err_right = total_global_err_commissure(params_right, filter_params_right, left)
-
-    err_over_time_right = zeros(max_it_global,1); 
-end 
-
-
-
 % p_range = p_0; 
 ref_frac_range = ref_frac; 
 
 p_range = 0.0; %-(0:2.5:7.5); 
+
+
+if (N == 64) && arbitrary_papillary_points
+    ref_frac_range = [.6, ref_frac];  
+end 
 
 if (N == 128) && (~arbitrary_papillary_points)
     ref_frac_range = [.6,.65,.67,ref_frac];  
@@ -231,25 +182,6 @@ end
 
 for ref_frac = ref_frac_range
     
-    % reset the whole thing when the reference fraction changes
-%     params_posterior = pack_params(X_posterior,alpha,beta,N,p_0,R_posterior,ref_frac); 
-%     params_anterior = pack_params(X_anterior,alpha,beta,N,p_0,R_anterior,ref_frac); 
-%     
-%     if chordae_tree
-%         params_posterior = add_chordae(params_posterior, filter_params_posterior, k_0, k_multiplier, tree_frac); 
-%         params_anterior  = add_chordae(params_anterior,  filter_params_anterior , k_0, k_multiplier, tree_frac); 
-%     end 
-%     
-%     if commissure_angle > 0.0
-%         params_left = pack_params(X_left,alpha,beta,N_left,p_0,R_left,ref_frac); 
-%         params_right = pack_params(X_right,alpha,beta,N_right,p_0,R_right,ref_frac); 
-%         
-%         if chordae_tree
-%             error('chordae tree not yet supported for commissural leaflets'); 
-%         end 
-%         
-%     end 
-
     % reset the reference fraction in updates 
     fprintf(1, 'solving at ref_frac = %f\n' , ref_frac); 
     params_posterior.ref_frac = ref_frac; 
@@ -261,13 +193,6 @@ for ref_frac = ref_frac_range
         % this is some type of continuation algorithm 
         params_posterior.p_0 = p_0; 
         params_anterior.p_0 = p_0; 
-        if commissure_angle > 0.0
-            params_left.p_0 = p_0; 
-            params_right.p_0 = p_0; 
-        end
-        
-
-
 
         [params_posterior pass err_over_time_posterior it] = solve_valve(params_posterior, filter_params_posterior, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time_posterior); 
 
@@ -280,9 +205,9 @@ for ref_frac = ref_frac_range
         filter_params_posterior.right_papillary(1) = -filter_params_posterior.right_papillary(1); 
         
         if chordae_tree
-            params_posterior.chordae.C_left(1,:,:)  = -params_posterior.chordae.C_left(1,:,:); 
-            params_posterior.chordae.C_right(1,:,:) = -params_posterior.chordae.C_right(1,:,:);
-            params_posterior.chordae.left_papillary(1) = -params_posterior.chordae.left_papillary(1);  
+            params_posterior.chordae.C_left(1,:,:)      = -params_posterior.chordae.C_left(1,:,:); 
+            params_posterior.chordae.C_right(1,:,:)     = -params_posterior.chordae.C_right(1,:,:);
+            params_posterior.chordae.left_papillary(1)  = -params_posterior.chordae.left_papillary(1);  
             params_posterior.chordae.right_papillary(1) = -params_posterior.chordae.right_papillary(1);  
         end 
         
@@ -307,36 +232,6 @@ for ref_frac = ref_frac_range
             return; 
         end        
         
-        if commissure_angle > 0.0
-            left = true; 
-            [params_left pass err_over_time_left it] = solve_commissure_leaflet(params_left, filter_params_left, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time_left, left); 
-
-
-            if pass 
-                disp('Global solve passed')
-            else 
-                disp('Global solve failed')
-            end 
-
-            'difference equation norm left'
-            err_left = total_global_err_commissure(params_left, filter_params_left, left)
-
-
-            left = false; 
-            [params_right pass err_over_time_right it] = solve_commissure_leaflet(params_right, filter_params_right, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time_right, left); 
-
-
-            if pass 
-                disp('Global solve passed')
-            else 
-                disp('Global solve failed')
-            end 
-
-            'difference equation norm right'
-            err_right = total_global_err_commissure(params_right, filter_params_right, left)
-        end 
-
-        
         fig = figure; 
         fig = surf_plot(params_posterior, filter_params_posterior, fig);
         hold on 
@@ -349,9 +244,9 @@ for ref_frac = ref_frac_range
         filter_params_posterior.right_papillary(1) = -filter_params_posterior.right_papillary(1); 
         
         if chordae_tree
-            params_posterior.chordae.C_left(1,:,:)  = -params_posterior.chordae.C_left(1,:,:); 
-            params_posterior.chordae.C_right(1,:,:) = -params_posterior.chordae.C_right(1,:,:);
-            params_posterior.chordae.left_papillary(1) = -params_posterior.chordae.left_papillary(1);  
+            params_posterior.chordae.C_left(1,:,:)      = -params_posterior.chordae.C_left(1,:,:); 
+            params_posterior.chordae.C_right(1,:,:)     = -params_posterior.chordae.C_right(1,:,:);
+            params_posterior.chordae.left_papillary(1)  = -params_posterior.chordae.left_papillary(1);  
             params_posterior.chordae.right_papillary(1) = -params_posterior.chordae.right_papillary(1);  
         end 
         
@@ -366,9 +261,9 @@ filter_params_posterior.left_papillary(1)  = -filter_params_posterior.left_papil
 filter_params_posterior.right_papillary(1) = -filter_params_posterior.right_papillary(1); 
 
 if chordae_tree
-    params_posterior.chordae.C_left(1,:,:)  = -params_posterior.chordae.C_left(1,:,:); 
-    params_posterior.chordae.C_right(1,:,:) = -params_posterior.chordae.C_right(1,:,:);
-    params_posterior.chordae.left_papillary(1) = -params_posterior.chordae.left_papillary(1);  
+    params_posterior.chordae.C_left(1,:,:)      = -params_posterior.chordae.C_left(1,:,:); 
+    params_posterior.chordae.C_right(1,:,:)     = -params_posterior.chordae.C_right(1,:,:);
+    params_posterior.chordae.left_papillary(1)  = -params_posterior.chordae.left_papillary(1);  
     params_posterior.chordae.right_papillary(1) = -params_posterior.chordae.right_papillary(1);  
 end
 

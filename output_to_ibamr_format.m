@@ -1,4 +1,4 @@
-function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, p_physical, target_multiplier, refinement, n_lagrangian_tracers, X_config_is_reference)
+function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, filter_params_anterior, p_physical, target_multiplier, refinement, n_lagrangian_tracers, X_config_is_reference)
     % 
     % Outputs the current configuration of the leaflets to IBAMR format
     % Spring constants are computed in dimensional form 
@@ -74,12 +74,21 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     
     % check for consistency in chordae , all data structures must match 
     if ~(    all(filter_params_posterior.left_papillary   == params_posterior.chordae.left_papillary)   ...
-          && all(params_anterior.chordae.left_papillary   == params_posterior.chordae.left_papillary)   ...
-          && all(filter_params_posterior.right_papillary  == params_posterior.chordae.right_papillary)  ...
-          && all(params_anterior.chordae.right_papillary  == params_posterior.chordae.right_papillary))
-        error('chordae are inconsistent'); 
+          && all(filter_params_posterior.right_papillary  == params_posterior.chordae.right_papillary))
+        error('Posterior chordae are inconsistent'); 
     end 
         
+    if ~(    all(filter_params_anterior.left_papillary   == params_anterior.chordae.left_papillary)   ...
+          && all(filter_params_anterior.right_papillary  == params_anterior.chordae.right_papillary))
+        error('Anterior chordae are inconsistent'); 
+    end 
+    
+    split_papillary_tips = false; 
+    if ~(    all(filter_params_posterior.left_papillary   == filter_params_anterior.left_papillary)   ...
+          && all(filter_params_posterior.right_papillary  == filter_params_anterior.right_papillary))
+        split_papillary_tips = true; 
+    end 
+    
     
     if X_config_is_reference
         params_anterior.R               = params_anterior.X; 
@@ -96,14 +105,37 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     
     
     left_papillary  = filter_params_posterior.left_papillary; 
+    filter_params_posterior.left_papillary_idx = global_idx; 
     total_vertices  = vertex_string(vertex, left_papillary, total_vertices); 
     total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
     global_idx      = global_idx + 1; 
     
     right_papillary = filter_params_posterior.right_papillary; 
+    filter_params_posterior.right_papillary_idx = global_idx; 
     total_vertices  = vertex_string(vertex, right_papillary, total_vertices); 
     total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
     global_idx      = global_idx + 1;     
+    
+    if split_papillary_tips
+        
+        left_papillary  = filter_params_anterior.left_papillary; 
+        filter_params_anterior.left_papillary_idx = global_idx; 
+        total_vertices  = vertex_string(vertex, left_papillary, total_vertices); 
+        total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
+        global_idx      = global_idx + 1; 
+
+        right_papillary = filter_params_anterior.right_papillary; 
+        filter_params_anterior.right_papillary_idx = global_idx; 
+        total_vertices  = vertex_string(vertex, right_papillary, total_vertices); 
+        total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
+        global_idx      = global_idx + 1;             
+    
+    else
+        filter_params_anterior.left_papillary_idx  = filter_params_posterior.left_papillary_idx;
+        filter_params_anterior.right_papillary_idx = filter_params_posterior.right_papillary_idx;  
+    end 
+    
+    
     
     % posterior first 
     % leaflets 
@@ -113,6 +145,10 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
 
     % if chordae exist, then add them 
     if isfield(params_posterior, 'chordae') && ~isempty(params_posterior.chordae)
+        
+        params_posterior.chordae.left_papillary_idx  = filter_params_posterior.left_papillary_idx; 
+        params_posterior.chordae.right_papillary_idx = filter_params_posterior.right_papillary_idx; 
+                
         [global_idx, total_vertices, total_springs] = ...
                 add_chordae_tree(params_posterior, spring, vertex, global_idx, total_vertices, total_springs, k_rel);  
     end
@@ -123,6 +159,11 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
                      global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_ring, eta_ring);   
     
     if isfield(params_anterior, 'chordae') && ~isempty(params_anterior.chordae)
+        
+        params_anterior.chordae.left_papillary_idx  = filter_params_anterior.left_papillary_idx; 
+        params_anterior.chordae.right_papillary_idx = filter_params_anterior.right_papillary_idx; 
+           
+        
         [global_idx, total_vertices, total_springs] = ...
                 add_chordae_tree(params_anterior, spring, vertex, global_idx, total_vertices, total_springs, k_rel);  
     end 
@@ -255,10 +296,7 @@ function [global_idx, total_vertices, total_springs, total_targets, params] = ..
     % Keep track of indices 
     indices_global = nan * zeros(N+1,N+1); 
 
-    
-    left_papillary  = [0; -filter_params.a; 0]; 
-    right_papillary = [0;  filter_params.a; 0]; 
-    
+   
     pts_placed = 0; 
     
 
@@ -308,8 +346,8 @@ function [global_idx, total_vertices, total_springs, total_targets, params] = ..
                         end 
                     
                     else 
-                        nbr_idx = 0; 
-                        rest_len = ref_frac * norm(left_papillary - R(:,j,k)); 
+                        nbr_idx = filter_params.left_papillary_idx; 
+                        rest_len = ref_frac * norm(filter_params.left_papillary - R(:,j,k)); 
                         kappa = k_rel / rest_len; 
 
                         total_springs = spring_string(spring, nbr_idx, idx, kappa, rest_len, total_springs); 
@@ -343,8 +381,8 @@ function [global_idx, total_vertices, total_springs, total_targets, params] = ..
                         end 
                     else
                     
-                        nbr_idx = 1; 
-                        rest_len = ref_frac * norm(right_papillary - R(:,j,k)); 
+                        nbr_idx = filter_params.right_papillary_idx; 
+                        rest_len = ref_frac * norm(filter_params.right_papillary - R(:,j,k)); 
                         kappa = k_rel / rest_len; 
                     
                         total_springs = spring_string(spring, nbr_idx, idx, kappa, rest_len, total_springs); 
@@ -434,9 +472,9 @@ function [global_idx, total_vertices, total_springs] = ...
                 
                 % zero index means papillary muscles, which are zero and one by convention 
                 if left_side 
-                    nbr_idx = 0; 
+                    nbr_idx = chordae.left_papillary_idx; 
                 else 
-                    nbr_idx = 1; 
+                    nbr_idx = chordae.right_papillary_idx; 
                 end
                 
             else
