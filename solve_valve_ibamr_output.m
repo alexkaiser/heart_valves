@@ -15,7 +15,7 @@ chordae_tree = true;
 a = 1; 
 r = 1.5; 
 h = 3; 
-N = 128; 
+N = 256; 
 
 
 arbitrary_papillary_points = true; 
@@ -91,7 +91,7 @@ if N >= 256
     tol_global = 1e-10;
 end 
 
-max_it_global = 100; 
+max_it_global = 40; 
 
 plot_and_save_freq = 100; 
 start_it = 0; 
@@ -152,27 +152,27 @@ ref_frac_range = ref_frac;
 p_range = 0.0; %-(0:2.5:7.5); 
 
 
-if (N == 64) && arbitrary_papillary_points
-    ref_frac_range = [.6, ref_frac];  
-end 
-
-if (N == 128) && (~arbitrary_papillary_points)
-    ref_frac_range = [.6,.65,.67,ref_frac];  
-    % with ref_frac_range = [.6,.65,.67,ref_frac];  
-    % this converges without any "scares" with highly increasing errors 
-end 
-
-if (N == 128) && arbitrary_papillary_points
-    ref_frac_range = [.4, .5, .55, .6, .625, .65, .675, ref_frac];  
-end 
-
-if (N == 256) && (~arbitrary_papillary_points)
-    ref_frac_range = [.5, .55, .6,.65,.67,ref_frac];  
-end 
-
-if (N == 256) && arbitrary_papillary_points
-    ref_frac_range = [.3:.05:.55, .575, .6:.01:.67, .675:.005:.69, .692:.002:ref_frac];  
-end 
+% if (N == 64) && arbitrary_papillary_points
+%     ref_frac_range = [.6, ref_frac];  
+% end 
+% 
+% if (N == 128) && (~arbitrary_papillary_points)
+%     ref_frac_range = [.6,.65,.67,ref_frac];  
+%     % with ref_frac_range = [.6,.65,.67,ref_frac];  
+%     % this converges without any "scares" with highly increasing errors 
+% end 
+% 
+% if (N == 128) && arbitrary_papillary_points
+%     ref_frac_range = [.4, .5, .55, .6, .625, .65, .675, ref_frac];  
+% end 
+% 
+% if (N == 256) && (~arbitrary_papillary_points)
+%     ref_frac_range = [.5, .55, .6,.65,.67,ref_frac];  
+% end 
+% 
+% if (N == 256) && arbitrary_papillary_points
+%     ref_frac_range = [.3:.05:.55, .575, .6:.01:.67, .675:.005:.69, .692:.002:ref_frac];  
+% end 
 
 
 % debug values 
@@ -183,7 +183,7 @@ end
 for ref_frac = ref_frac_range
     
     % reset the reference fraction in updates 
-    fprintf(1, 'solving at ref_frac = %f\n' , ref_frac); 
+    fprintf(1, 'Solving at ref_frac = %f\n\n' , ref_frac); 
     params_posterior.ref_frac = ref_frac; 
     params_anterior.ref_frac  = ref_frac; 
     
@@ -194,9 +194,8 @@ for ref_frac = ref_frac_range
         params_posterior.p_0 = p_0; 
         params_anterior.p_0 = p_0; 
 
-        [params_posterior pass err_over_time_posterior it] = solve_valve(params_posterior, filter_params_posterior, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time_posterior); 
+        [params_posterior pass err_over_time_posterior it] = solve_valve_auto_continuation(params_posterior, filter_params_posterior, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time_posterior, ref_frac); 
 
-        'difference equation norm'
         err_posterior = total_global_err(params_posterior, filter_params_posterior)
 
         % reflect posterior to actually have two leaflets
@@ -213,22 +212,22 @@ for ref_frac = ref_frac_range
         
 
         if pass 
-            disp('Global solve passed posterior')
+            fprintf('Global solve passed posterior\n\n')
         else 
-            disp('Global solve failed')
+            fprintf('Global solve failed posterior\n\n')
             return; 
         end
 
 
-        [params_anterior pass err_over_time_anterior it] = solve_valve(params_anterior, filter_params_anterior, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time_anterior); 
+        [params_anterior pass err_over_time_anterior it] = solve_valve_auto_continuation(params_anterior, filter_params_anterior, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time_anterior, ref_frac); 
 
-        'difference equation norm'
+        
         err_anterior = total_global_err(params_anterior, filter_params_anterior)
 
         if pass 
-            disp('Global solve passed anterior')
+            fprintf('Global solve passed anterior\n\n')
         else 
-            disp('Global solve failed')
+            fprintf('Global solve failed\n\n')
             return; 
         end        
         
