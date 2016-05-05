@@ -63,9 +63,10 @@
 #include <vector>
 #include <queue>
 #include <timing.h>
+#include <boundary_condition_util.h>
 
 
-#define IMPLICIT_SOLVER 
+// #define IMPLICIT_SOLVER
 #ifdef IMPLICIT_SOLVER
      #include <ibamr/IBImplicitStaggeredHierarchyIntegrator.h>
 #endif
@@ -85,6 +86,7 @@ void update_rest_lengths(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager*
 //#define COMPARE_TO_ZERO_FLOW
 #define DEBUG_OUTPUT 0 
 #define ENABLE_INSTRUMENTS
+#define FOURIER_SERIES_BC
 
 // #define UPDATE_REST_LEN 
 
@@ -120,6 +122,9 @@ int main(int argc, char* argv[])
 
     { // cleanup dynamically allocated objects prior to shutdown
     
+        // time step used in various places throughout 
+        double dt; 
+        
         // make some timers
         timestamp_type time1_total, time2_total;    // For total time
         timestamp_type time1, time2;                // For step time
@@ -287,6 +292,21 @@ int main(int argc, char* argv[])
 
         // Create Eulerian boundary condition specification objects (when necessary).
         vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM, static_cast<RobinBcCoefStrategy<NDIM>*>(NULL));
+        
+        #ifdef FOURIER_SERIES_BC
+            pout << "to Fourier series creation\n"; 
+            
+            // this fails here, need to get dt from input db or something 
+            // dt = time_integrator->getMaximumTimeStepSize(); 
+            
+            dt = input_db->getDouble("DT"); 
+            
+            pout << "to constructor\n"; 
+            fourier_series_data *fourier = new fourier_series_data("fourier_coeffs.txt", dt);  
+            pout << "series data successfully built\n"; 
+            // fourier->print_values(); 
+        #endif
+        
         const bool periodic_domain = grid_geometry->getPeriodicShift().min() > 0;
         if (!periodic_domain)
         {
@@ -301,6 +321,13 @@ int main(int argc, char* argv[])
                 u_bc_coefs[d] = new muParserRobinBcCoefs(
                     bc_coefs_name, app_initializer->getComponentDatabase(bc_coefs_db_name), grid_geometry);
             }
+            
+            // manually update third component, 
+            // which is the only one note easily set in the input file 
+            
+            
+            
+            
             navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
             if (solver_type == "STAGGERED" && input_db->keyExists("BoundaryStabilization"))
             {
@@ -565,7 +592,7 @@ int main(int argc, char* argv[])
 
         // Main time step loop.
         double loop_time_end = time_integrator->getEndTime();
-        double dt = 0.0;
+        dt = 0.0;
         double dt_prev = 0.0;
         bool prev_step_initialized = false;
         
