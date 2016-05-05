@@ -16,17 +16,19 @@
 // NAMESPACE
 #include <ibamr/app_namespaces.h>
 
+#define MMHG_TO_CGS 1333.22368
 
 class fourier_series_data{
     
     public: 
     
-        int N_times; 
+        unsigned int N_times; 
         double L; 
         double *values; 
+        double dt; 
 
         // Only implemented constructor 
-        fourier_series_data(string file_name, double dt); 
+        fourier_series_data(string file_name, double dt_input); 
         
         // Destructor 
         ~fourier_series_data(); 
@@ -77,7 +79,7 @@ public:
      * \brief Return how many cells past the edge or corner of the patch the
      * object can fill.
      */
-    IntVector<NDIM> numberOfExtensionsFillable() const;
+     IntVector<NDIM> numberOfExtensionsFillable() const;
 
     //\}
 
@@ -102,9 +104,7 @@ private:
      */
     VelocityBcCoefs& operator=(const VelocityBcCoefs& that);
 
-    // Fix and decide how data is laid out 
-    // Should maybe be a double 
-    // const fourier_series_data fourier; 
+    const fourier_series_data *fourier; 
     
 };
 

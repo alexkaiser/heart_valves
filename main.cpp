@@ -310,21 +310,45 @@ int main(int argc, char* argv[])
         const bool periodic_domain = grid_geometry->getPeriodicShift().min() > 0;
         if (!periodic_domain)
         {
-            for (unsigned int d = 0; d < NDIM; ++d)
-            {
-                ostringstream bc_coefs_name_stream;
-                bc_coefs_name_stream << "u_bc_coefs_" << d;
-                const string bc_coefs_name = bc_coefs_name_stream.str();
-                ostringstream bc_coefs_db_name_stream;
-                bc_coefs_db_name_stream << "VelocityBcCoefs_" << d;
-                const string bc_coefs_db_name = bc_coefs_db_name_stream.str();
-                u_bc_coefs[d] = new muParserRobinBcCoefs(
-                    bc_coefs_name, app_initializer->getComponentDatabase(bc_coefs_db_name), grid_geometry);
-            }
+        
+            #ifdef FOURIER_SERIES_BC
+                
+                if (NDIM != 3){
+                    pout << "Current implementation requires 3d\n"; 
+                    SAMRAI_MPI::abort();  
+                }
+                    
+                for (unsigned int d = 0; d < 2; ++d)
+                {
+                    ostringstream bc_coefs_name_stream;
+                    bc_coefs_name_stream << "u_bc_coefs_" << d;
+                    const string bc_coefs_name = bc_coefs_name_stream.str();
+                    ostringstream bc_coefs_db_name_stream;
+                    bc_coefs_db_name_stream << "VelocityBcCoefs_" << d;
+                    const string bc_coefs_db_name = bc_coefs_db_name_stream.str();
+                    u_bc_coefs[d] = new muParserRobinBcCoefs(
+                        bc_coefs_name, app_initializer->getComponentDatabase(bc_coefs_db_name), grid_geometry);
+                }
+
+                // manually update third component, 
+                // which is the only one note easily set in the input file 
+                u_bc_coefs[2] = new VelocityBcCoefs(fourier); 
+                            
             
-            // manually update third component, 
-            // which is the only one note easily set in the input file 
-            
+            #else 
+                for (unsigned int d = 0; d < NDIM; ++d)
+                {
+                    ostringstream bc_coefs_name_stream;
+                    bc_coefs_name_stream << "u_bc_coefs_" << d;
+                    const string bc_coefs_name = bc_coefs_name_stream.str();
+                    ostringstream bc_coefs_db_name_stream;
+                    bc_coefs_db_name_stream << "VelocityBcCoefs_" << d;
+                    const string bc_coefs_db_name = bc_coefs_db_name_stream.str();
+                    u_bc_coefs[d] = new muParserRobinBcCoefs(
+                        bc_coefs_name, app_initializer->getComponentDatabase(bc_coefs_db_name), grid_geometry);
+                }
+            #endif 
+
             
             
             

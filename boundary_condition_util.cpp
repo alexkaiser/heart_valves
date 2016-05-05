@@ -31,7 +31,7 @@
 /////////////////////////////// PUBLIC ///////////////////////////////////////
 
 VelocityBcCoefs::VelocityBcCoefs(const fourier_series_data *fourier)
-    // : can put some default stuff here  
+    : fourier(fourier)
 {
     // intentionally blank
     return;
@@ -50,12 +50,13 @@ VelocityBcCoefs::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_data,
                             const Pointer<Variable<NDIM> >& /*variable*/,
                             const Patch<NDIM>& patch,
                             const BoundaryBox<NDIM>& bdry_box,
-                            double /*fill_time*/) const
-{
-
+                            double fill_time) const {
+    
     const int location_index = bdry_box.getLocationIndex();
     const int axis = location_index / 2;
     const int side = location_index % 2;
+    
+    // std::cout << "location_index = " << location_index << "\n"; 
     
     #if !defined(NDEBUG)
         TBOX_ASSERT(!acoef_data.isNull());
@@ -65,109 +66,61 @@ VelocityBcCoefs::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_data,
         TBOX_ASSERT(bcoef_data.isNull() || bc_coef_box == bcoef_data->getBox());
         TBOX_ASSERT(gcoef_data.isNull() || bc_coef_box == gcoef_data->getBox());
     #endif
-    
-    const Box<NDIM>& patch_box = patch.getBox();
-    const Index<NDIM>& patch_lower = patch_box.lower();
-    Pointer<CartesianPatchGeometry<NDIM> > pgeom = patch.getPatchGeometry();
-    //const double* const dx = pgeom->getDx();
-    //const double* const x_lower = pgeom->getXLower();
+
     for (Box<NDIM>::Iterator bc(bc_coef_box); bc; bc++)
     {
         const Index<NDIM>& i = bc();
+        
         double dummy;
         double& a = (!acoef_data.isNull() ? (*acoef_data)(i, 0) : dummy);
         double& b = (!bcoef_data.isNull() ? (*bcoef_data)(i, 0) : dummy);
         double& g = (!gcoef_data.isNull() ? (*gcoef_data)(i, 0) : dummy);
-        if (axis != 1)
-        {
+        if (axis < 2){
+            // no slip on x,y axis 
+            // std::cout << "no slip on location " << location_index << "\n"; 
+            
             a = 1.0;
             b = 0.0;
             g = 0.0;
         }
-     /*   else if (d_comp_idx != axis)
-        {
-            a = 1.0;
-            b = 0.0;
+        else if (side == 0){
+            // zero pressure on z axis, bottom side
+            // std::cout << "zero pressure on location " << location_index << "\n"; 
+            a = 0.0;
+            b = 1.0;
             g = 0.0;
         }
-        else if (d_comp_idx == axis) // FIX BOUNDARY 
-        {
-
-            a = (r <= rsrc) ? 0.0 : 1.0;
-            b = (r <= rsrc) ? 1.0 : 0.0;
-            g = (r <= rsrc) ? -psrc : 0.0;
-        }
-        */ 
-    }
-
-    
-    /*const int location_index = bdry_box.getLocationIndex();
-    const int axis = location_index / 2;
-    const int side = location_index % 2;
-#if !defined(NDEBUG)
-    TBOX_ASSERT(!acoef_data.isNull());
-#endif
-    const Box<NDIM>& bc_coef_box = acoef_data->getBox();
-#if !defined(NDEBUG)
-    TBOX_ASSERT(bcoef_data.isNull() || bc_coef_box == bcoef_data->getBox());
-    TBOX_ASSERT(gcoef_data.isNull() || bc_coef_box == gcoef_data->getBox());
-#endif
-    const Box<NDIM>& patch_box = patch.getBox();
-    const Index<NDIM>& patch_lower = patch_box.lower();
-    Pointer<CartesianPatchGeometry<NDIM> > pgeom = patch.getPatchGeometry();
-    const double* const dx = pgeom->getDx();
-    const double* const x_lower = pgeom->getXLower();
-    for (Box<NDIM>::Iterator bc(bc_coef_box); bc; bc++)
-    {
-        const Index<NDIM>& i = bc();
-        double dummy;
-        double& a = (!acoef_data.isNull() ? (*acoef_data)(i, 0) : dummy);
-        double& b = (!bcoef_data.isNull() ? (*bcoef_data)(i, 0) : dummy);
-        double& g = (!gcoef_data.isNull() ? (*gcoef_data)(i, 0) : dummy);
-        if (axis != 1)
-        {
-            a = 1.0;
-            b = 0.0;
-            g = 0.0;
-        }
-        else if (d_comp_idx != axis)
-        {
-            a = 1.0;
-            b = 0.0;
-            g = 0.0;
-        }
-        else if (d_comp_idx == axis)
-        {
-            const double psrc = d_circ_model->d_psrc[side];
-            const double rsrc = d_circ_model->d_rsrc[side];
-            const Point& posn = d_circ_model->d_posn[side];
-            double X[NDIM];
-            double r_sq = 0.0;
-            for (int d = 0; d < NDIM; ++d)
-            {
-                X[d] = x_lower[d] + dx[d] * (double(i(d) - patch_lower(d)) + (d == axis ? 0.0 : 0.5));
-                if (d != axis) r_sq += pow(X[d] - posn[d], 2.0);
-            }
-            const double r = sqrt(r_sq);
-            a = (r <= rsrc) ? 0.0 : 1.0;
-            b = (r <= rsrc) ? 1.0 : 0.0;
-            g = (r <= rsrc) ? -psrc : 0.0;
+        else if (side == 1){
+            // Fourier data here 
+            
+            // index without periodicity 
+            unsigned int k = (unsigned int) floor(fill_time / (fourier->dt)); 
+            
+            // take periodic reduction                         
+            unsigned int idx = k % (fourier->N_times);  
+            
+            a = 0.0; 
+            b = 1.0; 
+            g = -MMHG_TO_CGS * fourier->values[idx]; 
+        
+            //std::cout << "fourier pressure data on location " << location_index << " with value " << g << " or " << fourier->values[idx] << " mmHg\n"; 
         }
     }
-    */ 
+     
     return;
 } // setBcCoefs
+
 
 IntVector<NDIM>
 VelocityBcCoefs::numberOfExtensionsFillable() const
 {
     return 128;
 } // numberOfExtensionsFillable
+ 
 
 
 
-
-fourier_series_data::fourier_series_data(string file_name, double dt){
+fourier_series_data::fourier_series_data(string file_name, double dt_input){
     /*
     Constructor 
     
@@ -184,8 +137,6 @@ fourier_series_data::fourier_series_data(string file_name, double dt){
         a_1 b_1     Cosine and sine coeffs, must be N
         ...
     */ 
-
-    std::cout << "in constructor \n" ;     
     
     ifstream f; 
     f.open(file_name.c_str(), ios::in);
@@ -194,10 +145,11 @@ fourier_series_data::fourier_series_data(string file_name, double dt){
         std::cout << "Failed to open file in Fourier series intialization\n" ; 
     } 
     
-    std::cout << "file is open and if statement passed \n" ;     
+    // set the local dt 
+    dt = dt_input; 
     
     // number of coefficients 
-    int N; 
+    unsigned int N; 
     f >> N; 
     
     // Length of interval 
@@ -208,37 +160,30 @@ fourier_series_data::fourier_series_data(string file_name, double dt){
     
     double pi = 4.0*atan2(1,1); 
         
-    std::cout << "to read loop \n" ; 
-        
     f >> a_n[0]; 
     b_n[0] = 0.0; 
-    for(int j=1; (j<N) && (!f.eof()); j++){
+    for(unsigned int j=1; (j<N) && (!f.eof()); j++){
         f >> a_n[j]; 
         f >> b_n[j]; 
     }
     
-    N_times = (int) floor(L/dt);
+    N_times = (unsigned int) floor(L/dt);
      
-    values = new double[N]; 
+    values = new double[N_times]; 
     
-    int t_idx; 
+    unsigned int t_idx; 
     double t;
-
-    std::cout << "to evel loop \n" ; 
     
     for (t_idx=0, t=0.0; t_idx < N_times; t_idx++, t+=dt){
-        for (int j=0; j<N; j++){
+        for (unsigned int j=0; j<N; j++){
             values[t_idx] += a_n[j] * cos((2*pi/L) * j * t); 
             values[t_idx] += b_n[j] * sin((2*pi/L) * j * t); 
         }     
     }
-
-    std::cout << "to cleanup \n" ; 
     
     f.close();     
     delete[] a_n; 
-    delete[] b_n; 
-     
+    delete[] b_n;      
 } 
 
 fourier_series_data::~fourier_series_data(){
@@ -251,7 +196,7 @@ fourier_series_data::~fourier_series_data(){
 void fourier_series_data::print_values(){
     // Prints values of the series to command line for debugging 
     
-    for (int j=0; j<N_times; j++) {
+    for (unsigned int j=0; j<N_times; j++) {
         std::cout << values[j] << "\n" ; 
     }    
 } 
