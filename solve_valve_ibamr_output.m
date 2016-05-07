@@ -118,7 +118,7 @@ filter_params_anterior.max_angle = max_angle_anterior;
 % anterior leaflet has no reflection
 % adjust papillary coordinates slightly 
 if arbitrary_papillary_points
-    adjustment_anterior_x_coord = 0.25; 
+    adjustment_anterior_x_coord = 0.1; 
 else 
     adjustment_anterior_x_coord = 0.0; 
 end 
