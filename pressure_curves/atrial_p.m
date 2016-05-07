@@ -8,10 +8,10 @@ y_0 = 419.006;
 % two beats in the current diagram 
 min_x =  0.0; 
 max_x =  1.6; 
-min_y =  2.0; 
+min_y =  1.0; 
 max_y =  12.0; 
 
-dt = 1.0e-4; 
+dt = 1.0e-6; 
 % each unit length (in paramter space) is evaluated at this many points 
 N_per_unit_length = ceil(1/dt); 
 
@@ -34,7 +34,7 @@ N_per_unit_length = ceil(1/dt);
 min_x =  0.0; 
 max_x =  1.6; 
 min_y =  0.0; 
-max_y =  120.0; 
+max_y =  110.0; 
 
 
 % probably not the right curve, 
@@ -65,7 +65,6 @@ hold on
 plot(x_pressure_ventricle, y_pressure_ventricle); 
 legend('atrial pressure', 'ventricular pressure'); 
 
-return 
 
 % manually selected interval, starts at zero p in early diastole  
 min_t = 0.5873; 
@@ -130,10 +129,9 @@ legend('atrial pressure', 'ventricular pressure', 'location', 'NorthWest');
 title('single cycle starting at early diastole, zero pressure difference')
 
 
-% take 10 coeff series 
+% compute the series 
 n = 1000; 
-[a_0_atrium a_n_atrium b_n_atrium Series_atrium] = fourier_series(x_pressure_atrium_one_cycle, y_pressure_atrium_one_cycle, true_cycle_length, n); 
-
+[a_0_atrium    a_n_atrium    b_n_atrium    Series_atrium]    = fourier_series(x_pressure_atrium_one_cycle, y_pressure_atrium_one_cycle, true_cycle_length, n); 
 [a_0_ventricle a_n_ventricle b_n_ventricle Series_ventricle] = fourier_series(x_pressure_ventricle_one_cycle, y_pressure_ventricle_one_cycle, true_cycle_length, n); 
 
 % save for fun 
@@ -180,5 +178,6 @@ title('abs of coefficients')
 n_output = 200; 
 output_series_to_parser_format(a_0_atrium, a_n_atrium, b_n_atrium, a_0_ventricle, a_n_ventricle, b_n_ventricle, n_output, true_cycle_length); 
 
+output_series_coeffs_to_txt(a_0_atrium, a_n_atrium, b_n_atrium, a_0_ventricle, a_n_ventricle, b_n_ventricle, n, true_cycle_length); 
 
 
