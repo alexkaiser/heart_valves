@@ -331,11 +331,12 @@ int main(int argc, char* argv[])
                 }
 
                 // manually update third component, 
-                // which is the only one note easily set in the input file 
+                // which is the only one not easily set in the input file 
                 u_bc_coefs[2] = new VelocityBcCoefs(fourier); 
                             
             
             #else 
+                pout << "Using b.c. from file, no Fouier series created.\n"; 
                 for (unsigned int d = 0; d < NDIM; ++d)
                 {
                     ostringstream bc_coefs_name_stream;

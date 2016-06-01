@@ -4,11 +4,13 @@ function [] = solve_valve_ibamr_output()
 
 % note that if extra posterior is equal to commissure angle
 % then the poster leaflet has angle pi 
-extra_posterior = pi/6; 
+% extra_posterior = pi/6; 
 
 % each the posterior and anterior get this much extra
-overlap = pi/12; 
+% overlap = pi/12; 
 
+
+total_posterior = pi + pi/6 + pi/12; 
 
 chordae_tree = true;
 
@@ -16,7 +18,6 @@ a = 1;
 r = 1.5; 
 h = 3; 
 N = 256; 
-
 
 arbitrary_papillary_points = true; 
 if arbitrary_papillary_points 
@@ -30,9 +31,16 @@ else
     right_papillary = [0;  a; 0]; 
 end 
 
+% just send things more central to see what happens 
+hack_anterior_papillary_placement = false; 
+if hack_anterior_papillary_placement 
+    left_papillary  = left_papillary  + [1; 0; 0]; 
+    right_papillary = right_papillary + [1; 0; 0]; 
+end 
 
-min_angle_posterior = -(pi/2 + extra_posterior/2 + overlap/2); 
-max_angle_posterior =  (pi/2 + extra_posterior/2 + overlap/2); 
+
+min_angle_posterior = -total_posterior/2; 
+max_angle_posterior =  total_posterior/2; 
 
 filter_params_posterior.a = a; 
 filter_params_posterior.r = r; 
@@ -59,7 +67,7 @@ params_posterior = pack_params(X_posterior,alpha,beta,N,p_0,R_posterior,ref_frac
 
 if chordae_tree
     k_0 = 1; %0.000001; 
-    k_multiplier = 2.0; 
+    k_multiplier = 1.8;  % 2.0; 
     tree_frac = 0.5; 
     params_posterior = add_chordae(params_posterior, filter_params_posterior, k_0, k_multiplier, tree_frac, arbitrary_papillary_points); 
 else 
@@ -105,8 +113,9 @@ end
 
 
 % anterior 
-min_angle_anterior = -(pi/2 - extra_posterior/2 + overlap/2); 
-max_angle_anterior =  (pi/2 - extra_posterior/2 + overlap/2); 
+total_anterior = pi + pi/6; 
+min_angle_anterior = -total_anterior/2; 
+max_angle_anterior =  total_anterior/2;  
 
 filter_params_anterior.a = a; 
 filter_params_anterior.r = r; 
@@ -118,7 +127,9 @@ filter_params_anterior.max_angle = max_angle_anterior;
 % anterior leaflet has no reflection
 % adjust papillary coordinates slightly 
 if arbitrary_papillary_points
-    adjustment_anterior_x_coord = 0.1; 
+    adjustment_anterior_x_coord = 0.0; 
+    % This seems to be making problems, turn off for now
+    % 0.1; 
 else 
     adjustment_anterior_x_coord = 0.0; 
 end 
@@ -133,6 +144,7 @@ X_anterior = R_anterior;
 params_anterior = pack_params(X_anterior,alpha,beta,N,p_0,R_anterior,ref_frac); 
 
 if chordae_tree
+    k_multiplier = 2.0; 
     params_anterior = add_chordae(params_anterior, filter_params_anterior, k_0, k_multiplier, tree_frac, arbitrary_papillary_points); 
 end 
 
