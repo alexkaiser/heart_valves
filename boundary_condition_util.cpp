@@ -31,7 +31,7 @@
 /////////////////////////////// PUBLIC ///////////////////////////////////////
 
 VelocityBcCoefs::VelocityBcCoefs(const fourier_series_data *fourier)
-    : fourier(fourier)
+    : d_fourier(fourier)
 {
     // intentionally blank
     return;
@@ -94,14 +94,14 @@ VelocityBcCoefs::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_data,
             // Fourier data here 
             
             // index without periodicity 
-            unsigned int k = (unsigned int) floor(fill_time / (fourier->dt)); 
+            unsigned int k = (unsigned int) floor(fill_time / (d_fourier->dt));
             
             // take periodic reduction                         
-            unsigned int idx = k % (fourier->N_times);  
+            unsigned int idx = k % (d_fourier->N_times);
             
             a = 0.0; 
             b = 1.0; 
-            g = -MMHG_TO_CGS * fourier->values[idx]; 
+            g = -MMHG_TO_CGS * d_fourier->values[idx];
         
             //std::cout << "fourier pressure data on location " << location_index << " with value " << g << " or " << fourier->values[idx] << " mmHg\n"; 
         }

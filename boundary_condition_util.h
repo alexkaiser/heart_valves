@@ -81,6 +81,8 @@ public:
      */
      IntVector<NDIM> numberOfExtensionsFillable() const;
 
+    const fourier_series_data *d_fourier;
+
     //\}
 
 private:
@@ -104,8 +106,6 @@ private:
      */
     VelocityBcCoefs& operator=(const VelocityBcCoefs& that);
 
-    const fourier_series_data *fourier; 
-    
 };
 
 /////////////////////////////// INLINE ///////////////////////////////////////

@@ -64,7 +64,7 @@
 #include <queue>
 #include <timing.h>
 #include <boundary_condition_util.h>
-
+#include <FeedbackForcer.h>
 
 // #define IMPLICIT_SOLVER
 #ifdef IMPLICIT_SOLVER
@@ -87,6 +87,7 @@ void update_rest_lengths(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager*
 #define DEBUG_OUTPUT 0 
 #define ENABLE_INSTRUMENTS
 #define FOURIER_SERIES_BC
+#define DYNAMIC_BOUNDARY_STAB
 
 // #define UPDATE_REST_LEN 
 
@@ -331,9 +332,16 @@ int main(int argc, char* argv[])
                 }
 
                 // manually update third component, 
-                // which is the only one not easily set in the input file 
-                u_bc_coefs[2] = new VelocityBcCoefs(fourier); 
-                            
+                // which is the only one not easily set in the input file
+                VelocityBcCoefs *z_bdry_coeffs = new VelocityBcCoefs(fourier);
+            
+                u_bc_coefs[2] = z_bdry_coeffs;
+            
+                #ifdef DYNAMIC_BOUNDARY_STAB
+                    // always the Z component
+                    Pointer<FeedbackForcer> bdry_dynamic_stab = new FeedbackForcer(z_bdry_coeffs, navier_stokes_integrator, patch_hierarchy);
+                    time_integrator->registerBodyForceFunction(bdry_dynamic_stab);
+                #endif
             
             #else 
                 pout << "Using b.c. from file, no Fouier series created.\n"; 
@@ -364,6 +372,7 @@ int main(int argc, char* argv[])
             }
         }
 
+        // generic body force
         // Create Eulerian body force function specification objects.
         if (input_db->keyExists("ForcingFunction"))
         {
@@ -375,6 +384,8 @@ int main(int argc, char* argv[])
                 "f_fcn", app_initializer->getComponentDatabase("ForcingFunction"), grid_geometry);
             time_integrator->registerBodyForceFunction(f_fcn);
         }
+
+
 
         // Set up visualization plot file writers.
         Pointer<VisItDataWriter<NDIM> > visit_data_writer = app_initializer->getVisItDataWriter();
