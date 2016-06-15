@@ -82,15 +82,14 @@ void set_source_variables(vector<double>& Q_src, const vector<double>& P_src, do
 void update_rest_lengths(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager* const l_data_manager, const double alpha);
                                  
 
-
-//#define ENABLE_SOURCES 
-//#define COMPARE_TO_ZERO_FLOW
 #define DEBUG_OUTPUT 0 
 #define ENABLE_INSTRUMENTS
 #define FOURIER_SERIES_BC
+#define FOURIER_SERIES_BODY_FORCE
 #define DYNAMIC_BOUNDARY_STAB
 
-// #define UPDATE_REST_LEN 
+
+
 
 #define MMHG_TO_CGS 1333.22368
 #define CGS_TO_MMHG 0.000750061683
@@ -234,30 +233,6 @@ int main(int argc, char* argv[])
         ib_method_ops->registerIBLagrangianForceFunction(ib_force_fcn);
         
         
-        
-        #ifdef ENABLE_SOURCES
-            // set up the source
-            Pointer<IBStandardSourceGen> ib_source; 
-            std::vector<double> Q_src;
-            std::vector<double> P_src;
-            bool sink_on = false; 
-        
-            ib_source = new IBStandardSourceGen();
-        
-            if (ib_method_ops->hasFluidSources())
-                pout << "ib_method_ops->hasFluidSources returned true before calling register\n" ;
-            else 
-                pout << "ib_method_ops->hasFluidSources returned FALSE before calling register\n" ;
-        
-            ib_method_ops->registerIBLagrangianSourceFunction(ib_source);
-
-            if (ib_method_ops->hasFluidSources())
-                pout << "ib_method_ops->hasFluidSources returned true AFTER calling register\n" ;
-            else 
-                pout << "ib_method_ops->hasFluidSources returned FALSE AFTER calling register\n" ;
-                
-        #endif
-        
         #ifdef ENABLE_INSTRUMENTS
          
             std::vector<double> flux_valve_ring;
@@ -363,9 +338,7 @@ int main(int argc, char* argv[])
                 }
             #endif 
 
-            
-            
-            
+
             navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
             if (solver_type == "STAGGERED" && input_db->keyExists("BoundaryStabilization"))
             {
@@ -391,6 +364,24 @@ int main(int argc, char* argv[])
         }
 
 
+        #ifdef FOURIER_SERIES_BODY_FORCE
+            pout << "to Fourier series creation with body force\n";
+            
+            // this fails here, need to get dt from input db or something 
+            // dt = time_integrator->getMaximumTimeStepSize(); 
+            
+            dt = input_db->getDouble("DT"); 
+            
+            pout << "to constructor\n"; 
+            fourier_series_data *fourier_body_force = new fourier_series_data("fourier_coeffs.txt", dt);
+            pout << "series data successfully built\n"; 
+        
+            Pointer<FourierBodyForce> body_force = new FourierBodyForce(fourier_body_force, navier_stokes_integrator, patch_hierarchy);
+            time_integrator->registerBodyForceFunction(body_force);
+        
+        #endif
+
+
 
         // Set up visualization plot file writers.
         Pointer<VisItDataWriter<NDIM> > visit_data_writer = app_initializer->getVisItDataWriter();
@@ -410,44 +401,6 @@ int main(int argc, char* argv[])
         // Finest level does not change throughout 
         const int finest_hier_level = patch_hierarchy->getFinestLevelNumber();
         
-        #ifdef ENABLE_SOURCES
-            
-            // more source stuff
-            // can't put this before initializePatchHierarchy
-            pout << "to initializeLevelData\n" ; 
-            ib_source->initializeLevelData(patch_hierarchy, 0, 0.0, true, l_data_manager);
-            std::cout << "cleared initializeLevelData" << std::endl;
-
-            pout << "after initializePatchHierarchy and initializeLevelData\n" ; 
-            
-            // zero then set the source variables 
-            // double dt_temp = 0.0;
-            init_source_variables(ib_source->getSourceStrengths(finest_hier_level), ib_source->getSourcePressures(finest_hier_level));
-            
-            Q_src                 = ib_source->getSourceStrengths(finest_hier_level);
-            const int num_sources = Q_src.size(); 
-            const int source_idx  = 0; 
-            const int sink_idx    = Q_src.size()-1; 
-            
-            // Stream to write-out pressure norm data 
-            std::ofstream source_output_stream;
-            if (!from_restart){
-                if (SAMRAI_MPI::getRank() == 0){
-                    source_output_stream.open("source_pressure_plot.m", ios_base::out | ios_base::trunc);
-                    source_output_stream << "data = [" ; 
-                }
-            }
-            // if we are restarting, we want to append to the file 
-            // we are assuming that the pressure plot write was not interuppted here in the previous run 
-            else{
-                if (SAMRAI_MPI::getRank() == 0){
-                    source_output_stream.open("source_pressure_plot.m", ios_base::out | ios_base::app);
-                    source_output_stream << "data = [" ; 
-                }
-            }
-            
-        #endif
-
 
         #ifdef ENABLE_INSTRUMENTS
             // do this after initialize patch hierarchy
@@ -469,61 +422,6 @@ int main(int argc, char* argv[])
             }
             
         #endif
-
-
-        // For debug, compare to zero flow 
-        // Use an ifdef to avoid having things go out of scope 
-        #ifdef COMPARE_TO_ZERO_FLOW
-            
-            // Create Eulerian initial condition specification objects.  These
-            // objects also are used to specify exact solution values for error
-            // analysis.
-            Pointer<CartGridFunction> u_init = new muParserCartGridFunction("u_init", app_initializer->getComponentDatabase("VelocityInitialConditions"), grid_geometry);
-            navier_stokes_integrator->registerVelocityInitialConditions(u_init);
-            
-            Pointer<CartGridFunction> p_init = new muParserCartGridFunction("p_init", app_initializer->getComponentDatabase("PressureInitialConditions"), grid_geometry);
-            navier_stokes_integrator->registerPressureInitialConditions(p_init);
-            
-            // Setup data used to determine the accuracy of the computed solution.
-            VariableDatabase<NDIM>* var_db = VariableDatabase<NDIM>::getDatabase();
-            
-            const Pointer<Variable<NDIM> > u_var = navier_stokes_integrator->getVelocityVariable();
-            const Pointer<VariableContext> u_ctx = navier_stokes_integrator->getCurrentContext();
-            
-            const int u_idx = var_db->mapVariableAndContextToIndex(u_var, u_ctx);
-            const int u_cloned_idx = var_db->registerClonedPatchDataIndex(u_var, u_idx);
-            
-            const Pointer<Variable<NDIM> > p_var = navier_stokes_integrator->getPressureVariable();
-            const Pointer<VariableContext> p_ctx = navier_stokes_integrator->getCurrentContext();
-            
-            const int p_idx = var_db->mapVariableAndContextToIndex(p_var, p_ctx);
-            const int p_cloned_idx = var_db->registerClonedPatchDataIndex(p_var, p_idx);
-            //visit_data_writer->registerPlotQuantity("P error", "SCALAR", p_cloned_idx);
-            
-            const int coarsest_ln = 0;
-            const int finest_ln = patch_hierarchy->getFinestLevelNumber();
-            for (int ln = coarsest_ln; ln <= finest_ln; ++ln)
-            {
-                patch_hierarchy->getPatchLevel(ln)->allocatePatchData(u_cloned_idx);
-                patch_hierarchy->getPatchLevel(ln)->allocatePatchData(p_cloned_idx);
-            }
-            
-            // Stream to write-out pressure norm data 
-            if (!from_restart){
-                std::ofstream pressure_plot;
-                if (SAMRAI_MPI::getRank() == 0){
-                    pressure_plot.open("pressure_plot.m", ios_base::out | ios_base::trunc);
-                    pressure_plot << "pressure = [" ; 
-                }
-            }
-            else{
-                if (SAMRAI_MPI::getRank() == 0){
-                    pressure_plot.open("pressure_plot.m", ios_base::out | ios_base::app);
-                    pressure_plot << "pressure = [" ; 
-                }
-            }
-        #endif 
-
 
 
         // Deallocate initialization objects.
@@ -575,61 +473,7 @@ int main(int argc, char* argv[])
             #endif
             
         }
-
-
-        #ifdef UPDATE_REST_LEN
-            
-            // final rest length multiplier 
-            double beta = 0.8; 
-            
-            // update over 200 times, 10 steps apart
-            // for dt = 2.5e-5, update for 
-            unsigned int num_spring_updates = 200; 
-            unsigned int update_frequency   = 10;
-            
-            double alpha = pow(beta, 1.0 / ((double) num_spring_updates) ); 
-            
-            unsigned int updates_performed = 0; 
-            
-        #endif 
-
-
-        #ifdef ENABLE_SOURCES
-            if (from_restart){
-                
-                // do not update rest lengths if is from restart
-                // if updates have not been completed, this is an error 
-                if ( num_spring_updates * update_frequency > ((unsigned int) iteration_num) ){
-                    pout << "Must have finished updating the spring rest lengths before the restart\n" ; 
-                    SAMRAI_MPI::abort();  
-                }
-                
-                // open the file, read and set
-                char file_name[100]; 
-                
-                // this is already set above
-                // iteration_num = time_integrator->getIntegratorStep();
-                sprintf(file_name, "restart_src_vals_%d.txt", iteration_num); 
-                
-                FILE *file = fopen(file_name, "r");  
-                if (!file){
-                    pout << "problems opening restart file\n" ; 
-                    SAMRAI_MPI::abort();
-                }
-                
-                double source_restart_val; 
-                double   sink_restart_val; 
-                fscanf(file, "%lf %lf", &source_restart_val, &sink_restart_val); 
-                
-                Q_src[0]        = source_restart_val; 
-                
-                int sink_idx    = Q_src.size() - 1; 
-                Q_src[sink_idx] = sink_restart_val;
-                
-                fclose(file); 
-            }
-        #endif 
-
+ 
 
         // Main time step loop.
         double loop_time_end = time_integrator->getEndTime();
@@ -653,16 +497,6 @@ int main(int argc, char* argv[])
             iteration_num = time_integrator->getIntegratorStep();
             loop_time = time_integrator->getIntegratorTime();
 
-            #ifdef UPDATE_REST_LEN
-                if (!from_restart){
-                    unsigned int it = (unsigned int) iteration_num; 
-                    if( (updates_performed < num_spring_updates) && ((it % update_frequency) == 0)){
-                    
-                        update_rest_lengths(patch_hierarchy, l_data_manager, alpha); 
-                        updates_performed++; 
-                    } 
-                }
-            #endif 
 
             pout << "\n";
             pout << "+++++++++++++++++++++++++++++++++++++++++++++++++++\n";
@@ -680,22 +514,6 @@ int main(int argc, char* argv[])
                     prev_step_initialized = true;
             }
             
-            
-            
-            #ifdef ENABLE_SOURCES
-                // reset source and sink for current time
-                
-                if ( loop_time >= SOURCE_ON_TIME ){ 
-                    sink_on = true; 
-                }
-                
-                set_source_variables(ib_source->getSourceStrengths(finest_hier_level), ib_source->getSourcePressures(finest_hier_level), loop_time, dt, sink_on);
-                Q_src   = ib_source->getSourceStrengths(finest_hier_level);
-                P_src   = ib_source->getSourcePressures(finest_hier_level);
-                pout << "Source, Q = " << Q_src[source_idx] << ", P = " << P_src[source_idx] << "\n" ;
-                pout << "Sink, Q = " << Q_src[sink_idx] << ", P = " << P_src[sink_idx] << "\n" ;
-                            
-            #endif
 
             
             // step the whole thing
@@ -710,60 +528,6 @@ int main(int argc, char* argv[])
             pout << "At end       of timestep # " << iteration_num << "\n";
             pout << "Simulation time is " << loop_time << "\n";
             pout << "Wallclock time elapsed = " << step_time << "\n";
-            
-            #ifdef COMPARE_TO_ZERO_FLOW
-                // Compute velocity and pressure error norms.
-                const int coarsest_ln = 0;
-                const int finest_ln = patch_hierarchy->getFinestLevelNumber();
-                for (int ln = coarsest_ln; ln <= finest_ln; ++ln)
-                {
-                    Pointer<PatchLevel<NDIM> > level = patch_hierarchy->getPatchLevel(ln);
-                    if (!level->checkAllocated(u_cloned_idx)) level->allocatePatchData(u_cloned_idx);
-                    if (!level->checkAllocated(p_cloned_idx)) level->allocatePatchData(p_cloned_idx);
-                }
-                
-                pout << "\n" << "Computing error norms.\n\n";
-                
-                u_init->setDataOnPatchHierarchy(u_cloned_idx, u_var, patch_hierarchy, loop_time);
-                p_init->setDataOnPatchHierarchy(p_cloned_idx, p_var, patch_hierarchy, loop_time - 0.5 * dt);
-                
-                HierarchyMathOps hier_math_ops("HierarchyMathOps", patch_hierarchy);
-                hier_math_ops.setPatchHierarchy(patch_hierarchy);
-                hier_math_ops.resetLevels(coarsest_ln, finest_ln);
-                const int wgt_cc_idx = hier_math_ops.getCellWeightPatchDescriptorIndex();
-                const int wgt_sc_idx = hier_math_ops.getSideWeightPatchDescriptorIndex();
-                 
-                // confirm that we have staggared grid data before outputting 
-                Pointer<SideVariable<NDIM, double> > u_sc_var = u_var;
-                if (u_sc_var)
-                {
-                    HierarchySideDataOpsReal<NDIM, double> hier_sc_data_ops(patch_hierarchy, coarsest_ln, finest_ln);
-                    hier_sc_data_ops.subtract(u_cloned_idx, u_idx, u_cloned_idx);
-                    pout << "Error in u at time " << loop_time << ":\n"
-                    << "  L1-norm:  " << hier_sc_data_ops.L1Norm(u_cloned_idx, wgt_sc_idx) << "\n"
-                    << "  L2-norm:  " << hier_sc_data_ops.L2Norm(u_cloned_idx, wgt_sc_idx) << "\n"
-                    << "  max-norm: " << hier_sc_data_ops.maxNorm(u_cloned_idx, wgt_sc_idx) << "\n\n";
-                }
-            
-                HierarchyCellDataOpsReal<NDIM, double> hier_cc_data_ops(patch_hierarchy, coarsest_ln, finest_ln);
-                hier_cc_data_ops.subtract(p_cloned_idx, p_idx, p_cloned_idx);
-                double pressure_norm = hier_cc_data_ops.maxNorm(p_cloned_idx, wgt_cc_idx);
-                pout << "Norms of p at time " << loop_time - 0.5 * dt << ":\n" 
-                //<< "  L1-norm:  " << hier_cc_data_ops.L1Norm(p_cloned_idx, wgt_cc_idx) << "\n"
-                //<< "  L2-norm:  " << hier_cc_data_ops.L2Norm(p_cloned_idx, wgt_cc_idx) << "\n"
-                << "  max-norm: " << pressure_norm * CGS_TO_MMHG << " mm Hg,    " << pressure_norm << " g/(cm s^2) \n\n";
-                
-                // write to file also 
-                if (SAMRAI_MPI::getRank() == 0){
-                    pressure_plot << pressure_norm << ", " ;
-                    pressure_plot.flush(); 
-                } 
-                
-                // see IB ex0 for more stuff here 
-            #endif
-            
-            
-            
             pout << "+++++++++++++++++++++++++++++++++++++++++++++++++++\n";
             pout << "\n";
 
@@ -779,25 +543,6 @@ int main(int argc, char* argv[])
                 visit_data_writer->writePlotData(patch_hierarchy, iteration_num, loop_time);
                 silo_data_writer->writePlotData(iteration_num, loop_time);
                 
-                #ifdef ENABLE_SOURCES
-
-                    // write source data for indices actually used
-                    // write pressure data for all indices 
-                    if (SAMRAI_MPI::getRank() == 0){
-                    
-                        source_output_stream << iteration_num << ", " << loop_time << ", " ;
-                    
-                        source_output_stream << Q_src[source_idx] << ", " << Q_src[sink_idx] ;
-                    
-                        for(int i=0; i<num_sources; i++){
-                            source_output_stream << ", " << P_src[i]  ;
-                        }
-                    
-                        source_output_stream << ";\n";                     
-                        source_output_stream.flush(); 
-                    }
-            
-                #endif
                 
                 #ifdef ENABLE_INSTRUMENTS
                     
@@ -819,21 +564,6 @@ int main(int argc, char* argv[])
             {
                 pout << "\nWriting restart files...\n\n";
                 RestartManager::getManager()->writeRestartFile(restart_dump_dirname, iteration_num);
-                
-                #ifdef ENABLE_SOURCES
-                    // write source and sink data from the current time 
-                    std::ofstream source_data;
-                    if (SAMRAI_MPI::getRank() == 0){
-                        char file_name[100]; 
-                        sprintf(file_name, "restart_src_vals_%d.txt", iteration_num); 
-                        source_data.open(file_name, ios_base::out | ios_base::trunc);
-                        source_data << std::setprecision(20) ;
-                        source_data << Q_src[source_idx] << " " << Q_src[sink_idx] << "\n";  
-                        source_data.close(); 
-                    }
-                #endif 
-                
-                
             }
             
             
@@ -849,9 +579,7 @@ int main(int argc, char* argv[])
                 }
             }
                         
-                        
 
-            
             if (dump_timer_data && (iteration_num % timer_dump_interval == 0 || last_step))
             {
                 pout << "\nWriting timer data...\n\n";
@@ -865,23 +593,7 @@ int main(int argc, char* argv[])
         double average_time = total_time / ((double) iteration_num); 
         
         pout << "total run time = " << total_time << " s. \n" ; 
-        pout << "average run time = " << average_time << " s. \n" ; 
-        
-        
-        #ifdef COMPARE_TO_ZERO_FLOW
-            // Close the logging streams.
-            if (SAMRAI_MPI::getRank() == 0){
-                pressure_plot << "]; \n\n"; 
-                pressure_plot.close();
-            }
-        #endif
-        
-        #ifdef ENABLE_SOURCES
-            if (SAMRAI_MPI::getRank() == 0){
-                source_output_stream << "]; \n\n"; 
-                source_output_stream.close();
-            }
-        #endif
+        pout << "average run time = " << average_time << " s. \n" ;
         
         #ifdef ENABLE_INSTRUMENTS
             if (SAMRAI_MPI::getRank() == 0){
@@ -902,137 +614,11 @@ int main(int argc, char* argv[])
 } // main
 
 
-void init_source_variables(vector<double>& Q_src, const vector<double>& P_src){
-    /*
-     Initializes source values Q to zero      
-     */
-    
-    
-#ifdef DEBUG_CHECK_ASSERTIONS
-    TBOX_ASSERT(Q_src.size() == P_src.size());
-    // TBOX_ASSERT(Q_src.size() == 2);
-#endif
-    
-    for(unsigned int i=0; i<Q_src.size(); i++){
-        Q_src[i] = 0.0;
-    }
-    
-    return;
-}
-
-void set_source_variables(vector<double>& Q_src, const vector<double>& P_src, double current_time, double dt, bool sink_on){
-    /*
-    Sets values Q. 
-    
-    All are considered sources, a sign swap is added for a sink.
-
-    First value set to strength.
-    
-    Second uses resistor in series with inductor type model
-    
-    Resistance is set to support average flow at 100 mmHg
-        R = (100 mmHg) / (5.6 L/min)
-        R = 1429  (1 / (cm s^2)) in CGS units
-    
-    Attached to 5 mmHg pressure reservoir
-    Set to near zero as crude model for venus pressure 
-        P_0_sink = (80 mmHg) = 1333.22368 * 5 Barye
-    
-    Inertance (equivalent to inductance)
-    Time scale is set assuming that dt = 2.5 * 10^(-5)
-    L should be a few orders of magnitude larger than the
-        L = 5
-    
-    Model:
-        L (dQ/dt) + R Q = P - P_0_sink
-    
-    Discretized with implicit trapezoial rule in Q.
-    Since P is computed at midpoints only, it is automatically time centered.
-    (unclear whether this is actually correct, this is a step back in P)
-    
-        (L/dt)*(Q_n+1 - Q_n) + 0.5*(Q_n+1 + Q_n) = P - P_0_sink;
-    
-    This gives the NEGATIVE of the code value.
-    */
-    
-    
-//     const int num_src = Q_src.size();
-    
-#ifdef DEBUG_CHECK_ASSERTIONS
-        TBOX_ASSERT(Q_src.size() == P_src.size());
-        // TBOX_ASSERT(Q_src.size() == 2);
-#endif
-
-    if (current_time < SOURCE_ON_TIME){
-        Q_src[0] = 0.0;
-    }    
-    else if (current_time < CONST_SRC_TIME){
-        Q_src[0] = CONST_SRC_STRENGTH * 0.5 * (1.0  - cos(PI_DEFINED * (current_time - SOURCE_ON_TIME) / (CONST_SRC_TIME - SOURCE_ON_TIME)));
-    }
-    else{
-        Q_src[0] = CONST_SRC_STRENGTH; 
-    }
-    
-    
-    const static double R = 1429.0;
-    const static double L = 5.0;
-    const static double P_0_sink = MMHG_TO_CGS * 5.0;   
-    
-    
-    if (sink_on){
-    
-        int sink_idx = Q_src.size() - 1; 
-    
-        double Q_sink_old = -Q_src[sink_idx];
-        double Q_sink;
-   
-        Q_sink = ((L - 0.5*dt*R) * Q_sink_old + dt * (P_src[sink_idx] - P_0_sink)) / (L + 0.5*dt*R);
-   
-        Q_src[sink_idx] = -Q_sink;
-    }
-
-    return;
-}
 
 
 
 
 
-
-
-void update_rest_lengths(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager* const l_data_manager, const double alpha){
-    // Multiplies rest lengths of all local springs by multiplier
-    
-    
-    // We require that the structures are associated with the finest level of
-    // the patch hierarchy.
-    const int level_num = hierarchy->getFinestLevelNumber();
-
-
-    // Get the Lagrangian mesh.
-    Pointer<LMesh> l_mesh = l_data_manager->getLMesh(level_num);
-    
-    const std::vector<LNode*>& nodes = l_mesh->getLocalNodes();
-    
-    //const std::vector<LNode*>& local_nodes = l_mesh->getLocalNodes();
-    //const std::vector<LNode*>& ghost_nodes = l_mesh->getGhostNodes();
-    // std::vector<LNode*> nodes = local_nodes;
-    // nodes.insert(nodes.end(), ghost_nodes.begin(), ghost_nodes.end());
-
-    // Loop over all Lagrangian mesh nodes and update spring rest lengths 
-    for (std::vector<LNode*>::const_iterator it = nodes.begin(); it != nodes.end(); ++it){
-    
-        const LNode* const node = *it;
-        IBSpringForceSpec*  spring_spec =  node->getNodeDataItem<IBSpringForceSpec>();
-        
-        if (spring_spec){
-            vector<double>& params = spring_spec->getParameters()[0];
-            params[1] *= alpha;  
-        }
-    }
-    
-    return;
-}
 
 
 
