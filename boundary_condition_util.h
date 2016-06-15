@@ -4,8 +4,7 @@
 // Modified for Fourier series input data 
 // 5/2016, Alex Kaiser 
 
-#ifndef included_VelocityBcCoefs
-#define included_VelocityBcCoefs
+
 
 // PETSC INCLUDES
 #include <petscsys.h>
@@ -17,6 +16,10 @@
 #include <ibamr/app_namespaces.h>
 
 #define MMHG_TO_CGS 1333.22368
+
+
+#ifndef included_fourier_series_data
+#define included_fourier_series_data
 
 class fourier_series_data{
     
@@ -39,6 +42,11 @@ class fourier_series_data{
 
 }; 
 
+#endif 
+
+
+#ifndef included_VelocityBcCoefs
+#define included_VelocityBcCoefs
 
 /*!
  * \brief Class VelocityBcCoefs is an implementation of the strategy class
@@ -115,6 +123,10 @@ private:
 //////////////////////////////////////////////////////////////////////////////
 
 #endif //#ifndef included_VelocityBcCoefs
+
+
+
+
 
 
 

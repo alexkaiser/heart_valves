@@ -65,6 +65,7 @@
 #include <timing.h>
 #include <boundary_condition_util.h>
 #include <FeedbackForcer.h>
+#include <FourierBodyForce.h>
 
 // #define IMPLICIT_SOLVER
 #ifdef IMPLICIT_SOLVER
@@ -338,9 +339,13 @@ int main(int argc, char* argv[])
                 u_bc_coefs[2] = z_bdry_coeffs;
             
                 #ifdef DYNAMIC_BOUNDARY_STAB
-                    // always the Z component
-                    Pointer<FeedbackForcer> bdry_dynamic_stab = new FeedbackForcer(z_bdry_coeffs, navier_stokes_integrator, patch_hierarchy);
-                    time_integrator->registerBodyForceFunction(bdry_dynamic_stab);
+            
+                    // only for staggered grids 
+                    if (solver_type == "STAGGERED"){
+                        // always the Z component
+                        Pointer<FeedbackForcer> bdry_dynamic_stab = new FeedbackForcer(z_bdry_coeffs, navier_stokes_integrator, patch_hierarchy);
+                        time_integrator->registerBodyForceFunction(bdry_dynamic_stab);
+                    }
                 #endif
             
             #else 
