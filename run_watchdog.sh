@@ -1,7 +1,7 @@
 #!/bin/bash
-#PBS -l nodes=3:ppn=20
+#PBS -l nodes=2:ppn=20
 #PBS -l walltime=4:00:00
-#PBS -l mem=186GB
+#PBS -l mem=124GB
 #PBS -N mitral_cycle
 #PBS -M kaiser@cims.nyu.edu
 #PBS -m abe
@@ -22,7 +22,7 @@ mkdir $RUNDIR
 BASE_NAME=mitral_tree_128
 INPUT_NAME=input_mitral_tree_cycle_128_PERIODIC
 RUN_LINE="mpirun -hostfile hostfile --bind-to-core -report-bindings main3d"
-OPTIONS="-velocity_ksp_type cg -velocity_pc_type none -velocity_ksp_max_it 1 -velocity_ksp_norm_type none > output_20_per_node.txt 2>&1"
+OPTIONS="-velocity_ksp_type cg -velocity_pc_type none -velocity_ksp_max_it 1 -velocity_ksp_norm_type none > output.txt 2>&1"
 
 pwd
 
@@ -41,11 +41,12 @@ cp kill_all_mpi.sh              $RUNDIR
 cd $RUNDIR
 
 # sets the nodes to be n per node 
-n=20
+export procs_per_node=20
+
 hostfile=hostfile
 {
     for node in $(cat $PBS_NODEFILE | uniq); do
-	for((i=0; i<$n; i++)); do
+	for((i=0; i<$procs_per_node; i++)); do
 	    echo $node
 	done
     done
