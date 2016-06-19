@@ -193,7 +193,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
             
             Box<NDIM> bdry_box = domain_box;
             
-            // changed this to use width (rather than boundary stabilizer instance var d_width
+            // changed this to use width (rather than boundary stabilizer instance var d_width)
 
             const int offset = static_cast<int>(width[axis] / dx[axis]);
             

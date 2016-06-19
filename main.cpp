@@ -67,6 +67,7 @@
 #include <FeedbackForcer.h>
 #include <FourierBodyForce.h>
 
+
 // #define IMPLICIT_SOLVER
 #ifdef IMPLICIT_SOLVER
      #include <ibamr/IBImplicitStaggeredHierarchyIntegrator.h>
@@ -138,9 +139,24 @@ int main(int argc, char* argv[])
         Pointer<Database> input_db = app_initializer->getInputDatabase();
 
         // check if have a restarted run 
+        string restart_read_dirname;
+        int restore_num = 0;
         bool from_restart = false;
         if (argc >= 4)
-            from_restart = true;
+        {
+            // Check whether this appears to be a restarted run.
+            FILE* fstream = (SAMRAI_MPI::getRank() == 0 ? fopen(argv[2], "r") : NULL);
+            if (SAMRAI_MPI::bcast(fstream != NULL ? 1 : 0, 0) == 1)
+            {
+                restart_read_dirname = argv[2];
+                restore_num = atoi(argv[3]);
+                from_restart = true;
+            }
+            if (fstream != NULL)
+            {
+                fclose(fstream);
+            }
+        }
 
         #ifdef IMPLICIT_SOLVER
             // Read default Petsc options
@@ -315,8 +331,13 @@ int main(int argc, char* argv[])
             
                 #ifdef DYNAMIC_BOUNDARY_STAB
             
-                    // only for staggered grids 
-                    if (solver_type == "STAGGERED"){
+                    const bool z_periodic = (grid_geometry->getPeriodicShift())[2];
+                    if (z_periodic){
+                        pout << "Code thinks that z is periodic, outflow boundary stabilization off\n" ;
+                    }
+            
+                    // only for staggered grids
+                    if ((solver_type == "STAGGERED") && (!z_periodic)){
                         // always the Z component
                         Pointer<FeedbackForcer> bdry_dynamic_stab = new FeedbackForcer(z_bdry_coeffs, navier_stokes_integrator, patch_hierarchy);
                         time_integrator->registerBodyForceFunction(bdry_dynamic_stab);

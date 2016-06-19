@@ -28,12 +28,15 @@
 #include <tbox/Utilities.h>
 
 
+#define FLOW_STRAIGHTENER
+
+
 
 /////////////////////////////// NAMESPACE ////////////////////////////////////
 
 /////////////////////////////// STATIC ///////////////////////////////////////
 
-/*
+
 namespace
 {
 inline double
@@ -42,7 +45,7 @@ smooth_kernel(const double r)
   return std::abs(r) < 1.0 ? 0.5 * (cos(M_PI * r) + 1.0) : 0.0;
 } // smooth_kernel
 }
-*/
+
 
 
 ////////////////////////////// PUBLIC ///////////////////////////////////////
@@ -84,64 +87,21 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
     
     F_data->fillAll(0.0);
     
-    //if (initial_time) return;
-    
-    // get basic information
-//    const int cycle_num = d_fluid_solver->getCurrentCycleNumber();
-//    const double dt = d_fluid_solver->getCurrentTimeStepSize();
-//    const double rho = d_fluid_solver->getStokesSpecifications()->getRho();
-    
-    // this is a constant but should be messed with
-    //const double kappa = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
-    
-    // pull velocity variables
-/*    Pointer<SideData<NDIM, double> > U_current_data =
-    patch->getPatchData(d_fluid_solver->getVelocityVariable(), d_fluid_solver->getCurrentContext());
-    Pointer<SideData<NDIM, double> > U_new_data =
-    patch->getPatchData(d_fluid_solver->getVelocityVariable(), d_fluid_solver->getNewContext());
-
-    #if !defined(NDEBUG)
-        TBOX_ASSERT(U_current_data);
-    #endif
-*/
-
-    
     // stuff about the physical box and mesh structures
     // take as needed
     const Box<NDIM>& patch_box = patch->getBox();
     
-/*    Pointer<CartesianPatchGeometry<NDIM> > pgeom = patch->getPatchGeometry();
-    const double* const dx = pgeom->getDx();
-    const double* const x_lower = pgeom->getXLower();
-    const double* const x_upper = pgeom->getXUpper();
-    */
-    
     Pointer<CartesianGridGeometry<NDIM> > grid_geometry = d_patch_hierarchy->getGridGeometry();
     
     // Added these
-    const double* const x_lower = grid_geometry->getXLower();
-    const double* const x_upper = grid_geometry->getXUpper();
-    std::cout << "code thinks the lower domain is " << x_lower[0] << ", " << x_lower[0] << ", " << x_lower[0] << "\n" ;
-    std::cout << "code thinks the upper domain is " << x_upper[0] << ", " << x_upper[0] << ", " << x_upper[0] << "\n" ;
+    const double* const x_lower_global = grid_geometry->getXLower();
+    const double* const x_upper_global = grid_geometry->getXUpper();
     
-    const double z_domain_length = x_upper[2] - x_lower[2];
+    //std::cout << "code thinks the lower domain is " << x_lower_global[0] << ", " << x_lower_global[1] << ", " << x_lower_global[2] << "\n" ;
+    //std::cout << "code thinks the upper domain is " << x_upper_global[0] << ", " << x_upper_global[1] << ", " << x_upper_global[2] << "\n" ;
     
-    /*
-    const double* const dx_coarsest = grid_geometry->getDx();
-    double dx_finest[NDIM];
-    const int finest_ln = d_patch_hierarchy->getFinestLevelNumber();
-    const IntVector<NDIM>& finest_ratio = d_patch_hierarchy->getPatchLevel(finest_ln)->getRatio();
-    for (int d = 0; d < NDIM; ++d)
-    {
-        dx_finest[d] = dx_coarsest[d] / static_cast<double>(finest_ratio(d));
-    }
-    const Box<NDIM> domain_box = Box<NDIM>::refine(grid_geometry->getPhysicalDomain()[0], pgeom->getRatio());
-*/
-    
-    // reduce the current beat modulo the fourier bc
-    //const double beat_time = (d_velocity_bc->d_fourier)->L;
-    //const double t_reduced = data_time - floor(data_time / beat_time);
-    
+    const double z_domain_length = x_upper_global[2] - x_lower_global[2];
+
     // index without periodicity
     unsigned int k = (unsigned int) floor(data_time / (d_fourier->dt));
     
@@ -161,6 +121,78 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
 
         (*F_data)(i_s) = force; // FORCE GOES HERE
     }
+    
+    
+    
+    // Flow straightener (if desired)
+    #ifdef FLOW_STRAIGHTENER
+    
+        // no straightener at time zero
+        if (!initial_time){
+        
+            // some stuff about the geometry
+            Pointer<CartesianPatchGeometry<NDIM> > pgeom = patch->getPatchGeometry();
+            const double* const dx = pgeom->getDx();
+            const double* const x_lower = pgeom->getXLower();
+            // const double* const x_upper = pgeom->getXUpper();
+    
+            // always looking at the z axis here
+            const int axis = 2;
+    
+            // pull velocity variables
+            Pointer<SideData<NDIM, double> > U_current_data =
+            patch->getPatchData(d_fluid_solver->getVelocityVariable(), d_fluid_solver->getCurrentContext());
+            Pointer<SideData<NDIM, double> > U_new_data =
+            patch->getPatchData(d_fluid_solver->getVelocityVariable(), d_fluid_solver->getNewContext());
+            
+            #if !defined(NDEBUG)
+                TBOX_ASSERT(U_current_data);
+            #endif
+            
+            // physical height of region of stabilization
+            // stabilization is smoothed out from bottom of domain to here
+            const double height_physical = 0.5;
+            const double max_height_force_applied = height_physical + x_lower_global[2];
+            const double center = x_lower_global[axis] + 0.5*height_physical;
+    
+            const int cycle_num = d_fluid_solver->getCurrentCycleNumber();
+            const double dt = d_fluid_solver->getCurrentTimeStepSize();
+            const double rho = d_fluid_solver->getStokesSpecifications()->getRho();
+            
+            // this may be very, very large
+            // consider changing it
+            const double kappa = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
+            
+            // Clamp the velocity in the x,y components
+            for (int component = 0; component < 2; ++component){
+                for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
+                
+                    const Index<NDIM>& i = b();
+                    const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
+
+                    // get the height, which determines whether there is force
+                    const double z = x_lower[axis] + dx[axis] * static_cast<double>(i(axis) - patch_box.lower(axis));
+                    
+                    if (z < max_height_force_applied){
+                        const double U_current = U_current_data ? (*U_current_data)(i_s) : 0.0;
+                        const double U_new     = U_new_data ? (*U_new_data)(i_s) : 0.0;
+                        const double U         = (cycle_num > 0) ? 0.5 * (U_new + U_current) : U_current;
+
+                        const double weight    = smooth_kernel((z - center) / (dx[axis]*height_physical));
+                    
+                        (*F_data)(i_s)        += weight*(-kappa * U);
+                        
+                        // std::cout << "Placing a force of " << weight*(-kappa * U) << " in component " << component << " at height " << z << "\n";
+                        
+                    }
+                }
+            }
+        }
+    
+    #endif
+    
+    
+    
     
     return;
 } // setDataOnPatch
