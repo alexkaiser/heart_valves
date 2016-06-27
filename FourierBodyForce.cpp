@@ -151,7 +151,7 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
             
             // physical height of region of stabilization
             // stabilization is smoothed out from bottom of domain to here
-            const double height_physical = 0.5;
+            const double height_physical = 1.0;
             const double max_height_force_applied = height_physical + x_lower_global[2];
             const double center = x_lower_global[axis] + 0.5*height_physical;
     
@@ -161,10 +161,15 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
             
             // this may be very, very large
             // consider changing it
-            const double kappa = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
+            double kappa[NDIM];
+            kappa[0] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
+            kappa[1] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
+            kappa[2] = cycle_num >= 0 ?           100.0 : 0.0; // much lower friction in the z direction
+                                                               // at U = 10cm/s, this is ~10x force of gravity 
             
             // Clamp the velocity in the x,y components
-            for (int component = 0; component < 2; ++component){
+            // Clamp the velocity in the z component, but a lot less
+            for (int component = 0; component < NDIM; ++component){
                 for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
                 
                     const Index<NDIM>& i = b();
@@ -180,7 +185,7 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
 
                         const double weight    = smooth_kernel((z - center) / (dx[axis]*height_physical));
                     
-                        (*F_data)(i_s)        += weight*(-kappa * U);
+                        (*F_data)(i_s)        += weight*(-kappa[component] * U);
                         
                         // std::cout << "Placing a force of " << weight*(-kappa * U) << " in component " << component << " at height " << z << "\n";
                         

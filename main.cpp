@@ -57,7 +57,10 @@
 #include <ibtk/muParserCartGridFunction.h>
 #include <ibtk/muParserRobinBcCoefs.h>
 
+
+
 // added this header
+#include <ibamr/IBTargetPointForceSpec.h>
 #include <ibamr/IBInstrumentPanel.h>
 #include <ibamr/IBStandardSourceGen.h>
 #include <vector>
@@ -78,10 +81,12 @@
 #include <silo.h>
 #endif
 
-void init_source_variables(vector<double>& Q_src, const vector<double>& P_src); 
-void set_source_variables(vector<double>& Q_src, const vector<double>& P_src, double current_time, double dt, bool sink_on);
-void update_rest_lengths(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager* const l_data_manager, const double alpha);
-                                 
+//void init_source_variables(vector<double>& Q_src, const vector<double>& P_src);
+//void set_source_variables(vector<double>& Q_src, const vector<double>& P_src, double current_time, double dt, bool sink_on);
+//void update_rest_lengths(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager* const l_data_manager, const double alpha);
+
+void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager* const l_data_manager, const double current_time, const double dt);
+
 
 #define DEBUG_OUTPUT 0 
 #define ENABLE_INSTRUMENTS
@@ -101,7 +106,18 @@ void update_rest_lengths(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager*
 
 #define MAX_STEP_FOR_CHANGE 1000
 
-#define PI_DEFINED 3.1415926535897932384626433832795028841971693993751
+#define MOVING_PAPILLARY
+
+
+
+
+namespace{
+    inline double smooth_kernel(const double r){
+        return std::abs(r) < 1.0 ? 0.5 * (cos(M_PI * r) + 1.0) : 0.0;
+    } // smooth_kernel
+}
+
+
 
 /*******************************************************************************
  * For each run, the input filename and restart information (if needed) must   *
@@ -535,7 +551,10 @@ int main(int argc, char* argv[])
                     prev_step_initialized = true;
             }
             
-
+            // update target locations if they are moving
+            #ifdef MOVING_PAPILLARY
+                update_target_point_positions(patch_hierarchy, l_data_manager, loop_time, dt); 
+            #endif
             
             // step the whole thing
             time_integrator->advanceHierarchy(dt);
@@ -636,7 +655,103 @@ int main(int argc, char* argv[])
 
 
 
+void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager* const l_data_manager, const double current_time, const double dt){
 
+    const static double BEAT_TIME       = 0.8;     // total beat period
+    const static double HALF_WIDTH      = 0.15;    // move from diasolic position for twice this time
+    const static double MINIMUM_SUPPORT = 0.48;    // bump is nonzero starting here
+    const static double SYSTOLE_MIDDLE  = MINIMUM_SUPPORT + HALF_WIDTH; // center of the bump
+    
+    const static double LEFT_PAPILLARY[3]  = {-0.972055648767080, -1.611924550017006, -2.990100960298683};
+    const static double RIGHT_PAPILLARY[3] = {-1.542417595752084,  1.611924550017006, -3.611254871967348};
+
+    // We require that the structures are associated with the finest level of
+    // the patch hierarchy.
+    const int level_num = hierarchy->getFinestLevelNumber();
+
+    // The velocity of the plates (m/s).
+    // static const double V = 0.1;
+
+    // Look up the Lagrangian index ranges.
+    //const std::pair<int,int>& plate2d_left_lag_idxs = l_data_manager->getLagrangianStructureIndexRange(0, level_num);
+    //const std::pair<int,int>& plate2d_rght_lag_idxs = l_data_manager->getLagrangianStructureIndexRange(1, level_num);
+
+    // Get the Lagrangian mesh.
+    Pointer<LMesh> l_mesh = l_data_manager->getLMesh(level_num);
+    const std::vector<LNode*>& local_nodes = l_mesh->getLocalNodes();
+    const std::vector<LNode*>& ghost_nodes = l_mesh->getGhostNodes();
+    std::vector<LNode*> nodes = local_nodes;
+    nodes.insert(nodes.end(), ghost_nodes.begin(), ghost_nodes.end());
+
+
+    double t_reduced = current_time - BEAT_TIME*floor(current_time/BEAT_TIME);
+
+
+    // Loop over all Lagrangian mesh nodes and update the target point
+    // positions.
+    for (std::vector<LNode*>::const_iterator it = nodes.begin(); it != nodes.end(); ++it)
+    {
+        const LNode* const node = *it;
+        IBTargetPointForceSpec* const force_spec = node->getNodeDataItem<IBTargetPointForceSpec>();
+        if (force_spec)
+        {
+            // Here we update the position of the target point.
+            //
+            // NOTES: lag_idx      is the "index" of the Lagrangian point (lag_idx = 0, 1, ..., N-1, where N is the total number of Lagrangian points)
+            //        X_target     is the target position of the target point
+            //        X_target(0)  is the x component of the target position
+            //        X_target(1)  is the y component of the target position
+            //
+            // The target position is shifted to the left or right by the
+            // increment dt*V
+            
+            /* Point& X_target = force_spec->getTargetPointPosition();
+            const int lag_idx = node->getLagrangianIndex();
+            if (plate2d_left_lag_idxs.first <= lag_idx && lag_idx < plate2d_left_lag_idxs.second)
+            {
+                X_target(0) -= dt*V;
+            }
+            if (plate2d_rght_lag_idxs.first <= lag_idx && lag_idx < plate2d_rght_lag_idxs.second)
+            {
+                X_target(0) += dt*V;
+            }*/
+            
+            Point& X_target = force_spec->getTargetPointPosition();
+            const int lag_idx = node->getLagrangianIndex();
+            
+            if (lag_idx == 0){
+                
+                // update here!!!
+                
+                // x coord moves in the anterior leaflet direction
+                X_target(0) = LEFT_PAPILLARY[0] + smooth_kernel( (t_reduced - SYSTOLE_MIDDLE) / HALF_WIDTH);
+                
+                // y coord stays still
+                X_target(1) = LEFT_PAPILLARY[1] ;
+                
+                // z coord down
+                X_target(2) = LEFT_PAPILLARY[2] - smooth_kernel( (t_reduced - SYSTOLE_MIDDLE) / HALF_WIDTH);
+
+            }
+            else if (lag_idx == 1){
+            
+                // x coord moves in the anterior leaflet direction
+                X_target(0) = RIGHT_PAPILLARY[0] + smooth_kernel( (t_reduced - SYSTOLE_MIDDLE) / HALF_WIDTH);
+                
+                // y coord stays still
+                X_target(1) = RIGHT_PAPILLARY[1] ;
+                
+                // z coord down
+                X_target(2) = RIGHT_PAPILLARY[2] - smooth_kernel( (t_reduced - SYSTOLE_MIDDLE) / HALF_WIDTH);
+            
+            }
+            
+            
+            
+        }
+    }
+    return;
+}// update_target_point_positions
 
 
 

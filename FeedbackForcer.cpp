@@ -145,7 +145,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
 
     // reduce the current beat modulo the fourier bc
     const double beat_time = (d_velocity_bc->d_fourier)->L;
-    const double t_reduced = data_time - floor(data_time / beat_time);
+    const double t_reduced = data_time - beat_time*floor(data_time / beat_time);
     
     const double t_outflow_bottom_start = 0.0;
     const double t_outflow_bottom_end   = 0.4;
