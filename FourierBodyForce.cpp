@@ -30,6 +30,7 @@
 
 #define FLOW_STRAIGHTENER
 
+#define EXTRA_FWD_PRESSURE
 
 
 /////////////////////////////// NAMESPACE ////////////////////////////////////
@@ -109,7 +110,12 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
     unsigned int idx = k % (d_fourier->N_times);
     
     
-    const double force = -MMHG_TO_CGS * d_fourier->values[idx] / z_domain_length;
+    double force = -MMHG_TO_CGS * d_fourier->values[idx] / z_domain_length;
+
+    #ifdef EXTRA_FWD_PRESSURE
+        const double extra_fwd_pressure_mmHg = 4.0;
+        force += -MMHG_TO_CGS * extra_fwd_pressure_mmHg / z_domain_length;
+    #endif
 
     // Always force in the negative z direction
     const int component = 2;
@@ -164,7 +170,7 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
             double kappa[NDIM];
             kappa[0] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
             kappa[1] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
-            kappa[2] = cycle_num >= 0 ?           100.0 : 0.0; // much lower friction in the z direction
+            kappa[2] = cycle_num >= 0 ?         10000.0 : 0.0; // much lower friction in the z direction
                                                                // at U = 10cm/s, this is ~10x force of gravity 
             
             // Clamp the velocity in the x,y components

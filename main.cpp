@@ -106,7 +106,7 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDa
 
 #define MAX_STEP_FOR_CHANGE 1000
 
-#define MOVING_PAPILLARY
+//#define MOVING_PAPILLARY
 
 
 
@@ -724,7 +724,7 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDa
                 // update here!!!
                 
                 // x coord moves in the anterior leaflet direction
-                X_target(0) = LEFT_PAPILLARY[0] + smooth_kernel( (t_reduced - SYSTOLE_MIDDLE) / HALF_WIDTH);
+                X_target(0) = LEFT_PAPILLARY[0]; // + smooth_kernel( (t_reduced - SYSTOLE_MIDDLE) / HALF_WIDTH);
                 
                 // y coord stays still
                 X_target(1) = LEFT_PAPILLARY[1] ;
@@ -736,7 +736,7 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDa
             else if (lag_idx == 1){
             
                 // x coord moves in the anterior leaflet direction
-                X_target(0) = RIGHT_PAPILLARY[0] + smooth_kernel( (t_reduced - SYSTOLE_MIDDLE) / HALF_WIDTH);
+                X_target(0) = RIGHT_PAPILLARY[0]; // + smooth_kernel( (t_reduced - SYSTOLE_MIDDLE) / HALF_WIDTH);
                 
                 // y coord stays still
                 X_target(1) = RIGHT_PAPILLARY[1] ;
