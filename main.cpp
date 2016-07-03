@@ -665,6 +665,9 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDa
     const static double LEFT_PAPILLARY[3]  = {-0.972055648767080, -1.611924550017006, -2.990100960298683};
     const static double RIGHT_PAPILLARY[3] = {-1.542417595752084,  1.611924550017006, -3.611254871967348};
 
+    // max absolute value of the pressure difference
+    const static double MAX_ABS_VAL_PRESSURE_DIFF = 106.0;
+
     // We require that the structures are associated with the finest level of
     // the patch hierarchy.
     const int level_num = hierarchy->getFinestLevelNumber();
