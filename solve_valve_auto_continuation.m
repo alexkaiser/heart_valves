@@ -1,4 +1,4 @@
-function [params pass err_over_time it] = solve_valve_auto_continuation(params, filter_params, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time, ref_frac)
+function [params pass err_over_time it] = solve_valve_auto_continuation(params, filter_params, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time, ref_frac, name)
 
 % Automatically runs a continutation sequence 
 % First tries the current reference fraction 
@@ -20,7 +20,7 @@ fprintf('Initial solve failed, applying adaptive continuation\n');
 params_okay = params; 
 
 ref_current   = ref_frac / 2; 
-ref_increment = ref_frac / 2; 
+ref_increment = ref_frac / 4; 
 
 ever_passed = false; 
 
@@ -37,6 +37,11 @@ while true
         
         fprintf('Solve passed\n\n'); 
         
+        if exist('name', 'var')
+            data_name = sprintf('%s_at_ref_frac_%f', name, ref_current); 
+            save(data_name); 
+        end
+        
         if ref_current == ref_frac
             break
         end 
@@ -48,14 +53,16 @@ while true
         ref_current = min(ref_current + ref_increment, ref_frac);
         params_okay = params_current; 
         
+ 
+            
     else
         
         if ever_passed
             % if the current setup has passed, just incremet less  
-            ref_increment = ref_increment / 2;  
+            ref_increment = ref_increment / 4;  
             ref_current   = ref_last_passed + ref_increment; 
         else 
-            ref_increment = ref_increment / 2;  
+            ref_increment = ref_increment / 4;  
             ref_current   = ref_current / 2; 
         end
         

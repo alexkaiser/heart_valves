@@ -29,6 +29,9 @@ target_multiplier = 40;
 % z direction is doubled 
 n_lagrangian_tracers = 8; 
 
+% base_name = 'mitral_tree_STIFF'; 
+% base_name = strcat(base_name, sprintf('_%d', N)); 
+
 
 X_config_is_reference = true; 
 

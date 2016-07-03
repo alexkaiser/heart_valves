@@ -17,7 +17,7 @@ chordae_tree = true;
 a = 1; 
 r = 1.5; 
 h = 3; 
-N = 256; 
+N = 512; 
 
 arbitrary_papillary_points = true; 
 if arbitrary_papillary_points 
@@ -99,6 +99,10 @@ if N >= 256
     tol_global = 1e-10;
 end 
 
+if N >= 512 
+    tol_global = 1e-9;
+end 
+
 max_it_global = 40; 
 
 plot_and_save_freq = 100; 
@@ -113,7 +117,7 @@ end
 
 
 % anterior 
-total_anterior = pi + pi/6; 
+total_anterior = pi; 
 min_angle_anterior = -total_anterior/2; 
 max_angle_anterior =  total_anterior/2;  
 
@@ -206,7 +210,7 @@ for ref_frac = ref_frac_range
         params_posterior.p_0 = p_0; 
         params_anterior.p_0 = p_0; 
 
-        [params_posterior pass err_over_time_posterior it] = solve_valve_auto_continuation(params_posterior, filter_params_posterior, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time_posterior, ref_frac); 
+        [params_posterior pass err_over_time_posterior it] = solve_valve_auto_continuation(params_posterior, filter_params_posterior, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time_posterior, ref_frac, 'posterior'); 
 
         err_posterior = total_global_err(params_posterior, filter_params_posterior)
 
@@ -231,7 +235,7 @@ for ref_frac = ref_frac_range
         end
 
 
-        [params_anterior pass err_over_time_anterior it] = solve_valve_auto_continuation(params_anterior, filter_params_anterior, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time_anterior, ref_frac); 
+        [params_anterior pass err_over_time_anterior it] = solve_valve_auto_continuation(params_anterior, filter_params_anterior, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time_anterior, ref_frac, 'anterior'); 
 
         
         err_anterior = total_global_err(params_anterior, filter_params_anterior)
