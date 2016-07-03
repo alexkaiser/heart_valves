@@ -17,7 +17,7 @@ def full_run_line(run_line, input_name, options, restart_number=None, restart_di
     
     line = run_line + ' ' + input_name
     
-    if restart_number > 0: 
+    if (restart_number > 0) and (restart_number is not None):
         if restart_dir is None: 
             dir_name = 'restart_IB3d_tree_cycle'
         else: 
@@ -31,7 +31,7 @@ def full_run_line(run_line, input_name, options, restart_number=None, restart_di
 def log_file_exists(process=None):
     ''' check in loop to make sure log file is found, sleep for a minute 100 times if not'''
     
-    for i in range(100):
+    for i in range(10):
         if os.path.isfile('IB3d.log'):
             print 'log file found, script moving forward'
             return True
@@ -48,7 +48,10 @@ def log_file_exists(process=None):
 
 
 def get_restart_number(restart_dir):
-    '''Gets the number of the most recent restart from the restart_dir'''
+    ''' Gets the number of the most recent restart from the restart_dir '''
+
+    if not os.path.exists(restart_dir):
+        return None
 
     largest_restart_num = None
     for f in os.listdir(restart_dir):
@@ -63,7 +66,7 @@ def get_restart_number(restart_dir):
     if largest_restart_num is None:
         print 'No restart files found, restart at beginning'
 
-    return val
+    return largest_restart_num
 
 
 
@@ -85,8 +88,12 @@ if __name__ == '__main__':
     else:
         print ''
         restart_dir = 'restart_IB3d_tree_cycle'
+
+    # check if we have restart available,
+    # returns None if not
+    restart_number = get_restart_number(restart_dir)
     
-    to_run = full_run_line(run_line, input_name, options)
+    to_run = full_run_line(run_line, input_name, options, restart_number, restart_dir)
     
     print 'full run line = ', to_run
     
@@ -101,10 +108,14 @@ if __name__ == '__main__':
     while read -r line; do
         export "$line"
     done < $env_log
-    
+        
     '''
-
-    #
+    
+#    script_prelims_restart = '''
+#    unset PBS_JOBID
+#    export PBS_JOBID=
+    
+#    '''
 
     script.write(script_prelims)
     script.write(to_run + '\n\n')
@@ -123,12 +134,12 @@ if __name__ == '__main__':
     # check for file
     log_found = log_file_exists()
     if not log_found:
-        print 'No log file found after 100 checks, killing python script'
+        print 'No log file found after 10 checks, killing python script'
         sys.exit()
 
-    wait_time_s = 20
-    wait_time_before_restart = 20
-    wait_time_after_restart = 20
+    wait_time_s = 10*60              # check every ten minutes, max 20 minutes lost
+    wait_time_before_restart = 2*60  # after everything is killed, just hang out for two minutes
+    wait_time_after_restart = 5*60   # once the restart goes, add a few extra minutes for initialization 
     number_restarts = 0
     prev_time = os.path.getmtime('IB3d.log')
     check_number = 0
@@ -141,7 +152,7 @@ if __name__ == '__main__':
         # just hang out
         time.sleep(wait_time_s)
         
-        # last changes
+        # last changes to log
         mod_time = os.path.getmtime('IB3d.log')
         
         # check whether the job has completed
@@ -164,7 +175,7 @@ if __name__ == '__main__':
                 print 'Beware of strange behavior'
 
             # kill the MPI jobs with a shell script, wait for this to finish
-            code = subprocess.call('sh -x kill_all_mpi.sh', shell=True)
+            code = subprocess.call('sh kill_all_mpi.sh', shell=True)
             if code is None:
                 print 'kill_all_mpi is still running (even though it should have completed).'
                 print 'Beware of strange behavior'
@@ -188,11 +199,41 @@ if __name__ == '__main__':
             script.close()
 
             time.sleep(wait_time_before_restart)
-            print 'restart number ', number_restarts, 'at step ', number_restarts
             
+            # kill the MPI jobs with a shell script (again...), wait for this to finish
+            code = subprocess.call('sh kill_all_mpi.sh', shell=True)
+            if code is None:
+                print 'kill_all_mpi is still running (even though it should have completed).'
+                print 'Beware of strange behavior'
+            time.sleep(wait_time_before_restart)
+            
+            
+            print 'restart number ', number_restarts, 'at step ', number_restarts
+
             
             current_sh_calls_mpi = subprocess.Popen('sh ' + script_name, shell=True)
-            
+
+            # make sure we have the log file again
+            log_found = log_file_exists()
+            if not log_found:
+                print 'No log file found after 10 checks, try to submit again'
+                    
+                current_sh_calls_mpi.kill()
+                current_sh_calls_mpi.wait()
+                if current_sh_calls_mpi.poll() is None:
+                    print 'Shell script ', script_name, ' is still running (even though it should have completed).'
+                    print 'Beware of strange behavior'
+                
+                time.sleep(wait_time_before_restart)
+                
+                # try again
+                current_sh_calls_mpi = subprocess.Popen('sh ' + script_name, shell=True)
+                
+                log_found_again = log_file_exists()
+                if not log_found_again:
+                    print 'No log file found after 10 checks, cancel job.'
+                    sys.exit()
+
             # extra wait to allow for initialization
             time.sleep(wait_time_after_restart)
 
