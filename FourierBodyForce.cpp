@@ -113,7 +113,7 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
     double force = -MMHG_TO_CGS * d_fourier->values[idx] / z_domain_length;
 
     #ifdef EXTRA_FWD_PRESSURE
-        const double extra_fwd_pressure_mmHg = 4.0;
+        const double extra_fwd_pressure_mmHg = 6.5;
         force += -MMHG_TO_CGS * extra_fwd_pressure_mmHg / z_domain_length;
     #endif
 
