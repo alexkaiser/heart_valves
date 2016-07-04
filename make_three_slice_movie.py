@@ -5,8 +5,24 @@ import os
 
 cwd = os.getcwd()
 
+# find out what power of two we are working with
+count = 1
+n = 2 
+while True: 
+    if os.path.isfile('../mitral_tree_' + str(n) + '.vertex'): 
+        base = n
+        break
 
-session_file = '/scratch/adk354/three_slice_128_high_res.session'
+    n *= 2
+    count += 1
+    if count > 20:
+        break
+
+if (n != 128) and (n != 256):
+    print 'session files only available for 128,256 resolutions so far'
+
+
+session_file = '/scratch/adk354/three_slice_' + str(n) + '_high_res.session'
 # session_file = 'three_slice_128_high_res.session'
 
 lagrangian_visit_file = cwd + '/lag_data.visit'
@@ -19,13 +35,14 @@ data = (lagrangian_visit_file, eulerian_visit_file)
 
 RestoreSessionWithDifferentSources(session_file, 0, data)
 
+print 'restore passed'
 
 # get some output names
 cwd_split = cwd.split('/')
 
 # name files after the job if easy
 # path is always /home/adk354/scratch/JOB_NAME
-if (cwd_split[0]   == '') and (cwd_split[1]   == 'scratch') and (cwd_split[0]   == 'adk354') and (len(cwd_split) >= 4):
+if (cwd_split[0]   == '') and (cwd_split[1]   == 'scratch') and (cwd_split[2]   == 'adk354') and (len(cwd_split) >= 4):
     base_name = cwd_split[3]
 else:
     base_name = 'frames'
@@ -33,6 +50,10 @@ else:
 s = SaveWindowAttributes()
 s.fileName = base_name
 s.outputDirectory = cwd
+s.saveTiled = 1
+s.format = 'JPEG'
+s.width = 1920*4
+s.resConstraint = 'ScreenProportions'
 SetSaveWindowAttributes(s)
 
 
