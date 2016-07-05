@@ -52,13 +52,13 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     % also set damping coefficients accordingly 
     k_target_ring = k_target; %  / refinement; 
     m_ring = 0.0; 
-    eta_ring = sqrt(m_ring * k_target_ring); 
+    eta_ring = 0.0; %sqrt(m_ring * k_target_ring); 
     
     % there are four times as many, so they get multiplied by refinement squared 
     % can also just divide by refinement because not want them to get stiffer
     k_target_net = k_target; % / refinement; 
     m_net = 0.0; 
-    eta_net = sqrt(m_net * k_target_net);    
+    eta_net = 0.0; % sqrt(m_net * k_target_net);    
     
     % relative spring constants drop when the mesh is refined 
     k_rel = k_rel / refinement; 
