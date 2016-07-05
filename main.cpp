@@ -65,6 +65,7 @@
 #include <ibamr/IBStandardSourceGen.h>
 #include <vector>
 #include <queue>
+#include <cmath>
 #include <timing.h>
 #include <boundary_condition_util.h>
 #include <FeedbackForcer.h>
@@ -85,7 +86,7 @@
 //void set_source_variables(vector<double>& Q_src, const vector<double>& P_src, double current_time, double dt, bool sink_on);
 //void update_rest_lengths(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager* const l_data_manager, const double alpha);
 
-void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager* const l_data_manager, const double current_time, const double dt);
+void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager* const l_data_manager, const double current_time, const double dt, fourier_series_data *fourier_body_force);
 
 
 #define DEBUG_OUTPUT 0 
@@ -106,9 +107,7 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDa
 
 #define MAX_STEP_FOR_CHANGE 1000
 
-//#define MOVING_PAPILLARY
-
-
+// #define MOVING_PAPILLARY
 
 
 namespace{
@@ -553,7 +552,12 @@ int main(int argc, char* argv[])
             
             // update target locations if they are moving
             #ifdef MOVING_PAPILLARY
-                update_target_point_positions(patch_hierarchy, l_data_manager, loop_time, dt); 
+                #ifdef FOURIER_SERIES_BODY_FORCE
+                    update_target_point_positions(patch_hierarchy, l_data_manager, loop_time, dt, fourier_body_force);
+                #else
+                    pout << "other papillary movement not implemented, must use periodic with fourier series for now\n";
+                    SAMRAI_MPI::abort();
+                #endif
             #endif
             
             // step the whole thing
@@ -655,29 +659,26 @@ int main(int argc, char* argv[])
 
 
 
-void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager* const l_data_manager, const double current_time, const double dt){
+void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager* const l_data_manager, const double current_time, const double dt, fourier_series_data *fourier_body_force){
+    // Requires to have pressure difference as a Fourier series
+    // Atrial pressure is positive if higher
+    // so positive pressure drives forward flow
 
-    const static double BEAT_TIME       = 0.8;     // total beat period
-    const static double HALF_WIDTH      = 0.15;    // move from diasolic position for twice this time
-    const static double MINIMUM_SUPPORT = 0.48;    // bump is nonzero starting here
-    const static double SYSTOLE_MIDDLE  = MINIMUM_SUPPORT + HALF_WIDTH; // center of the bump
-    
+    // quick return at beginning so that things do not move in discontinuous manner
+    if (current_time < 0.1)
+        return; 
+
+
     const static double LEFT_PAPILLARY[3]  = {-0.972055648767080, -1.611924550017006, -2.990100960298683};
     const static double RIGHT_PAPILLARY[3] = {-1.542417595752084,  1.611924550017006, -3.611254871967348};
 
     // max absolute value of the pressure difference
     const static double MAX_ABS_VAL_PRESSURE_DIFF = 106.0;
-
+    const static double MAX_DISPLACEMENT_SYSTOLE  = 1.0; // papillary tips move this far at their peak
+    
     // We require that the structures are associated with the finest level of
     // the patch hierarchy.
     const int level_num = hierarchy->getFinestLevelNumber();
-
-    // The velocity of the plates (m/s).
-    // static const double V = 0.1;
-
-    // Look up the Lagrangian index ranges.
-    //const std::pair<int,int>& plate2d_left_lag_idxs = l_data_manager->getLagrangianStructureIndexRange(0, level_num);
-    //const std::pair<int,int>& plate2d_rght_lag_idxs = l_data_manager->getLagrangianStructureIndexRange(1, level_num);
 
     // Get the Lagrangian mesh.
     Pointer<LMesh> l_mesh = l_data_manager->getLMesh(level_num);
@@ -686,73 +687,48 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDa
     std::vector<LNode*> nodes = local_nodes;
     nodes.insert(nodes.end(), ghost_nodes.begin(), ghost_nodes.end());
 
+    // index without periodicity in Fourier series
+    unsigned int k = (unsigned int) floor(current_time / (fourier_body_force->dt));
+    
+    // take periodic reduction                         
+    unsigned int idx = k % (fourier_body_force->N_times);
 
-    double t_reduced = current_time - BEAT_TIME*floor(current_time/BEAT_TIME);
+    // current prescribed pressure difference
+    const double pressure_mmHg = fourier_body_force->values[idx];
+
+    // move compared to the current pressure difference
+    // if the pressure is negative (higher ventricular pressure towards closure)
+    const double displacement  = (pressure_mmHg < 0.0) ? MAX_DISPLACEMENT_SYSTOLE * abs(pressure_mmHg / MAX_ABS_VAL_PRESSURE_DIFF) : 0.0;
 
 
     // Loop over all Lagrangian mesh nodes and update the target point
     // positions.
-    for (std::vector<LNode*>::const_iterator it = nodes.begin(); it != nodes.end(); ++it)
-    {
+    for (std::vector<LNode*>::const_iterator it = nodes.begin(); it != nodes.end(); ++it){
         const LNode* const node = *it;
         IBTargetPointForceSpec* const force_spec = node->getNodeDataItem<IBTargetPointForceSpec>();
-        if (force_spec)
-        {
+        if (force_spec){
             // Here we update the position of the target point.
             //
             // NOTES: lag_idx      is the "index" of the Lagrangian point (lag_idx = 0, 1, ..., N-1, where N is the total number of Lagrangian points)
             //        X_target     is the target position of the target point
             //        X_target(0)  is the x component of the target position
             //        X_target(1)  is the y component of the target position
-            //
-            // The target position is shifted to the left or right by the
-            // increment dt*V
-            
-            /* Point& X_target = force_spec->getTargetPointPosition();
-            const int lag_idx = node->getLagrangianIndex();
-            if (plate2d_left_lag_idxs.first <= lag_idx && lag_idx < plate2d_left_lag_idxs.second)
-            {
-                X_target(0) -= dt*V;
-            }
-            if (plate2d_rght_lag_idxs.first <= lag_idx && lag_idx < plate2d_rght_lag_idxs.second)
-            {
-                X_target(0) += dt*V;
-            }*/
             
             Point& X_target = force_spec->getTargetPointPosition();
             const int lag_idx = node->getLagrangianIndex();
             
             if (lag_idx == 0){
-                
-                // update here!!!
-                
-                // x coord moves in the anterior leaflet direction
-                X_target(0) = LEFT_PAPILLARY[0]; // + smooth_kernel( (t_reduced - SYSTOLE_MIDDLE) / HALF_WIDTH);
-                
-                // y coord stays still
-                X_target(1) = LEFT_PAPILLARY[1] ;
-                
                 // z coord down
-                X_target(2) = LEFT_PAPILLARY[2] - smooth_kernel( (t_reduced - SYSTOLE_MIDDLE) / HALF_WIDTH);
+                X_target(2) = LEFT_PAPILLARY[2]  - displacement;
 
             }
             else if (lag_idx == 1){
-            
-                // x coord moves in the anterior leaflet direction
-                X_target(0) = RIGHT_PAPILLARY[0]; // + smooth_kernel( (t_reduced - SYSTOLE_MIDDLE) / HALF_WIDTH);
-                
-                // y coord stays still
-                X_target(1) = RIGHT_PAPILLARY[1] ;
-                
                 // z coord down
-                X_target(2) = RIGHT_PAPILLARY[2] - smooth_kernel( (t_reduced - SYSTOLE_MIDDLE) / HALF_WIDTH);
-            
+                X_target(2) = RIGHT_PAPILLARY[2] - displacement;
             }
-            
-            
-            
         }
     }
+
     return;
 }// update_target_point_positions
 

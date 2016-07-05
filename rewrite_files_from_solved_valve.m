@@ -35,7 +35,12 @@ n_lagrangian_tracers = 8;
 
 X_config_is_reference = true; 
 
-output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, filter_params_anterior, p_physical, target_multiplier, refinement, n_lagrangian_tracers, X_config_is_reference); 
+% places this many exact copies of the leaflet downward in z 
+% spring constants are all reduced by num_copies 
+% spacing is always half a mesh width 
+num_copies = 3; 
+
+output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, filter_params_anterior, p_physical, target_multiplier, refinement, n_lagrangian_tracers, X_config_is_reference, num_copies); 
 
 
 

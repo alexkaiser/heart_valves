@@ -1,4 +1,4 @@
-function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, filter_params_anterior, p_physical, target_multiplier, refinement, n_lagrangian_tracers, X_config_is_reference)
+function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, filter_params_anterior, p_physical, target_multiplier, refinement, n_lagrangian_tracers, X_config_is_reference, num_copies)
     % 
     % Outputs the current configuration of the leaflets to IBAMR format
     % Spring constants are computed in dimensional form 
@@ -43,6 +43,8 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     % value of the relative spring constant is determined by the ratio 
     k_rel = p_cgs / ratio; 
     
+    k_rel = k_rel / num_copies; 
+    
     % base rate for target spring constants
     % target constant for a single point 
     % this does not scale when the mesh is changed 
@@ -71,6 +73,15 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     % m_effective_papillary = 1.0 * pi * filter_params_posterior.r^2; 
     eta_papillary         = 0.0; %sqrt(k_target/2 * m_effective_papillary); 
     
+    % spacing 
+    ds = 2*L / params_anterior.N;
+    
+    % copies, if needed, will be placed this far down 
+    if num_copies > 1
+        z_offset_vals = -linspace(0, ds, num_copies); 
+    else 
+        z_offset_vals = 0; 
+    end 
     
     % check for consistency in chordae , all data structures must match 
     if ~(    all(filter_params_posterior.left_papillary   == params_posterior.chordae.left_papillary)   ...
@@ -102,107 +113,110 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
         params_posterior.ref_frac       = 1.0;
     end 
     
+    % ugh this is terrible fix it it makes my head hurt by I'm tired 
+    global z_offset
     
-    
-    left_papillary  = filter_params_posterior.left_papillary; 
-    filter_params_posterior.left_papillary_idx = global_idx; 
-    total_vertices  = vertex_string(vertex, left_papillary, total_vertices); 
-    total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
-    global_idx      = global_idx + 1; 
-    
-    right_papillary = filter_params_posterior.right_papillary; 
-    filter_params_posterior.right_papillary_idx = global_idx; 
-    total_vertices  = vertex_string(vertex, right_papillary, total_vertices); 
-    total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
-    global_idx      = global_idx + 1;     
-    
-    if split_papillary_tips
+    for z_offset = z_offset_vals
         
-        left_papillary  = filter_params_anterior.left_papillary; 
-        filter_params_anterior.left_papillary_idx = global_idx; 
+        left_papillary  = filter_params_posterior.left_papillary; 
+        filter_params_posterior.left_papillary_idx = global_idx; 
         total_vertices  = vertex_string(vertex, left_papillary, total_vertices); 
         total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
         global_idx      = global_idx + 1; 
 
-        right_papillary = filter_params_anterior.right_papillary; 
-        filter_params_anterior.right_papillary_idx = global_idx; 
+        right_papillary = filter_params_posterior.right_papillary; 
+        filter_params_posterior.right_papillary_idx = global_idx; 
         total_vertices  = vertex_string(vertex, right_papillary, total_vertices); 
         total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
-        global_idx      = global_idx + 1;             
-    
-    else
-        filter_params_anterior.left_papillary_idx  = filter_params_posterior.left_papillary_idx;
-        filter_params_anterior.right_papillary_idx = filter_params_posterior.right_papillary_idx;  
-    end 
-    
-    
-    
-    % posterior first 
-    % leaflets 
-    [global_idx, total_vertices, total_springs, total_targets, params_posterior] = ...
-        add_leaflet(params_posterior, filter_params_posterior, spring, vertex, target, ...
-                    global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_ring, eta_ring); 
+        global_idx      = global_idx + 1;     
 
-    % if chordae exist, then add them 
-    if isfield(params_posterior, 'chordae') && ~isempty(params_posterior.chordae)
-        
-        params_posterior.chordae.left_papillary_idx  = filter_params_posterior.left_papillary_idx; 
-        params_posterior.chordae.right_papillary_idx = filter_params_posterior.right_papillary_idx; 
-                
-        [global_idx, total_vertices, total_springs] = ...
-                add_chordae_tree(params_posterior, spring, vertex, global_idx, total_vertices, total_springs, k_rel);  
-    end
-    
-    % anterior 
-    [global_idx, total_vertices, total_springs, total_targets, params_anterior] = ...
-        add_leaflet(params_anterior, filter_params_posterior, spring, vertex, target, ...
-                     global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_ring, eta_ring);   
-    
-    if isfield(params_anterior, 'chordae') && ~isempty(params_anterior.chordae)
-        
-        params_anterior.chordae.left_papillary_idx  = filter_params_anterior.left_papillary_idx; 
-        params_anterior.chordae.right_papillary_idx = filter_params_anterior.right_papillary_idx; 
-           
-        
-        [global_idx, total_vertices, total_springs] = ...
-                add_chordae_tree(params_anterior, spring, vertex, global_idx, total_vertices, total_springs, k_rel);  
-    end 
-    
-    % flat part of mesh 
-    r = filter_params_posterior.r; 
-    N_ring = 2 * params_anterior.N;
-    h = 0.0; % now ring always set at zero %filter_params_posterior.h; 
-    ref_frac_net = 1.0; 
-    
-    % no radial fibers, instead geodesics from the leaflet 
-    radial_fibers = false; 
-    
-    % turn the polar net off for now      
-    [global_idx, total_vertices, total_springs, total_targets] = ...
-                            place_net(r, h, L, N_ring, radial_fibers, spring, vertex, target, inst, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net); 
-                        
-                        
-    
-    % place rays for now 
-    [global_idx, total_vertices, total_springs, total_targets] = ...
-                            place_rays(params_anterior, filter_params_posterior, L, spring, vertex, target, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net);                    
-    
-    [global_idx, total_vertices, total_springs, total_targets] = ...
-                            place_rays(params_posterior, filter_params_posterior, L, spring, vertex, target, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net);                    
-        
-                        
-    % flat part of mesh with Cartesian coordinates
-    ds = 2*L / params_anterior.N;
-    
-    % inner radius, stop mesh here 
-    r_cartesian = r + 2*ds; 
-    [global_idx, total_vertices, total_springs, total_targets] = ...
-                            place_cartesian_net(r_cartesian, h, L, ds, spring, vertex, target, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net); 
+        if split_papillary_tips
+
+            left_papillary  = filter_params_anterior.left_papillary; 
+            filter_params_anterior.left_papillary_idx = global_idx; 
+            total_vertices  = vertex_string(vertex, left_papillary, total_vertices); 
+            total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
+            global_idx      = global_idx + 1; 
+
+            right_papillary = filter_params_anterior.right_papillary; 
+            filter_params_anterior.right_papillary_idx = global_idx; 
+            total_vertices  = vertex_string(vertex, right_papillary, total_vertices); 
+            total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
+            global_idx      = global_idx + 1;             
+
+        else
+            filter_params_anterior.left_papillary_idx  = filter_params_posterior.left_papillary_idx;
+            filter_params_anterior.right_papillary_idx = filter_params_posterior.right_papillary_idx;  
+        end 
+
+
+
+        % posterior first 
+        % leaflets 
+        [global_idx, total_vertices, total_springs, total_targets, params_posterior] = ...
+            add_leaflet(params_posterior, filter_params_posterior, spring, vertex, target, ...
+                        global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_ring, eta_ring); 
+
+        % if chordae exist, then add them 
+        if isfield(params_posterior, 'chordae') && ~isempty(params_posterior.chordae)
+
+            params_posterior.chordae.left_papillary_idx  = filter_params_posterior.left_papillary_idx; 
+            params_posterior.chordae.right_papillary_idx = filter_params_posterior.right_papillary_idx; 
+
+            [global_idx, total_vertices, total_springs] = ...
+                    add_chordae_tree(params_posterior, spring, vertex, global_idx, total_vertices, total_springs, k_rel);  
+        end
+
+        % anterior 
+        [global_idx, total_vertices, total_springs, total_targets, params_anterior] = ...
+            add_leaflet(params_anterior, filter_params_posterior, spring, vertex, target, ...
+                         global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_ring, eta_ring);   
+
+        if isfield(params_anterior, 'chordae') && ~isempty(params_anterior.chordae)
+
+            params_anterior.chordae.left_papillary_idx  = filter_params_anterior.left_papillary_idx; 
+            params_anterior.chordae.right_papillary_idx = filter_params_anterior.right_papillary_idx; 
+
+
+            [global_idx, total_vertices, total_springs] = ...
+                    add_chordae_tree(params_anterior, spring, vertex, global_idx, total_vertices, total_springs, k_rel);  
+        end 
+
+        % flat part of mesh 
+        r = filter_params_posterior.r; 
+        N_ring = 2 * params_anterior.N;
+        h = 0.0; % now ring always set at zero %filter_params_posterior.h; 
+        ref_frac_net = 1.0; 
+
+        % no radial fibers, instead geodesics from the leaflet 
+        radial_fibers = false; 
+
+        % turn the polar net off for now      
+        [global_idx, total_vertices, total_springs, total_targets] = ...
+                                place_net(r, h, L, N_ring, radial_fibers, spring, vertex, target, inst, ...
+                                global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net); 
+
+
+
+        % place rays for now 
+        [global_idx, total_vertices, total_springs, total_targets] = ...
+                                place_rays(params_anterior, filter_params_posterior, L, spring, vertex, target, ...
+                                global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net);                    
+
+        [global_idx, total_vertices, total_springs, total_targets] = ...
+                                place_rays(params_posterior, filter_params_posterior, L, spring, vertex, target, ...
+                                global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net);                    
+
+
+        % flat part of mesh with Cartesian coordinates
+        % inner radius, stop mesh here 
+        r_cartesian = r + 2*ds; 
+        [global_idx, total_vertices, total_springs, total_targets] = ...
+                                place_cartesian_net(r_cartesian, h, L, ds, spring, vertex, target, ...
+                                global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net); 
  
+    end 
+                        
                         
     if exist('n_lagrangian_tracers', 'var')
         double_z = false; 
@@ -221,15 +235,25 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     prepend_line_with_int(strcat(base_name, '.spring'), total_springs); 
     prepend_line_with_int(strcat(base_name, '.target'), total_targets); 
 
+
+    
 end 
 
 
 
+% nest this function so it can access the z increment
+% this is bad practice and should be removed 
 function total_vertices = vertex_string(vertex, coords, total_vertices)
     % prints formatted string for current vertex to vertex file   
-    fprintf(vertex, '%.14f\t %.14f\t %14f\n', coords(1), coords(2), coords(3)); 
+    
+    % FIXME!!! 
+    global z_offset
+    
+    fprintf(vertex, '%.14f\t %.14f\t %14f\n', coords(1), coords(2), coords(3) + z_offset); 
     total_vertices = total_vertices + 1; 
-end 
+end
+
+ 
 
 
 function total_springs = spring_string(spring, idx, nbr, kappa, rest_len, total_springs)
