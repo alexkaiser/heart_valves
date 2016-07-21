@@ -20,6 +20,18 @@ AddPlot("Pseudocolor", "U_z")
 AddOperator("Slice")
 SetActivePlots(1)
 
+
+
+# if( le( polar_radius(amr_mesh), 1.6  ) ,  1.0 , 0.0  ) * U_z
+
+# radius is hard coded here... 
+DefineScalarExpression("u_z_inside_ring", "if( le( polar_radius(amr_mesh), 1.607), 1.0, 0.0) * U_z")
+
+# radius = 1.606587877768772 
+# area_ring = math.pi * radius * radius 
+
+
+
 # print "supported queries: ", Queries()
 
 
@@ -66,16 +78,19 @@ total_nodes_in_slice = GetQueryOutputValue()
 print 'total_nodes_in_slice = ', total_nodes_in_slice
 
 
-times    = []
-flux     = []
-net_flux = []
+times         = []
+flux          = []
+net_flux      = []
+flux_ring     = []
+net_flux_ring = []
 
 Query('Time')
-t          = GetQueryOutputValue()
-t_prev     = t 
-flux_prev  = 0.0 
-total_flux = 0.0
-
+t               = GetQueryOutputValue()
+t_prev          = t 
+flux_prev       = 0.0 
+total_flux      = 0.0
+flux_prev_ring  = 0.0 
+total_flux_ring = 0.0
 
 for state in range(TimeSliderGetNStates()):
     
@@ -98,6 +113,8 @@ for state in range(TimeSliderGetNStates()):
     # Don't need to draw the plot to get the flux 
     # DrawPlots()
     
+    ChangeActivePlotsVar("U_z")
+    
     # add the z velocity components in the slice 
     Query('Average Value')
     
@@ -118,8 +135,28 @@ for state in range(TimeSliderGetNStates()):
     # variable update for next step 
     flux_prev = flux_current
     
+    ChangeActivePlotsVar("u_z_inside_ring")
+    # add the z velocity components in the slice 
+    Query('Average Value')
+    
+    # Average value gives second order midpoint 
+    #     to the current average value
+    # Multiply by area to get integral 
+    # Add a sign because we want inward flux  
+    avg = GetQueryOutputValue()
+    flux_current_ring = -area * avg  
 
+    flux_ring.append(flux_current_ring)
+    print 'flux_ring = ', flux_current_ring 
 
+    # simple trapezoidal rule for net flux 
+    total_flux_ring += 0.5 * dt * (flux_current_ring + flux_prev_ring)
+    net_flux_ring.append(total_flux_ring)
+    
+    # variable update for next step 
+    flux_prev_ring = flux_current_ring    
+    
+    
 f = open('plot_flux.m', 'w')
 
 f.write('times = ')
@@ -134,6 +171,14 @@ f.write('net_flux = ')
 f.write( str(net_flux) )
 f.write(';\n\n')
 
+f.write('flux_ring = ')
+f.write( str(flux_ring) )
+f.write(';\n\n')
+
+f.write('net_flux_ring = ')
+f.write( str(net_flux_ring) )
+f.write(';\n\n')
+
 plot_code = '''
 fig = figure; 
 plot(times, flux); 
@@ -143,9 +188,49 @@ ylabel('flux (cm^3 / s)  ');
 
 fig = figure; 
 plot(times, net_flux); 
-title('nex flux over time'); 
+title('net flux over time'); 
 xlabel('t'); 
 ylabel('net flux (cm^3)'); 
+
+fig = figure; 
+plot(times, flux_ring); 
+title('flux in ring over time'); 
+xlabel('t'); 
+ylabel('flux (cm^3 / s)  '); 
+
+fig = figure; 
+plot(times, net_flux_ring); 
+title('net flux in ring over time'); 
+xlabel('t'); 
+ylabel('net flux (cm^3)');
+
+
+fig = figure; 
+subplot(2,2,1)
+plot(times, flux); 
+title('flux over time'); 
+xlabel('t'); 
+ylabel('flux (cm^3 / s)  '); 
+
+subplot(2,2,3)
+plot(times, net_flux); 
+title('net flux over time'); 
+xlabel('t'); 
+ylabel('net flux (cm^3)'); 
+
+subplot(2,2,2)
+plot(times, flux_ring); 
+title('flux in ring over time'); 
+xlabel('t'); 
+ylabel('flux (cm^3 / s)  '); 
+
+subplot(2,2,4)
+plot(times, net_flux_ring); 
+title('net flux in ring over time'); 
+xlabel('t'); 
+ylabel('net flux (cm^3)');
+
+printfig(fig, 'fluxes')
 '''
 
 f.write(plot_code) 

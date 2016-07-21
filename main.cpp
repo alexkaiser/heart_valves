@@ -90,7 +90,7 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDa
 
 
 #define DEBUG_OUTPUT 0 
-#define ENABLE_INSTRUMENTS
+//#define ENABLE_INSTRUMENTS
 #define FOURIER_SERIES_BC
 #define FOURIER_SERIES_BODY_FORCE
 #define DYNAMIC_BOUNDARY_STAB
@@ -674,7 +674,7 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDa
 
     // max absolute value of the pressure difference
     const static double MAX_ABS_VAL_PRESSURE_DIFF = 106.0;
-    const static double MAX_DISPLACEMENT_SYSTOLE  = 1.0; // papillary tips move this far at their peak
+    const static double MAX_DISPLACEMENT_SYSTOLE  = 0.5; // papillary tips move this far at their peak
     
     // We require that the structures are associated with the finest level of
     // the patch hierarchy.

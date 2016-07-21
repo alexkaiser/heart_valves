@@ -8,7 +8,6 @@ done < $env_log
 
 {
 for node in $(cat $PBS_NODEFILE | uniq); do
-    ssh -x $node "killall -9 main3d"
-    ssh -x $node "killall -9 mpirun"
+    ssh -x $node "killall -9 main3d; killall -9 mpirun; killall -9 orted"
 done
 }

@@ -51,9 +51,7 @@ s = SaveWindowAttributes()
 s.fileName = base_name
 s.outputDirectory = cwd
 s.saveTiled = 1
-s.format = 'JPEG'
 s.width = 1920*4
-s.resConstraint = 'ScreenProportions'
 SetSaveWindowAttributes(s)
 
 
@@ -83,6 +81,20 @@ movie_string = 'ffmpeg -framerate 30 -i '
 movie_string += base_name
 movie_string += '%4d.jpeg -vf scale=iw*.25:ih*.25 -r 30 -c:v libx264 -preset veryslow -crf 18 '
 movie_string += base_name + '.mp4'
+
+code = subprocess.call(movie_string, shell=True)
+if code is None:
+    print 'something wrong in movie make, call returned prematurely'
+
+
+# reduce by 10x
+# 60 input, 60 output is 2x
+# 300 input, 60 output is 10x
+
+movie_string = 'ffmpeg -framerate 300 -i '
+movie_string += base_name
+movie_string += '%4d.jpeg -vf scale=iw*.25:ih*.25 -r 60 -c:v libx264 -preset veryslow -crf 18 '
+movie_string += base_name + '_real_time.mp4'
 
 code = subprocess.call(movie_string, shell=True)
 if code is None:
