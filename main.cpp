@@ -68,6 +68,7 @@
 #include <cmath>
 #include <timing.h>
 #include <boundary_condition_util.h>
+#include <CirculationModel.h>
 #include <FeedbackForcer.h>
 #include <FourierBodyForce.h>
 
@@ -90,9 +91,9 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDa
 
 
 #define DEBUG_OUTPUT 0 
-//#define ENABLE_INSTRUMENTS
+#define ENABLE_INSTRUMENTS
 #define FOURIER_SERIES_BC
-#define FOURIER_SERIES_BODY_FORCE
+// #define FOURIER_SERIES_BODY_FORCE
 #define DYNAMIC_BOUNDARY_STAB
 
 
@@ -155,7 +156,7 @@ int main(int argc, char* argv[])
 
         // check if have a restarted run 
         string restart_read_dirname;
-        int restore_num = 0;
+        // int restore_num = 0;
         bool from_restart = false;
         if (argc >= 4)
         {
@@ -164,7 +165,7 @@ int main(int argc, char* argv[])
             if (SAMRAI_MPI::bcast(fstream != NULL ? 1 : 0, 0) == 1)
             {
                 restart_read_dirname = argv[2];
-                restore_num = atoi(argv[3]);
+                // restore_num = atoi(argv[3]);
                 from_restart = true;
             }
             if (fstream != NULL)
@@ -315,6 +316,12 @@ int main(int argc, char* argv[])
             // fourier->print_values(); 
         #endif
         
+        // Need to declare these out here for scope reasons 
+        // This is needed to pull variables later 
+        VariableDatabase<NDIM>* var_db = VariableDatabase<NDIM>::getDatabase();
+        bool restart_circ_model = true;
+        CirculationModel *circ_model   = new CirculationModel("circ_model", NULL, restart_circ_model);
+        
         const bool periodic_domain = grid_geometry->getPeriodicShift().min() > 0;
         if (!periodic_domain)
         {
@@ -340,8 +347,7 @@ int main(int argc, char* argv[])
 
                 // manually update third component, 
                 // which is the only one not easily set in the input file
-                VelocityBcCoefs *z_bdry_coeffs = new VelocityBcCoefs(fourier);
-            
+                VelocityBcCoefs *z_bdry_coeffs = new VelocityBcCoefs(fourier, circ_model);
                 u_bc_coefs[2] = z_bdry_coeffs;
             
                 #ifdef DYNAMIC_BOUNDARY_STAB
@@ -560,6 +566,21 @@ int main(int argc, char* argv[])
                 #endif
             #endif
             
+            // In non periodic case, update the circulation model
+            const bool z_periodic = (grid_geometry->getPeriodicShift())[2]; 
+            if (!z_periodic){
+                Pointer<hier::Variable<NDIM> > U_var = navier_stokes_integrator->getVelocityVariable();
+                Pointer<hier::Variable<NDIM> > P_var = navier_stokes_integrator->getPressureVariable();
+                Pointer<VariableContext> current_ctx = navier_stokes_integrator->getCurrentContext();
+                const int U_current_idx = var_db->mapVariableAndContextToIndex(U_var, current_ctx);
+                const int P_current_idx = var_db->mapVariableAndContextToIndex(P_var, current_ctx);
+                Pointer<HierarchyMathOps> hier_math_ops = navier_stokes_integrator->getHierarchyMathOps();
+                const int wgt_cc_idx = hier_math_ops->getCellWeightPatchDescriptorIndex();
+                const int wgt_sc_idx = hier_math_ops->getSideWeightPatchDescriptorIndex();
+                circ_model->advanceTimeDependentData(
+                    dt, patch_hierarchy, U_current_idx, P_current_idx, wgt_cc_idx, wgt_sc_idx);
+            } 
+            
             // step the whole thing
             time_integrator->advanceHierarchy(dt);
             loop_time += dt;
@@ -589,9 +610,15 @@ int main(int argc, char* argv[])
                 
                 
                 #ifdef ENABLE_INSTRUMENTS
+                
+                    Pointer<hier::Variable<NDIM> > U_var = navier_stokes_integrator->getVelocityVariable();
+                    Pointer<hier::Variable<NDIM> > P_var = navier_stokes_integrator->getPressureVariable();
+                    Pointer<VariableContext> current_ctx = navier_stokes_integrator->getCurrentContext();
+                    const int U_current_idx = var_db->mapVariableAndContextToIndex(U_var, current_ctx);
+                    const int P_current_idx = var_db->mapVariableAndContextToIndex(P_var, current_ctx);
                     
                     instruments->initializeHierarchyDependentData(patch_hierarchy, l_data_manager, iteration_num, loop_time); 
-                    instruments->readInstrumentData(u_data_idx, p_data_idx, patch_hierarchy, l_data_manager, iteration_num, loop_time); 
+                    instruments->readInstrumentData(U_current_idx, P_current_idx, patch_hierarchy, l_data_manager, iteration_num, loop_time); 
                     flux_valve_ring = instruments->getFlowValues(); 
                     // pout << "flux at t = " << loop_time << ", Q = " << flux_valve_ring[0] << "\n";
                     

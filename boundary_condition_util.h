@@ -15,6 +15,9 @@
 // NAMESPACE
 #include <ibamr/app_namespaces.h>
 
+#include "CirculationModel.h"
+
+
 #define MMHG_TO_CGS 1333.22368
 
 
@@ -59,7 +62,7 @@ public:
     /*!
      * \brief Constructor
      */
-    VelocityBcCoefs(const fourier_series_data *fourier);
+    VelocityBcCoefs(const fourier_series_data *fourier, CirculationModel *circ_model);
 
     /*!
      * \brief Destructor.
@@ -90,6 +93,7 @@ public:
      IntVector<NDIM> numberOfExtensionsFillable() const;
 
     const fourier_series_data *d_fourier;
+    CirculationModel *d_circ_model;
 
     //\}
 

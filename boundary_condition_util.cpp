@@ -5,6 +5,7 @@
 // 5/2016, Alex Kaiser 
 
 #include "boundary_condition_util.h"
+#include "CirculationModel.h"
 
 /////////////////////////////// INCLUDES /////////////////////////////////////
 
@@ -30,8 +31,8 @@
 
 /////////////////////////////// PUBLIC ///////////////////////////////////////
 
-VelocityBcCoefs::VelocityBcCoefs(const fourier_series_data *fourier)
-    : d_fourier(fourier)
+VelocityBcCoefs::VelocityBcCoefs(const fourier_series_data *fourier, CirculationModel *circ_model)
+    : d_fourier(fourier), d_circ_model(circ_model)
 {
     // intentionally blank
     return;
@@ -84,14 +85,8 @@ VelocityBcCoefs::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_data,
             g = 0.0;
         }
         else if (side == 0){
-            // zero pressure on z axis, bottom side
-            // std::cout << "zero pressure on location " << location_index << "\n"; 
-            a = 0.0;
-            b = 1.0;
-            g = 0.0;
-        }
-        else if (side == 1){
-            // Fourier data here 
+            
+            // Fourier data here
             
             // index without periodicity 
             unsigned int k = (unsigned int) floor(fill_time / (d_fourier->dt));
@@ -100,10 +95,22 @@ VelocityBcCoefs::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_data,
             unsigned int idx = k % (d_fourier->N_times);
             
             a = 0.0; 
-            b = 1.0; 
-            g = -MMHG_TO_CGS * d_fourier->values[idx];
+            b = 1.0;
+            
+            // double negative signs
+            // one for pressure orientation
+            // one for a sign in stress tensor
+            g = MMHG_TO_CGS * d_fourier->values[idx];
         
-            //std::cout << "fourier pressure data on location " << location_index << " with value " << g << " or " << fourier->values[idx] << " mmHg\n"; 
+            //std::cout << "fourier pressure data on location " << location_index << " with value " << g << " or " << fourier->values[idx] << " mmHg\n";
+
+        }
+        else if (side == 1){
+
+            a = 0.0;
+            b = 1.0;
+            // Atrial side pressure from circulation model
+            g = -d_circ_model->d_psrc[0];
         }
     }
      
