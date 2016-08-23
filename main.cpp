@@ -89,6 +89,8 @@
 
 void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager* const l_data_manager, const double current_time, const double dt, fourier_series_data *fourier_body_force);
 
+inline double spring_function_collagen(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
+inline double deriv_spring_collagen(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
 
 #define DEBUG_OUTPUT 0 
 #define ENABLE_INSTRUMENTS
@@ -101,6 +103,7 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDa
 
 #define MMHG_TO_CGS 1333.22368
 #define CGS_TO_MMHG 0.000750061683
+#define MPa_TO_CGS 1.0e7
 
 #define SOURCE_ON_TIME       0.1
 #define CONST_SRC_TIME       0.3
@@ -262,6 +265,10 @@ int main(int argc, char* argv[])
             "IBStandardInitializer", app_initializer->getComponentDatabase("IBStandardInitializer"));
         ib_method_ops->registerLInitStrategy(ib_initializer);
         Pointer<IBStandardForceGen> ib_force_fcn = new IBStandardForceGen();
+        
+        // adding custom function for collagen springs
+        ib_force_fcn->registerSpringForceFunction(1, &spring_function_collagen, &deriv_spring_collagen);
+        
         ib_method_ops->registerIBLagrangianForceFunction(ib_force_fcn);
         
         
@@ -761,7 +768,121 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDa
 
 
 
+inline double spring_function_collagen(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
+    /* 
+    Compute force for collagen springs
+    
+    Zero force under compression
+    
+    Exponential growth until full recruitment,
+    experimentally determined strain at which microscopic fibers align
+     
+    Linear after full recruitment
+    
+    All collagen assumed to have same modulus
+    General parameters params[0] are normalized,
+    but if a stiffer spring is requested then it is used here.
+    
+    params[0] must include the width element ds for converting forces to areas 
+    */
+    
+    static const double a                    = 4643.4;       // Coeff of exponential term
+    static const double b                    = 49.9643;      // Exponential rate
+    static const double full_recruitment     = 0.145;             // Linear at strains larger than this
+    static const double eta_collagen         = 32.5 * MPa_TO_CGS; // Linear slope, in barye = dynes/cm^2 = g cm/(s cm^2)
+    static const double collagen_x_intercept = 0.125;             // Linear collagen part intercepts x axis at this strain
+    static const double collagen_y_intercept = -collagen_x_intercept * eta_collagen; // Linear collagen part intercepts y axis at this stress
+    static const double thickness            = 0.1; // cm, Thickness of leaflet tissue, for converting strains to forces
+    
+    // static const double ds, width element of the spring, also for converting strains to forces
+    // included in params[0]
+    
+    const double kappa = params[0];
+    const double rest_len = params[1];
+    
+    // Strain, dimension 1
+    const double E = R/rest_len - 1.0;
+    
+    // Compute the force applied to the "master" node.
+    if (E > full_recruitment){
+        return kappa * thickness * (eta_collagen*E + collagen_y_intercept);
+    }
+    else if (E > 0.0){
+        return kappa * thickness * (a*(exp(b*E) - 1));
+    }
+    else{
+        return 0.0;
+    }
+    return 0.0;
+} // spring_function_collagen
 
+inline double deriv_spring_collagen(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
+    // not implemented
+
+    SAMRAI_MPI::abort();
+    return 0.0;
+} // deriv_spring_collagen
+
+/*
+inline void spring_function_collagen(
+                           double* const restrict F,
+                           const double* const restrict D,
+                           const double& stf,
+                           const double& rst,
+                           const int& lag_mastr_idx,
+                           const int& lag_slave_idx){*/
+    /* 
+    Compute force for collagen springs
+    
+    Zero force under compression
+    
+    Exponential growth until full recruitment,
+    experimentally determined strain at which microscopic fibers align
+     
+    Linear after full recruitment
+    
+    All collagen assumed to have same modulus
+    General parameters stf are normalized, 
+    but if a stiffer spring is requested then it is used here.
+    */
+    /*
+    static const double a                    = 0.00046434;   // Coeff of exponential term
+    static const double b                    = 49.9643;      // Exponential rate
+    static const double full_recruitment     = 0.145;             // Linear at strains larger than this
+    static const double eta_collagen         = 32.5 * MPa_TO_CGS; // Linear slope, in barye = dynes/cm^2 = g cm/(s cm^2)
+    static const double collagen_x_intercept = 0.125;             // Linear collagen part intercepts x axis at this strain
+    static const double collagen_y_intercept = -collagen_x_intercept * eta_collagen; // Linear collagen part intercepts y axis at this stress
+    static const double thickness            = 0.1; // cm, Thickness of leaflet tissue, for converting strains to forces
+    
+    
+    // Compute the distance between the nodes
+    const double r = sqrt(D[0]*D[0] + D[1]*D[1] + D[2]*D[2]);
+    
+    // Strain, dimension 1
+    E = r/rst - 1.0;
+    
+    // Compute the force applied to the "master" node.
+    if (E > full_recruitment){
+        const double T_over_r = stf*(eta_collagen*E + collagen_y_intercept)/r;
+        F[0] = T_over_r*D[0];
+        F[1] = T_over_r*D[1];
+        F[2] = T_over_r*D[2];
+        
+    }
+    else if (E > 0.0){
+        const double T_over_r = stf*(a*(exp(b*E) - 1))/r;
+        F[0] = T_over_r*D[0];
+        F[1] = T_over_r*D[1];
+        F[2] = T_over_r*D[2];
+    }
+    else{
+        F[0] = 0.0;
+        F[1] = 0.0;
+        F[2] = 0.0;
+    }
+    return;
+}
+*/
 
 
 

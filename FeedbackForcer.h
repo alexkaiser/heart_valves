@@ -13,9 +13,13 @@
 
 // IBAMR INCLUDES
 #include <ibamr/INSHierarchyIntegrator.h>
+#include <ibamr/INSStaggeredHierarchyIntegrator.h>
+
 
 // NAMESPACE
 #include <ibamr/app_namespaces.h>
+
+
 
 /////////////////////////////// CLASS DEFINITION /////////////////////////////
 
