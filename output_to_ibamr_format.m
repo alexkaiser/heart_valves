@@ -1,4 +1,17 @@
-function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filter_params_posterior, params_anterior, filter_params_anterior, p_physical, target_multiplier, refinement, n_lagrangian_tracers, X_config_is_reference, num_copies)
+function [] = output_to_ibamr_format(base_name,               ...
+                                     L,                       ...
+                                     ratio,                   ...
+                                     params_posterior,        ...
+                                     filter_params_posterior, ...
+                                     params_anterior,         ...
+                                     filter_params_anterior,  ...
+                                     p_physical,              ...
+                                     target_multiplier,       ...
+                                     refinement,              ...
+                                     n_lagrangian_tracers,    ...
+                                     X_config_is_reference,   ...
+                                     num_copies,              ...
+                                     collagen_springs_leaflet)
     % 
     % Outputs the current configuration of the leaflets to IBAMR format
     % Spring constants are computed in dimensional form 
@@ -42,7 +55,6 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
 
     % value of the relative spring constant is determined by the ratio 
     k_rel = p_cgs / ratio; 
-    
     k_rel = k_rel / num_copies; 
     
     % base rate for target spring constants
@@ -75,6 +87,12 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
     
     % spacing 
     ds = 2*L / params_anterior.N;
+    
+    k_rel_leaflet = k_rel; 
+    if collagen_springs_leaflet
+        k_rel_leaflet = ds / num_copies; 
+    end 
+    
     
     % copies, if needed, will be placed this far down 
     if num_copies > 1
@@ -155,7 +173,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
         % leaflets 
         [global_idx, total_vertices, total_springs, total_targets, params_posterior] = ...
             add_leaflet(params_posterior, filter_params_posterior, spring, vertex, target, ...
-                        global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_ring, eta_ring); 
+                        global_idx, total_vertices, total_springs, total_targets, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet); 
 
         % if chordae exist, then add them 
         if isfield(params_posterior, 'chordae') && ~isempty(params_posterior.chordae)
@@ -164,13 +182,13 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
             params_posterior.chordae.right_papillary_idx = filter_params_posterior.right_papillary_idx; 
 
             [global_idx, total_vertices, total_springs] = ...
-                    add_chordae_tree(params_posterior, spring, vertex, global_idx, total_vertices, total_springs, k_rel);  
+                    add_chordae_tree(params_posterior, spring, vertex, global_idx, total_vertices, total_springs, k_rel_leaflet, collagen_springs_leaflet);  
         end
 
         % anterior 
         [global_idx, total_vertices, total_springs, total_targets, params_anterior] = ...
             add_leaflet(params_anterior, filter_params_posterior, spring, vertex, target, ...
-                         global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_ring, eta_ring);   
+                         global_idx, total_vertices, total_springs, total_targets, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet);   
 
         if isfield(params_anterior, 'chordae') && ~isempty(params_anterior.chordae)
 
@@ -179,7 +197,7 @@ function [] = output_to_ibamr_format(base_name, L, ratio, params_posterior, filt
 
 
             [global_idx, total_vertices, total_springs] = ...
-                    add_chordae_tree(params_anterior, spring, vertex, global_idx, total_vertices, total_springs, k_rel);  
+                    add_chordae_tree(params_anterior, spring, vertex, global_idx, total_vertices, total_springs, k_rel_leaflet, collagen_springs_leaflet);  
         end 
 
         % flat part of mesh 
@@ -256,13 +274,21 @@ end
  
 
 
-function total_springs = spring_string(spring, idx, nbr, kappa, rest_len, total_springs)
+function total_springs = spring_string(spring, idx, nbr, kappa, rest_len, total_springs, function_idx)
     % prints a spring format string to string file 
     if nbr <= idx
         error('By convention, only place springs with the second index larger to prevent duplicates'); 
     end 
     
-    fprintf(spring, '%d\t %d\t %.14f\t %.14f\n', idx, nbr, kappa, rest_len); 
+    fprintf(spring, '%d\t %d\t %.14f\t %.14f', idx, nbr, kappa, rest_len); 
+    
+    % index for custom spring functions 
+    if exist('function_idx', 'var') 
+        fprintf(spring, '\t%d', function_idx); 
+    end 
+    
+    fprintf(spring, '\n'); 
+    
     total_springs = total_springs + 1; 
 end 
 
@@ -308,14 +334,17 @@ end
 
 function [global_idx, total_vertices, total_springs, total_targets, params] = ...
                 add_leaflet(params, filter_params, spring, vertex, target, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, eta)
+                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, eta, collagen_spring)
                                                                                 
 % Places all main data into IBAMR format for this leaflet
 % Updates running totals on the way 
 
 
     [X,alpha,beta,N,p_0,R,ref_frac] = unpack_params(params); 
-     
+         
+    if collagen_spring
+        function_idx = 1;
+    end 
     
     % Keep track of indices 
     indices_global = nan * zeros(N+1,N+1); 
@@ -363,13 +392,22 @@ function [global_idx, total_vertices, total_springs, total_targets, params] = ..
                             end 
 
                             rest_len = ref_frac * norm(R_nbr - R(:,j,k)); 
-                            kappa = k_rel * params.chordae.k_0 / rest_len; 
-
-                            total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
-                        
+                            
+                            if collagen_spring 
+                                % relative constant here
+                                % other parameters coded into function 
+                                kappa = k_rel * params.chordae.k_0; 
+                                total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs, function_idx); 
+                            else 
+                                kappa = k_rel * params.chordae.k_0 / rest_len; 
+                                total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
+                            end 
+                            
                         end 
                     
                     else 
+                        error('only tree still supported')
+                        
                         nbr_idx = filter_params.left_papillary_idx; 
                         rest_len = ref_frac * norm(filter_params.left_papillary - R(:,j,k)); 
                         kappa = k_rel / rest_len; 
@@ -398,13 +436,21 @@ function [global_idx, total_vertices, total_springs, total_targets, params] = ..
                             end 
 
                             rest_len = ref_frac * norm(R_nbr - R(:,j,k)); 
-                            kappa = k_rel * params.chordae.k_0 / rest_len; 
-
-                            total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
+                            
+                            if collagen_spring 
+                                % relative constant here
+                                % other parameters coded into function 
+                                kappa = k_rel * params.chordae.k_0; 
+                                total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs, function_idx); 
+                            else 
+                                kappa = k_rel * params.chordae.k_0 / rest_len; 
+                                total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
+                            end 
                         
                         end 
                     else
                     
+                        error('only tree still supported')
                         nbr_idx = filter_params.right_papillary_idx; 
                         rest_len = ref_frac * norm(filter_params.right_papillary - R(:,j,k)); 
                         kappa = k_rel / rest_len; 
@@ -427,15 +473,28 @@ function [global_idx, total_vertices, total_springs, total_targets, params] = ..
                     
                     % nbr at j+1,k
                     rest_len = ref_frac * norm(R(:,j+1,k) - R(:,j,k)); 
-                    kappa = k_rel / rest_len;         
                     nbr_idx = global_idx + vertex_index_offset(j+1,k,N);
-                    total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
                     
+                    if collagen_spring
+                        kappa = k_rel;         
+                        total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs, function_idx); 
+                    else 
+                        kappa = k_rel / rest_len;         
+                        total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
+                    end 
+                        
                     % nbr at j,k+1
                     rest_len = ref_frac * norm(R(:,j,k+1) - R(:,j,k)); 
-                    kappa = k_rel / rest_len;         
                     nbr_idx = global_idx + vertex_index_offset(j,k+1,N);
-                    total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs);
+                    
+                    if collagen_spring
+                        kappa = k_rel;         
+                        total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs, function_idx); 
+                    else 
+                        kappa = k_rel / rest_len;         
+                        total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
+                    end 
+                    
                 end 
                     
                 pts_placed = pts_placed + 1; 
@@ -451,7 +510,7 @@ end
 
 
 function [global_idx, total_vertices, total_springs] = ...
-                add_chordae_tree(params, spring, vertex, global_idx, total_vertices, total_springs, k_rel)
+                add_chordae_tree(params, spring, vertex, global_idx, total_vertices, total_springs, k_rel, collagen_spring)
 
     % Adds chordae tree to IBAMR format files 
     % No targets here, so files and and count not included 
@@ -465,6 +524,10 @@ function [global_idx, total_vertices, total_springs] = ...
     [m N_chordae] = size(chordae.C_left); 
     
     [C_left, C_right, left_papillary, right_papillary, Ref_l, Ref_r] = unpack_chordae(chordae); 
+    
+    if collagen_spring
+        function_idx = 1;
+    end
     
     
     for left_side = [true false];  
@@ -512,11 +575,16 @@ function [global_idx, total_vertices, total_springs] = ...
             [nbr R_nbr k_val j_nbr k_nbr] = get_nbr_chordae(params, i, parent, left_side); 
             
             rest_len = ref_frac * norm(R_nbr - Ref(:,i)); 
-            kappa = k_rel * k_val / rest_len; 
-
-            % list nbr index first because nbr is parent and has lower index
-            total_springs = spring_string(spring, nbr_idx, idx, kappa, rest_len, total_springs);        
-
+            
+            if collagen_spring 
+                kappa = k_rel * k_val; 
+                % list nbr index first because nbr is parent and has lower index
+                total_springs = spring_string(spring, nbr_idx, idx, kappa, rest_len, total_springs, function_idx);            
+            else 
+                kappa = k_rel * k_val / rest_len; 
+                % list nbr index first because nbr is parent and has lower index
+                total_springs = spring_string(spring, nbr_idx, idx, kappa, rest_len, total_springs);        
+            end 
         end 
         
     end 
