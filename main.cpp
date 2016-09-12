@@ -95,7 +95,7 @@ inline double deriv_spring_collagen(double R, const double* params, int lag_mast
 #define DEBUG_OUTPUT 0 
 #define ENABLE_INSTRUMENTS
 #define FOURIER_SERIES_BC
-// #define FOURIER_SERIES_BODY_FORCE
+#define FOURIER_SERIES_BODY_FORCE
 #define DYNAMIC_BOUNDARY_STAB
 
 
@@ -373,7 +373,7 @@ int main(int argc, char* argv[])
                 #endif
             
             #else 
-                pout << "Using b.c. from file, no Fouier series created.\n"; 
+                pout << "Using b.c. from file, no Fourier series created.\n";
                 for (unsigned int d = 0; d < NDIM; ++d)
                 {
                     ostringstream bc_coefs_name_stream;
@@ -414,22 +414,19 @@ int main(int argc, char* argv[])
 
 
         #ifdef FOURIER_SERIES_BODY_FORCE
-            pout << "to Fourier series creation with body force\n";
+            if (!periodic_domain){
+                pout << "to Fourier series creation with body force\n";
             
-            // this fails here, need to get dt from input db or something 
-            // dt = time_integrator->getMaximumTimeStepSize(); 
+                dt = input_db->getDouble("DT");
             
-            dt = input_db->getDouble("DT"); 
-            
-            pout << "to constructor\n"; 
-            fourier_series_data *fourier_body_force = new fourier_series_data("fourier_coeffs.txt", dt);
-            pout << "series data successfully built\n"; 
+                pout << "to constructor\n";
+                fourier_series_data *fourier_body_force = new fourier_series_data("fourier_coeffs.txt", dt);
+                pout << "series data successfully built\n";
         
-            Pointer<FourierBodyForce> body_force = new FourierBodyForce(fourier_body_force, navier_stokes_integrator, patch_hierarchy);
-            time_integrator->registerBodyForceFunction(body_force);
-        
+                Pointer<FourierBodyForce> body_force = new FourierBodyForce(fourier_body_force, navier_stokes_integrator, patch_hierarchy);
+                time_integrator->registerBodyForceFunction(body_force);
+            }
         #endif
-
 
 
         // Set up visualization plot file writers.
@@ -803,12 +800,22 @@ inline double spring_function_collagen(double R, const double* params, int lag_m
     // Strain, dimension 1
     const double E = R/rest_len - 1.0;
     
-    // Compute the force applied to the "master" node.
+
+    
+    // Compute the force
     if (E > full_recruitment){
+        std::cout << "On index " << lag_mastr_idx << "linear part, E = " << E << "\tindices = " << lag_mastr_idx << ", " << lag_slave_idx
+        << ".\tEffective slope = " << kappa * thickness * eta_collagen
+        << "\trest len = " << rest_len <<"\n";
         return kappa * thickness * (eta_collagen*E + collagen_y_intercept);
     }
     else if (E > 0.0){
-        return kappa * thickness * (a*(exp(b*E) - 1));
+        if ((lag_mastr_idx % 5000) == 0){
+            std::cout << "On index " << lag_mastr_idx << ",\t strain E = " << E << ",\texponential part, force = "
+            << kappa * thickness * a * (exp(b*E) - 1) << "\tcoeff (using taylor series on E) = " << kappa * thickness * a * b
+            << "\trest len = " << rest_len <<"\n";
+        }
+        return kappa * thickness * a * (exp(b*E) - 1);
     }
     else{
         return 0.0;
@@ -822,67 +829,6 @@ inline double deriv_spring_collagen(double R, const double* params, int lag_mast
     SAMRAI_MPI::abort();
     return 0.0;
 } // deriv_spring_collagen
-
-/*
-inline void spring_function_collagen(
-                           double* const restrict F,
-                           const double* const restrict D,
-                           const double& stf,
-                           const double& rst,
-                           const int& lag_mastr_idx,
-                           const int& lag_slave_idx){*/
-    /* 
-    Compute force for collagen springs
-    
-    Zero force under compression
-    
-    Exponential growth until full recruitment,
-    experimentally determined strain at which microscopic fibers align
-     
-    Linear after full recruitment
-    
-    All collagen assumed to have same modulus
-    General parameters stf are normalized, 
-    but if a stiffer spring is requested then it is used here.
-    */
-    /*
-    static const double a                    = 0.00046434;   // Coeff of exponential term
-    static const double b                    = 49.9643;      // Exponential rate
-    static const double full_recruitment     = 0.145;             // Linear at strains larger than this
-    static const double eta_collagen         = 32.5 * MPa_TO_CGS; // Linear slope, in barye = dynes/cm^2 = g cm/(s cm^2)
-    static const double collagen_x_intercept = 0.125;             // Linear collagen part intercepts x axis at this strain
-    static const double collagen_y_intercept = -collagen_x_intercept * eta_collagen; // Linear collagen part intercepts y axis at this stress
-    static const double thickness            = 0.1; // cm, Thickness of leaflet tissue, for converting strains to forces
-    
-    
-    // Compute the distance between the nodes
-    const double r = sqrt(D[0]*D[0] + D[1]*D[1] + D[2]*D[2]);
-    
-    // Strain, dimension 1
-    E = r/rst - 1.0;
-    
-    // Compute the force applied to the "master" node.
-    if (E > full_recruitment){
-        const double T_over_r = stf*(eta_collagen*E + collagen_y_intercept)/r;
-        F[0] = T_over_r*D[0];
-        F[1] = T_over_r*D[1];
-        F[2] = T_over_r*D[2];
-        
-    }
-    else if (E > 0.0){
-        const double T_over_r = stf*(a*(exp(b*E) - 1))/r;
-        F[0] = T_over_r*D[0];
-        F[1] = T_over_r*D[1];
-        F[2] = T_over_r*D[2];
-    }
-    else{
-        F[0] = 0.0;
-        F[1] = 0.0;
-        F[2] = 0.0;
-    }
-    return;
-}
-*/
 
 
 
