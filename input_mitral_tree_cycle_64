@@ -16,7 +16,7 @@ REF_RATIO  = 4                            // refinement ratio between levels
 DELTA_FUNCTION      = "IB_4"
 SOLVER_TYPE         = "STAGGERED"         // the fluid solver to use (STAGGERED or COLLOCATED)
 START_TIME          = 0.0e0               // initial simulation time
-END_TIME            = 2.4                 // final simulation time
+END_TIME            = 1.6                 // final simulation time
 GROW_DT             = 2.0e0               // growth factor for timesteps
 NUM_CYCLES          = 1                   // number of cycles of fixed-point iteration
 CONVECTIVE_TS_TYPE = "ADAMS_BASHFORTH"    // convective time stepping type
@@ -24,7 +24,7 @@ CONVECTIVE_OP_TYPE  = "PPM"               // convective differencing discretizat
 CONVECTIVE_FORM     = "ADVECTIVE"         // how to compute the convective terms
 NORMALIZE_PRESSURE  = FALSE               // whether to explicitly force the pressure to have mean zero
 CFL_MAX             = 0.3                 // maximum CFL number
-DT                  = 1.0e-5              // maximum timestep size
+DT                  = 2.5e-5              // maximum timestep size
 ERROR_ON_DT_CHANGE  = FALSE                // whether to emit an error message if the time step size changes
 VORTICITY_TAGGING   = TRUE                // whether to tag cells for refinement based on vorticity thresholds
 TAG_BUFFER          = 2                   // size of tag buffer used by grid generation algorithm
@@ -125,7 +125,7 @@ VelocityBcCoefs_2 {
     MMHG_TO_CGS = 1333.22368
     
     // pressures, higher pressure in atrium is positive 
-    diastolic_p =   10.0 * MMHG_TO_CGS
+    diastolic_p =    2.5 * MMHG_TO_CGS
     systolic__p = -100.0 * MMHG_TO_CGS
 
     // times for opening, open, closing and closed  
@@ -242,8 +242,8 @@ Main {
 
 // visualization dump parameters
    viz_writer                  = "VisIt"
-   viz_dump_interval           = 100
-   viz_dump_dirname            = "viz_IB3d_tree_cycle"
+   viz_dump_interval           = 80
+   viz_dump_dirname            = "viz_IB3d_tree_cycle_64"
    visit_number_procs_per_file = 1
 
 // restart dump parameters
@@ -259,9 +259,9 @@ Main {
 }
 
 CartesianGeometry {
-domain_boxes = [ (0,0,0),(N - 1,N - 1, N + N/2 - 1) ]
-x_lo =  -L, -L , -L 
-x_up =   L,  L,   L + L
+domain_boxes = [ (0,0,0),(N/2 - 1,N/2 - 1, N/2 + N/4 - 1) ]
+x_lo =  -L, -L,  2.0 - 3*L 
+x_up =   L,  L,  2.0
    periodic_dimension = 0,0,0
 }
 

@@ -24,15 +24,15 @@ CONVECTIVE_OP_TYPE  = "PPM"               // convective differencing discretizat
 CONVECTIVE_FORM     = "ADVECTIVE"         // how to compute the convective terms
 NORMALIZE_PRESSURE  = FALSE               // whether to explicitly force the pressure to have mean zero
 CFL_MAX             = 0.3                 // maximum CFL number
-DT                  = 1.0e-5              // maximum timestep size
-ERROR_ON_DT_CHANGE  = FALSE               // whether to emit an error message if the time step size changes
+DT                  = 2.5e-6              // maximum timestep size
+ERROR_ON_DT_CHANGE  = TRUE               // whether to emit an error message if the time step size changes
 VORTICITY_TAGGING   = TRUE                // whether to tag cells for refinement based on vorticity thresholds
 TAG_BUFFER          = 2                   // size of tag buffer used by grid generation algorithm
 REGRID_CFL_INTERVAL = 0.5                 // regrid whenever any material point could have moved 0.5 meshwidths since previous regrid
 OUTPUT_U            = TRUE
 OUTPUT_P            = TRUE
 OUTPUT_F            = FALSE
-OUTPUT_OMEGA        = FALSE
+OUTPUT_OMEGA        = TRUE
 OUTPUT_DIV_U        = FALSE
 ENABLE_LOGGING      = TRUE
 
@@ -129,24 +129,6 @@ VelocityBcCoefs_2 {
     gcoef_function_5 = "-1.0*if(t < 0.02,  systolic__p*t/0.02, systolic__p)"
 }
 
-
-
-   // unclear how to make variables that are not constants 
-   // will have to just push it all on one line 
-   // 
-   //N_beats         = "floor(t/BEAT_TIME)"
-   //t_this_cycle    = "t - BEAT_TIME*N_beats"
-   //p_across_valve  = "if( t_this_cycle < DIASTOLE_TIME, DIASTOLIC_ATRIAL_P, SYSTOLIC_VENTRICULAR_P)"  
-   //gcoef_function_5 = "p_across_valve"  // face with normal  e_z
-
-//  from ex0 input2d  
-//  function = "if( (X_0-0.5)^2 + (X_1-0.5)^2 <= R^2,mu*(1/R - pi*R),-mu*pi*R )"
-
-// from IB ex2, time dep function 
-//    gcoef_function_0 = "(tanh((t-t_half)/tau)+tanh(t_half/tau))/(1+tanh(t_half/tau))"
-
-
-
 IBHierarchyIntegrator {
    start_time          = START_TIME
    end_time            = END_TIME
@@ -206,12 +188,12 @@ Main {
 
 // visualization dump parameters
    viz_writer                  = "VisIt"
-   viz_dump_interval           = 200
+   viz_dump_interval           = 800
    viz_dump_dirname            = "viz_IB3d_tree_cycle_256"
    visit_number_procs_per_file = 1
 
 // restart dump parameters
-   restart_dump_interval       = 1000
+   restart_dump_interval       = 4000
    restart_dump_dirname        = "restart_IB3d_tree_cycle"
 
 // hierarchy data dump parameters
@@ -224,8 +206,8 @@ Main {
 
 CartesianGeometry {
 domain_boxes = [ (0,0,0),(N/2 - 1,N/2 - 1, N/2 + N/4 - 1) ]
-x_lo =  -L, -L, -L 
-x_up =   L,  L,  L + L
+x_lo =  -L, -L,  2.0 - 3*L 
+x_up =   L,  L,  2.0
    periodic_dimension = 0,0,0
 }
 

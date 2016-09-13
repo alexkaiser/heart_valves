@@ -259,9 +259,9 @@ Main {
 }
 
 CartesianGeometry {
-domain_boxes = [ (0,0,0),(N - 1,N - 1, N + N/2 - 1) ]
-x_lo =  -L, -L , -L 
-x_up =   L,  L,   L + L
+domain_boxes = [ (0,0,0),(N/2 - 1,N/2 - 1, N/2 + N/4 - 1) ]
+x_lo =  -L, -L,  2.0 - 3*L 
+x_up =   L,  L,  2.0
    periodic_dimension = 0,0,0
 }
 
