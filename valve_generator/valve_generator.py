@@ -60,18 +60,37 @@ class leaflet:
         
         assert not self.radial_and_circumfrential_fibers
         
-        X      = np.zeros([3, self.N+1, self.N+1])
-        X_flat = np.zeros([2, self.N+1, self.N+1])
+        X      = np.zeros([3, self.N+1, self.N+1], order='F')
+        X_flat = np.zeros([2, self.N+1, self.N+1], order='F')
         
         mesh_ring = np.linspace(self.filter.min_angle, self.filter.max_angle, self.N+1, endpoint=True) 
         
-        ring      = np.zeros([3,self.N+1])
+        ring      = np.matrix(np.zeros([3,self.N+1]))
         ring[0,:] = r * np.cos(mesh_ring)
         ring[1,:] = r * np.sin(mesh_ring)
         ring[2,:] = self.filter.h * np.ones(N+1) 
         
+        '''
+        print 'shape of ring = ', ring.shape 
+        print 'shape of ring[0,:] = ', ring[0,:].shape 
+        print 'shape of ring[:,0] = ', ring[:,0].shape 
+        
+        # ring = np.matrix(ring)
+        
+        'whole ring array = '
+        print ring 
+        
+        'column slice = '
+        print ring[:,0]
+        
+        print 'ring[0,0] = ', ring[0,0]
+        print 'ring[1,0] = ', ring[1,0]
+        print 'ring[2,0] = ', ring[2,0]
+        '''
+        
         k = self.N
         for j in range(self.N+1): 
+            tmp = self.filter.apply_inverse(ring[:,j])
             X_flat[:,j,k] = self.filter.apply_inverse(ring[:,j])
             k -= 1
         
@@ -136,7 +155,10 @@ if __name__ == '__main__':
 
     print 'it is crowded...'
 
+    reference_surface_generator.check_cone()
 
+
+    '''
     pi = math.pi
 
     # filter constants
@@ -156,7 +178,7 @@ if __name__ == '__main__':
     leaflet_posterior = leaflet(filter_posterior, radial_and_circumfrential_fibers_posterior)
     
     leaflet_posterior.build_reference_surface_diag_fibers()
-    
+    '''
     
     
     
