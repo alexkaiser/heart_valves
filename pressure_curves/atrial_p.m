@@ -34,7 +34,8 @@ N_per_unit_length = ceil(1/dt);
 min_x =  0.0; 
 max_x =  1.6; 
 min_y =  0.0; 
-max_y =  110.0; 
+max_y =  65.0;  % reduced here, 20 too low, split difference  
+%max_y = 110.0; % physiological  
 
 
 % probably not the right curve, 
@@ -133,6 +134,10 @@ title('single cycle starting at early diastole, zero pressure difference')
 n = 1000; 
 [a_0_atrium    a_n_atrium    b_n_atrium    Series_atrium]    = fourier_series(x_pressure_atrium_one_cycle, y_pressure_atrium_one_cycle, true_cycle_length, n); 
 [a_0_ventricle a_n_ventricle b_n_ventricle Series_ventricle] = fourier_series(x_pressure_ventricle_one_cycle, y_pressure_ventricle_one_cycle, true_cycle_length, n); 
+
+% files are weirdly large, remove some variables 
+clear x_pressure*
+clear y_pressure*
 
 % save for fun 
 save('series_data'); 
