@@ -1,33 +1,37 @@
-function J = build_jacobian(params, filter_params)
+function J = build_jacobian(leaflet)
     % 
     % Builds the Jacobian for the current index and parameter values 
     % 
     % Input 
-    %      params    Current parameter values
-    %      j,k       Indices, must be internal to the arrays
+    %      leaflet   Current parameter values
     % 
     % Output 
     %      J         Jacobian of difference equations 
 
-
-    [X,alpha,beta,N,p_0,R,ref_frac,chordae] = unpack_params(params); 
-
+    X        = leaflet.X; 
+    R        = leaflet.R; 
+    N        = leaflet.N; 
+    p_0      = leaflet.p_0; 
+    alpha    = leaflet.alpha; 
+    beta     = leaflet.beta; 
+    ref_frac = leaflet.ref_frac; 
+    C_left   = leaflet.chordae.C_left; 
+    C_right  = leaflet.chordae.C_right; 
+    Ref_l    = leaflet.chordae.Ref_l; 
+    Ref_r    = leaflet.chordae.Ref_r; 
+    
+    
+    if leaflet.radial_and_circumferential
+        error('Radial and circumferential fibers not implemented')
+    end 
+   
     % total internal points in triangular domain 
     total_internal = 3*N*(N+1)/2; 
-
-    % check if we have the with chordae version 
-    if isfield(params, 'chordae') && ~isempty(chordae)
-        [m N_chordae] = size(chordae.C_left); 
-    else
-        N_chordae = 0; 
-    end 
-
-    total_points = total_internal + 3*2*N_chordae; 
+    total_points   = total_internal + 3*2*N_chordae; 
 
     % there are fewer than 15 nnz per row
     % if using the redundant features on sparse creation use more 
     capacity = 10 * 15 * total_points; 
-    
     
     % build with indices, then add all at once 
     nnz_placed = 0; 
@@ -53,7 +57,7 @@ function J = build_jacobian(params, filter_params)
                      -1,  1; 
                      -1,  0]';   
 
-
+                 
     for j=1:N
         for k=1:N
             
@@ -113,7 +117,7 @@ function J = build_jacobian(params, filter_params)
 
                     k_nbr = k; 
 
-                    [X_nbr R_nbr idx_chordae left_side] = get_neighbor(params, filter_params, j_nbr, k_nbr); 
+                    [X_nbr R_nbr idx_chordae left_side] = get_neighbor(leaflet, j_nbr, k_nbr); 
 
                     J_tension = tension_jacobian(X(:,j,k),X_nbr,R(:,j,k),R_nbr,alpha,ref_frac); 
 
@@ -142,7 +146,7 @@ function J = build_jacobian(params, filter_params)
 
                     j_nbr = j; 
 
-                    [X_nbr R_nbr idx_chordae left_side] = get_neighbor(params, filter_params, j_nbr, k_nbr); 
+                    [X_nbr R_nbr idx_chordae left_side] = get_neighbor(leaflet, j_nbr, k_nbr); 
 
                     J_tension = tension_jacobian(X(:,j,k),X_nbr,R(:,j,k),R_nbr,beta,ref_frac); 
 
@@ -174,59 +178,52 @@ function J = build_jacobian(params, filter_params)
 
 
     % chordae internal terms 
-    if N_chordae > 0
+    for left_side = [true false];  
 
-        [C_left, C_right, left_papillary, right_papillary, Ref_l, Ref_r] = unpack_chordae(params.chordae); 
-
-        for left_side = [true false];  
-
-            if left_side
-                C = C_left; 
-                Ref = Ref_l; 
-            else 
-                C = C_right; 
-                Ref = Ref_r; 
-            end 
-
-
-            for i=1:N_chordae
-
-                left   = 2*i; 
-                right  = 2*i + 1;
-                parent = floor(i/2); 
-
-                % this is the same, updating the equations for this component 
-                range_current = range_chordae(total_internal, N_chordae, i, left_side); 
-
-                for nbr_idx = [left,right,parent]
-
-                    % get the neighbors coordinates, reference coordinate and spring constants
-                    [nbr R_nbr k_val j_nbr k_nbr] = get_nbr_chordae(params, i, nbr_idx, left_side); 
-
-                    % if the neighbor is in the chordae 
-                    if isempty(j_nbr) && isempty(k_nbr) 
-                        range_nbr = range_chordae(total_internal, N_chordae, nbr_idx, left_side); 
-                    else
-                        % neighbor is on the leaflet 
-                        range_nbr = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
-                    end 
-
-                    % tension Jacobian for this spring 
-                    J_tension = tension_jacobian(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac); 
-
-                    % current always gets a contribution from this spring 
-                    place_tmp_block(range_current, range_current, J_tension); 
-
-                    % range may be empty if papillary muscle, in which case do nothing 
-                    if ~isempty(range_nbr)
-                        place_tmp_block(range_current, range_nbr, - J_tension); 
-                    end 
-                end 
-            end 
-
+        if left_side
+            C = C_left; 
+            Ref = Ref_l; 
+        else 
+            C = C_right; 
+            Ref = Ref_r; 
         end 
 
+        for i=1:N_chordae
+
+            left   = 2*i; 
+            right  = 2*i + 1;
+            parent = floor(i/2); 
+
+            % this is the same, updating the equations for this component 
+            range_current = range_chordae(total_internal, N_chordae, i, left_side); 
+
+            for nbr_idx = [left,right,parent]
+
+                % get the neighbors coordinates, reference coordinate and spring constants
+                [nbr R_nbr k_val j_nbr k_nbr] = get_nbr_chordae(params, i, nbr_idx, left_side); 
+
+                % if the neighbor is in the chordae 
+                if isempty(j_nbr) && isempty(k_nbr) 
+                    range_nbr = range_chordae(total_internal, N_chordae, nbr_idx, left_side); 
+                else
+                    % neighbor is on the leaflet 
+                    range_nbr = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
+                end 
+
+                % tension Jacobian for this spring 
+                J_tension = tension_jacobian(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac); 
+
+                % current always gets a contribution from this spring 
+                place_tmp_block(range_current, range_current, J_tension); 
+
+                % range may be empty if papillary muscle, in which case do nothing 
+                if ~isempty(range_nbr)
+                    place_tmp_block(range_current, range_nbr, - J_tension); 
+                end 
+            end 
+        end 
     end 
+ 
 
     J = sparse(j_idx(1:nnz_placed), k_idx(1:nnz_placed), vals(1:nnz_placed), total_points, total_points, nnz_placed);  
     
@@ -237,7 +234,7 @@ function J = build_jacobian(params, filter_params)
 %%%%%%%%%%
 
 
-    function [] = place_tmp_block(range_current_loc, range_nbr_loc, block_loc)
+    function place_tmp_block(range_current_loc, range_nbr_loc, block_loc)
         % 
         % Places a 3x3 block in a vectors associated with a sparse matrix 
         % This function is NESTED which means that 
@@ -269,7 +266,6 @@ function J = build_jacobian(params, filter_params)
         nnz_placed = nnz_placed+9; 
 
     end 
-
 
 end 
 

@@ -11,6 +11,11 @@ is_bc       = leaflet.is_bc;
 % NaN mask in the copy 
 % fill in the 3d array
 % loop through N+1 to include the ring points here 
+
+if leaflet.radial_and_circumferential
+    error('plot not implemented for radial fibers') 
+end
+
 for j=1:N+1
     for k=1:N+1
         if ~(is_internal(j,k) || is_bc(j,k))
@@ -18,6 +23,10 @@ for j=1:N+1
         end
     end 
 end
+
+if leaflet.reflect_x
+    X_copy(1,:,:)     = -X_copy(1,:,:);  
+end 
 
 % open the figure if not passed in 
 if nargin < 3

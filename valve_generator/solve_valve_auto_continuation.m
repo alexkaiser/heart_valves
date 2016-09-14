@@ -6,7 +6,7 @@ function [leaflet pass err] = solve_valve_auto_continuation(leaflet, tol, name)
 % 
 
 
-[leaflet_current pass_current err] = solve_valve(leaflet, tol);  
+[leaflet_current pass_current err] = newton_solve_valve(leaflet, tol);  
 
 % quick exit if things work 
 if pass_current 
@@ -30,9 +30,9 @@ ever_passed = false;
 while true 
     
     fprintf('Solving with reference frac = %f\n', ref_current); 
-    leaflet.ref_frac = ref_current; 
+    leaflet_okay.ref_frac = ref_current; 
     
-    [leaflet_current pass_current err] = newton_solve_valve(leaflet, tol);  
+    [leaflet_current pass_current err] = newton_solve_valve(leaflet_okay, tol);  
     
     if pass_current 
         
@@ -51,15 +51,16 @@ while true
         
         % increment, but do not pass goal 
         ref_current = min(ref_current + ref_increment, ref_frac);
-        leaflet = leaflet_current; 
+        leaflet_okay = leaflet_current; 
         
     else
         
         if ever_passed
-            % if the current setup has passed, just incremet less  
+            % if the current setup has passed, increment less  
             ref_increment = ref_increment / 4;  
             ref_current   = ref_last_passed + ref_increment; 
         else 
+            % if never passed, current and incement must decrease 
             ref_increment = ref_increment / 4;  
             ref_current   = ref_current / 2; 
         end

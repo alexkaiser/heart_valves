@@ -1,19 +1,31 @@
-function [F F_chordae_left F_chordae_right] = difference_equations(params, filter_params)
+function [F F_chordae_left F_chordae_right] = difference_equations(leaflet)
 % 
 % Evaluation of the global difference equations at j,k
-% Uses 
 % Requires reference configuration R 
 % 
 % Input
-%     params   Current parameters 
-%     filter_params  Cone filter paramaters 
+%     leaflet    Current parameters 
 %
 % Output
 %     F        Values of all difference equation, 3 by triangular array 
 % 
 
+X        = leaflet.X; 
+R        = leaflet.R; 
+N        = leaflet.N; 
+p_0      = leaflet.p_0; 
+alpha    = leaflet.alpha; 
+beta     = leaflet.beta; 
+ref_frac = leaflet.ref_frac; 
+C_left   = leaflet.chordae.C_left; 
+C_right  = leaflet.chordae.C_right; 
+Ref_l    = leaflet.chordae.Ref_l; 
+Ref_r    = leaflet.chordae.Ref_r; 
 
-[X,alpha,beta,N,p_0,R,ref_frac] = unpack_params(params); 
+
+if leaflet.radial_and_circumferential
+    error('Radial and circumferential fibers not implemented')
+end 
 
 F = zeros(size(X)); 
 
@@ -62,7 +74,7 @@ for j=1:N
                     
                 k_nbr = k; 
 
-                [X_nbr R_nbr] = get_neighbor(params, filter_params, j_nbr, k_nbr); 
+                [X_nbr R_nbr] = get_neighbor(leaflet, j_nbr, k_nbr); 
                 
                 u_tangent_term = u_tangent_term + tension_linear(X(:,j,k),X_nbr,R(:,j,k),R_nbr,alpha,ref_frac) * (X_nbr - X(:,j,k));
 
@@ -73,7 +85,7 @@ for j=1:N
                     
                 j_nbr = j; 
                 
-                [X_nbr R_nbr] = get_neighbor(params, filter_params, j_nbr, k_nbr); 
+                [X_nbr R_nbr] = get_neighbor(leaflet, j_nbr, k_nbr); 
                 
                 v_tangent_term = v_tangent_term + tension_linear(X(:,j,k),X_nbr,R(:,j,k),R_nbr,beta,ref_frac) * (X_nbr - X(:,j,k));
             end 
@@ -85,51 +97,42 @@ for j=1:N
 end 
     
 
-% additional tension terms for chordae if appropriate 
-if (~isfield(params, 'chordae')) || isempty(params.chordae)
-    F_chordae_left  = 0; 
-    F_chordae_right = 0; 
-else 
-    
-    [C_left, C_right, left_papillary, right_papillary, Ref_l, Ref_r, k_l, k_r, k_0, k_multiplier] = unpack_chordae(params.chordae); 
-    
-    F_chordae_left  = zeros(size(C_left )); 
-    F_chordae_right = zeros(size(C_right)); 
-    
-    [m N_chordae] = size(C_left); 
-    
-    for left_side = [true false];  
-        
-        if left_side
-            C = C_left; 
-            Ref = Ref_l; 
-        else 
-            C = C_right; 
-            Ref = Ref_r; 
-        end
-        
-        for i=1:N_chordae
+F_chordae_left  = zeros(size(C_left )); 
+F_chordae_right = zeros(size(C_right)); 
 
-            left   = 2*i; 
-            right  = 2*i + 1;
-            parent = floor(i/2); 
+[m N_chordae] = size(C_left); 
 
-            for nbr_idx = [left,right,parent]
+for left_side = [true false];  
 
-                % get the neighbors coordinates, reference coordinate and spring constants
-                [nbr R_nbr k_val] = get_nbr_chordae(params, i, nbr_idx, left_side); 
+    if left_side
+        C = C_left; 
+        Ref = Ref_l; 
+    else 
+        C = C_right; 
+        Ref = Ref_r; 
+    end
 
-                tension = tension_linear(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac) * (nbr - C(:,i));  
+    for i=1:N_chordae
 
-                if left_side
-                    F_chordae_left(:,i)  = F_chordae_left(:,i)  + tension; 
-                else 
-                    F_chordae_right(:,i) = F_chordae_right(:,i) + tension; 
-                end 
-                
+        left   = 2*i; 
+        right  = 2*i + 1;
+        parent = floor(i/2); 
+
+        for nbr_idx = [left,right,parent]
+
+            % get the neighbors coordinates, reference coordinate and spring constants
+            [nbr R_nbr k_val] = get_nbr_chordae(leaflet, i, nbr_idx, left_side); 
+
+            tension = tension_linear(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac) * (nbr - C(:,i));  
+
+            if left_side
+                F_chordae_left(:,i)  = F_chordae_left(:,i)  + tension; 
+            else 
+                F_chordae_right(:,i) = F_chordae_right(:,i) + tension; 
             end 
 
         end 
+
     end 
-        
 end 
+

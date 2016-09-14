@@ -17,6 +17,14 @@ free_edge_idx_right = leaflet.free_edge_idx_right;
 C_left              = leaflet.chordae.C_left; 
 C_right             = leaflet.chordae.C_right; 
 
+if leaflet.reflect_x
+    X(1,:,:)           = -X(1,:,:);  
+    C_left(1,:)        = -C_left(1,:); 
+    C_right(1,:)       = -C_right(1,:); 
+    left_papillary(1)  = -left_papillary(1); 
+    right_papillary(1) = -right_papillary(1);
+end 
+
 
 [n_leaves, m] = size(leaflet.free_edge_idx_left);  
 n_tree = log2(n_leaves);

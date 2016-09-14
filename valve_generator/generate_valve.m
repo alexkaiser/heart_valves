@@ -4,7 +4,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 32; 
+N = 16; 
 
 % Show some output 
 plots = true; 
@@ -22,9 +22,10 @@ end
     
 % Can use a scalar pressure 
 % Or a range for continuation 
-p_range = valve.p_0; 
+p_range = valve.posterior.p_0; 
 
-
+% Solve an equilibrium problem for the current X configuration 
+valve = solve_valve(valve, p_range); 
 
 
 

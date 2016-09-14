@@ -1,11 +1,11 @@
-function [nbr R_nbr k_val j k] = get_nbr_chordae(params, i, nbr_idx, left_side)
+function [nbr R_nbr k_val j k] = get_nbr_chordae(leaflet, i, nbr_idx, left_side)
 % 
 % Given a current index and nieghbor index 
 % Returns the coordinates, reference coordinates and spring constant
 % Takes into account all boundary conditions 
 % 
 % Input
-%     params      Current main data structure 
+%     leaflet      Current main data structure 
 %     i           Index in the chordae tree 
 %     nbr_idx     Index of the neighbor in chordae tree 
 %     left_side   True if on the left tree 
@@ -22,24 +22,25 @@ function [nbr R_nbr k_val j k] = get_nbr_chordae(params, i, nbr_idx, left_side)
 j=[]; 
 k=[]; 
 
-[X,alpha,beta,N,p_0,R,ref_frac,chordae] = unpack_params(params); 
-
-[C_left, C_right, left_papillary, right_papillary, Ref_l, Ref_r, k_l, k_r, k_0, k_multiplier] = unpack_chordae(chordae); 
-
-[m max_internal] = size(C_left); 
+X       = leaflet.X; 
+R       = leaflet.R; 
+chordae = leaflet.chordae; 
 
 if left_side 
     C     = chordae.C_left; 
     R_ch  = chordae.Ref_l; 
     pap   = chordae.left_papillary; 
     k_spr = chordae.k_l; 
+    k_0   = chordae.k_0; 
 else 
     C     = chordae.C_right; 
     R_ch  = chordae.Ref_r; 
     pap   = chordae.right_papillary;
     k_spr = chordae.k_r; 
+    k_0   = chordae.k_0; 
 end
 
+[m max_internal] = size(C); 
 
 % parent direction neighbor may be the papillary muscle
 % this occurs precisely when requesting the zero index

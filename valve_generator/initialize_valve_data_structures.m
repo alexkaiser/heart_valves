@@ -25,7 +25,7 @@ valve.split_papillary = false;
 
 % posterior leaflet data structure 
 posterior.N           = N; 
-posterior.reflect_z   = true; 
+posterior.reflect_x   = true; 
 posterior.total_angle = pi + pi/6 + pi/12; 
 posterior.min_angle   = -posterior.total_angle/2.0; 
 posterior.max_angle   =  posterior.total_angle/2.0; 
@@ -34,7 +34,7 @@ posterior.filter.a = 1.0;
 posterior.filter.h = 3.0; 
 posterior.filter.r = valve.r; 
 
-if posterior.reflect_z
+if posterior.reflect_x
     posterior.left_papillary  = [-1; 1; 1] .* valve.left_papillary; 
     posterior.right_papillary = [-1; 1; 1] .* valve.right_papillary; 
 else 
@@ -80,7 +80,7 @@ valve.posterior = posterior;
 
 % anterior leaflet data structure 
 anterior.N           = N; 
-anterior.reflect_z   = false; 
+anterior.reflect_x   = false; 
 anterior.total_angle = pi; 
 anterior.min_angle   = -anterior.total_angle/2.0; 
 anterior.max_angle   =  anterior.total_angle/2.0; 
