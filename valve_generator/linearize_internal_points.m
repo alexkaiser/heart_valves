@@ -5,7 +5,7 @@ function v_linearized = linearize_internal_points(leaflet, v, v_left_chordae, v_
 %  If have a nonempty chordae data structure, then two additional arrays must be included
 % 
 %  Input: 
-%      params            Data parameters
+%      leaflet           Data parameters
 %      v                 Three dimensional array 
 %                        Has dimensions of leaflet
 %                        Includes b.c.s and out of range data 

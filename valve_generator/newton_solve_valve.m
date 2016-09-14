@@ -24,6 +24,9 @@ pass = true;
 err = total_global_err(leaflet); 
 it = 0; 
 
+'initial'
+leaflet.X
+
 % newton step loop 
 while err > tol
     
@@ -57,12 +60,12 @@ while err > tol
     end 
            
     [F F_chordae_left F_chordae_right] = difference_equations(leaflet); 
-    F_linearized = linearize_internal_points(leaflet, F, F_chordae_left, F_chordae_right); 
+    F_linearized      = linearize_internal_points(leaflet, F, F_chordae_left, F_chordae_right); 
     
-    X_linearized_prev = linearize_internal_points(leaflet, leaflet.X, leaflet.chordae.C_left, leaflet.chordae.C_right); 
+    X_linearized_prev = linearize_internal_points(leaflet, leaflet.X, leaflet.chordae.C_left, leaflet.chordae.C_right)
     
     % solve the system,
-    soln = J \ (-F_linearized);
+    soln = J \ (-F_linearized)
 
     % add in to get the next iterate 
     X_linearized = X_linearized_prev + soln; 
@@ -70,6 +73,9 @@ while err > tol
     % copy data back to 2d 
     leaflet = internal_points_to_2d(X_linearized, leaflet); 
 
+    'current'
+    leaflet.X
+    
     err = total_global_err(leaflet);         
     
     it = it + 1; 
