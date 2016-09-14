@@ -4,16 +4,17 @@ a = 1;
 r = 1.5;
 h = 2; 
 
-filter_params.a = a; 
-filter_params.r = r; 
-filter_params.h = h; 
+% limited structure here 
+posterior.filter.a = a; 
+posterior.filter.r = r; 
+posterior.filter.h = h; 
 
 xi  = 1.2; 
 eta = 1; 
 
-X   = cone_filter_right_cone(xi, eta, filter_params)
+X   = cone_filter_right_cone(xi, eta, posterior)
 
-val = cone_filter_inv_right_cone(X, filter_params)
+val = cone_filter_inv_right_cone(X, posterior)
 
 xi_calc  = val(1)
 eta_calc = val(2)
@@ -30,7 +31,7 @@ if cone_only
     ring_plane = zeros(2,N); 
 
     for j=1:N
-        ring_plane(:,j) = cone_filter_inv_right_cone(ring_quarter(:,j), filter_params); 
+        ring_plane(:,j) = cone_filter_inv_right_cone(ring_quarter(:,j), posterior); 
     end 
 
     fig = figure; 
@@ -64,7 +65,7 @@ if cone_only
     rays_in_3d = zeros(3,N,N); 
     for j=1:N
         for k=1:N
-            rays_in_3d(:,j,k) = cone_filter(rays_in_plane(1,j,k), rays_in_plane(2,j,k), filter_params); 
+            rays_in_3d(:,j,k) = cone_filter(rays_in_plane(1,j,k), rays_in_plane(2,j,k), posterior); 
         end 
     end 
 
@@ -90,7 +91,7 @@ ring_half = [r*cos(x); r*sin(x); h*ones(size(x))];
 ring_plane = zeros(2,N); 
 
 for j=1:N
-    ring_plane(:,j) = cone_filter_inv(ring_half(:,j), filter_params); 
+    ring_plane(:,j) = cone_filter_inv(ring_half(:,j), posterior); 
 end 
 
 fig = figure; 
@@ -128,8 +129,8 @@ rays_in_3d_right = zeros(3,N,N);
 rays_in_3d_left  = zeros(3,N,N); 
 for j=1:N
     for k=1:N
-        rays_in_3d_right(:,j,k) = cone_filter(rays_in_plane_right(1,j,k), rays_in_plane_right(2,j,k), filter_params); 
-        rays_in_3d_left (:,j,k) = cone_filter(rays_in_plane_left (1,j,k), rays_in_plane_left (2,j,k), filter_params); 
+        rays_in_3d_right(:,j,k) = cone_filter(rays_in_plane_right(1,j,k), rays_in_plane_right(2,j,k), posterior); 
+        rays_in_3d_left (:,j,k) = cone_filter(rays_in_plane_left (1,j,k), rays_in_plane_left (2,j,k), posterior); 
     end 
 end 
 
@@ -150,8 +151,8 @@ rays_in_plane_right_computed = zeros(2,N,N);
 rays_in_plane_left__computed = zeros(2,N,N); 
 for j=1:N
     for k=1:N
-        rays_in_plane_right_computed(:,j,k) = cone_filter_inv(rays_in_3d_right(:,j,k), filter_params);  
-        rays_in_plane_left__computed(:,j,k) = cone_filter_inv(rays_in_3d_left (:,j,k), filter_params);  
+        rays_in_plane_right_computed(:,j,k) = cone_filter_inv(rays_in_3d_right(:,j,k), posterior);  
+        rays_in_plane_left__computed(:,j,k) = cone_filter_inv(rays_in_3d_left (:,j,k), posterior);  
     end 
 end 
 

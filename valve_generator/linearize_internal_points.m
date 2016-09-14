@@ -33,7 +33,6 @@ for k=1:N
     end 
 end
 
-v_linearized = [v_linearized; v_left_chordae(:); v_right_chordae(:)]; 
-
-
-
+if exist('v_left_chordae', 'var') && exist('v_right_chordae', 'var')
+    v_linearized = [v_linearized; v_left_chordae(:); v_right_chordae(:)]; 
+end 

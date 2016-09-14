@@ -1,96 +1,104 @@
 % check_jacobian_taylor_series
-
-
-% checks that the taylor series, using the jacobian included, really works 
-
-
-
-
+% 
+% checks jacobian is actually an approximation to the derivative
+% to the expected order using a Taylor series 
+% 
 
 epsilon_vals = 10.^(-1:-1:-8); 
 
 errors = zeros(size(epsilon_vals)); 
 
+N = 8; 
 
-a = 1; 
-r = 1.5;
-h = 2; 
-N = 4; 
-min_angle = -pi/2; 
-max_angle =  pi/2; 
+% Valve skeleton parameters 
+valve.r = 1.606587877768772; 
+valve.left_papillary  = [ -0.972055648767080; -1.611924550017006; -2.990100960298683]; 
+valve.right_papillary = [ -1.542417595752084;  1.611924550017006; -3.611254871967348]; 
+valve.split_papillary = false; 
 
-filter_params.a = a; 
-filter_params.r = r; 
-filter_params.h = h;
-filter_params.N = N;
-filter_params.min_angle = min_angle;
-filter_params.max_angle = max_angle;
 
-% reference and initial surfaces are the same 
-R = build_reference_surface(filter_params); 
+% posterior leaflet data structure 
+leaflet.N           = N; 
+leaflet.reflect_x   = true; 
+leaflet.total_angle = pi + pi/6 + pi/12; 
+leaflet.min_angle   = -leaflet.total_angle/2.0; 
+leaflet.max_angle   =  leaflet.total_angle/2.0; 
 
-X = R; 
-alpha     =  1.0; % spring constants in two directions 
-beta      =  1.0;
-p_0       = -2.0; 
-ref_frac  =  0.5; 
+leaflet.filter.a = 1.0; 
+leaflet.filter.h = 3.0; 
+leaflet.filter.r = valve.r; 
 
-params = pack_params(X,alpha,beta,N,p_0,R,ref_frac); 
-
-chordae_tree = true; 
-
-if chordae_tree
-    k_0 = 1; 
-    k_multiplier = 2; 
-    tree_frac = 0.5; 
-    params = add_chordae(params, filter_params, k_0, k_multiplier, tree_frac); 
-    chordae = params.chordae;
-    [m N_chordae] = size(params.chordae.C_left); 
+if leaflet.reflect_x
+    leaflet.left_papillary  = [-1; 1; 1] .* valve.left_papillary; 
+    leaflet.right_papillary = [-1; 1; 1] .* valve.right_papillary; 
 else 
-    chordae = []; 
-    params = pack_params(X,alpha,beta,N,p_0,R,ref_frac,chordae); 
+    leaflet.left_papillary  = valve.left_papillary; 
+    leaflet.right_papillary = valve.right_papillary; 
+end 
+
+% Radial and circumferential fibers 
+% Or diagonally oriented fibers 
+leaflet.radial_and_circumferential = false; 
+
+if ~leaflet.radial_and_circumferential 
+    [leaflet.free_edge_idx_left leaflet.free_edge_idx_right] = get_free_edge_ranges(leaflet);
+else
+    error('Radial and circumferential fibers not implemented ')
 end 
 
 
-    if chordae_tree 
-        
-        % eval the difference eqns on the perturbation 
-        [F F_chordae_left F_chordae_right] = difference_equations(params, filter_params); 
-        F_linearized = linearize_internal_points(F, params, F_chordae_left, F_chordae_right); 
-                    
-    else 
-        % difference eqns at center do not change 
-        F = difference_equations(params, filter_params); 
-        F_linearized = linearize_internal_points(F, params); 
-    end 
+% Reference configuration 
+[leaflet.R leaflet.is_internal leaflet.is_bc] = build_reference_surface(leaflet); 
+
+% Initial configuration is reference configuration 
+leaflet.X = leaflet.R;  
+
+% Spring constants in two directions 
+leaflet.alpha    = 1.0; 
+leaflet.beta     = 1.0; 
+leaflet.p_0      = 0.0; % no pressure for now 
+leaflet.ref_frac = 0.7; % generic spring constants reduced by this much 
+
+leaflet.chordae_tree = true; 
+if leaflet.chordae_tree
+    leaflet.k_0          = 1.0; 
+    leaflet.k_multiplier = 1.8;  % 2.0; 
+    leaflet.tree_frac    = 0.5;
+    leaflet.chordae      = add_chordae(leaflet); 
+else 
+    error('Non-tree chordae not implemented'); 
+end 
+
+
+% eval the difference eqns on the perturbation 
+[F F_chordae_left F_chordae_right] = difference_equations(leaflet); 
+F_linearized = linearize_internal_points(leaflet, F, F_chordae_left, F_chordae_right);
+
 % jacobian does not change 
-J = build_jacobian(params, filter_params); 
+J = build_jacobian(leaflet); 
 
 figure; 
 spy(J); 
 title('jacobian nonzero structure in jacobian tester')
 
 % perturbation also does not change 
-Z = zeros(size(X)); 
-for j=1:params.N
-    for k=1:params.N
-        % in the triangle?
-        if (j+k) < (params.N+2)
+Z = zeros(size(leaflet.X)); 
+for j=1:N
+    for k=1:N
+        if leaflet.is_internal(j,k)
             Z(:,j,k) = rand(3,1);  
         end 
     end 
 end 
 
-params_Z = pack_params(Z,alpha,beta,N,p_0,R,ref_frac,chordae); 
 
-if chordae_tree
-    params_Z.chordae         = params.chordae; 
-    params_Z.chordae.C_left  = rand(size(params.chordae.C_left)); 
-    params_Z.chordae.C_right = rand(size(params.chordae.C_right)); 
-    Z_linearized = linearize_internal_points(Z, params_Z, params_Z.chordae.C_left, params_Z.chordae.C_right); 
-else 
-    Z_linearized = linearize_internal_points(Z, params_Z); 
-end 
+leaflet_Z   = leaflet; 
+leaflet_Z.X = Z; 
+leaflet_Z.chordae.C_left  = rand(size(leaflet_Z.chordae.C_left)); 
+leaflet_Z.chordae.C_right = rand(size(leaflet_Z.chordae.C_right)); 
+Z_linearized = linearize_internal_points(leaflet_Z, leaflet_Z.X, leaflet_Z.chordae.C_left, leaflet_Z.chordae.C_right); 
+
+
 
 fprintf('eps\t | taylor series remainder\n'); 
 
@@ -100,21 +108,17 @@ for i = 1:length(epsilon_vals)
     ep = epsilon_vals(i); 
     
     % make a new structure for the perturbation 
-    params_perturbation = pack_params(X + ep*Z,alpha,beta,N,p_0,R,ref_frac,chordae); 
+    leaflet_perturbation   = leaflet;  
+    leaflet_perturbation.X = leaflet.X + ep * leaflet_Z.X; 
     
-    if chordae_tree 
-        params_perturbation.chordae.C_left = params.chordae.C_left + ep*params_Z.chordae.C_left; 
-        params_perturbation.chordae.C_right = params.chordae.C_right + ep*params_Z.chordae.C_right; 
-                        
-        % eval the difference eqns on the perturbation 
-        [F_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations(params_perturbation, filter_params); 
-        F_perturbed_linearized = linearize_internal_points(F_perturbed, params_perturbation, F_chordae_left_perturbed, F_chordae_right_perturbed); 
-                    
-    else 
-        % eval the difference eqns on the perturbation 
-        F_perturbed = difference_equations(params_perturbation, filter_params); 
-        F_perturbed_linearized = linearize_internal_points(F_perturbed, params); 
-    end 
+    leaflet_perturbation.chordae.C_left  = leaflet.chordae.C_left  + ep*leaflet_Z.chordae.C_left; 
+    leaflet_perturbation.chordae.C_right = leaflet.chordae.C_right + ep*leaflet_Z.chordae.C_right; 
+
+    % eval the difference eqns on the perturbation 
+    [F_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations(leaflet_perturbation); 
+    F_perturbed_linearized = linearize_internal_points(leaflet_perturbation, F_perturbed, F_chordae_left_perturbed, F_chordae_right_perturbed); 
+
+    
     errors(i) = norm(F_perturbed_linearized - F_linearized - ep*J*Z_linearized, 2); 
     
     fprintf('%e\t | %e \n', ep, errors(i)); 
@@ -134,96 +138,36 @@ legend('error', 'eps^2')
 figure; 
 
 % leaflet part 
-for k=1:params.N
-    for j=1:params.N
-            % in the triangle?
-            if (j+k) < (params.N+2)
-                
-                j
-                k
-                
-                errors = zeros(size(epsilon_vals)); 
-                
-                
-                for i = 1:length(epsilon_vals)
+for k=1:leaflet.N
+    for j=1:leaflet.N
+        if leaflet.is_internal(j,k)
 
-                    ep = epsilon_vals(i); 
-
-                    % make a new structure for the perturbation 
-                    params_perturbation = pack_params(X + ep*Z,alpha,beta,N,p_0,R,ref_frac,chordae);
-                    
-                    if chordae_tree 
-                        params_perturbation.chordae.C_left  = params.chordae.C_left  + ep*params_Z.chordae.C_left; 
-                        params_perturbation.chordae.C_right = params.chordae.C_right + ep*params_Z.chordae.C_right; 
-                        
-                        % eval the difference eqns on the perturbation 
-                        [F_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations(params_perturbation, filter_params); 
-                        F_perturbed_linearized = linearize_internal_points(F_perturbed, params_perturbation, F_chordae_left_perturbed, F_chordae_right_perturbed); 
-                    
-                    else 
-
-                        % eval the difference eqns on the perturbation 
-                        F_perturbed = difference_equations(params_perturbation, filter_params); 
-                        F_perturbed_linearized = linearize_internal_points(F_perturbed, params); 
-                    end 
-                    
-                    diffs = F_perturbed_linearized - F_linearized - ep*J*Z_linearized; 
-                      
-                    range = linear_index_offset(j,k,N) + (1:3);                     
-                    errors(i) = norm(diffs(range)); 
-
-                    fprintf('%e\t | %e \n', ep, errors(i)); 
-
-                end 
-
-                fprintf('\n\n\n\n'); 
-
-                loglog(epsilon_vals, errors, '-*'); 
-                hold on 
-                loglog(epsilon_vals, epsilon_vals.^2, '--'); 
-
-                legend('error', 'eps^2')
-
-            end 
-    end 
-end 
-
-
-% chordae part if included 
-if chordae_tree 
-    
-    total_internal = 3*N*(N+1)/2; 
-    
-    for left_side = [true false]
-        for i=1:N_chordae
-
-            left_side
-            i
+            j
+            k
 
             errors = zeros(size(epsilon_vals)); 
 
+            for i = 1:length(epsilon_vals)
 
-            for ep_idx = 1:length(epsilon_vals)
-
-                ep = epsilon_vals(ep_idx); 
+                ep = epsilon_vals(i); 
 
                 % make a new structure for the perturbation 
-                params_perturbation = pack_params(X + ep*Z,alpha,beta,N,p_0,R,ref_frac,chordae);
+                leaflet_perturbation   = leaflet;  
+                leaflet_perturbation.X = leaflet.X + ep * leaflet_Z.X; 
 
-                params_perturbation.chordae.C_left  = params.chordae.C_left  + ep*params_Z.chordae.C_left; 
-                params_perturbation.chordae.C_right = params.chordae.C_right + ep*params_Z.chordae.C_right; 
-               
+                leaflet_perturbation.chordae.C_left  = leaflet.chordae.C_left  + ep*leaflet_Z.chordae.C_left; 
+                leaflet_perturbation.chordae.C_right = leaflet.chordae.C_right + ep*leaflet_Z.chordae.C_right; 
+
                 % eval the difference eqns on the perturbation 
-                [F_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations(params_perturbation, filter_params); 
-                F_perturbed_linearized = linearize_internal_points(F_perturbed, params_perturbation, F_chordae_left_perturbed, F_chordae_right_perturbed); 
-                    
-                
+                [F_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations(leaflet_perturbation); 
+                F_perturbed_linearized = linearize_internal_points(leaflet_perturbation, F_perturbed, F_chordae_left_perturbed, F_chordae_right_perturbed); 
+
                 diffs = F_perturbed_linearized - F_linearized - ep*J*Z_linearized; 
 
-                range = range_chordae(total_internal, N_chordae, i, left_side); 
-                errors(ep_idx) = norm(diffs(range)); 
+                range = linear_index_offset(j,k,N) + (1:3);                     
+                errors(i) = norm(diffs(range)); 
 
-                fprintf('%e\t | %e \n', ep, errors(ep_idx)); 
+                fprintf('%e\t | %e \n', ep, errors(i)); 
 
             end 
 
@@ -235,10 +179,60 @@ if chordae_tree
 
             legend('error', 'eps^2')
 
-
         end 
     end 
 end 
+
+
+% chordae part if included 
+[m N_chordae] = size(leaflet.chordae.C_left); 
+total_internal = 3*N*(N+1)/2; 
+
+for left_side = [true false]
+    for i=1:N_chordae
+
+        left_side
+        i
+
+        errors = zeros(size(epsilon_vals)); 
+
+
+        for ep_idx = 1:length(epsilon_vals)
+
+            ep = epsilon_vals(ep_idx); 
+
+            % make a new structure for the perturbation 
+            leaflet_perturbation   = leaflet;  
+            leaflet_perturbation.X = leaflet.X + ep * leaflet_Z.X; 
+
+            leaflet_perturbation.chordae.C_left  = leaflet.chordae.C_left  + ep*leaflet_Z.chordae.C_left; 
+            leaflet_perturbation.chordae.C_right = leaflet.chordae.C_right + ep*leaflet_Z.chordae.C_right; 
+
+            % eval the difference eqns on the perturbation 
+            [F_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations(leaflet_perturbation); 
+            F_perturbed_linearized = linearize_internal_points(leaflet_perturbation, F_perturbed, F_chordae_left_perturbed, F_chordae_right_perturbed); 
+
+            diffs = F_perturbed_linearized - F_linearized - ep*J*Z_linearized; 
+
+            range = range_chordae(total_internal, N_chordae, i, left_side); 
+            errors(ep_idx) = norm(diffs(range)); 
+
+            fprintf('%e\t | %e \n', ep, errors(ep_idx)); 
+
+        end 
+
+        fprintf('\n\n\n\n'); 
+
+        loglog(epsilon_vals, errors, '-*'); 
+        hold on 
+        loglog(epsilon_vals, epsilon_vals.^2, '--'); 
+
+        legend('error', 'eps^2')
+
+
+    end 
+end 
+ 
 
 
 

@@ -1,69 +1,97 @@
 
-
-a = 1; 
-r = 1.5;
-h = 2; 
 N = 4; 
-min_angle = -pi/2; 
-max_angle =  pi/2; 
 
-filter_params.a = a; 
-filter_params.r = r; 
-filter_params.h = h;
-filter_params.N = N;
-filter_params.min_angle = min_angle;
-filter_params.max_angle = max_angle;
+% Main data structure with everything 
+valve.N = N; 
+valve.tol_global = 1e-10;
+valve.max_it = 40; 
 
-% reference and initial surfaces are the same 
-R = build_reference_surface(filter_params); 
+% Valve skeleton parameters 
+valve.r = 1.606587877768772; 
+valve.left_papillary  = [ -0.972055648767080; -1.611924550017006; -2.990100960298683]; 
+valve.right_papillary = [ -1.542417595752084;  1.611924550017006; -3.611254871967348]; 
+valve.split_papillary = false; 
 
-X = R; 
-alpha =  1.0; % spring constants in two directions 
-beta  =  1.0;
-p_0   = -1.0; 
-ref_frac = 0.8; 
+% posterior leaflet data structure 
+posterior.N           = N; 
+posterior.reflect_x   = true; 
+posterior.total_angle = pi + pi/6 + pi/12; 
+posterior.min_angle   = -posterior.total_angle/2.0; 
+posterior.max_angle   =  posterior.total_angle/2.0; 
 
-params = pack_params(X,alpha,beta,N,p_0,R,ref_frac);
+posterior.filter.a = 1.0; 
+posterior.filter.h = 3.0; 
+posterior.filter.r = valve.r; 
+
+if posterior.reflect_x
+    posterior.left_papillary  = [-1; 1; 1] .* valve.left_papillary; 
+    posterior.right_papillary = [-1; 1; 1] .* valve.right_papillary; 
+else 
+    posterior.left_papillary  = valve.left_papillary; 
+    posterior.right_papillary = valve.right_papillary; 
+end 
+
+% Radial and circumferential fibers 
+% Or diagonally oriented fibers 
+posterior.radial_and_circumferential = false; 
+
+if ~posterior.radial_and_circumferential 
+    [posterior.free_edge_idx_left posterior.free_edge_idx_right] = get_free_edge_ranges(posterior);
+else
+    error('Radial and circumferential fibers not implemented ')
+end 
+
+
+% Reference configuration 
+[posterior.R posterior.is_internal posterior.is_bc] = build_reference_surface(posterior); 
+
+% Initial configuration is reference configuration 
+posterior.X = posterior.R;  
+
+% Spring constants in two directions 
+posterior.alpha    = 1.0; 
+posterior.beta     = 1.0; 
+posterior.p_0      = 0.0; % no pressure for now 
+posterior.ref_frac = 0.7; % generic spring constants reduced by this much 
+
+posterior.chordae_tree = true; 
+if posterior.chordae_tree
+    posterior.k_0          = 1.0; 
+    posterior.k_multiplier = 1.8;  % 2.0; 
+    posterior.tree_frac    = 0.5;
+    posterior.chordae      = add_chordae(posterior); 
+else 
+    error('Non-tree chordae not implemented'); 
+end 
 
 
 'version with no movement, including b.c.s'
-params.X 
+posterior.X 
 
 
 % 'linear order on internal points'
-X_linearized = linearize_internal_points(X, params); 
+X_linearized = linearize_internal_points(posterior, posterior.X); 
 
 
 'moved back to 3d ordering'
-params = internal_points_to_2d(X_linearized, params);  
+params = internal_points_to_2d(X_linearized, posterior);  
 params.X 
 
 
-chordae_tree = true; 
-
-if chordae_tree
-    k_0 = 1; 
-    k_multiplier = 2; 
-    tree_frac = 0.5; 
-    params = add_chordae(params, filter_params, k_0, k_multiplier, tree_frac); 
-    chordae = params.chordae;
-    [m N_chordae] = size(params.chordae.C_left); 
-end 
-
 'with chordae before linearization'
-X 
-params.chordae.C_left
-params.chordae.C_right 
+posterior.X 
+posterior.chordae.C_left
+posterior.chordae.C_right 
 
 'linearized with chordae'
-X_and_chordae_linearized = linearize_internal_points(X, params, params.chordae.C_left, params.chordae.C_right) 
+X_and_chordae_linearized = linearize_internal_points(posterior, posterior.X, posterior.chordae.C_left, posterior.chordae.C_right) 
 
 
 'after return to normal data structure'
-params = internal_points_to_2d(X_and_chordae_linearized, params);  
-params.X 
-params.chordae.C_left
-params.chordae.C_right 
+posterior = internal_points_to_2d(X_and_chordae_linearized, posterior);  
+posterior.X 
+posterior.chordae.C_left
+posterior.chordae.C_right 
 
 
 

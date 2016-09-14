@@ -7,7 +7,7 @@
 N = 16; 
 
 % Show some output 
-plots = true; 
+plots = false; 
 
 % Initialize structures 
 % Many parameters are in this script 
