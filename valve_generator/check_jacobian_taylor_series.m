@@ -8,7 +8,7 @@ epsilon_vals = 10.^(-1:-1:-8);
 
 errors = zeros(size(epsilon_vals)); 
 
-N = 8; 
+N = 4; 
 
 % Valve skeleton parameters 
 valve.r = 1.606587877768772; 
@@ -91,7 +91,6 @@ for j=1:N
     end 
 end 
 
-
 leaflet_Z   = leaflet; 
 leaflet_Z.X = Z; 
 leaflet_Z.chordae.C_left  = rand(size(leaflet_Z.chordae.C_left)); 
@@ -109,7 +108,7 @@ for i = 1:length(epsilon_vals)
     
     % make a new structure for the perturbation 
     leaflet_perturbation   = leaflet;  
-    leaflet_perturbation.X = leaflet.X + ep * leaflet_Z.X; 
+    leaflet_perturbation.X = leaflet.X + ep*leaflet_Z.X; 
     
     leaflet_perturbation.chordae.C_left  = leaflet.chordae.C_left  + ep*leaflet_Z.chordae.C_left; 
     leaflet_perturbation.chordae.C_right = leaflet.chordae.C_right + ep*leaflet_Z.chordae.C_right; 
