@@ -4,6 +4,9 @@
 % to the expected order using a Taylor series 
 % 
 
+% reset stream for consistent results 
+rand('twister',76599)
+
 epsilon_vals = 10.^(-1:-1:-8); 
 
 errors = zeros(size(epsilon_vals)); 
@@ -11,7 +14,7 @@ errors = zeros(size(epsilon_vals));
 N = 4; 
 
 % Valve skeleton parameters 
-valve.r = 1.606587877768772; 
+valve.r = 1.5; 
 valve.left_papillary  = [ -0.972055648767080; -1.611924550017006; -2.990100960298683]; 
 valve.right_papillary = [ -1.542417595752084;  1.611924550017006; -3.611254871967348]; 
 valve.split_papillary = false; 
@@ -20,12 +23,12 @@ valve.split_papillary = false;
 % posterior leaflet data structure 
 leaflet.N           = N; 
 leaflet.reflect_x   = true; 
-leaflet.total_angle = pi + pi/6 + pi/12; 
+leaflet.total_angle = pi; 
 leaflet.min_angle   = -leaflet.total_angle/2.0; 
 leaflet.max_angle   =  leaflet.total_angle/2.0; 
 
 leaflet.filter.a = 1.0; 
-leaflet.filter.h = 3.0; 
+leaflet.filter.h = 2.0; 
 leaflet.filter.r = valve.r; 
 
 if leaflet.reflect_x
@@ -54,15 +57,15 @@ end
 leaflet.X = leaflet.R;  
 
 % Spring constants in two directions 
-leaflet.alpha    = 1.0; 
-leaflet.beta     = 1.0; 
-leaflet.p_0      = 0.0; % no pressure for now 
-leaflet.ref_frac = 0.7; % generic spring constants reduced by this much 
+leaflet.alpha    =  1.0; 
+leaflet.beta     =  1.0; 
+leaflet.p_0      = -2.0; % no pressure for now 
+leaflet.ref_frac =  0.5; % generic spring constants reduced by this much 
 
 leaflet.chordae_tree = true; 
 if leaflet.chordae_tree
     leaflet.k_0          = 1.0; 
-    leaflet.k_multiplier = 1.8;  % 2.0; 
+    leaflet.k_multiplier = 2.0; 
     leaflet.tree_frac    = 0.5;
     leaflet.chordae      = add_chordae(leaflet); 
 else 
