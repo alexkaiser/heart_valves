@@ -1,10 +1,10 @@
-function val = cone_filter_inv_right_cone(X, filter_params)
+function val = cone_filter_inv_right_cone(X, leaflet)
 %
 % Inverts the cone filter at X
 % 
 % Input 
 %     xi, eta 
-%     filter_params   Struct with cone filter parameters 
+%     Leaflet    Struct with cone filter parameters 
 %     
 % Output
 %     X               Vector of components 
@@ -12,9 +12,9 @@ function val = cone_filter_inv_right_cone(X, filter_params)
 
 tol = 1e2 * eps;
 
-a = filter_params.a; 
-r = filter_params.r; 
-h = filter_params.h;
+a = leaflet.filter.a; 
+r = leaflet.filter.r; 
+h = leaflet.filter.h;
 
 x = X(1); 
 y = X(2); 

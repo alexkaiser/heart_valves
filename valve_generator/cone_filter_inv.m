@@ -1,10 +1,10 @@
-function val = cone_filter_inv(X, filter_params)
+function val = cone_filter_inv(X, leaflet)
 %
 % Inverts the cone filter at X
 % 
 % Input 
 %     xi, eta 
-%     filter_params   Struct with cone filter parameters 
+%     leaflet   Struct with cone filter parameters 
 %     
 % Output
 %     X               Vector of components 
@@ -12,9 +12,9 @@ function val = cone_filter_inv(X, filter_params)
 
 tol = 1e2 * eps;
 
-a = filter_params.a; 
-r = filter_params.r; 
-h = filter_params.h;
+a = leaflet.filter.a; 
+r = leaflet.filter.r; 
+h = leaflet.filter.h;
 
 x = X(1); 
 y = X(2); 
@@ -63,13 +63,13 @@ if abs(rotated(1)) < tol
 elseif (y >= 0) && (x >= 0) 
     
     % right cone, just use the inverse    
-    val = cone_filter_inv_right_cone(X, filter_params); 
+    val = cone_filter_inv_right_cone(X, leaflet); 
     
 elseif (y >= 0) && (x < 0) 
     
     % reflect back to the right front and apply the map
     X(1) = -X(1); 
-    val = cone_filter_inv_right_cone(X, filter_params); 
+    val = cone_filter_inv_right_cone(X, leaflet); 
     
     % map the right front preimage to the right back preimage 
     val(1) = val(1) - a; 
@@ -84,7 +84,7 @@ elseif (y < 0) && (x >= 0)
     
     % reflect to use the right cone inverse 
     X(2) = -X(2); 
-    val = cone_filter_inv_right_cone(X, filter_params); 
+    val = cone_filter_inv_right_cone(X, leaflet); 
     
     % and back to the left 
     val(1) = -val(1); 
@@ -96,7 +96,7 @@ elseif (y < 0) && (x < 0)
     
     % now use the left front inverse
     X(2) = -X(2); 
-    val = cone_filter_inv_right_cone(X, filter_params); 
+    val = cone_filter_inv_right_cone(X, leaflet); 
     val(1) = -val(1); 
     
     % map the left front preimage to the leftå back preimage 

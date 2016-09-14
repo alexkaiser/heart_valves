@@ -1,19 +1,19 @@
-function X = cone_filter(xi, eta, filter_params)
+function X = cone_filter(xi, eta, leaflet)
 %
 % Evaluates the cone filter at (xi, eta)
 % 
 % Input 
 %     xi, eta         Euclidean coordinates in plane 
-%     filter_params   Struct with cone filter parameters 
+%     leaflet   Struct with cone filter parameters 
 %     
 % Output
 %     X               Vector of components 
 % 
 
 
-    a = filter_params.a; 
-    r = filter_params.r; 
-    h = filter_params.h; 
+    a = leaflet.filter.a; 
+    r = leaflet.filter.r; 
+    h = leaflet.filter.h; 
 
     tol = 1e2 * eps;
 
@@ -59,7 +59,7 @@ function X = cone_filter(xi, eta, filter_params)
     % If angle is less than the leftmost ray on the front 
     % then point is on the right, front sheet 
     elseif (theta_min <= theta_right) && (theta_right <= theta_0)
-        X = cone_filter_right_cone(xi, eta, filter_params); 
+        X = cone_filter_right_cone(xi, eta, leaflet); 
         return 
 
     % are we on the back of the right sheet 
@@ -87,7 +87,7 @@ function X = cone_filter(xi, eta, filter_params)
         xi = xi + a; 
         
         % apply filter map 
-        X = cone_filter_right_cone(xi, eta, filter_params); 
+        X = cone_filter_right_cone(xi, eta, leaflet); 
         
         % negate x for the back sheet 
         X(1) = -X(1); 
@@ -98,7 +98,7 @@ function X = cone_filter(xi, eta, filter_params)
     % left front sheet 
     elseif (theta_min <= theta_left) && (theta_left <= theta_0)
         % apply the reflection in xi to get the corresponding preimage 
-        X = cone_filter_right_cone(-xi, eta, filter_params); 
+        X = cone_filter_right_cone(-xi, eta, leaflet); 
 
         % reflect back in y in the 3d setting  
         X(2) = -X(2); 
@@ -128,7 +128,7 @@ function X = cone_filter(xi, eta, filter_params)
         xi = xi - a; 
         
         % apply filter map using the LEFT map 
-        X = cone_filter_right_cone(-xi, eta, filter_params); 
+        X = cone_filter_right_cone(-xi, eta, leaflet); 
         
         % negate in y for the left side 
         X(2) = -X(2); 

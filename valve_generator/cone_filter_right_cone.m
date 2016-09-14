@@ -1,4 +1,4 @@
-function X = cone_filter_right_cone(xi, eta, filter_params)
+function X = cone_filter_right_cone(xi, eta, leaflet)
 %
 % Evaluates the cone filter at (xi, eta)
 % 
@@ -11,9 +11,9 @@ function X = cone_filter_right_cone(xi, eta, filter_params)
 % 
 
 
-a = filter_params.a; 
-r = filter_params.r; 
-h = filter_params.h; 
+a = leaflet.filter.a; 
+r = leaflet.filter.r; 
+h = leaflet.filter.h; 
 
 tol = 1e3 * eps;
 

@@ -1,4 +1,4 @@
-function coords = compute_intersection(X_flat, j, k, filter_params)
+function coords = compute_intersection(X_flat, j, k, leaflet)
 % 
 % Computes the intersection of the rays which have coordinates j,k
 % 
@@ -11,12 +11,12 @@ function coords = compute_intersection(X_flat, j, k, filter_params)
 %     coords          2d vector for intersection 
 % 
 
-a = filter_params.a; 
+a = leaflet.filter.a; 
 
 
 % find the indices corresponding diagonal points which lie on the ray
-j_left  = filter_params.N + 2 - k; 
-k_right = filter_params.N + 2 - j; 
+j_left  = leaflet.N + 2 - k; 
+k_right = leaflet.N + 2 - j; 
 
 % intersection is a solution to a linear system 
 A = [a + X_flat(1,j_left,k), a - X_flat(1,j,k_right); 

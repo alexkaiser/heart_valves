@@ -1,28 +1,21 @@
-function fig = surf_plot(params, filter_params, fig)
+function fig = surf_plot(leaflet, fig)
 % 
-% Plots the surface and connective chordae
-% 
+% Plots the surface and chordae
 % 
 
-X_copy = params.X; 
-N      = params.N; 
-
-left_papillary = filter_params.left_papillary; 
-right_papillary = filter_params.right_papillary; 
+X_copy      = leaflet.X; 
+N           = leaflet.N; 
+is_internal = leaflet.is_internal; 
+is_bc       = leaflet.is_bc; 
 
 % NaN mask in the copy 
-
 % fill in the 3d array
 % loop through N+1 to include the ring points here 
 for j=1:N+1
     for k=1:N+1
-
-        % out of the triangle? 
-        % apply a NaN mask for plotting 
-        if ((j+k) > (N+2))
-            X_copy(:,j,k) = NaN; 
+        if ~(is_internal(j,k) || is_bc(j,k))
+           X_copy(:,j,k) = NaN;  
         end
-
     end 
 end
 
@@ -53,29 +46,9 @@ string_y = [X_copy(2,N,1), X_copy(2,N+1,1)];
 string_z = [X_copy(3,N,1), X_copy(3,N+1,1)];
 plot3(string_x, string_y, string_z, 'k', 'LineWidth',width); 
 
+% add chordae 
+tree_plot(leaflet, fig); 
 
-
-if (~isfield(params, 'chordae')) || isempty(params.chordae)
-    % add chordae as line segments 
-    j = 1; 
-    for k=1:N
-        string_x = [left_papillary(1), X_copy(1,j,k)];
-        string_y = [left_papillary(2), X_copy(2,j,k)];
-        string_z = [left_papillary(3), X_copy(3,j,k)];
-        plot3(string_x, string_y, string_z, 'k', 'LineWidth',width); 
-    end 
-
-    k = 1; 
-    for j=1:N
-        string_x = [right_papillary(1), X_copy(1,j,k)];
-        string_y = [right_papillary(2), X_copy(2,j,k)];
-        string_z = [right_papillary(3), X_copy(3,j,k)];
-        plot3(string_x, string_y, string_z, 'k', 'LineWidth',width); 
-    end 
-    
-else 
-    tree_plot(params, fig); 
-end 
 
 
 
