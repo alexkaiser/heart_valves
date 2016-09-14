@@ -1,4 +1,4 @@
-function [leaflet pass it] = newton_solve_valve(leaflet, tol) 
+function [leaflet pass it] = newton_solve_valve(leaflet, tol, max_it) 
 %
 % Full valve build. 
 % Solves the nonlinear difference equations at each component. 
@@ -24,12 +24,11 @@ pass = true;
 err = total_global_err(leaflet); 
 it = 0; 
 
+% newton step loop 
 while err > tol
     
     tic 
-    
-    % newton step 
-    % build the jacobian 
+
     J = build_jacobian(leaflet); 
 
     jacobian_cond_info = false; 
@@ -57,10 +56,10 @@ while err > tol
         end 
     end 
            
-    [F F_chordae_left F_chordae_right] = difference_equations(leaflet); % fix 
-    F_linearized = linearize_internal_points(leaflet, F, F_chordae_left, F_chordae_right); % fix 
+    [F F_chordae_left F_chordae_right] = difference_equations(leaflet); 
+    F_linearized = linearize_internal_points(leaflet, F, F_chordae_left, F_chordae_right); 
     
-    X_linearized_prev = linearize_internal_points(params.X, params, params.chordae.C_left, params.chordae.C_right); % fix         
+    X_linearized_prev = linearize_internal_points(leaflet, leaflet.X, leaflet.chordae.C_left, leaflet.chordae.C_right); 
     
     % solve the system,
     soln = J \ (-F_linearized);
@@ -69,13 +68,12 @@ while err > tol
     X_linearized = X_linearized_prev + soln; 
 
     % copy data back to 2d 
-    params = internal_points_to_2d(X_linearized, params); 
+    leaflet = internal_points_to_2d(X_linearized, leaflet); 
 
-    err = total_global_err(params, filter_params);         
-       
+    err = total_global_err(leaflet);         
     
     it = it + 1; 
-    if it > max_it_global
+    if it > max_it
         warning('Global solve failed to converge in %d iterations\n', it);
         pass = false; 
         break; 

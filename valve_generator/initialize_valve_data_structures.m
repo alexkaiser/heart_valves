@@ -13,7 +13,7 @@ function [valve] = initialize_valve_data_structures(N)
 % Main data structure with everything 
 valve.N = N; 
 valve.tol_global = 1e-10;
-valve.max_it_global = 40; 
+valve.max_it = 40; 
 
 
 % Valve skeleton parameters 

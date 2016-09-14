@@ -20,11 +20,12 @@ function J = build_jacobian(leaflet)
     Ref_l    = leaflet.chordae.Ref_l; 
     Ref_r    = leaflet.chordae.Ref_r; 
     
-    
     if leaflet.radial_and_circumferential
         error('Radial and circumferential fibers not implemented')
     end 
    
+    [m N_chordae] = size(C_left); 
+    
     % total internal points in triangular domain 
     total_internal = 3*N*(N+1)/2; 
     total_points   = total_internal + 3*2*N_chordae; 
@@ -200,7 +201,7 @@ function J = build_jacobian(leaflet)
             for nbr_idx = [left,right,parent]
 
                 % get the neighbors coordinates, reference coordinate and spring constants
-                [nbr R_nbr k_val j_nbr k_nbr] = get_nbr_chordae(params, i, nbr_idx, left_side); 
+                [nbr R_nbr k_val j_nbr k_nbr] = get_nbr_chordae(leaflet, i, nbr_idx, left_side); 
 
                 % if the neighbor is in the chordae 
                 if isempty(j_nbr) && isempty(k_nbr) 

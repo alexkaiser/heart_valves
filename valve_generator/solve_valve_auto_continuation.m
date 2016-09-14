@@ -1,4 +1,4 @@
-function [leaflet pass err] = solve_valve_auto_continuation(leaflet, tol, name)
+function [leaflet pass err] = solve_valve_auto_continuation(leaflet, tol, max_it, name)
 % 
 % Automatically runs a continutation sequence 
 % First tries the current reference fraction 
@@ -6,7 +6,7 @@ function [leaflet pass err] = solve_valve_auto_continuation(leaflet, tol, name)
 % 
 
 
-[leaflet_current pass_current err] = newton_solve_valve(leaflet, tol);  
+[leaflet_current pass_current err] = newton_solve_valve(leaflet, tol, max_it);  
 
 % quick exit if things work 
 if pass_current 
@@ -32,7 +32,7 @@ while true
     fprintf('Solving with reference frac = %f\n', ref_current); 
     leaflet_okay.ref_frac = ref_current; 
     
-    [leaflet_current pass_current err] = newton_solve_valve(leaflet_okay, tol);  
+    [leaflet_current pass_current err] = newton_solve_valve(leaflet_okay, tol, max_it);  
     
     if pass_current 
         

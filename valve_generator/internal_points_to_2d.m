@@ -1,18 +1,20 @@
-function params = internal_points_to_2d(v_linearized, params)
+function leaflet = internal_points_to_2d(v_linearized, leaflet)
 %
 %  Takes the internal values in X which are arranged in linear order
-%  And places them back in the 3d vector array in params
+%  And places them back in the 3d vector array in leaflet
 %  
 
 idx = 1; 
-N = params.N; 
+N = leaflet.N; 
 
+if leaflet.radial_and_circumferential
+    error('Radial and circumferential fibers not implemented')
+end 
 
 % here k is required to be the outer loop 
 for k=1:N
     for j=1:N
-        % in the triangle?
-        if (j+k) < (N+2)
+        if leaflet.is_internal(j,k)
             params.X(:,j,k) = v_linearized(idx + (0:2)); 
             idx = idx + 3; 
         end 
@@ -21,28 +23,24 @@ end
 
 
 % copy chordae 
-if isfield(params, 'chordae') && ~isempty(params.chordae)
-    
-    [C_left, C_right] = unpack_chordae(params.chordae); 
-    
-    [m N_chordae] = size(C_left); 
-    total_internal = 3*N*(N+1)/2; 
-    
-    idx = total_internal + 1; 
-    for i=1:N_chordae
-        C_left(:,i)  = v_linearized(idx + (0:2));  
-        idx = idx + 3; 
-    end 
-    
-    idx = total_internal + 3*N_chordae + 1; 
-    for i=1:N_chordae
-        C_right(:,i) = v_linearized(idx + (0:2));  
-        idx = idx + 3; 
-    end 
-        
-    params.chordae.C_left  = C_left; 
-    params.chordae.C_right = C_right; 
-    
+C_left   = leaflet.chordae.C_left; 
+C_right  = leaflet.chordae.C_right; 
+
+[m N_chordae] = size(C_left); 
+total_internal = 3*N*(N+1)/2; 
+
+idx = total_internal + 1; 
+for i=1:N_chordae
+    C_left(:,i)  = v_linearized(idx + (0:2));  
+    idx = idx + 3; 
 end 
 
+idx = total_internal + 3*N_chordae + 1; 
+for i=1:N_chordae
+    C_right(:,i) = v_linearized(idx + (0:2));  
+    idx = idx + 3; 
+end 
+
+leaflet.chordae.C_left  = C_left; 
+leaflet.chordae.C_right = C_right; 
 
