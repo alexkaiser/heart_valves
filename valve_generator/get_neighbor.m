@@ -9,7 +9,7 @@ function [X_nbr R_nbr idx_chordae left] = get_neighbor(leaflet, j_nbr, k_nbr)
 % 
 
 X = leaflet.X; 
-R = leaflet.X; 
+R = leaflet.R; 
 
 if leaflet.radial_and_circumferential
     error('Radial and circumferential fibers not implemented')
