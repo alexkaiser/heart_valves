@@ -1,4 +1,4 @@
-function [params pass err_over_time it] = solve_valve(params, filter_params, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time)
+function [leaflet pass it] = newton_solve_valve(leaflet, tol) 
 %
 % Full valve build. 
 % Solves the nonlinear difference equations at each component. 
@@ -27,7 +27,7 @@ err = total_global_err(params, filter_params);
 it = start_it; 
 
 
-while err > tol_global
+while err > tol
     
     tic 
    

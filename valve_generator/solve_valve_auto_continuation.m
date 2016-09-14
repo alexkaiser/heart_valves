@@ -1,23 +1,25 @@
-function [params pass err_over_time it] = solve_valve_auto_continuation(params, filter_params, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time, ref_frac, name)
-
+function [leaflet pass err] = solve_valve_auto_continuation(leaflet, tol, name)
+% 
 % Automatically runs a continutation sequence 
 % First tries the current reference fraction 
 % If this fails then it is adaptively reduced and re-run
+% 
 
-[params_current pass_current err_over_time it] = solve_valve(params, filter_params, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time); 
+
+[leaflet_current pass_current err] = solve_valve(leaflet, tol);  
 
 % quick exit if things work 
 if pass_current 
     fprintf('Initial solve passed\n'); 
-    params = params_current; 
-    pass   = pass_current; 
+    leaflet = leaflet_current; 
+    pass    = pass_current; 
     return
 end 
 
 fprintf('Initial solve failed, applying adaptive continuation\n'); 
 
 % copy the last correct parameters 
-params_okay = params; 
+leaflet_okay = leaflet; 
 
 ref_current   = ref_frac / 2; 
 ref_increment = ref_frac / 4; 
@@ -28,15 +30,13 @@ ever_passed = false;
 while true 
     
     fprintf('Solving with reference frac = %f\n', ref_current); 
+    leaflet.ref_frac = ref_current; 
     
-    params_okay.ref_frac = ref_current; 
-    
-    [params_current pass_current err_over_time it] = solve_valve(params_okay, filter_params, tol_global, max_it_global, plot_and_save_freq, start_it, err_over_time); 
+    [leaflet_current pass_current err] = newton_solve_valve(leaflet, tol);  
     
     if pass_current 
         
         fprintf('Solve passed\n\n'); 
-        
         if exist('name', 'var')
             data_name = sprintf('%s_at_ref_frac_%f', name, ref_current); 
             save(data_name); 
@@ -51,10 +51,8 @@ while true
         
         % increment, but do not pass goal 
         ref_current = min(ref_current + ref_increment, ref_frac);
-        params_okay = params_current; 
+        leaflet = leaflet_current; 
         
- 
-            
     else
         
         if ever_passed
@@ -71,8 +69,8 @@ end
     
   
 if pass_current 
-    params = params_current; 
-    pass   = pass_current; 
+    leaflet = leaflet_current; 
+    pass    = pass_current; 
     return
 else
     error('Auto continuation failed.'); 
