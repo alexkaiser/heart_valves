@@ -12,6 +12,9 @@ function [valve] = initialize_valve_data_structures(N)
 
 % Main data structure with everything 
 valve.N = N; 
+valve.tol_global = 1e-10;
+valve.max_it_global = 40; 
+
 
 % Valve skeleton parameters 
 valve.r = 1.606587877768772; 
@@ -21,71 +24,110 @@ valve.split_papillary = false;
 
 
 % posterior leaflet data structure 
-valve.posterior.N = N; 
-valve.posterior.reflect_z = true; 
-valve.posterior.total_angle = pi + pi/6 + pi/12; 
-valve.posterior.min_angle   = -valve.posterior.total_angle/2.0; 
-valve.posterior.max_angle   =  valve.posterior.total_angle/2.0; 
+posterior.N           = N; 
+posterior.reflect_z   = true; 
+posterior.total_angle = pi + pi/6 + pi/12; 
+posterior.min_angle   = -posterior.total_angle/2.0; 
+posterior.max_angle   =  posterior.total_angle/2.0; 
 
-valve.posterior.filter.a = 1.0; 
-valve.posterior.filter.h = 3.0; 
-valve.posterior.filter.r = valve.r; 
-% valve.posterior.filter.N = N; 
-% valve.posterior.filter.min_angle = valve.posterior.min_angle; 
-% valve.posterior.filter.max_angle = valve.posterior.max_angle; 
+posterior.filter.a = 1.0; 
+posterior.filter.h = 3.0; 
+posterior.filter.r = valve.r; 
 
-if valve.posterior.reflect_z
-    valve.posterior.left_papillary  = [-1; 1; 1] .* valve.left_papillary; 
-    valve.posterior.right_papillary = [-1; 1; 1] .* valve.right_papillary; 
+if posterior.reflect_z
+    posterior.left_papillary  = [-1; 1; 1] .* valve.left_papillary; 
+    posterior.right_papillary = [-1; 1; 1] .* valve.right_papillary; 
 else 
-    valve.posterior.left_papillary  = valve.left_papillary; 
-    valve.posterior.right_papillary = valve.right_papillary; 
+    posterior.left_papillary  = valve.left_papillary; 
+    posterior.right_papillary = valve.right_papillary; 
 end 
 
 % Radial and circumferential fibers 
 % Or diagonally oriented fibers 
-valve.posterior.radial_and_circumferential = false; 
+posterior.radial_and_circumferential = false; 
 
-if ~valve.posterior.radial_and_circumferential 
-    [valve.posterior.free_edge_idx_left valve.posterior.free_edge_idx_right] = get_free_edge_ranges(valve.posterior);
+if ~posterior.radial_and_circumferential 
+    [posterior.free_edge_idx_left posterior.free_edge_idx_right] = get_free_edge_ranges(posterior);
 else
     error('Radial and circumferential fibers not implemented ')
 end 
 
 
 % Reference configuration 
-[valve.posterior.R valve.posterior.is_internal valve.posterior.is_bc] = build_reference_surface(valve.posterior); 
+[posterior.R posterior.is_internal posterior.is_bc] = build_reference_surface(posterior); 
 
 % Initial configuration is reference configuration 
-valve.posterior.X = valve.posterior.R;  
+posterior.X = posterior.R;  
 
 % Spring constants in two directions 
-valve.posterior.alpha    = 1.0; 
-valve.posterior.beta     = 1.0; 
-valve.posterior.p_0      = 0.0; % no pressure for now 
-valve.posterior.ref_frac = 0.7; % generic spring constants reduced by this much 
+posterior.alpha    = 1.0; 
+posterior.beta     = 1.0; 
+posterior.p_0      = 0.0; % no pressure for now 
+posterior.ref_frac = 0.7; % generic spring constants reduced by this much 
 
-valve.posterior.chordae_tree = true; 
-
-
-if valve.posterior.chordae_tree
-    valve.posterior.k_0          = 1.0; 
-    valve.posterior.k_multiplier = 1.8;  % 2.0; 
-    valve.posterior.tree_frac    = 0.5;
-    valve.posterior.chordae      = add_chordae(valve.posterior); 
+posterior.chordae_tree = true; 
+if posterior.chordae_tree
+    posterior.k_0          = 1.0; 
+    posterior.k_multiplier = 1.8;  % 2.0; 
+    posterior.tree_frac    = 0.5;
+    posterior.chordae      = add_chordae(posterior); 
 else 
     error('Non-tree chordae not implemented'); 
 end 
 
-fig = surf_plot(valve.posterior); 
-title('Reference configuration of posterior surface'); 
+valve.posterior = posterior; 
 
 
 % anterior leaflet data structure 
-% valve.anterior  = struct; 
+anterior.N           = N; 
+anterior.reflect_z   = false; 
+anterior.total_angle = pi; 
+anterior.min_angle   = -anterior.total_angle/2.0; 
+anterior.max_angle   =  anterior.total_angle/2.0; 
+
+anterior.filter.a        = 1.0; 
+anterior.filter.h        = 4.0; 
+anterior.filter.r        = valve.r; 
+anterior.left_papillary  = valve.left_papillary; 
+anterior.right_papillary = valve.right_papillary; 
 
 
+% Radial and circumferential fibers 
+% Or diagonally oriented fibers 
+anterior.radial_and_circumferential = false; 
 
+if ~anterior.radial_and_circumferential 
+    [anterior.free_edge_idx_left anterior.free_edge_idx_right] = get_free_edge_ranges(anterior);
+else
+    error('Radial and circumferential fibers not implemented ')
+end 
+
+
+% Reference configuration 
+[anterior.R anterior.is_internal anterior.is_bc] = build_reference_surface(anterior); 
+
+% Initial configuration is reference configuration 
+anterior.X = anterior.R;  
+
+% Spring constants in two directions 
+anterior.alpha    = 1.0; 
+anterior.beta     = 1.0; 
+anterior.p_0      = 0.0; % no pressure for now 
+anterior.ref_frac = 0.7; % generic spring constants reduced by this much 
+
+anterior.chordae_tree = true; 
+
+
+if anterior.chordae_tree
+    anterior.k_0          = 1.0; 
+    anterior.k_multiplier = 1.8;  % 2.0; 
+    anterior.tree_frac    = 0.5;
+    anterior.chordae      = add_chordae(anterior); 
+else 
+    error('Non-tree chordae not implemented'); 
+end 
+
+valve.anterior = anterior; 
 
 
 
