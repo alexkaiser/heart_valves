@@ -38,7 +38,7 @@ X_config_is_reference = true;
 % places this many exact copies of the leaflet downward in z 
 % spring constants are all reduced by num_copies 
 % spacing is always half a mesh width 
-num_copies = 3; 
+num_copies = 1; 
 
 collagen_springs_leaflet = true; 
 

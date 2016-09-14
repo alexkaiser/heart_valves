@@ -267,7 +267,7 @@ function total_vertices = vertex_string(vertex, coords, total_vertices)
     % FIXME!!! 
     global z_offset
     
-    fprintf(vertex, '%.14f\t %.14f\t %14f\n', coords(1), coords(2), coords(3) + z_offset); 
+    fprintf(vertex, '%.14f\t %.14f\t %.14f\n', coords(1), coords(2), coords(3) + z_offset); 
     total_vertices = total_vertices + 1; 
 end
 
@@ -307,30 +307,21 @@ end
 function [] = prepend_line_with_int(file_name, val)
     % Adds a single line to the file with given name
     % at the beginning with the integer val 
-    % 
-    % Out of place and wasteful
+    % writes a temp file then calls cat 
 
-    read = fopen(file_name, 'r'); 
     
-    write = fopen(strcat(file_name, '.tmp'), 'w'); 
-    
-    % write the line...
+    write = fopen('temp.txt', 'w'); 
     fprintf(write, '%d\n', val); 
-    
-    % now just copy all the lines over 
-    tline = fgetl(read);
-    while ischar(tline)
-        fprintf(write, strcat(tline, '\n')); 
-        tline = fgetl(read);
-    end
-
-    fclose(read); 
     fclose(write); 
     
-    % clobber the old file with the temp file
-    movefile(strcat(file_name, '.tmp'), file_name); 
+    file_temp = strcat(file_name, '.tmp'); 
+    
+    system(sprintf('cat temp.txt %s > %s', file_name, file_temp));
+    movefile(file_temp, file_name); 
+    system('rm temp.txt'); 
 
 end 
+
 
 function [global_idx, total_vertices, total_springs, total_targets, params] = ...
                 add_leaflet(params, filter_params, spring, vertex, target, ...

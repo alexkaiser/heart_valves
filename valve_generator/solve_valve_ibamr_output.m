@@ -17,7 +17,7 @@ chordae_tree = true;
 a = 1; 
 r = 1.5; 
 h = 3; 
-N = 256; 
+N = 64; 
 
 arbitrary_papillary_points = true; 
 if arbitrary_papillary_points 
