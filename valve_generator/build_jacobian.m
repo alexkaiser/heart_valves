@@ -8,17 +8,19 @@ function J = build_jacobian(leaflet)
     % Output 
     %      J         Jacobian of difference equations 
 
-    X        = leaflet.X; 
-    R        = leaflet.R; 
-    N        = leaflet.N; 
-    p_0      = leaflet.p_0; 
-    alpha    = leaflet.alpha; 
-    beta     = leaflet.beta; 
-    ref_frac = leaflet.ref_frac; 
-    C_left   = leaflet.chordae.C_left; 
-    C_right  = leaflet.chordae.C_right; 
-    Ref_l    = leaflet.chordae.Ref_l; 
-    Ref_r    = leaflet.chordae.Ref_r; 
+    X                 = leaflet.X; 
+    R                 = leaflet.R; 
+    N                 = leaflet.N; 
+    p_0               = leaflet.p_0; 
+    alpha             = leaflet.alpha; 
+    beta              = leaflet.beta; 
+    ref_frac          = leaflet.ref_frac; 
+    C_left            = leaflet.chordae.C_left; 
+    C_right           = leaflet.chordae.C_right; 
+    Ref_l             = leaflet.chordae.Ref_l; 
+    Ref_r             = leaflet.chordae.Ref_r; 
+    is_internal       = leaflet.is_internal; 
+    linear_idx_offset = leaflet.linear_idx_offset; 
     
     if leaflet.radial_and_circumferential
         error('Radial and circumferential fibers not implemented')
@@ -61,12 +63,10 @@ function J = build_jacobian(leaflet)
                  
     for j=1:N
         for k=1:N
-            
-            % in the triangle?
-            if (j+k) < (N+2)
+            if leaflet.is_internal(j,k)
 
                 % vertical offset does not change while differentiating this equation 
-                range_current = linear_index_offset(j,k,N) + (1:3); 
+                range_current = linear_idx_offset(j,k) + (1:3); 
 
 
                 % pressure portion 
@@ -93,8 +93,8 @@ function J = build_jacobian(leaflet)
                             % nbr term
                             % nbr gets differentiated away, and nbr_next stays 
                             % only added if this is internal 
-                            if is_internal(j_nbr,k_nbr,N)
-                                range_nbr       = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
+                            if is_internal(j_nbr,k_nbr)
+                                range_nbr       = linear_idx_offset(j_nbr,k_nbr) + (1:3);
                                 block = - (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));
                                 place_tmp_block(range_current, range_nbr, block); 
                             end 
@@ -102,8 +102,8 @@ function J = build_jacobian(leaflet)
                             % nbr_next term
                             % nbr_next gets differentiated away, and nbr stays and gets a sign 
                             % only added if this is internal 
-                            if is_internal(j_nbr_next,k_nbr_next,N)
-                                range_nbr_next  = linear_index_offset(j_nbr_next,k_nbr_next,N) + (1:3);
+                            if is_internal(j_nbr_next,k_nbr_next)
+                                range_nbr_next  = linear_idx_offset(j_nbr_next,k_nbr_next) + (1:3);
                                 block = (p_0/6) * cross_matrix(X(:,j_nbr,k_nbr) - X(:,j,k)); 
                                 place_tmp_block(range_current, range_nbr_next, block); 
                             end 
@@ -129,15 +129,15 @@ function J = build_jacobian(leaflet)
                     
                     % If the neighbor is an internal point, it also gets a Jacobian contribution 
                     % This takes a sign
-                    if is_internal(j_nbr,k_nbr,N)
-                        range_nbr  = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
+                    if (j_nbr > 0) && (k_nbr > 0) && is_internal(j_nbr,k_nbr)
+                        range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
                         place_tmp_block(range_current, range_nbr, -J_tension); 
 
                     % If neighbor is on the chordae, it has a non zero index 
                     % This is included here 
                     elseif idx_chordae ~= 0
                         range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side);
-                        place_tmp_block(range_current, range_nbr, - J_tension); 
+                        place_tmp_block(range_current, range_nbr, -J_tension); 
                     end 
                 end 
 
@@ -158,15 +158,15 @@ function J = build_jacobian(leaflet)
 
                     % If the neighbor is an internal point, it also gets a Jacobian contribution 
                     % This takes a sign
-                    if is_internal(j_nbr,k_nbr,N)
-                        range_nbr  = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
-                        place_tmp_block(range_current, range_nbr, - J_tension); 
+                    if (j_nbr > 0) && (k_nbr > 0) && is_internal(j_nbr,k_nbr)
+                        range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
+                        place_tmp_block(range_current, range_nbr, -J_tension); 
 
                     % If neighbor is on the chordae, it has a non zero index 
                     % This is included here 
                     elseif idx_chordae ~= 0
                         range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side); 
-                        place_tmp_block(range_current, range_nbr, - J_tension); 
+                        place_tmp_block(range_current, range_nbr, -J_tension); 
                     end 
 
                 end 
@@ -208,7 +208,7 @@ function J = build_jacobian(leaflet)
                     range_nbr = range_chordae(total_internal, N_chordae, nbr_idx, left_side); 
                 else
                     % neighbor is on the leaflet 
-                    range_nbr = linear_index_offset(j_nbr,k_nbr,N) + (1:3);
+                    range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
                 end 
 
                 % tension Jacobian for this spring 

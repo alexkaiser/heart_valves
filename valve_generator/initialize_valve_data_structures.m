@@ -52,9 +52,11 @@ else
     error('Radial and circumferential fibers not implemented ')
 end 
 
+% information about geometry 
+[posterior.is_internal posterior.is_bc posterior.linear_idx_offset] = get_util_arrays(posterior); 
 
 % Reference configuration 
-[posterior.R posterior.is_internal posterior.is_bc] = build_reference_surface(posterior); 
+posterior.R = build_reference_surface(posterior); 
 
 % Initial configuration is reference configuration 
 posterior.X = posterior.R;  
@@ -102,9 +104,11 @@ else
     error('Radial and circumferential fibers not implemented ')
 end 
 
+% information about geometry 
+[anterior.is_internal anterior.is_bc anterior.linear_idx_offset] = get_util_arrays(anterior); 
 
 % Reference configuration 
-[anterior.R anterior.is_internal anterior.is_bc] = build_reference_surface(anterior); 
+anterior.R = build_reference_surface(anterior); 
 
 % Initial configuration is reference configuration 
 anterior.X = anterior.R;  

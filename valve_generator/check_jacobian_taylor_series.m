@@ -49,9 +49,11 @@ else
     error('Radial and circumferential fibers not implemented ')
 end 
 
+% information about geometry 
+[leaflet.is_internal leaflet.is_bc leaflet.linear_idx_offset] = get_util_arrays(leaflet); 
 
 % Reference configuration 
-[leaflet.R leaflet.is_internal leaflet.is_bc] = build_reference_surface(leaflet); 
+leaflet.R = build_reference_surface(leaflet); 
 
 % Initial configuration is reference configuration 
 leaflet.X = leaflet.R;  

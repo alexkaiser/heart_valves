@@ -44,9 +44,7 @@ pressure_nbrs = [ 0, -1;
 
 for j=1:N
     for k=1:N
-
-        % in the triangle?
-        if (j+k) < (N+2)
+        if leaflet.is_internal(j,k)
 
             % pressure term first  
             pressure_term = zeros(3,1); 

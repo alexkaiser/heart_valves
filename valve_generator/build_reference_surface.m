@@ -1,11 +1,10 @@
-function [X is_internal is_bc]= build_reference_surface(leaflet)
+function [X] = build_reference_surface(leaflet)
 %
 % Builds reference coffee cone surface 
 % 
 % Mesh has a triangular layout 
 % j==1 and k==1 are assumed to be the free edge 
 % j+k == N+2 is the valve ring 
-% 
 % 
 % 
 
@@ -21,8 +20,6 @@ if ~leaflet.radial_and_circumferential
     
     X           = zeros(3,N+1,N+1); 
     X_flat      = zeros(2,N+1,N+1); 
-    is_internal = zeros(N+1, N+1); 
-    is_bc       = zeros(N+1, N+1); 
 
     mesh = linspace(leaflet.min_angle, leaflet.max_angle, N+1); 
     ring_half = [r*cos(mesh); r*sin(mesh); h*ones(size(mesh))]; 
@@ -36,19 +33,15 @@ if ~leaflet.radial_and_circumferential
         % adjust final height so ring is in z = 0 plane 
         X(3,j,k) = X(3,j,k) - h; 
 
-        % ring points are boundary conditions 
-        is_bc(j,k) = true; 
     end 
 
     % fill in the 3d array 
     for j=1:N
         for k=1:N
-            % in the triangle? 
-            if ((j+k) < (N+2))
+            if leaflet.is_internal(j,k)
                 X_flat(:,j,k)    = compute_intersection(X_flat, j, k, leaflet); 
                 X(:,j,k)         = cone_filter(X_flat(1,j,k), X_flat(2,j,k), leaflet); 
                 X(3,j,k)         = X(3,j,k) - h; 
-                is_internal(j,k) = true;  
             end
         end 
     end
