@@ -18,7 +18,7 @@ for p_0 = p_range
         fprintf('Global solve failed posterior, err = %f\n\n', err_posterior); 
     end
 
-    [valve.anterior pass err_anterior] = solve_valve_auto_continuation(valve.posterior, valve.tol_global, valve.max_it, 'anterior'); 
+    [valve.anterior pass err_anterior] = solve_valve_auto_continuation(valve.anterior, valve.tol_global, valve.max_it, 'anterior'); 
     
     if pass 
         fprintf('Global solve passed anterior, err = %f\n\n', err_anterior); 

@@ -29,7 +29,7 @@ if leaflet.reflect_x
 end 
 
 % open the figure if not passed in 
-if nargin < 3
+if ~exist('fig', 'var')
     fig = figure; 
 end 
 

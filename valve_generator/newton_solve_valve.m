@@ -1,4 +1,4 @@
-function [leaflet pass it] = newton_solve_valve(leaflet, tol, max_it) 
+function [leaflet pass err] = newton_solve_valve(leaflet, tol, max_it) 
 %
 % Full valve build. 
 % Solves the nonlinear difference equations at each component. 
@@ -23,9 +23,6 @@ function [leaflet pass it] = newton_solve_valve(leaflet, tol, max_it)
 pass = true; 
 err = total_global_err(leaflet); 
 it = 0; 
-
-debug = false; 
-if debug, 'initial', leaflet.X(:,1:2,1:2), end 
 
 % newton step loop 
 while err > tol
@@ -62,8 +59,6 @@ while err > tol
     [F F_chordae_left F_chordae_right] = difference_equations(leaflet); 
     F_linearized      = linearize_internal_points(leaflet, F, F_chordae_left, F_chordae_right); 
     X_linearized_prev = linearize_internal_points(leaflet, leaflet.X, leaflet.chordae.C_left, leaflet.chordae.C_right); 
-
-    if debug, 'linearized first few', X_linearized_prev(1:9), end 
     
     % solve the system,
     soln = J \ (-F_linearized); 
@@ -73,8 +68,6 @@ while err > tol
 
     % copy data back to 2d 
     leaflet = internal_points_to_2d(X_linearized, leaflet); 
-
-    if debug, 'current', leaflet.X(:,1:2,1:2), end 
     
     err = total_global_err(leaflet);         
     
