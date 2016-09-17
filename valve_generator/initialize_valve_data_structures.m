@@ -99,7 +99,7 @@ anterior.right_papillary = valve.right_papillary;
 anterior.radial_and_circumferential = false; 
 
 if ~anterior.radial_and_circumferential 
-    [anterior.free_edge_idx_left anterior.free_edge_idx_right posterior.chordae_idx_left posterior.chordae_idx_right] = get_free_edge_ranges(anterior);
+    [anterior.free_edge_idx_left anterior.free_edge_idx_right anterior.chordae_idx_left anterior.chordae_idx_right] = get_free_edge_ranges(anterior);
 else
     error('Radial and circumferential fibers not implemented ')
 end 

@@ -32,7 +32,7 @@ function J = build_jacobian(leaflet)
     [m N_chordae] = size(C_left); 
     
     % total internal points in triangular domain 
-    total_internal = 3*N*(N+1)/2; % 3*sum(is_internal)
+    total_internal = 3*sum(is_internal(:)); 
     total_points   = total_internal + 3*2*N_chordae; 
 
     % there are fewer than 15 nnz per row
