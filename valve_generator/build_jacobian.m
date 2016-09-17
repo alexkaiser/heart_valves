@@ -21,6 +21,9 @@ function J = build_jacobian(leaflet)
     Ref_r             = leaflet.chordae.Ref_r; 
     is_internal       = leaflet.is_internal; 
     linear_idx_offset = leaflet.linear_idx_offset; 
+    chordae_idx_left  = leaflet.chordae_idx_left; 
+    chordae_idx_right = leaflet.chordae_idx_right; 
+    
     
     if leaflet.radial_and_circumferential
         error('Radial and circumferential fibers not implemented')
@@ -29,7 +32,7 @@ function J = build_jacobian(leaflet)
     [m N_chordae] = size(C_left); 
     
     % total internal points in triangular domain 
-    total_internal = 3*N*(N+1)/2; 
+    total_internal = 3*N*(N+1)/2; % 3*sum(is_internal)
     total_points   = total_internal + 3*2*N_chordae; 
 
     % there are fewer than 15 nnz per row
@@ -60,7 +63,8 @@ function J = build_jacobian(leaflet)
                      -1,  1; 
                      -1,  0]';   
 
-                 
+    % All leaflet terms, no chordae 
+    % Zero indices always ignored 
     for j=1:N
         for k=1:N
             if leaflet.is_internal(j,k)
@@ -115,30 +119,35 @@ function J = build_jacobian(leaflet)
 
                 % u tension terms 
                 for j_nbr = [j-1,j+1]
-
-                    k_nbr = k; 
-
-                    [X_nbr R_nbr idx_chordae left_side] = get_neighbor(leaflet, j_nbr, k_nbr); 
-
-                    J_tension = tension_jacobian(X(:,j,k),X_nbr,R(:,j,k),R_nbr,alpha,ref_frac); 
-
-                    % current term is always added in 
-                    % this gets no sign 
-                    % this is always at the current,current block in the matrix 
-                    place_tmp_block(range_current, range_current, J_tension); 
                     
-                    % If the neighbor is an internal point, it also gets a Jacobian contribution 
-                    % This takes a sign
-                    if (j_nbr > 0) && (k_nbr > 0) && is_internal(j_nbr,k_nbr)
-                        range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
-                        place_tmp_block(range_current, range_nbr, -J_tension); 
+                    k_nbr = k; 
+                    
+                    if (j_nbr > 0) && (k_nbr > 0) && (leaflet.is_internal(j_nbr,k_nbr) || leaflet.is_bc(j_nbr,k_nbr))
 
-                    % If neighbor is on the chordae, it has a non zero index 
-                    % This is included here 
-                    elseif idx_chordae ~= 0
-                        range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side);
-                        place_tmp_block(range_current, range_nbr, -J_tension); 
+                        J_tension = tension_jacobian(X(:,j,k),X(:,j_nbr,k_nbr),R(:,j,k),R(:,j_nbr,k_nbr),alpha,ref_frac); 
+
+                        % current term is always added in 
+                        % this gets no sign 
+                        % this is always at the current,current block in the matrix 
+                        place_tmp_block(range_current, range_current, J_tension); 
+
+                        % If the neighbor is an internal point, it also gets a Jacobian contribution 
+                        % This takes a sign
+                        if is_internal(j_nbr,k_nbr)
+                            range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
+                            place_tmp_block(range_current, range_nbr, -J_tension); 
+                        end 
+
+% chordae stuff, remove                         
+%                     % If neighbor is on the chordae, it has a non zero index 
+%                     % This is included here 
+%                     elseif idx_chordae ~= 0
+%                         range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side);
+%                         place_tmp_block(range_current, range_nbr, -J_tension); 
+
+                    
                     end 
+
                 end 
 
 
@@ -146,36 +155,104 @@ function J = build_jacobian(leaflet)
                 for k_nbr = [k-1,k+1]
 
                     j_nbr = j; 
+                    
+                    if (j_nbr > 0) && (k_nbr > 0) && (leaflet.is_internal(j_nbr,k_nbr) || leaflet.is_bc(j_nbr,k_nbr))
 
-                    [X_nbr R_nbr idx_chordae left_side] = get_neighbor(leaflet, j_nbr, k_nbr); 
+                        J_tension = tension_jacobian(X(:,j,k),X(:,j_nbr,k_nbr),R(:,j,k),R(:,j_nbr,k_nbr),beta,ref_frac); 
 
-                    J_tension = tension_jacobian(X(:,j,k),X_nbr,R(:,j,k),R_nbr,beta,ref_frac); 
+                        % current term is always added in 
+                        % this gets no sign 
+                        % this is always at the current,current block in the matrix 
+                        place_tmp_block(range_current, range_current, J_tension); 
 
+                        % If the neighbor is an internal point, it also gets a Jacobian contribution 
+                        % This takes a sign
+                        if (j_nbr > 0) && (k_nbr > 0) && is_internal(j_nbr,k_nbr)
+                            range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
+                            place_tmp_block(range_current, range_nbr, -J_tension); 
+
+%                     % If neighbor is on the chordae, it has a non zero index 
+%                     % This is included here 
+%                     elseif idx_chordae ~= 0
+%                         range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side); 
+%                         place_tmp_block(range_current, range_nbr, -J_tension); 
+                        end 
+                    
+                    end 
+
+                end
+                
+                
+                if chordae_idx_left(j,k)
+                    % current node has a chordae connection 
+                    
+                    left_side = true; 
+                    
+                    kappa = leaflet.chordae.k_0; 
+                    
+                    % index that free edge would have if on tree
+                    % remember that leaves are only in the leaflet 
+                    leaf_idx = chordae_idx_left(j,k) + N_chordae; 
+                    
+                    % then take the parent index of that number in chordae variables 
+                    idx_chordae = floor(leaf_idx/2);  
+                    
+                    X_nbr = leaflet.chordae.C_left(:,idx_chordae); 
+                    R_nbr = leaflet.chordae.Ref_l (:,idx_chordae);
+                    
+                    J_tension = tension_jacobian(X(:,j,k),X_nbr,R(:,j,k),R_nbr,kappa,ref_frac); 
+                    
                     % current term is always added in 
                     % this gets no sign 
                     % this is always at the current,current block in the matrix 
                     place_tmp_block(range_current, range_current, J_tension); 
-
-                    % If the neighbor is an internal point, it also gets a Jacobian contribution 
-                    % This takes a sign
-                    if (j_nbr > 0) && (k_nbr > 0) && is_internal(j_nbr,k_nbr)
-                        range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
-                        place_tmp_block(range_current, range_nbr, -J_tension); 
-
-                    % If neighbor is on the chordae, it has a non zero index 
-                    % This is included here 
-                    elseif idx_chordae ~= 0
-                        range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side); 
-                        place_tmp_block(range_current, range_nbr, -J_tension); 
-                    end 
-
+                    
+                    % chordae range 
+                    range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side); 
+                    place_tmp_block(range_current, range_nbr, -J_tension); 
+                    
+                end 
+                
+                
+                if chordae_idx_right(j,k)
+                    % current node has a chordae connection 
+                    
+                    left_side = false; 
+                    
+                    kappa = leaflet.chordae.k_0; 
+                    
+                    % index that free edge would have if on tree
+                    % remember that leaves are only in the leaflet 
+                    leaf_idx = chordae_idx_right(j,k) + N_chordae; 
+                    
+                    % then take the parent index of that number in chordae variables 
+                    idx_chordae = floor(leaf_idx/2);  
+                    
+                    X_nbr = leaflet.chordae.C_right(:,idx_chordae); 
+                    R_nbr = leaflet.chordae.Ref_r  (:,idx_chordae);
+                    
+                    J_tension = tension_jacobian(X(:,j,k),X_nbr,R(:,j,k),R_nbr,kappa,ref_frac); 
+                    
+                    % current term is always added in 
+                    % this gets no sign 
+                    % this is always at the current,current block in the matrix 
+                    place_tmp_block(range_current, range_current, J_tension); 
+                    
+                    % chordae range 
+                    range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side); 
+                    place_tmp_block(range_current, range_nbr, -J_tension); 
+                    
                 end 
 
             end
         end
     end
 
-
+    
+    
+    
+    
+    
 
 
     % chordae internal terms 

@@ -5,7 +5,7 @@ function [nbr R_nbr k_val j k] = get_nbr_chordae(leaflet, i, nbr_idx, left_side)
 % Takes into account all boundary conditions 
 % 
 % Input
-%     leaflet      Current main data structure 
+%     leaflet     Current main data structure 
 %     i           Index in the chordae tree 
 %     nbr_idx     Index of the neighbor in chordae tree 
 %     left_side   True if on the left tree 
@@ -52,12 +52,13 @@ if nbr_idx == 0
 % then they may be on the leaflet 
 elseif nbr_idx > max_internal
     
+    free_edge_idx = nbr_idx - max_internal; 
     if left_side 
-        j = 1; 
-        k = nbr_idx - max_internal; 
+        j = leaflet.free_edge_idx_left (free_edge_idx,1); 
+        k = leaflet.free_edge_idx_left (free_edge_idx,2); 
     else 
-        j = nbr_idx - max_internal; 
-        k = 1; 
+        j = leaflet.free_edge_idx_right(free_edge_idx,1); 
+        k = leaflet.free_edge_idx_right(free_edge_idx,2); 
     end 
     
     nbr   = X(:,j,k); 

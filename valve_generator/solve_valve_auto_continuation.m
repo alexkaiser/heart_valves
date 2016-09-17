@@ -21,8 +21,8 @@ fprintf('Initial solve failed, applying adaptive continuation\n');
 % copy the last correct parameters 
 leaflet_okay = leaflet; 
 
-ref_current   = ref_frac / 2; 
-ref_increment = ref_frac / 4; 
+ref_current   = leaflet.ref_frac / 2; 
+ref_increment = leaflet.ref_frac / 4; 
 
 ever_passed = false; 
 
@@ -42,7 +42,7 @@ while true
             save(data_name); 
         end
         
-        if ref_current == ref_frac
+        if ref_current == leaflet.ref_frac
             break
         end 
         
@@ -50,7 +50,7 @@ while true
         ref_last_passed = ref_current; 
         
         % increment, but do not pass goal 
-        ref_current = min(ref_current + ref_increment, ref_frac);
+        ref_current = min(ref_current + ref_increment, leaflet.ref_frac);
         leaflet_okay = leaflet_current; 
         
     else

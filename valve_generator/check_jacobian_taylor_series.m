@@ -11,7 +11,7 @@ epsilon_vals = 10.^(-1:-1:-8);
 
 errors = zeros(size(epsilon_vals)); 
 
-N = 4; 
+N = 8; 
 
 % Valve skeleton parameters 
 valve.r = 1.5; 
@@ -44,7 +44,7 @@ end
 leaflet.radial_and_circumferential = false; 
 
 if ~leaflet.radial_and_circumferential 
-    [leaflet.free_edge_idx_left leaflet.free_edge_idx_right] = get_free_edge_ranges(leaflet);
+    [leaflet.free_edge_idx_left leaflet.free_edge_idx_right leaflet.chordae_idx_left leaflet.chordae_idx_right] = get_free_edge_ranges(leaflet);
 else
     error('Radial and circumferential fibers not implemented ')
 end 
@@ -168,7 +168,7 @@ for k=1:leaflet.N
 
                 diffs = F_perturbed_linearized - F_linearized - ep*J*Z_linearized; 
 
-                range = linear_index_offset(j,k,N) + (1:3);                     
+                range = leaflet_perturbation.linear_idx_offset(j,k) + (1:3);                     
                 errors(i) = norm(diffs(range)); 
 
                 fprintf('%e\t | %e \n', ep, errors(i)); 
