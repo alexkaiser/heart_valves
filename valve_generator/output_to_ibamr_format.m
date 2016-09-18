@@ -94,6 +94,22 @@ function [] = output_to_ibamr_format(valve)
         k_rel_leaflet = ds / num_copies; 
     end 
     
+    if posterior.reflect_x
+        posterior.X(1,:,:)                   = -posterior.X(1,:,:); 
+        posterior.R(1,:,:)                   = -posterior.R(1,:,:); 
+        posterior.left_papillary(1)          = -posterior.left_papillary(1); 
+        posterior.right_papillary(1)         = -posterior.right_papillary(1); 
+        posterior.chordae.C_left (1,:,:)     = -posterior.chordae.C_left (1,:,:);
+        posterior.chordae.C_right(1,:,:)     = -posterior.chordae.C_right(1,:,:);
+        posterior.chordae.left_papillary(1)  = -posterior.chordae.left_papillary(1); 
+        posterior.chordae.right_papillary(1) = -posterior.chordae.right_papillary(1); 
+    end 
+    
+    if anterior.reflect_x
+        warning('Something strange, should not be reflecting on anterior leaflet')
+    end 
+    
+    
     
     % copies, if needed, will be placed this far down 
     if num_copies > 1
@@ -438,7 +454,7 @@ function [global_idx, total_vertices, total_springs, total_targets, leaflet] = .
                 if (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr, k_nbr))
                     
                     rest_len = ref_frac * norm(R(:,j_nbr,k_nbr) - R(:,j,k)); 
-                    nbr_idx = global_idx + vertex_index_offset(j+1,k,N);
+                    nbr_idx = global_idx + vertex_index_offset(j_nbr,k_nbr,N);
                     
                     if collagen_spring
                         kappa = k_rel;         
@@ -456,7 +472,7 @@ function [global_idx, total_vertices, total_springs, total_targets, leaflet] = .
                 if (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr, k_nbr))
                     
                     rest_len = ref_frac * norm(R(:,j_nbr,k_nbr) - R(:,j,k)); 
-                    nbr_idx = global_idx + vertex_index_offset(j+1,k,N);
+                    nbr_idx = global_idx + vertex_index_offset(j_nbr,k_nbr,N);
                     
                     if collagen_spring
                         kappa = k_rel;         
