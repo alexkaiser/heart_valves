@@ -333,8 +333,8 @@ function [global_idx, total_vertices, total_springs, total_targets, leaflet] = .
     % Unpack needed data 
     X                 = leaflet.X; 
     R                 = leaflet.R; 
-    N                 = leaflet.N; 
-    is_internal       = leaflet.is_internal; 
+    is_internal       = leaflet.is_internal;
+    point_idx_with_bc = leaflet.point_idx_with_bc; 
     is_bc             = leaflet.is_bc; 
     chordae           = leaflet.chordae;
     chordae_idx_left  = leaflet.chordae_idx_left; 
@@ -370,7 +370,7 @@ function [global_idx, total_vertices, total_springs, total_targets, leaflet] = .
             % every internal and boundary point written to the file 
             if is_internal(j,k) || is_bc(j,k)
                 
-                idx = global_idx + vertex_index_offset(j,k,N);    
+                idx = global_idx + point_idx_with_bc(j,k);    
                 
                 total_vertices = vertex_string(vertex, X(:,j,k), total_vertices); 
                 
@@ -454,7 +454,7 @@ function [global_idx, total_vertices, total_springs, total_targets, leaflet] = .
                 if (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr, k_nbr))
                     
                     rest_len = ref_frac * norm(R(:,j_nbr,k_nbr) - R(:,j,k)); 
-                    nbr_idx = global_idx + vertex_index_offset(j_nbr,k_nbr,N);
+                    nbr_idx = global_idx + point_idx_with_bc(j_nbr,k_nbr);
                     
                     if collagen_spring
                         kappa = k_rel;         
@@ -472,7 +472,7 @@ function [global_idx, total_vertices, total_springs, total_targets, leaflet] = .
                 if (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr, k_nbr))
                     
                     rest_len = ref_frac * norm(R(:,j_nbr,k_nbr) - R(:,j,k)); 
-                    nbr_idx = global_idx + vertex_index_offset(j_nbr,k_nbr,N);
+                    nbr_idx = global_idx + point_idx_with_bc(j_nbr,k_nbr);
                     
                     if collagen_spring
                         kappa = k_rel;         

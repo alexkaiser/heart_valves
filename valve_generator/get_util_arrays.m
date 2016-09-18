@@ -1,4 +1,4 @@
-function [is_internal is_bc linear_idx_offset] = get_util_arrays(leaflet)
+function [is_internal is_bc linear_idx_offset point_idx_with_bc] = get_util_arrays(leaflet)
 % 
 % Returns three arrays with information about the geometry 
 % 
@@ -19,15 +19,19 @@ else
     is_internal       = zeros(N+1, N+1); 
     is_bc             = zeros(N+1, N+1);
     linear_idx_offset = zeros(N+1, N+1);
+    point_idx_with_bc = zeros(N+1, N+1); 
+    
+    j_max = N+1; 
+    k_max = N+1; 
     
     k = N+1; 
-    for j=1:N+1
+    for j=1:j_max
         is_bc(j,k) = true;
         k = k-1; 
     end 
     
-    for j=1:N
-        for k=1:N
+    for j=1:j_max
+        for k=1:k_max
             % in the triangle? 
             if ((j+k) < (N+2))
                 is_internal(j,k) = true;  
@@ -36,14 +40,26 @@ else
     end 
     
     count = 0; 
-    for k=1:N
-        for j=1:N
+    for k=1:k_max
+        for j=1:j_max
             if is_internal(j,k)
                 linear_idx_offset(j,k) = count; 
                 count = count + 3; 
             end 
         end 
-    end     
+    end
+    
+    count = 0;
+    for k=1:k_max
+        for j=1:j_max
+            if is_internal(j,k) || is_bc(j,k)
+                point_idx_with_bc(j,k) = count; 
+                count = count + 1; 
+            end 
+        end 
+    end
+    
+    
     
 end 
 

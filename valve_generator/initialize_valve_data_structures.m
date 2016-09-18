@@ -95,7 +95,7 @@ else
 end 
 
 % information about geometry 
-[posterior.is_internal posterior.is_bc posterior.linear_idx_offset] = get_util_arrays(posterior); 
+[posterior.is_internal posterior.is_bc posterior.linear_idx_offset posterior.point_idx_with_bc] = get_util_arrays(posterior); 
 
 % Reference configuration 
 posterior.R = build_reference_surface(posterior); 
@@ -147,7 +147,7 @@ else
 end 
 
 % information about geometry 
-[anterior.is_internal anterior.is_bc anterior.linear_idx_offset] = get_util_arrays(anterior); 
+[anterior.is_internal anterior.is_bc anterior.linear_idx_offset anterior.point_idx_with_bc] = get_util_arrays(anterior); 
 
 % Reference configuration 
 anterior.R = build_reference_surface(anterior); 
