@@ -1,17 +1,4 @@
-function [] = output_to_ibamr_format(base_name,               ...
-                                     L,                       ...
-                                     ratio,                   ...
-                                     params_posterior,        ...
-                                     filter_params_posterior, ...
-                                     params_anterior,         ...
-                                     filter_params_anterior,  ...
-                                     p_physical,              ...
-                                     target_multiplier,       ...
-                                     refinement,              ...
-                                     n_lagrangian_tracers,    ...
-                                     X_config_is_reference,   ...
-                                     num_copies,              ...
-                                     collagen_springs_leaflet)
+function [] = output_to_ibamr_format(valve)
     % 
     % Outputs the current configuration of the leaflets to IBAMR format
     % Spring constants are computed in dimensional form 
@@ -35,6 +22,20 @@ function [] = output_to_ibamr_format(base_name,               ...
     % Output: 
     %    Files written in IBAMR format 
     % 
+    
+    N                            = valve.N; 
+    base_name                    = valve.base_name; 
+    L                            = valve.L; 
+    pressure_tension_ratio       = valve.pressure_tension_ratio; 
+    posterior                    = valve.posterior; 
+    anterior                     = valve.anterior; 
+    p_physical                   = valve.p_physical; 
+    target_multiplier            = valve.target_multiplier; 
+    refinement                   = valve.refinement; 
+    n_lagrangian_tracers         = valve.n_lagrangian_tracers; 
+    num_copies                   = valve.num_copies; 
+    collagen_springs_leaflet     = valve.collagen_springs_leaflet; 
+    
 
     vertex = fopen(strcat(base_name, '.vertex'), 'w'); 
     spring = fopen(strcat(base_name, '.spring'), 'w'); 
@@ -54,7 +55,7 @@ function [] = output_to_ibamr_format(base_name,               ...
     p_cgs = p_physical * MMHG_TO_CGS; 
 
     % value of the relative spring constant is determined by the ratio 
-    k_rel = p_cgs / ratio; 
+    k_rel = p_cgs / pressure_tension_ratio; 
     k_rel = k_rel / num_copies; 
     
     % base rate for target spring constants
@@ -86,7 +87,7 @@ function [] = output_to_ibamr_format(base_name,               ...
     eta_papillary         = 0.0; %sqrt(k_target/2 * m_effective_papillary); 
     
     % spacing 
-    ds = 2*L / params_anterior.N;
+    ds = 2*L / N;
     
     k_rel_leaflet = k_rel; 
     if collagen_springs_leaflet
@@ -102,33 +103,27 @@ function [] = output_to_ibamr_format(base_name,               ...
     end 
     
     % check for consistency in chordae , all data structures must match 
-    if ~(    all(filter_params_posterior.left_papillary   == params_posterior.chordae.left_papillary)   ...
-          && all(filter_params_posterior.right_papillary  == params_posterior.chordae.right_papillary))
+    if ~(    all(posterior.left_papillary   == posterior.chordae.left_papillary)   ...
+          && all(posterior.right_papillary  == posterior.chordae.right_papillary))
         error('Posterior chordae are inconsistent'); 
     end 
         
-    if ~(    all(filter_params_anterior.left_papillary   == params_anterior.chordae.left_papillary)   ...
-          && all(filter_params_anterior.right_papillary  == params_anterior.chordae.right_papillary))
+    if ~(    all(anterior.left_papillary   == anterior.chordae.left_papillary)   ...
+          && all(anterior.right_papillary  == anterior.chordae.right_papillary))
         error('Anterior chordae are inconsistent'); 
     end 
     
-    split_papillary_tips = false; 
-    if ~(    all(filter_params_posterior.left_papillary   == filter_params_anterior.left_papillary)   ...
-          && all(filter_params_posterior.right_papillary  == filter_params_anterior.right_papillary))
-        split_papillary_tips = true; 
-    end 
     
-    
-    if X_config_is_reference
-        params_anterior.R               = params_anterior.X; 
-        params_anterior.chordae.Ref_l   = params_anterior.chordae.C_left;  
-        params_anterior.chordae.Ref_r   = params_anterior.chordae.C_right;  
-        params_anterior.ref_frac        = 1.0; 
+    if valve.X_config_is_reference
+        anterior.R               = anterior.X; 
+        anterior.chordae.Ref_l   = anterior.chordae.C_left;  
+        anterior.chordae.Ref_r   = anterior.chordae.C_right;  
+        anterior.ref_frac        = 1.0; 
         
-        params_posterior.R              = params_posterior.X; 
-        params_posterior.chordae.Ref_l  = params_posterior.chordae.C_left;  
-        params_posterior.chordae.Ref_r  = params_posterior.chordae.C_right;  
-        params_posterior.ref_frac       = 1.0;
+        posterior.R              = posterior.X; 
+        posterior.chordae.Ref_l  = posterior.chordae.C_left;  
+        posterior.chordae.Ref_r  = posterior.chordae.C_right;  
+        posterior.ref_frac       = 1.0;
     end 
     
     % ugh this is terrible fix it it makes my head hurt by I'm tired 
@@ -136,74 +131,68 @@ function [] = output_to_ibamr_format(base_name,               ...
     
     for z_offset = z_offset_vals
         
-        left_papillary  = filter_params_posterior.left_papillary; 
-        filter_params_posterior.left_papillary_idx = global_idx; 
+        left_papillary  = posterior.left_papillary; 
+        posterior.left_papillary_idx = global_idx; 
         total_vertices  = vertex_string(vertex, left_papillary, total_vertices); 
         total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
         global_idx      = global_idx + 1; 
 
-        right_papillary = filter_params_posterior.right_papillary; 
-        filter_params_posterior.right_papillary_idx = global_idx; 
+        right_papillary = posterior.right_papillary; 
+        posterior.right_papillary_idx = global_idx; 
         total_vertices  = vertex_string(vertex, right_papillary, total_vertices); 
         total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
         global_idx      = global_idx + 1;     
 
-        if split_papillary_tips
+        if valve.split_papillary
 
-            left_papillary  = filter_params_anterior.left_papillary; 
-            filter_params_anterior.left_papillary_idx = global_idx; 
+            left_papillary  = anterior.left_papillary; 
+            anterior.left_papillary_idx = global_idx; 
             total_vertices  = vertex_string(vertex, left_papillary, total_vertices); 
             total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
             global_idx      = global_idx + 1; 
 
-            right_papillary = filter_params_anterior.right_papillary; 
-            filter_params_anterior.right_papillary_idx = global_idx; 
+            right_papillary = anterior.right_papillary; 
+            anterior.right_papillary_idx = global_idx; 
             total_vertices  = vertex_string(vertex, right_papillary, total_vertices); 
             total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
             global_idx      = global_idx + 1;             
 
         else
-            filter_params_anterior.left_papillary_idx  = filter_params_posterior.left_papillary_idx;
-            filter_params_anterior.right_papillary_idx = filter_params_posterior.right_papillary_idx;  
+            anterior.left_papillary_idx  = posterior.left_papillary_idx;
+            anterior.right_papillary_idx = posterior.right_papillary_idx;  
         end 
 
-
-
+        
         % posterior first 
         % leaflets 
-        [global_idx, total_vertices, total_springs, total_targets, params_posterior] = ...
-            add_leaflet(params_posterior, filter_params_posterior, spring, vertex, target, ...
+        [global_idx, total_vertices, total_springs, total_targets, posterior] = ...
+            add_leaflet(posterior, spring, vertex, target, ...
                         global_idx, total_vertices, total_springs, total_targets, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet); 
 
-        % if chordae exist, then add them 
-        if isfield(params_posterior, 'chordae') && ~isempty(params_posterior.chordae)
+        % posterior chordae 
+        posterior.chordae.left_papillary_idx  = posterior.left_papillary_idx; 
+        posterior.chordae.right_papillary_idx = posterior.right_papillary_idx; 
 
-            params_posterior.chordae.left_papillary_idx  = filter_params_posterior.left_papillary_idx; 
-            params_posterior.chordae.right_papillary_idx = filter_params_posterior.right_papillary_idx; 
-
-            [global_idx, total_vertices, total_springs] = ...
-                    add_chordae_tree(params_posterior, spring, vertex, global_idx, total_vertices, total_springs, k_rel_leaflet, collagen_springs_leaflet);  
-        end
+        [global_idx, total_vertices, total_springs] = ...
+                add_chordae_tree(posterior, spring, vertex, global_idx, total_vertices, total_springs, k_rel_leaflet, collagen_springs_leaflet);  
 
         % anterior 
-        [global_idx, total_vertices, total_springs, total_targets, params_anterior] = ...
-            add_leaflet(params_anterior, filter_params_posterior, spring, vertex, target, ...
+        [global_idx, total_vertices, total_springs, total_targets, anterior] = ...
+            add_leaflet(anterior, spring, vertex, target, ...
                          global_idx, total_vertices, total_springs, total_targets, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet);   
 
-        if isfield(params_anterior, 'chordae') && ~isempty(params_anterior.chordae)
 
-            params_anterior.chordae.left_papillary_idx  = filter_params_anterior.left_papillary_idx; 
-            params_anterior.chordae.right_papillary_idx = filter_params_anterior.right_papillary_idx; 
+        % anterior chordae 
+        anterior.chordae.left_papillary_idx  = anterior.left_papillary_idx; 
+        anterior.chordae.right_papillary_idx = anterior.right_papillary_idx; 
 
-
-            [global_idx, total_vertices, total_springs] = ...
-                    add_chordae_tree(params_anterior, spring, vertex, global_idx, total_vertices, total_springs, k_rel_leaflet, collagen_springs_leaflet);  
-        end 
+        [global_idx, total_vertices, total_springs] = ...
+                add_chordae_tree(anterior, spring, vertex, global_idx, total_vertices, total_springs, k_rel_leaflet, collagen_springs_leaflet);  
 
         % flat part of mesh 
-        r = filter_params_posterior.r; 
-        N_ring = 2 * params_anterior.N;
-        h = 0.0; % now ring always set at zero %filter_params_posterior.h; 
+        r = valve.r; 
+        N_ring = 2 * N;
+        h = 0.0; % ring always set at zero 
         ref_frac_net = 1.0; 
 
         % no radial fibers, instead geodesics from the leaflet 
@@ -214,16 +203,15 @@ function [] = output_to_ibamr_format(base_name,               ...
                                 place_net(r, h, L, N_ring, radial_fibers, spring, vertex, target, inst, ...
                                 global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net); 
 
-
-
+                            
         % place rays for now 
         [global_idx, total_vertices, total_springs, total_targets] = ...
-                                place_rays(params_anterior, filter_params_posterior, L, spring, vertex, target, ...
-                                global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net);                    
+                                place_rays(anterior, L, spring, vertex, target, ...
+                                        global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net);                    
 
         [global_idx, total_vertices, total_springs, total_targets] = ...
-                                place_rays(params_posterior, filter_params_posterior, L, spring, vertex, target, ...
-                                global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net);                    
+                                place_rays(posterior, L, spring, vertex, target, ...
+                                        global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net);                    
 
 
         % flat part of mesh with Cartesian coordinates
@@ -236,9 +224,9 @@ function [] = output_to_ibamr_format(base_name,               ...
     end 
                         
                         
-    if exist('n_lagrangian_tracers', 'var')
+    if n_lagrangian_tracers > 0
         double_z = false; 
-        [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L, filter_params_posterior, double_z); 
+        [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L, double_z); 
         particles = fopen(strcat(base_name, '.particles'), 'w'); 
         fprintf(particles, '%d\n' ,total_lagrangian_placed); 
     end 
@@ -253,8 +241,6 @@ function [] = output_to_ibamr_format(base_name,               ...
     prepend_line_with_int(strcat(base_name, '.spring'), total_springs); 
     prepend_line_with_int(strcat(base_name, '.target'), total_targets); 
 
-
-    
 end 
 
 
@@ -270,8 +256,6 @@ function total_vertices = vertex_string(vertex, coords, total_vertices)
     fprintf(vertex, '%.14f\t %.14f\t %.14f\n', coords(1), coords(2), coords(3) + z_offset); 
     total_vertices = total_vertices + 1; 
 end
-
- 
 
 
 function total_springs = spring_string(spring, idx, nbr, kappa, rest_len, total_springs, function_idx)
@@ -323,39 +307,52 @@ function [] = prepend_line_with_int(file_name, val)
 end 
 
 
-function [global_idx, total_vertices, total_springs, total_targets, params] = ...
-                add_leaflet(params, filter_params, spring, vertex, target, ...
+function [global_idx, total_vertices, total_springs, total_targets, leaflet] = ...
+                add_leaflet(leaflet, spring, vertex, target, ...
                             global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, eta, collagen_spring)
-                                                                                
-% Places all main data into IBAMR format for this leaflet
-% Updates running totals on the way 
+                      
+    % Places all main data into IBAMR format for this leaflet
+    % Updates running totals on the way 
 
-
-    [X,alpha,beta,N,p_0,R,ref_frac] = unpack_params(params); 
-         
+    % Unpack needed data 
+    X                 = leaflet.X; 
+    R                 = leaflet.R; 
+    N                 = leaflet.N; 
+    is_internal       = leaflet.is_internal; 
+    is_bc             = leaflet.is_bc; 
+    chordae           = leaflet.chordae;
+    chordae_idx_left  = leaflet.chordae_idx_left; 
+    chordae_idx_right = leaflet.chordae_idx_right; 
+    ref_frac          = leaflet.ref_frac; 
+    
     if collagen_spring
         function_idx = 1;
     end 
     
-    % Keep track of indices 
-    indices_global = nan * zeros(N+1,N+1); 
+    % On some layouts N may not be the dimension 
+    % because of boundary conditions 
+    j_max = size(X,2); 
+    k_max = size(X,2); 
+    
+    % Keep track of indices     
+    indices_global = nan * zeros(j_max, k_max); 
 
-   
+    % Counter for number of points put down 
     pts_placed = 0; 
     
-
-    if isfield(params, 'chordae') && ~isempty(params.chordae)
-        chordae_tree = true;
-        [m N_chordae] = size(params.chordae.C_left); 
-        total_leaflet = (N+1)*(N+2)/2; 
+    if isfield(leaflet, 'chordae') && ~isempty(chordae)
+        [m N_chordae] = size(leaflet.chordae.C_left); 
+        total_leaflet = sum(is_internal(:)) + sum(is_bc(:)); 
     else 
-        chordae_tree = false;
+        error('Leaflet without chordae not implemented'); 
     end 
     
     
-    for k=1:N+1
-        for j=1:N+1
-            if (j+k) <= (N+2)
+    for k=1:k_max
+        for j=1:j_max
+            
+            % every internal and boundary point written to the file 
+            if is_internal(j,k) || is_bc(j,k)
                 
                 idx = global_idx + vertex_index_offset(j,k,N);    
                 
@@ -363,95 +360,71 @@ function [global_idx, total_vertices, total_springs, total_targets, params] = ..
                 
                 indices_global(j,k) = idx; 
                 
-                % if j==1, connect to the left papillary or chordae tree 
-                if j==1
+                % Connect to the left papillary or chordae tree 
+                if chordae_idx_left(j,k)
                     
-                    if chordae_tree
-                        
-                        % there is one point which is a b.c. which is not included 
-                        if is_internal(j,k,N)
-                        
-                            j_nbr = 0; 
-                            k_nbr = k; 
-                            [X_nbr R_nbr idx_chordae left_side] = get_neighbor(params, filter_params, j_nbr, k_nbr); 
-
-                            nbr_idx = global_idx + total_leaflet + idx_chordae - 1; 
-
-                            % right gets incremented by N_chordae again 
-                            if ~left_side
-                                nbr_idx = nbr_idx + N_chordae; 
-                            end 
-
-                            rest_len = ref_frac * norm(R_nbr - R(:,j,k)); 
-                            
-                            if collagen_spring 
-                                % relative constant here
-                                % other parameters coded into function 
-                                kappa = k_rel * params.chordae.k_0; 
-                                total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs, function_idx); 
-                            else 
-                                kappa = k_rel * params.chordae.k_0 / rest_len; 
-                                total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
-                            end 
-                            
-                        end 
+                    % current node has a chordae connection
                     
+                    % index that free edge would have if on tree
+                    % remember that leaves are only in the leaflet 
+                    leaf_idx = chordae_idx_left(j,k) + N_chordae; 
+
+                    % then take the parent index of that number in chordae variables 
+                    idx_chordae = floor(leaf_idx/2);  
+
+                    R_nbr = leaflet.chordae.Ref_l(:,idx_chordae); 
+
+                    nbr_idx = global_idx + total_leaflet + idx_chordae - 1; 
+
+                    rest_len = ref_frac * norm(R_nbr - R(:,j,k)); 
+
+                    if collagen_spring 
+                        % relative constant here
+                        % other parameters coded into function 
+                        kappa = k_rel * chordae.k_0; 
+                        total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs, function_idx); 
                     else 
-                        error('only tree still supported')
-                        
-                        nbr_idx = filter_params.left_papillary_idx; 
-                        rest_len = ref_frac * norm(filter_params.left_papillary - R(:,j,k)); 
-                        kappa = k_rel / rest_len; 
-
-                        total_springs = spring_string(spring, nbr_idx, idx, kappa, rest_len, total_springs); 
+                        kappa = k_rel * chordae.k_0 / rest_len; 
+                        total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
                     end 
+
                 end 
                 
-                % if k==1, connect to the right papillary or chordae tree 
-                if k==1
+                % Connect to the right papillary or chordae tree 
+                if chordae_idx_right(j,k)
                     
-                    if chordae_tree
-                        
-                        % there is one point which is a b.c. which is not included 
-                        if is_internal(j,k,N)
-                        
-                            j_nbr = j; 
-                            k_nbr = 0; 
-                            [X_nbr R_nbr idx_chordae left_side] = get_neighbor(params, filter_params, j_nbr, k_nbr); 
-
-                            nbr_idx = global_idx + total_leaflet + idx_chordae - 1; 
-
-                            % right gets incremented by N_chordae again 
-                            if ~left_side
-                                nbr_idx = nbr_idx + N_chordae; 
-                            end 
-
-                            rest_len = ref_frac * norm(R_nbr - R(:,j,k)); 
-                            
-                            if collagen_spring 
-                                % relative constant here
-                                % other parameters coded into function 
-                                kappa = k_rel * params.chordae.k_0; 
-                                total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs, function_idx); 
-                            else 
-                                kappa = k_rel * params.chordae.k_0 / rest_len; 
-                                total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
-                            end 
-                        
-                        end 
-                    else
+                    % current node has a chordae connection
                     
-                        error('only tree still supported')
-                        nbr_idx = filter_params.right_papillary_idx; 
-                        rest_len = ref_frac * norm(filter_params.right_papillary - R(:,j,k)); 
-                        kappa = k_rel / rest_len; 
+                    % index that free edge would have if on tree
+                    % remember that leaves are only in the leaflet 
+                    leaf_idx = chordae_idx_right(j,k) + N_chordae; 
+
+                    % then take the parent index of that number in chordae variables 
+                    idx_chordae = floor(leaf_idx/2);  
+
+                    R_nbr = leaflet.chordae.Ref_r(:,idx_chordae); 
+
+                    nbr_idx = global_idx + total_leaflet + idx_chordae - 1; 
                     
-                        total_springs = spring_string(spring, nbr_idx, idx, kappa, rest_len, total_springs); 
+                    % right gets incremented by N_chordae again     
+                    nbr_idx = nbr_idx + N_chordae;     
+                        
+                    rest_len = ref_frac * norm(R_nbr - R(:,j,k)); 
+
+                    if collagen_spring 
+                        % relative constant here
+                        % other parameters coded into function 
+                        kappa = k_rel * chordae.k_0; 
+                        total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs, function_idx); 
+                    else 
+                        kappa = k_rel * chordae.k_0 / rest_len; 
+                        total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
                     end 
-                end                 
-                
+
+                end 
+                               
                 % if on boundary, this is a target point 
-                if (j+k) == (N+2)
+                if is_bc(j,k)
                     if exist('eta', 'var')
                         total_targets = target_string(target, idx, k_target, total_targets, eta);     
                     else
@@ -459,11 +432,12 @@ function [global_idx, total_vertices, total_springs, total_targets, params] = ..
                     end 
                 end 
                 
-                % every internal point has springs up one index in j and k 
-                if is_internal(j,k,N)
+                % springs in leaflet, only go in up direction 
+                j_nbr = j + 1; 
+                k_nbr = k; 
+                if (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr, k_nbr))
                     
-                    % nbr at j+1,k
-                    rest_len = ref_frac * norm(R(:,j+1,k) - R(:,j,k)); 
+                    rest_len = ref_frac * norm(R(:,j_nbr,k_nbr) - R(:,j,k)); 
                     nbr_idx = global_idx + vertex_index_offset(j+1,k,N);
                     
                     if collagen_spring
@@ -473,10 +447,16 @@ function [global_idx, total_vertices, total_springs, total_targets, params] = ..
                         kappa = k_rel / rest_len;         
                         total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
                     end 
-                        
-                    % nbr at j,k+1
-                    rest_len = ref_frac * norm(R(:,j,k+1) - R(:,j,k)); 
-                    nbr_idx = global_idx + vertex_index_offset(j,k+1,N);
+
+                end 
+                
+                % springs in leaflet, only go in up direction 
+                j_nbr = j; 
+                k_nbr = k + 1; 
+                if (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr, k_nbr))
+                    
+                    rest_len = ref_frac * norm(R(:,j_nbr,k_nbr) - R(:,j,k)); 
+                    nbr_idx = global_idx + vertex_index_offset(j+1,k,N);
                     
                     if collagen_spring
                         kappa = k_rel;         
@@ -485,15 +465,15 @@ function [global_idx, total_vertices, total_springs, total_targets, params] = ..
                         kappa = k_rel / rest_len;         
                         total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
                     end 
-                    
+
                 end 
-                    
+                
                 pts_placed = pts_placed + 1; 
             end 
         end 
     end
     
-    params.indices_global = indices_global; 
+    leaflet.indices_global = indices_global; 
     global_idx = global_idx + pts_placed;
 
 end 
@@ -501,20 +481,25 @@ end
 
 
 function [global_idx, total_vertices, total_springs] = ...
-                add_chordae_tree(params, spring, vertex, global_idx, total_vertices, total_springs, k_rel, collagen_spring)
+                add_chordae_tree(leaflet, spring, vertex, global_idx, total_vertices, total_springs, k_rel, collagen_spring)
 
     % Adds chordae tree to IBAMR format files 
     % No targets here, so files and and count not included 
                         
-    if ~isfield(params, 'chordae') || isempty(params.chordae)
+    if ~isfield(leaflet, 'chordae') || isempty(leaflet.chordae)
         error('cannot place chordae with empty array'); 
     end 
     
-    [X,alpha,beta,N,p_0,R,ref_frac,chordae] = unpack_params(params); 
+    chordae         = leaflet.chordae; 
+    ref_frac        = leaflet.ref_frac; 
+    
+    C_left          = chordae.C_left;  
+    C_right         = chordae.C_right;  
+    Ref_l           = chordae.Ref_l;  
+    Ref_r           = chordae.Ref_r; 
+
     
     [m N_chordae] = size(chordae.C_left); 
-    
-    [C_left, C_right, left_papillary, right_papillary, Ref_l, Ref_r] = unpack_chordae(chordae); 
     
     if collagen_spring
         function_idx = 1;
@@ -548,7 +533,7 @@ function [global_idx, total_vertices, total_springs] = ...
             
             if parent == 0
                 
-                % zero index means papillary muscles, which are zero and one by convention 
+                % zero index means papillary muscles
                 if left_side 
                     nbr_idx = chordae.left_papillary_idx; 
                 else 
@@ -563,7 +548,7 @@ function [global_idx, total_vertices, total_springs] = ...
             end 
             
             % get the neighbors coordinates, reference coordinate and spring constants
-            [nbr R_nbr k_val j_nbr k_nbr] = get_nbr_chordae(params, i, parent, left_side); 
+            [nbr R_nbr k_val] = get_nbr_chordae(leaflet, i, parent, left_side); 
             
             rest_len = ref_frac * norm(R_nbr - Ref(:,i)); 
             
@@ -670,7 +655,7 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
     for k=1:M
         for j=1:N
             
-            % just ignore the 
+            % just ignore the nan 
             if ~isnan(indices(j,k))
  
                 last_idx = idx; 
@@ -748,7 +733,7 @@ end
 
 
 function [global_idx, total_vertices, total_springs, total_targets] = ...
-                            place_rays(params, filter_params, L, spring, vertex, target, ...
+                            place_rays(leaflet, L, spring, vertex, target, ...
                             global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac, eta)
     % 
     % Places rays of fibers emenating from the leaflet 
@@ -776,83 +761,89 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
     %     total_targets 
     % 
 
-    r = filter_params.r; 
-    h = 0.0; %ilter_params.h; 
-    N = params.N; 
+    X           = leaflet.X; 
+    is_bc       = leaflet.is_bc; 
+    is_internal = leaflet.is_internal; 
+    r           = leaflet.filter.r; 
+    h           = 0.0;        % always place at origin 
+    N           = leaflet.N; 
     
-    % max norm for included rays 
-    % limit = L - (2*L / (2*N)); % leave points half mesh width from edge 
-    
-    if ~isfield(params, 'indices_global')
+    if ~isfield(leaflet, 'indices_global')
         error('Must place leaflets before placing rays'); 
     end 
     
-    for k=1:N+1
-        
-        % working with the ring coordinates here 
-        j = (N+2) - k; 
-            
-        pt_ring = params.X(:,j,k); 
-        
-        % only get a fiber if the previous point is included in the leaflet  
-        neighbors = []; 
-        if j > 1
-            neighbors = [params.X(:,j-1,k), neighbors] ; 
-        end 
-        if k > 1
-            neighbors = [params.X(:,j,k-1), neighbors] ; 
-        end        
-        
-        
-        for x = neighbors 
-            
-            % find the initial reflected point 
-            val = get_geodesic_continued_point(x, pt_ring, r, h); 
-            
-            % each point moves by this much from the initial point 
-            increment = val - x; 
-            
-            % just zero this component, they are both near 3 but maybe not exactly 
-            increment(3) = 0.0; 
-
-            
-            point = val; 
-            point_prev = pt_ring; 
-            nbr_idx = params.indices_global(j,k); 
-
-            % just keep adding until points leave the domain 
-            while norm(point(1:2), inf) < L   
-                
-                % grab the index 
-                idx = global_idx;
-                
-                % point 
-                total_vertices = vertex_string(vertex, point, total_vertices); 
-                
-                % it's a target too 
-                if exist('eta', 'var')
-                    total_targets = target_string(target, idx, k_target, total_targets, eta);     
-                else
-                    total_targets = target_string(target, idx, k_target, total_targets);     
-                end 
-                
-                
-                rest_len = ref_frac * norm(point - point_prev); 
-                kappa = k_rel / rest_len;
-                 
-
-                total_springs = spring_string(spring, nbr_idx, idx, kappa, rest_len, total_springs);
-                
-                point_prev = point; 
-                point      = point + increment; 
-                global_idx = global_idx + 1; 
-                nbr_idx    = idx; 
-            end 
-                    
-        end 
+    j_max = size(X,2); 
+    k_max = size(X,2); 
     
-    end 
+    for j = 1:j_max
+        for k=1:k_max
+            if is_bc(j,k)
+            
+                pt_ring = X(:,j,k); 
 
+                % only get a fiber if the previous point is included in the leaflet  
+                neighbors = []; 
+                j_nbr = j-1; 
+                k_nbr = k; 
+                if (j_nbr > 0) &&  (k_nbr > 0) && is_internal(j_nbr,k_nbr)
+                    neighbors = [X(:,j-1,k), neighbors] ; 
+                end
+                
+                j_nbr = j; 
+                k_nbr = k-1; 
+                if (j_nbr > 0) &&  (k_nbr > 0) && is_internal(j_nbr,k_nbr)
+                    neighbors = [X(:,j,k-1), neighbors] ; 
+                end        
+
+                for x = neighbors 
+
+                    % find the initial reflected point 
+                    val = get_geodesic_continued_point(x, pt_ring, r, h); 
+
+                    % each point moves by this much from the initial point 
+                    increment = val - x; 
+
+                    % just zero this component, they are both near 3 but maybe not exactly 
+                    increment(3) = 0.0; 
+
+
+                    point = val; 
+                    point_prev = pt_ring; 
+                    nbr_idx = leaflet.indices_global(j,k); 
+
+                    % just keep adding until points leave the domain 
+                    while norm(point(1:2), inf) < L   
+
+                        % grab the index 
+                        idx = global_idx;
+
+                        % point 
+                        total_vertices = vertex_string(vertex, point, total_vertices); 
+
+                        % it's a target too 
+                        if exist('eta', 'var')
+                            total_targets = target_string(target, idx, k_target, total_targets, eta);     
+                        else
+                            total_targets = target_string(target, idx, k_target, total_targets);     
+                        end 
+
+
+                        rest_len = ref_frac * norm(point - point_prev); 
+                        kappa = k_rel / rest_len;
+
+
+                        total_springs = spring_string(spring, nbr_idx, idx, kappa, rest_len, total_springs);
+
+                        point_prev = point; 
+                        point      = point + increment; 
+                        global_idx = global_idx + 1; 
+                        nbr_idx    = idx; 
+                    end 
+
+                end 
+            end 
+        end 
+    end 
 end 
 
 
@@ -893,7 +884,7 @@ function [val] = get_geodesic_continued_point(x, pt_ring, r, h)
     phi = atan2(val(3), val(1)); 
     val = rotation_matrix_y( -(phi - pi)) * val;
     
-    if abs(val(3)) > eps
+    if abs(val(3)) > tol
         error('should have landed in z=0 plane here...');
     end 
 
@@ -1032,7 +1023,7 @@ end
 
 
 
-function [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L, filter_params, double_z)
+function [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L, double_z)
     % Places a uniform cartesian mesh of lagrangian particle tracers 
     % Simple lopp implementation 
     %

@@ -137,17 +137,8 @@ function J = build_jacobian(leaflet)
                             range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
                             place_tmp_block(range_current, range_nbr, -J_tension); 
                         end 
-
-% chordae stuff, remove                         
-%                     % If neighbor is on the chordae, it has a non zero index 
-%                     % This is included here 
-%                     elseif idx_chordae ~= 0
-%                         range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side);
-%                         place_tmp_block(range_current, range_nbr, -J_tension); 
-
                     
                     end 
-
                 end 
 
 
@@ -170,16 +161,9 @@ function J = build_jacobian(leaflet)
                         if (j_nbr > 0) && (k_nbr > 0) && is_internal(j_nbr,k_nbr)
                             range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
                             place_tmp_block(range_current, range_nbr, -J_tension); 
-
-%                     % If neighbor is on the chordae, it has a non zero index 
-%                     % This is included here 
-%                     elseif idx_chordae ~= 0
-%                         range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side); 
-%                         place_tmp_block(range_current, range_nbr, -J_tension); 
                         end 
                     
                     end 
-
                 end
                 
                 
@@ -247,12 +231,6 @@ function J = build_jacobian(leaflet)
             end
         end
     end
-
-    
-    
-    
-    
-    
 
 
     % chordae internal terms 

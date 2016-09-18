@@ -70,8 +70,6 @@ else
     R_nbr = R_ch(:,nbr_idx); 
 end 
 
-
-
 % spring constants
 if nbr_idx < i 
     % nbr_idx is only less if nbr is the parent 
@@ -80,6 +78,7 @@ if nbr_idx < i
 
 % connections from chordae to leaflet have value k_0
 elseif nbr_idx > max_internal 
+
     k_val = k_0;                 
 
 else 
