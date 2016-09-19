@@ -125,7 +125,7 @@ valve.posterior = posterior;
 % anterior leaflet data structure 
 anterior.N           = N; 
 anterior.reflect_x   = false; 
-anterior.total_angle = pi; 
+anterior.total_angle = pi + pi/6; 
 anterior.min_angle   = -anterior.total_angle/2.0; 
 anterior.max_angle   =  anterior.total_angle/2.0; 
 
@@ -166,7 +166,7 @@ anterior.chordae_tree = true;
 
 if anterior.chordae_tree
     anterior.k_0          = 1.0; 
-    anterior.k_multiplier = 1.8;  % 2.0; 
+    anterior.k_multiplier = 2.0; 
     anterior.tree_frac    = 0.5;
     anterior.chordae      = add_chordae(anterior); 
 else 
