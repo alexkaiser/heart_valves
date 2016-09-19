@@ -333,6 +333,8 @@ function [global_idx, total_vertices, total_springs, total_targets, leaflet] = .
     % Unpack needed data 
     X                 = leaflet.X; 
     R                 = leaflet.R; 
+    j_max             = leaflet.j_max; 
+    k_max             = leaflet.k_max; 
     is_internal       = leaflet.is_internal;
     point_idx_with_bc = leaflet.point_idx_with_bc; 
     is_bc             = leaflet.is_bc; 
@@ -344,11 +346,6 @@ function [global_idx, total_vertices, total_springs, total_targets, leaflet] = .
     if collagen_spring
         function_idx = 1;
     end 
-    
-    % On some layouts N may not be the dimension 
-    % because of boundary conditions 
-    j_max = size(X,2); 
-    k_max = size(X,2); 
     
     % Keep track of indices     
     indices_global = nan * zeros(j_max, k_max); 
@@ -778,21 +775,21 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
     % 
 
     X           = leaflet.X; 
+    j_max       = leaflet.j_max; 
+    k_max       = leaflet.k_max;
     is_bc       = leaflet.is_bc; 
     is_internal = leaflet.is_internal; 
     r           = leaflet.filter.r; 
     h           = 0.0;        % always place at origin 
-    N           = leaflet.N; 
+    
     
     if ~isfield(leaflet, 'indices_global')
         error('Must place leaflets before placing rays'); 
     end 
     
-    j_max = size(X,2); 
-    k_max = size(X,2); 
     
     for j = 1:j_max
-        for k=1:k_max
+        for k = 1:k_max
             if is_bc(j,k)
             
                 pt_ring = X(:,j,k); 

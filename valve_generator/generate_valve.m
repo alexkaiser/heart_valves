@@ -4,10 +4,10 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 128; 
+N = 64; 
 
 % Show some output 
-plots = false; 
+plots = true; 
 
 % Initialize structures 
 % Many parameters are in this script 

@@ -9,20 +9,51 @@ function [is_internal is_bc linear_idx_offset point_idx_with_bc] = get_util_arra
 %                          are the indices for the vector X(:,j,k)
 % 
 
-N = leaflet.N; 
+N     = leaflet.N; 
+j_max = leaflet.j_max; 
+k_max = leaflet.k_max; 
 
 
-if leaflet.radial_and_circumferential
-    error('not implemented')
+is_internal       = zeros(j_max, k_max); 
+is_bc             = zeros(j_max, k_max); 
+linear_idx_offset = zeros(j_max, k_max); 
+point_idx_with_bc = zeros(j_max, k_max); 
+
+
+if leaflet.radial_and_circumferential 
+    
+    % radial and circumferential fiber layout 
+    
+    k=k_max; 
+    for j=1:j_max 
+        is_bc(j,k) = true; 
+    end 
+    
+    % loop from free edge then up in k 
+    j = j_max/2; 
+    for k=1:(k_max - 1)
+        for k_tmp=k:(k_max-1)
+            is_internal(j,k_tmp) = true; 
+        end 
+        j = j - 1; 
+    end 
+
+    j = j_max/2 + 1; 
+    for k=1:(k_max - 1)
+        for k_tmp=k:(k_max-1)
+            is_internal(j,k_tmp) = true; 
+        end 
+        j = j + 1; 
+    end 
+        
 else 
-    
-    is_internal       = zeros(N+1, N+1); 
-    is_bc             = zeros(N+1, N+1);
-    linear_idx_offset = zeros(N+1, N+1);
-    point_idx_with_bc = zeros(N+1, N+1); 
-    
-    j_max = N+1; 
-    k_max = N+1; 
+
+    % diagonal fiber layout 
+        
+    is_internal       = zeros(j_max, k_max); 
+    is_bc             = zeros(j_max, k_max); 
+    linear_idx_offset = zeros(j_max, k_max); 
+    point_idx_with_bc = zeros(j_max, k_max); 
     
     k = N+1; 
     for j=1:j_max
@@ -38,29 +69,26 @@ else
             end 
         end 
     end 
-    
-    count = 0; 
-    for k=1:k_max
-        for j=1:j_max
-            if is_internal(j,k)
-                linear_idx_offset(j,k) = count; 
-                count = count + 3; 
-            end 
-        end 
-    end
-    
-    count = 0;
-    for k=1:k_max
-        for j=1:j_max
-            if is_internal(j,k) || is_bc(j,k)
-                point_idx_with_bc(j,k) = count; 
-                count = count + 1; 
-            end 
-        end 
-    end
-    
-    
-    
+
 end 
 
 
+count = 0; 
+for k=1:k_max
+    for j=1:j_max
+        if is_internal(j,k)
+            linear_idx_offset(j,k) = count; 
+            count = count + 3; 
+        end 
+    end 
+end
+
+count = 0;
+for k=1:k_max
+    for j=1:j_max
+        if is_internal(j,k) || is_bc(j,k)
+            point_idx_with_bc(j,k) = count; 
+            count = count + 1; 
+        end 
+    end 
+end

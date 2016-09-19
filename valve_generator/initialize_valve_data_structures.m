@@ -21,11 +21,17 @@ valve.r = 1.606587877768772;
 valve.left_papillary  = [ -0.972055648767080; -1.611924550017006; -2.990100960298683]; 
 valve.right_papillary = [ -1.542417595752084;  1.611924550017006; -3.611254871967348]; 
 valve.split_papillary = false; 
+valve.radial_and_circumferential = true; 
+
 
 % general solve parameters
 
 % name 
 valve.base_name = sprintf('mitral_tree_%d', N); 
+
+if valve.radial_and_circumferential
+    valve.base_name = strcat(valve.base_name, '_radial'); 
+end 
 
 % box width 
 valve.L = 2.5; 
@@ -86,13 +92,9 @@ end
 
 % Radial and circumferential fibers 
 % Or diagonally oriented fibers 
-posterior.radial_and_circumferential = false; 
+posterior.radial_and_circumferential = true; 
 
-if ~posterior.radial_and_circumferential 
-    [posterior.free_edge_idx_left posterior.free_edge_idx_right posterior.chordae_idx_left posterior.chordae_idx_right] = get_free_edge_ranges(posterior);
-else
-    error('Radial and circumferential fibers not implemented ')
-end 
+[posterior.j_max posterior.k_max posterior.free_edge_idx_left posterior.free_edge_idx_right posterior.chordae_idx_left posterior.chordae_idx_right] = get_free_edge_ranges(posterior);
 
 % information about geometry 
 [posterior.is_internal posterior.is_bc posterior.linear_idx_offset posterior.point_idx_with_bc] = get_util_arrays(posterior); 
@@ -138,13 +140,10 @@ anterior.right_papillary = valve.right_papillary;
 
 % Radial and circumferential fibers 
 % Or diagonally oriented fibers 
-anterior.radial_and_circumferential = false; 
+anterior.radial_and_circumferential = true; 
 
-if ~anterior.radial_and_circumferential 
-    [anterior.free_edge_idx_left anterior.free_edge_idx_right anterior.chordae_idx_left anterior.chordae_idx_right] = get_free_edge_ranges(anterior);
-else
-    error('Radial and circumferential fibers not implemented ')
-end 
+[anterior.j_max anterior.k_max anterior.free_edge_idx_left anterior.free_edge_idx_right anterior.chordae_idx_left anterior.chordae_idx_right] = get_free_edge_ranges(anterior);
+
 
 % information about geometry 
 [anterior.is_internal anterior.is_bc anterior.linear_idx_offset anterior.point_idx_with_bc] = get_util_arrays(anterior); 

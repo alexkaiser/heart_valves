@@ -1,6 +1,7 @@
-function coords = compute_intersection(X_flat, j, k, leaflet)
+function coords = compute_intersection_diag_fibers(X_flat, j, k, leaflet)
 % 
 % Computes the intersection of the rays which have coordinates j,k
+% Works for diagonal fibers only 
 % 
 % Input: 
 %     X_flat          2d surface including valve ring 
@@ -10,6 +11,7 @@ function coords = compute_intersection(X_flat, j, k, leaflet)
 % Output: 
 %     coords          2d vector for intersection 
 % 
+
 
 a = leaflet.filter.a; 
 
@@ -38,5 +40,4 @@ if norm(coords - coords_alt) > tol
     error('two formulas from line disagree'); 
 end 
 
-
-
+ 

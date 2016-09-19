@@ -17,15 +17,19 @@ function v_linearized = linearize_internal_points(leaflet, v, v_left_chordae, v_
 % 
 
 % total internal points in triangular domain 
-N = leaflet.N; 
-total_internal = 3*N*(N+1)/2;
+
+j_max       = leaflet.j_max; 
+k_max       = leaflet.k_max; 
+is_internal = leaflet.is_internal; 
+
+total_internal = 3*sum(is_internal(:));
 idx = 1; 
 
 v_linearized = zeros(total_internal,1); 
 
 % here k is required to be the outer loop 
-for k=1:N
-    for j=1:N
+for k=1:k_max
+    for j=1:j_max
         if leaflet.is_internal(j,k)
             v_linearized(idx + (0:2)) = v(:,j,k); 
             idx = idx + 3; 

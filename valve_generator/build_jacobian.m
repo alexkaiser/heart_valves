@@ -10,7 +10,8 @@ function J = build_jacobian(leaflet)
 
     X                 = leaflet.X; 
     R                 = leaflet.R; 
-    N                 = leaflet.N; 
+    j_max             = leaflet.j_max; 
+    k_max             = leaflet.k_max; 
     p_0               = leaflet.p_0; 
     alpha             = leaflet.alpha; 
     beta              = leaflet.beta; 
@@ -23,10 +24,10 @@ function J = build_jacobian(leaflet)
     linear_idx_offset = leaflet.linear_idx_offset; 
     chordae_idx_left  = leaflet.chordae_idx_left; 
     chordae_idx_right = leaflet.chordae_idx_right; 
+
     
-    
-    if leaflet.radial_and_circumferential
-        error('Radial and circumferential fibers not implemented')
+    if leaflet.radial_and_circumferential && (p_0 ~= 0.0)
+        error('Radial and circumferential fibers not implemented with pressure')
     end 
    
     [m N_chordae] = size(C_left); 
@@ -65,8 +66,8 @@ function J = build_jacobian(leaflet)
 
     % All leaflet terms, no chordae 
     % Zero indices always ignored 
-    for j=1:N
-        for k=1:N
+    for j=1:j_max
+        for k=1:k_max
             if leaflet.is_internal(j,k)
 
                 % vertical offset does not change while differentiating this equation 

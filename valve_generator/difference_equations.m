@@ -23,13 +23,14 @@ Ref_l             = leaflet.chordae.Ref_l;
 Ref_r             = leaflet.chordae.Ref_r; 
 chordae_idx_left  = leaflet.chordae_idx_left; 
 chordae_idx_right = leaflet.chordae_idx_right;
-
+j_max             = leaflet.j_max; 
+k_max             = leaflet.k_max; 
 
 
 [m N_chordae] = size(C_left); 
 
-if leaflet.radial_and_circumferential
-    error('Radial and circumferential fibers not implemented')
+if leaflet.radial_and_circumferential && (p_0 ~= 0)
+    error('Radial and circumferential fibers not implemented with pressure')
 end 
 
 F = zeros(size(X)); 
@@ -47,8 +48,8 @@ pressure_nbrs = [ 0, -1;
                  -1,  0]'; 
 
 
-for j=1:N
-    for k=1:N
+for j=1:j_max
+    for k=1:k_max
         if leaflet.is_internal(j,k)
 
             % pressure term first  

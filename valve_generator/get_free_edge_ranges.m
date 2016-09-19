@@ -1,4 +1,4 @@
-function [free_edge_idx_left free_edge_idx_right chordae_idx_left chordae_idx_right] = get_free_edge_ranges(leaflet)
+function [j_max k_max free_edge_idx_left free_edge_idx_right chordae_idx_left chordae_idx_right] = get_free_edge_ranges(leaflet)
 % 
 % Returns two 2d arrays of indices 
 % 
@@ -19,24 +19,56 @@ function [free_edge_idx_left free_edge_idx_right chordae_idx_left chordae_idx_ri
  
 
 if leaflet.radial_and_circumferential
-    error('radial and circumferential not implemented')
+
+    N = leaflet.N; 
+    
+    j_max = N; 
+    k_max = N/2; 
+    
+    N = leaflet.N; 
+    
+    free_edge_idx_left  = zeros(N/2,   2); 
+    free_edge_idx_right = zeros(N/2,   2); 
+    chordae_idx_left    = zeros(N  , N/2); 
+    chordae_idx_right   = zeros(N  , N/2); 
+    
+    j = N/2; 
+    for k=1:(N/2)
+        free_edge_idx_left(k,:) = [j; k]; 
+        chordae_idx_left(j,k)   = k; 
+        j = j - 1; 
+    end 
+
+    j = N/2 + 1; 
+    for k=1:(N/2)
+        free_edge_idx_right(k,:) = [j; k]; 
+        chordae_idx_right(j,k)   = k; 
+        j = j + 1; 
+    end 
+
+else 
+    
+    N = leaflet.N; 
+    free_edge_idx_left  = [ones(N,1), (1:N)'];
+    free_edge_idx_right = [(1:N)', ones(N,1)];
+
+    j_max = N+1; 
+    k_max = N+1; 
+    
+    chordae_idx_left  = zeros(j_max,k_max); 
+
+    j=1; 
+    for k=1:N
+        chordae_idx_left(j,k) = k; 
+    end 
+
+    chordae_idx_right = zeros(N+1,N+1);
+
+    k=1; 
+    for j=1:N
+        chordae_idx_right(j,k) = j; 
+    end 
+
 end 
 
-N = leaflet.N; 
-free_edge_idx_left  = [ones(N,1), (1:N)'];
-free_edge_idx_right = [(1:N)', ones(N,1)];
-
-chordae_idx_left  = zeros(N+1,N+1); 
-
-j=1; 
-for k=1:N
-    chordae_idx_left(j,k) = k; 
-end 
-
-chordae_idx_right = zeros(N+1,N+1);
-
-k=1; 
-for j=1:N
-    chordae_idx_right(j,k) = j; 
-end 
 
