@@ -99,43 +99,45 @@ for j=1:j_max
 
             chordae_left_term = zeros(3,1); 
             if chordae_idx_left(j,k)
-                    % current node has a chordae connection 
-                    
-                    kappa = leaflet.chordae.k_0; 
-                    
-                    % index that free edge would have if on tree
-                    % remember that leaves are only in the leaflet 
-                    leaf_idx = chordae_idx_left(j,k) + N_chordae; 
-                    
-                    % then take the parent index of that number in chordae variables 
-                    idx_chordae = floor(leaf_idx/2);  
-                    
-                    X_nbr = leaflet.chordae.C_left(:,idx_chordae); 
-                    R_nbr = leaflet.chordae.Ref_l (:,idx_chordae);
-                    
-                    chordae_left_term = tension_linear(X(:,j,k),X_nbr,R(:,j,k),R_nbr,kappa,ref_frac) * (X_nbr - X(:,j,k));
+                
+                % current node has a chordae connection 
+
+                kappa = leaflet.chordae.k_0; 
+
+                % index that free edge would have if on tree
+                % remember that leaves are only in the leaflet 
+                leaf_idx = chordae_idx_left(j,k) + N_chordae; 
+
+                % then take the parent index of that number in chordae variables 
+                idx_chordae = floor(leaf_idx/2);  
+
+                X_nbr = leaflet.chordae.C_left(:,idx_chordae); 
+                R_nbr = leaflet.chordae.Ref_l (:,idx_chordae);
+
+                chordae_left_term = tension_linear(X(:,j,k),X_nbr,R(:,j,k),R_nbr,kappa,ref_frac) * (X_nbr - X(:,j,k));
                    
              end 
                 
              chordae_right_term = zeros(3,1);    
              if chordae_idx_right(j,k)
-                    % current node has a chordae connection 
+                 
+                % current node has a chordae connection 
 
-                    kappa = leaflet.chordae.k_0; 
-                    
-                    % index that free edge would have if on tree
-                    % remember that leaves are only in the leaflet 
-                    leaf_idx = chordae_idx_right(j,k) + N_chordae; 
-                    
-                    % then take the parent index of that number in chordae variables 
-                    idx_chordae = floor(leaf_idx/2);  
-                    
-                    X_nbr = leaflet.chordae.C_right(:,idx_chordae); 
-                    R_nbr = leaflet.chordae.Ref_r  (:,idx_chordae);
-                    
-                    chordae_right_term = tension_linear(X(:,j,k),X_nbr,R(:,j,k),R_nbr,kappa,ref_frac) * (X_nbr - X(:,j,k));
+                kappa = leaflet.chordae.k_0; 
 
-                end 
+                % index that free edge would have if on tree
+                % remember that leaves are only in the leaflet 
+                leaf_idx = chordae_idx_right(j,k) + N_chordae; 
+
+                % then take the parent index of that number in chordae variables 
+                idx_chordae = floor(leaf_idx/2);  
+
+                X_nbr = leaflet.chordae.C_right(:,idx_chordae); 
+                R_nbr = leaflet.chordae.Ref_r  (:,idx_chordae);
+
+                chordae_right_term = tension_linear(X(:,j,k),X_nbr,R(:,j,k),R_nbr,kappa,ref_frac) * (X_nbr - X(:,j,k));
+
+            end 
             
             
             F(:,j,k) = pressure_term + u_tangent_term + v_tangent_term + chordae_left_term + chordae_right_term;

@@ -39,11 +39,7 @@ if leaflet.radial_and_circumferential
         X(3,j,k) = X(3,j,k) - h; 
 
     end
-    
-    figure; 
-    plot(X_flat(1,:), X_flat(2,:), '-o'); 
-    title('ring only')
-    
+
     
     % Compute the "point" of the leaflet, which is the 1,1 index
     % This is where digonal fibers would connect if they were included 
@@ -146,7 +142,7 @@ else
     for j=1:j_max
         for k=1:k_max
             if leaflet.is_internal(j,k)
-                X_flat(:,j,k)    = compute_intersection(X_flat, j, k, leaflet); 
+                X_flat(:,j,k)    = compute_intersection_diag_fibers(X_flat, j, k, leaflet); 
                 X(:,j,k)         = cone_filter(X_flat(1,j,k), X_flat(2,j,k), leaflet); 
                 X(3,j,k)         = X(3,j,k) - h; 
             end

@@ -21,6 +21,7 @@ function J = build_jacobian(leaflet)
     Ref_l             = leaflet.chordae.Ref_l; 
     Ref_r             = leaflet.chordae.Ref_r; 
     is_internal       = leaflet.is_internal; 
+    is_bc             = leaflet.is_bc; 
     linear_idx_offset = leaflet.linear_idx_offset; 
     chordae_idx_left  = leaflet.chordae_idx_left; 
     chordae_idx_right = leaflet.chordae_idx_right; 
@@ -262,10 +263,15 @@ function J = build_jacobian(leaflet)
                 % if the neighbor is in the chordae 
                 if isempty(j_nbr) && isempty(k_nbr) 
                     range_nbr = range_chordae(total_internal, N_chordae, nbr_idx, left_side); 
-                else
+                elseif is_internal(j_nbr, k_nbr)
                     % neighbor is on the leaflet 
                     range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
-                end 
+                elseif is_bc(j_nbr, k_nbr)
+                    % no block added for neighbor on boundary 
+                    range_nbr = []; 
+                else 
+                    error('Should be impossible, neighbor must be chordae, internal or bc'); 
+                end
 
                 % tension Jacobian for this spring 
                 J_tension = tension_jacobian(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac); 
@@ -275,7 +281,7 @@ function J = build_jacobian(leaflet)
 
                 % range may be empty if papillary muscle, in which case do nothing 
                 if ~isempty(range_nbr)
-                    place_tmp_block(range_current, range_nbr, - J_tension); 
+                    place_tmp_block(range_current, range_nbr, -J_tension); 
                 end 
             end 
         end 

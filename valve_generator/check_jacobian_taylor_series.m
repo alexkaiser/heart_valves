@@ -41,13 +41,10 @@ end
 
 % Radial and circumferential fibers 
 % Or diagonally oriented fibers 
-leaflet.radial_and_circumferential = false; 
+leaflet.radial_and_circumferential = true; 
 
-if ~leaflet.radial_and_circumferential 
-    [leaflet.free_edge_idx_left leaflet.free_edge_idx_right leaflet.chordae_idx_left leaflet.chordae_idx_right] = get_free_edge_ranges(leaflet);
-else
-    error('Radial and circumferential fibers not implemented ')
-end 
+[leaflet.j_max leaflet.k_max leaflet.free_edge_idx_left leaflet.free_edge_idx_right leaflet.chordae_idx_left leaflet.chordae_idx_right] = get_free_edge_ranges(leaflet);
+
 
 % information about geometry 
 [leaflet.is_internal leaflet.is_bc leaflet.linear_idx_offset] = get_util_arrays(leaflet); 
@@ -61,7 +58,7 @@ leaflet.X = leaflet.R;
 % Spring constants in two directions 
 leaflet.alpha    =  1.0; 
 leaflet.beta     =  1.0; 
-leaflet.p_0      = -2.0; % no pressure for now 
+leaflet.p_0      =  0.0; % no pressure for now 
 leaflet.ref_frac =  0.5; % generic spring constants reduced by this much 
 
 leaflet.chordae_tree = true; 
@@ -86,11 +83,15 @@ figure;
 spy(J); 
 title('jacobian nonzero structure in jacobian tester')
 
+j_max       = leaflet.j_max; 
+k_max       = leaflet.k_max; 
+is_internal = leaflet.is_internal; 
+
 % perturbation also does not change 
 Z = zeros(size(leaflet.X)); 
-for j=1:N
-    for k=1:N
-        if leaflet.is_internal(j,k)
+for j=1:j_max
+    for k=1:k_max
+        if is_internal(j,k)
             Z(:,j,k) = rand(3,1);  
         end 
     end 
@@ -142,9 +143,9 @@ legend('error', 'eps^2')
 figure; 
 
 % leaflet part 
-for k=1:leaflet.N
-    for j=1:leaflet.N
-        if leaflet.is_internal(j,k)
+for k=1:k_max
+    for j=1:j_max
+        if is_internal(j,k)
 
             j
             k
@@ -190,7 +191,7 @@ end
 
 % chordae part if included 
 [m N_chordae] = size(leaflet.chordae.C_left); 
-total_internal = 3*N*(N+1)/2; 
+total_internal = 3*sum(is_internal(:)); 
 
 for left_side = [true false]
     for i=1:N_chordae
