@@ -4,15 +4,22 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 64; 
+N = 128; 
 
 % Show some output 
 plots = true; 
 
 % Initialize structures 
 % Many parameters are in this script 
-valve = initialize_valve_data_structures(N); 
 
+radial = true; 
+if radial
+    valve = initialize_valve_data_structures_radial(N); 
+else 
+    valve = initialize_valve_data_structures(N); 
+end 
+    
+    
 if plots 
     fig = surf_plot(valve.posterior); 
     title('Reference configuration of posterior surface'); 
