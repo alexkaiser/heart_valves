@@ -68,111 +68,88 @@ valve.num_copies = 3;
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
-valve.collagen_springs_leaflet = true; 
+valve.collagen_springs_leaflet = false; 
 
 
 % posterior leaflet data structure 
-posterior.N           = N; 
-posterior.reflect_x   = true; 
-posterior.total_angle = pi + pi/6 + pi/12; 
-posterior.min_angle   = -posterior.total_angle/2.0; 
-posterior.max_angle   =  posterior.total_angle/2.0; 
+reflect_x   = true; 
+total_angle = pi + pi/6 + pi/12; 
 
-posterior.filter.a = 1.0; 
-posterior.filter.h = 3.0; 
-posterior.filter.r = valve.r; 
-
-if posterior.reflect_x
-    posterior.left_papillary  = [-1; 1; 1] .* valve.left_papillary; 
-    posterior.right_papillary = [-1; 1; 1] .* valve.right_papillary; 
-else 
-    posterior.left_papillary  = valve.left_papillary; 
-    posterior.right_papillary = valve.right_papillary; 
-end 
+% filter paramters
+a = 1.0; 
+h = 3.0; 
+r = valve.r; 
 
 % Radial and circumferential fibers 
 % Or diagonally oriented fibers 
-posterior.radial_and_circumferential = true; 
-
-[posterior.j_max posterior.k_max posterior.free_edge_idx_left posterior.free_edge_idx_right posterior.chordae_idx_left posterior.chordae_idx_right] = get_free_edge_ranges(posterior);
-
-% information about geometry 
-[posterior.is_internal posterior.is_bc posterior.linear_idx_offset posterior.point_idx_with_bc] = get_util_arrays(posterior); 
-
-% Reference configuration 
-posterior.R = build_reference_surface(posterior); 
-
-% Initial configuration is reference configuration 
-posterior.X = posterior.R;  
+radial_and_circumferential = false; 
 
 % Spring constants in two directions 
-posterior.alpha    = 1.0; 
-posterior.beta     = 1.0; 
-posterior.p_0      = 0.0; % no pressure for now 
-posterior.ref_frac = 0.7; % generic spring constants reduced by this much 
+alpha    = 1.0; 
+beta     = 1.0; 
+p_0      = 0.0; % no pressure for now 
+ref_frac = 0.7; % generic spring constants reduced by this much 
 
-posterior.chordae_tree = true; 
-if posterior.chordae_tree
-    posterior.k_0          = 1.0; 
-    posterior.k_multiplier = 1.8;  % 2.0; 
-    posterior.tree_frac    = 0.5;
-    posterior.chordae      = add_chordae(posterior); 
-else 
-    error('Non-tree chordae not implemented'); 
-end 
+% Chordae parameters 
+k_0          = 1.0; 
+k_multiplier = 1.8; 
+tree_frac    = 0.5;
 
-valve.posterior = posterior; 
+valve.posterior = initialize_leaflet(N,                            ... 
+                                     reflect_x,                    ... 
+                                     total_angle,                  ...    
+                                     a,                            ... 
+                                     h,                            ... 
+                                     r,                            ... 
+                                     valve.left_papillary,         ... 
+                                     valve.right_papillary,        ... 
+                                     radial_and_circumferential,   ...  
+                                     alpha,                        ... 
+                                     beta,                         ... 
+                                     p_0,                          ... 
+                                     ref_frac,                     ...  
+                                     k_0,                          ... 
+                                     k_multiplier,                 ... 
+                                     tree_frac);  
 
 
 % anterior leaflet data structure 
-anterior.N           = N; 
-anterior.reflect_x   = false; 
-anterior.total_angle = pi + pi/6; 
-anterior.min_angle   = -anterior.total_angle/2.0; 
-anterior.max_angle   =  anterior.total_angle/2.0; 
+reflect_x   = false; 
+total_angle = pi + pi/6; 
+a           = 1.0; 
+h           = 4.0; 
+r           = valve.r; 
+radial_and_circumferential = false; 
 
-anterior.filter.a        = 1.0; 
-anterior.filter.h        = 4.0; 
-anterior.filter.r        = valve.r; 
-anterior.left_papillary  = valve.left_papillary; 
-anterior.right_papillary = valve.right_papillary; 
-
-
-% Radial and circumferential fibers 
-% Or diagonally oriented fibers 
-anterior.radial_and_circumferential = true; 
-
-[anterior.j_max anterior.k_max anterior.free_edge_idx_left anterior.free_edge_idx_right anterior.chordae_idx_left anterior.chordae_idx_right] = get_free_edge_ranges(anterior);
-
-
-% information about geometry 
-[anterior.is_internal anterior.is_bc anterior.linear_idx_offset anterior.point_idx_with_bc] = get_util_arrays(anterior); 
-
-% Reference configuration 
-anterior.R = build_reference_surface(anterior); 
-
-% Initial configuration is reference configuration 
-anterior.X = anterior.R;  
 
 % Spring constants in two directions 
-anterior.alpha    = 1.0; 
-anterior.beta     = 1.0; 
-anterior.p_0      = 0.0; % no pressure for now 
-anterior.ref_frac = 0.7; % generic spring constants reduced by this much 
-
-anterior.chordae_tree = true; 
+alpha    = 1.0; 
+beta     = 1.0; 
+p_0      = 0.0; % no pressure for now 
+ref_frac = 0.7; % generic spring constants reduced by this much 
 
 
-if anterior.chordae_tree
-    anterior.k_0          = 1.0; 
-    anterior.k_multiplier = 2.0; 
-    anterior.tree_frac    = 0.5;
-    anterior.chordae      = add_chordae(anterior); 
-else 
-    error('Non-tree chordae not implemented'); 
-end 
+k_0          = 1.0; 
+k_multiplier = 2.0; 
+tree_frac    = 0.5;
 
-valve.anterior = anterior; 
+% Chordae parameters 
+valve.anterior = initialize_leaflet(N,                            ... 
+                                    reflect_x,                    ... 
+                                    total_angle,                  ...    
+                                    a,                            ... 
+                                    h,                            ... 
+                                    r,                            ... 
+                                    valve.left_papillary,         ... 
+                                    valve.right_papillary,        ... 
+                                    radial_and_circumferential,   ...  
+                                    alpha,                        ... 
+                                    beta,                         ... 
+                                    p_0,                          ... 
+                                    ref_frac,                     ...  
+                                    k_0,                          ... 
+                                    k_multiplier,                 ... 
+                                    tree_frac); 
 
 
 

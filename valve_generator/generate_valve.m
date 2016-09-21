@@ -30,7 +30,7 @@ valve = solve_valve(valve, p_range);
 % Save current data 
 save(strcat(valve.base_name, '_final_data')); 
 
-% Write to simulatino files 
+% Write to simulation files 
 output_to_ibamr_format(valve); 
 
 
