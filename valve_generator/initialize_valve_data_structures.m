@@ -21,7 +21,7 @@ valve.r = 1.606587877768772;
 valve.left_papillary  = [ -0.972055648767080; -1.611924550017006; -2.990100960298683]; 
 valve.right_papillary = [ -1.542417595752084;  1.611924550017006; -3.611254871967348]; 
 valve.split_papillary = false; 
-valve.radial_and_circumferential = true; 
+valve.radial_and_circumferential = false; 
 
 
 % general solve parameters
@@ -29,9 +29,6 @@ valve.radial_and_circumferential = true;
 % name 
 valve.base_name = sprintf('mitral_tree_%d', N); 
 
-if valve.radial_and_circumferential
-    valve.base_name = strcat(valve.base_name, '_radial'); 
-end 
 
 % box width 
 valve.L = 2.5; 

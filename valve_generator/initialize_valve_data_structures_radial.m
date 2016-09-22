@@ -29,10 +29,6 @@ valve.radial_and_circumferential = true;
 % name 
 valve.base_name = sprintf('mitral_tree_%d', N); 
 
-if valve.radial_and_circumferential
-    valve.base_name = strcat(valve.base_name, '_radial'); 
-end 
-
 % box width 
 valve.L = 2.5; 
 
