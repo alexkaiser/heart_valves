@@ -111,7 +111,7 @@ valve.posterior = initialize_leaflet(N,                            ...
 
 % anterior leaflet data structure 
 reflect_x   = false; 
-total_angle = pi; 
+total_angle = pi + pi/6; 
 a           = 1.0; 
 h           = 4.0; 
 r           = valve.r; 
