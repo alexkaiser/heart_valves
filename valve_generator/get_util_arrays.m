@@ -9,10 +9,10 @@ function [is_internal is_bc linear_idx_offset point_idx_with_bc] = get_util_arra
 %                          are the indices for the vector X(:,j,k)
 % 
 
-N     = leaflet.N; 
-j_max = leaflet.j_max; 
-k_max = leaflet.k_max; 
-
+N                       = leaflet.N; 
+j_max                   = leaflet.j_max; 
+k_max                   = leaflet.k_max; 
+trapezoidal_flat_points = leaflet.trapezoidal_flat_points; 
 
 is_internal       = zeros(j_max, k_max); 
 is_bc             = zeros(j_max, k_max); 
@@ -24,13 +24,14 @@ if leaflet.radial_and_circumferential
     
     % radial and circumferential fiber layout 
     
+    % valve ring at k_max
     k=k_max; 
     for j=1:j_max 
         is_bc(j,k) = true; 
     end 
     
     % loop from free edge then up in k 
-    j = j_max/2; 
+    j = k_max;  
     for k=1:(k_max - 1)
         for k_tmp=k:(k_max-1)
             is_internal(j,k_tmp) = true; 
@@ -38,7 +39,13 @@ if leaflet.radial_and_circumferential
         j = j - 1; 
     end 
 
-    j = j_max/2 + 1; 
+    for j = (k_max+1):(k_max + trapezoidal_flat_points)
+        for k=1:(k_max-1)
+            is_internal(j,k) = true; 
+        end 
+    end 
+    
+    j = k_max + 1 + trapezoidal_flat_points; 
     for k=1:(k_max - 1)
         for k_tmp=k:(k_max-1)
             is_internal(j,k_tmp) = true; 

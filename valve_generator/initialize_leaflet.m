@@ -13,7 +13,8 @@ function leaflet = initialize_leaflet(N,                            ...
                                       ref_frac,                     ...  
                                       k_0,                          ... 
                                       k_multiplier,                 ... 
-                                      tree_frac)
+                                      tree_frac,                    ...
+                                      trapezoidal_flat_points)
 %
 % Builds leaflet data structures 
 % 
@@ -62,6 +63,14 @@ end
 % Radial and circumferential fibers 
 % Or diagonally oriented fibers 
 leaflet.radial_and_circumferential = radial_and_circumferential; 
+
+if exist('trapezoidal_flat_points', 'var')
+    if mod(trapezoidal_flat_points,2) == 0
+        leaflet.trapezoidal_flat_points    = trapezoidal_flat_points;
+    else 
+        error('Must add even number of trapezoidal points'); 
+    end 
+end 
 
 [leaflet.j_max leaflet.k_max leaflet.free_edge_idx_left leaflet.free_edge_idx_right leaflet.chordae_idx_left leaflet.chordae_idx_right] = get_free_edge_ranges(leaflet);
 

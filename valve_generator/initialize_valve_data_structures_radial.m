@@ -80,6 +80,10 @@ r = valve.r;
 % Or diagonally oriented fibers 
 radial_and_circumferential = true; 
 
+% This many points are placed in a flat manner 
+% around the point of the free edge 
+trapezoidal_flat_points = N/16; 
+
 % Spring constants in two directions 
 alpha    = 1.0; 
 beta     = 1.0; 
@@ -90,6 +94,8 @@ ref_frac = 0.7; % generic spring constants reduced by this much
 k_0          = 2.0; 
 k_multiplier = 2.0; 
 tree_frac    = 0.5;
+
+
 
 valve.posterior = initialize_leaflet(N,                            ... 
                                      reflect_x,                    ... 
@@ -106,7 +112,8 @@ valve.posterior = initialize_leaflet(N,                            ...
                                      ref_frac,                     ...  
                                      k_0,                          ... 
                                      k_multiplier,                 ... 
-                                     tree_frac);  
+                                     tree_frac,                    ...
+                                     trapezoidal_flat_points);  
 
 
 % anterior leaflet data structure 
@@ -116,7 +123,7 @@ a           = 1.0;
 h           = 4.0; 
 r           = valve.r; 
 radial_and_circumferential = true; 
-
+trapezoidal_flat_points = N/16; 
 
 % Spring constants in two directions 
 alpha    = 1.0; 
@@ -145,7 +152,8 @@ valve.anterior = initialize_leaflet(N,                            ...
                                     ref_frac,                     ...  
                                     k_0,                          ... 
                                     k_multiplier,                 ... 
-                                    tree_frac); 
+                                    tree_frac,                    ...
+                                    trapezoidal_flat_points); 
 
 
 

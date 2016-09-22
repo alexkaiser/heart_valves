@@ -21,26 +21,30 @@ function [j_max k_max free_edge_idx_left free_edge_idx_right chordae_idx_left ch
 if leaflet.radial_and_circumferential
 
     N = leaflet.N; 
+    trapezoidal_flat_points = leaflet.trapezoidal_flat_points; 
     
-    j_max = N; 
-    k_max = N/2; 
+    j_max = N + trapezoidal_flat_points; 
+    k_max = N/2; % always this  
+        
+    free_edge_idx_left  = zeros(k_max, 2); 
+    free_edge_idx_right = zeros(k_max, 2); 
+    chordae_idx_left    = zeros(j_max, k_max); 
+    chordae_idx_right   = zeros(j_max, k_max); 
     
-    N = leaflet.N; 
-    
-    free_edge_idx_left  = zeros(N/2,   2); 
-    free_edge_idx_right = zeros(N/2,   2); 
-    chordae_idx_left    = zeros(N  , N/2); 
-    chordae_idx_right   = zeros(N  , N/2); 
-    
-    j = N/2; 
-    for k=1:(N/2)
+    % Left free edge starts at (k_max,1)
+    % and ends at (1,k_max) 
+    j = k_max;  
+    for k=1:k_max
         free_edge_idx_left(k,:) = [j; k]; 
         chordae_idx_left(j,k)   = k; 
         j = j - 1; 
     end 
 
-    j = N/2 + 1; 
-    for k=1:(N/2)
+    % Right free edge starts 1 + trapezoidal_flat_points 
+    % to the right of left free edge corner 
+    % and ends at (j_max, k_max)
+    j = k_max + 1 + trapezoidal_flat_points; 
+    for k=1:k_max
         free_edge_idx_right(k,:) = [j; k]; 
         chordae_idx_right(j,k)   = k; 
         j = j + 1; 
