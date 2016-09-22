@@ -91,7 +91,7 @@ p_0      = 0.0; % no pressure for now
 ref_frac = 0.7; % generic spring constants reduced by this much 
 
 % Chordae parameters 
-k_0          = 1.0; 
+k_0          = 2.0; 
 k_multiplier = 2.0; 
 tree_frac    = 0.5;
 
@@ -129,7 +129,7 @@ p_0      = 0.0; % no pressure for now
 ref_frac = 0.7; % generic spring constants reduced by this much 
 
 
-k_0          = 1.0; 
+k_0          = 2.0; 
 k_multiplier = 2.0; 
 tree_frac    = 0.5;
 
