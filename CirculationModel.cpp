@@ -40,7 +40,7 @@ using namespace Eigen;
 #define MMHG_TO_CGS 1333.22368
 
 
-// #define USE_WINDKESSEL
+#define USE_WINDKESSEL
 // If not defined then this only computes fluxes
 // Pressure is set to zero
 // Currently hard coded for upper boundary
@@ -49,10 +49,6 @@ namespace
 {
     // Name of output file.
     static const string DATA_FILE_NAME = "bc_data.txt";
-
-    // Conversion factors.
-    static const double flconv = 1 / 0.06;  // l/min ===> ml/sec
-    static const double prconv = 1333.2239; // mmHg  ===> dyne/cm^2
 
     // Three-element windkessel model
     // Both resistances set to 0.01 mmHg s / L
@@ -270,11 +266,11 @@ CirculationModel::advanceTimeDependentData(const double dt,
     plog << "============================================================================\n"
          << "Circulation model variables at time " << d_time << ":\n";
 
-    plog << "Q_l_atrium\t= ";
+    plog << "Q_mi\t= ";
     plog.setf(ios_base::showpos);
     plog.setf(ios_base::scientific);
     plog.precision(12);
-    plog << d_qsrc[0] << "ml/s";
+    plog << -d_qsrc[0] << "ml/s";
     plog << "\n";
 
     plog << "P_l_atrium\t= ";
@@ -289,7 +285,7 @@ CirculationModel::advanceTimeDependentData(const double dt,
         plog.setf(ios_base::showpos);
         plog.setf(ios_base::scientific);
         plog.precision(12);
-        plog << P_Wk / MMHG_TO_CGS << " mmHg";
+        plog << P_Wk << " mmHg";  // Note that windkessel uses units of mmHg so this needs no conversion
         plog << "\n";
     #endif
     
@@ -317,6 +313,8 @@ CirculationModel::putToDatabase(Pointer<Database> db)
     return;
 } // putToDatabase
 
+
+
 /////////////////////////////// PROTECTED ////////////////////////////////////
 
 /////////////////////////////// PRIVATE //////////////////////////////////////
@@ -332,36 +330,32 @@ CirculationModel::writeDataFile() const
         if (!from_restart && !file_initialized)
         {
             ofstream fout(DATA_FILE_NAME.c_str(), ios::out);
-            fout << "source name       "
-                 << " time       "
-                 << " psrc (mmHg) "
-                 << " qsrc (ml/min)"
+            fout << "% time       "
+                 << " P_LA (mmHg) "
+                 << " Q_mi (ml/min)"
                  << " P_Wk (mmHg) "
-                 << "\n";
+                 << "\n"
+                 << "bc_data = [";
             file_initialized = true;
         }
 
         ofstream fout(DATA_FILE_NAME.c_str(), ios::app);
         for (int n = 0; n < d_nsrc; ++n)
         {
-            fout << d_srcname[n];
-            fout.unsetf(ios_base::showpos);
-            fout.setf(ios_base::scientific);
-            fout.precision(5);
-            fout << " " << d_time;
+            fout << d_time;
             fout.setf(ios_base::scientific);
             fout.setf(ios_base::showpos);
             fout.precision(5);
-            fout << " " << d_psrc[n];
+            fout << " " << d_psrc[n] / MMHG_TO_CGS;
             fout.setf(ios_base::scientific);
             fout.setf(ios_base::showpos);
             fout.precision(5);
-            fout << " " << d_qsrc[n];
+            fout << " " << -d_qsrc[n];
             fout.setf(ios_base::scientific);
             fout.setf(ios_base::showpos);
             fout.precision(5);
-            fout << " " << (n == 0 ? 0.0 : d_P_Wk);
-            fout << "\n";
+            fout << " " << d_P_Wk;
+            fout << "; \n";
         }
     }
     return;

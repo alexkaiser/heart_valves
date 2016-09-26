@@ -315,7 +315,7 @@ int main(int argc, char* argv[])
             dt = input_db->getDouble("DT"); 
             
             pout << "to constructor\n"; 
-            fourier_series_data *fourier = new fourier_series_data("fourier_coeffs.txt", dt);  
+            fourier_series_data *fourier_ventricle = new fourier_series_data("fourier_coeffs_ventricle.txt", dt);
             pout << "series data successfully built\n"; 
             // fourier->print_values(); 
         #endif
@@ -351,8 +351,20 @@ int main(int argc, char* argv[])
 
                 // manually update third component, 
                 // which is the only one not easily set in the input file
-                VelocityBcCoefs *z_bdry_coeffs = new VelocityBcCoefs(fourier, circ_model);
+                VelocityBcCoefs *z_bdry_coeffs = new VelocityBcCoefs(fourier_ventricle, circ_model);
                 u_bc_coefs[2] = z_bdry_coeffs;
+            
+            
+            
+                // index without periodicity
+                double start = input_db->getDouble("START_TIME");
+                unsigned int k = (unsigned int) floor(start / (fourier_ventricle->dt));
+            
+                // take periodic reduction
+                unsigned int idx = k % (fourier_ventricle->N_times);
+            
+                // Set Windkessel pressure to be equal to ventricular pressure
+                circ_model->d_P_Wk = MMHG_TO_CGS * fourier_ventricle->values[idx];
             
                 #ifdef DYNAMIC_BOUNDARY_STAB
             

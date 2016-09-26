@@ -97,10 +97,8 @@ VelocityBcCoefs::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_data,
             a = 0.0; 
             b = 1.0;
             
-            // double negative signs
-            // one for pressure orientation
-            // one for a sign in stress tensor
-            g = MMHG_TO_CGS * d_fourier->values[idx];
+            // sign for negative in stress tensor
+            g = -MMHG_TO_CGS * d_fourier->values[idx];
         
             //std::cout << "fourier pressure data on location " << location_index << " with value " << g << " or " << fourier->values[idx] << " mmHg\n";
 
