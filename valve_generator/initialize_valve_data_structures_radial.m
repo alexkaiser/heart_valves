@@ -64,7 +64,7 @@ valve.num_copies = 3;
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
-valve.collagen_springs_leaflet = false; 
+valve.collagen_springs_leaflet = true; 
 
 
 % posterior leaflet data structure 
@@ -82,7 +82,7 @@ radial_and_circumferential = true;
 
 % This many points are placed in a flat manner 
 % around the point of the free edge 
-trapezoidal_flat_points = N/16; 
+trapezoidal_flat_points = 0; % N/8; 
 
 % Spring constants in two directions 
 alpha    = 1.0; 
@@ -123,7 +123,7 @@ a           = 1.0;
 h           = 4.0; 
 r           = valve.r; 
 radial_and_circumferential = true; 
-trapezoidal_flat_points = N/16; 
+trapezoidal_flat_points = 0; % N/8; 
 
 % Spring constants in two directions 
 alpha    = 1.0; 

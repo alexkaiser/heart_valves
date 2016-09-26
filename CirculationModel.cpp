@@ -40,7 +40,7 @@ using namespace Eigen;
 #define MMHG_TO_CGS 1333.22368
 
 
-#define USE_WINDKESSEL
+// #define USE_WINDKESSEL
 // If not defined then this only computes fluxes
 // Pressure is set to zero
 // Currently hard coded for upper boundary
@@ -60,7 +60,7 @@ namespace
     // Compliance is pulmonary artery complaince
     static double R_P = 0.01 * MIN_PER_L_T0_SEC_PER_ML; // peripheral resistance (mmHg ml^-1 s)
     static double R_C = 0.01 * MIN_PER_L_T0_SEC_PER_ML; // characteristic resistance (mmHg ml^-1 s)
-    static double C   = 0.08 * 1e3;   // pulmonary vein compliance, ml / mmHg
+    static double C   = 0.01 * 1e3;   // pulmonary vein compliance, ml / mmHg
 
     // Time required to "ramp up" the pressure in the Windkessel model.
     static double P_ramp = 5.0;
@@ -143,6 +143,9 @@ CirculationModel::CirculationModel(const string& object_name, Pointer<Database> 
         R_P = input_db->getDoubleWithDefault("R_P", R_P); // peripheral resistance (mmHg ml^-1 s)
         R_C = input_db->getDoubleWithDefault("R_C", R_C); // characteristic resistance (mmHg ml^-1 s)
         C   = input_db->getDoubleWithDefault("C",   C);   // total arterial compliance (ml mmHg^-1)
+        
+        std::cout << "input db got values R_P = " << R_P << "R_C = " << R_C << "C = " << C << "\n";
+        
     }
 
     // Initialize object with data read from the input and restart databases.
@@ -332,7 +335,7 @@ CirculationModel::writeDataFile() const
             fout << "source name       "
                  << " time       "
                  << " psrc (mmHg) "
-                 << " qsrc (l/min)"
+                 << " qsrc (ml/min)"
                  << " P_Wk (mmHg) "
                  << "\n";
             file_initialized = true;
@@ -349,11 +352,11 @@ CirculationModel::writeDataFile() const
             fout.setf(ios_base::scientific);
             fout.setf(ios_base::showpos);
             fout.precision(5);
-            fout << " " << d_psrc[n] / prconv;
+            fout << " " << d_psrc[n];
             fout.setf(ios_base::scientific);
             fout.setf(ios_base::showpos);
             fout.precision(5);
-            fout << " " << d_qsrc[n] / flconv;
+            fout << " " << d_qsrc[n];
             fout.setf(ios_base::scientific);
             fout.setf(ios_base::showpos);
             fout.precision(5);

@@ -311,10 +311,7 @@ int main(int argc, char* argv[])
         
         #ifdef FOURIER_SERIES_BC
             pout << "to Fourier series creation\n"; 
-            
-            // this fails here, need to get dt from input db or something 
-            // dt = time_integrator->getMaximumTimeStepSize(); 
-            
+        
             dt = input_db->getDouble("DT"); 
             
             pout << "to constructor\n"; 
@@ -414,7 +411,8 @@ int main(int argc, char* argv[])
 
 
         #ifdef FOURIER_SERIES_BODY_FORCE
-            if (!periodic_domain){
+            const bool z_periodic = (grid_geometry->getPeriodicShift())[2];
+            if (z_periodic){
                 pout << "to Fourier series creation with body force\n";
             
                 dt = input_db->getDouble("DT");
@@ -612,29 +610,29 @@ int main(int argc, char* argv[])
                 visit_data_writer->writePlotData(patch_hierarchy, iteration_num, loop_time);
                 silo_data_writer->writePlotData(iteration_num, loop_time);
                 
-                
-                #ifdef ENABLE_INSTRUMENTS
-                
-                    Pointer<hier::Variable<NDIM> > U_var = navier_stokes_integrator->getVelocityVariable();
-                    Pointer<hier::Variable<NDIM> > P_var = navier_stokes_integrator->getPressureVariable();
-                    Pointer<VariableContext> current_ctx = navier_stokes_integrator->getCurrentContext();
-                    const int U_current_idx = var_db->mapVariableAndContextToIndex(U_var, current_ctx);
-                    const int P_current_idx = var_db->mapVariableAndContextToIndex(P_var, current_ctx);
-                    
-                    instruments->initializeHierarchyDependentData(patch_hierarchy, l_data_manager, iteration_num, loop_time); 
-                    instruments->readInstrumentData(U_current_idx, P_current_idx, patch_hierarchy, l_data_manager, iteration_num, loop_time); 
-                    flux_valve_ring = instruments->getFlowValues(); 
-                    // pout << "flux at t = " << loop_time << ", Q = " << flux_valve_ring[0] << "\n";
-                    
-                    if (SAMRAI_MPI::getRank() == 0){
-                        flux_output_stream << loop_time << ",\t" << flux_valve_ring[0] << ";\n"; 
-                        flux_output_stream.flush(); 
-                    }                
-                                        
-                #endif
-                
-                
             }
+            
+            // Write this every step
+            #ifdef ENABLE_INSTRUMENTS
+                
+                Pointer<hier::Variable<NDIM> > U_var = navier_stokes_integrator->getVelocityVariable();
+                Pointer<hier::Variable<NDIM> > P_var = navier_stokes_integrator->getPressureVariable();
+                Pointer<VariableContext> current_ctx = navier_stokes_integrator->getCurrentContext();
+                const int U_current_idx = var_db->mapVariableAndContextToIndex(U_var, current_ctx);
+                const int P_current_idx = var_db->mapVariableAndContextToIndex(P_var, current_ctx);
+                
+                instruments->initializeHierarchyDependentData(patch_hierarchy, l_data_manager, iteration_num, loop_time); 
+                instruments->readInstrumentData(U_current_idx, P_current_idx, patch_hierarchy, l_data_manager, iteration_num, loop_time); 
+                flux_valve_ring = instruments->getFlowValues(); 
+                // pout << "flux at t = " << loop_time << ", Q = " << flux_valve_ring[0] << "\n";
+                
+                if (SAMRAI_MPI::getRank() == 0){
+                    flux_output_stream << loop_time << ",\t" << flux_valve_ring[0] << ";\n"; 
+                    flux_output_stream.flush(); 
+                }                
+            
+            #endif
+            
             if (dump_restart_data && (iteration_num % restart_dump_interval == 0 || last_step))
             {
                 pout << "\nWriting restart files...\n\n";
@@ -673,6 +671,12 @@ int main(int argc, char* argv[])
         #ifdef ENABLE_INSTRUMENTS
             if (SAMRAI_MPI::getRank() == 0){
                 flux_output_stream << "]; \n\n"; 
+                
+                flux_output_stream << "fig = figure;\n subplot(2,1,1);\n plot(data(:,1), -data(:,2));\n xlabel('t');\n ylabel('flux (cm^3 / s)  ');\n"; 
+                flux_output_stream << "dt = " << dt << "; \n"; 
+                flux_output_stream << "net_flux = dt*cumsum(-data(:,2));\n subplot(2,1,2);\n plot(data(:,1), net_flux);\n xlabel('t');\n ylabel('net flux (cm^3)');\n"; 
+                flux_output_stream << "printfig(fig,'flux.eps');\n"; 
+                
                 flux_output_stream.close();
             }
         #endif
@@ -804,9 +808,11 @@ inline double spring_function_collagen(double R, const double* params, int lag_m
     
     // Compute the force
     if (E > full_recruitment){
-        std::cout << "On index " << lag_mastr_idx << "linear part, E = " << E << "\tindices = " << lag_mastr_idx << ", " << lag_slave_idx
-        << ".\tEffective slope = " << kappa * thickness * eta_collagen
-        << "\trest len = " << rest_len <<"\n";
+        if ((lag_mastr_idx % 1000) == 0){
+            std::cout << "On index " << lag_mastr_idx << "linear part, E = " << E << "\tindices = " << lag_mastr_idx << ", " << lag_slave_idx
+            << ".\tEffective slope = " << kappa * thickness * eta_collagen
+            << "\trest len = " << rest_len <<"\n";
+        }
         return kappa * thickness * (eta_collagen*E + collagen_y_intercept);
     }
     else if (E > 0.0){
