@@ -1,13 +1,12 @@
-function [] = output_series_coeffs_to_txt(a_0_atrium, a_n_atrium, b_n_atrium, a_0_ventricle, a_n_ventricle, b_n_ventricle, n, L)
+function [] = output_series_coeffs_to_txt(a_0, a_n, b_n, n, L, file_name)
 
-file = fopen('fourier_coeffs.txt', 'w'); 
-
+if exist('file_name', 'var')
+    file = fopen(file_name, 'w'); 
+else 
+    file = fopen('fourier_coeffs.txt', 'w'); 
+end 
 fprintf(file, '%d\n', n); 
 fprintf(file, '%.16e\n', L); 
-
-a_0 = a_0_atrium - a_0_ventricle; 
-a_n = a_n_atrium - a_n_ventricle; 
-b_n = b_n_atrium - b_n_ventricle; 
 
 fprintf(file, '%.16e\n', a_0); 
 

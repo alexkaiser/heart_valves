@@ -183,6 +183,11 @@ title('abs of coefficients')
 n_output = 200; 
 output_series_to_parser_format(a_0_atrium, a_n_atrium, b_n_atrium, a_0_ventricle, a_n_ventricle, b_n_ventricle, n_output, true_cycle_length); 
 
+a_0 = a_0_atrium - a_0_ventricle; 
+a_n = a_n_atrium - a_n_ventricle; 
+b_n = b_n_atrium - b_n_ventricle;
+file_name = 'fourier_coeffs.txt'; 
+
 output_series_coeffs_to_txt(a_0_atrium, a_n_atrium, b_n_atrium, a_0_ventricle, a_n_ventricle, b_n_ventricle, n, true_cycle_length); 
 
 
