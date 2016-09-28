@@ -98,7 +98,7 @@ namespace
         
         double rhs[2];  
         rhs[0] = (C_PA/dt)*P_PA + Q_R;
-        rhs[1] = ((C_PV + C_LA)/dt)*P_LA + Q_mi;
+        rhs[1] = ((C_PV + C_LA)/dt)*P_LA - Q_mi;
         
         double det = a*d - b*c; 
         
