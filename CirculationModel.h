@@ -43,9 +43,16 @@ public:
      */
     double d_time;
     int d_nsrc;
-    vector<double> d_qsrc, d_psrc;
+    vector<double> d_psrc;
+    vector<double> d_qsrc;
     vector<string> d_srcname;
-    double d_P_Wk;
+
+    double d_P_PA; 
+    double d_P_LA;     
+    double d_Q_R; 
+    double d_Q_P; 
+    double d_Q_mi; 
+
 
     /*!
      * \brief The level of the patch hierarchy on which the Lagrangian
@@ -56,7 +63,7 @@ public:
     /*!
      * \brief Constructor
      */
-    CirculationModel(const string& object_name, Pointer<Database> input_db, bool register_for_restart = true);
+    CirculationModel(const string& object_name, double P_LA_0, double P_PV_0, double t=0.0, bool register_for_restart=true); 
 
     /*!
      * \brief Destructor.

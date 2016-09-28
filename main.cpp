@@ -316,15 +316,34 @@ int main(int argc, char* argv[])
             
             pout << "to constructor\n"; 
             fourier_series_data *fourier_ventricle = new fourier_series_data("fourier_coeffs_ventricle.txt", dt);
-            pout << "series data successfully built\n"; 
-            // fourier->print_values(); 
+            pout << "series data successfully built\n";
+        
+            // fourier->print_values();
+        
+            // Need to declare these out here for scope reasons
+            // index without periodicity
+            double start = input_db->getDouble("START_TIME");
+            unsigned int k = (unsigned int) floor(start / (fourier_ventricle->dt));
+        
+            // take periodic reduction
+            unsigned int idx = k % (fourier_ventricle->N_times);
+        
+            bool restart_circ_model = true;
+    
+            // End systolic / beginning diastolic PA pressure
+            double P_PA_0 = 18;
+    
+            // Simulation starts at moment when LA and LV pressures are equal
+            // Note that circ model has units of mmHg
+            // As does Fourier series 
+            double P_LA_0 = fourier_ventricle->values[idx];
+    
+            // Circulation model
+            CirculationModel *circ_model   = new CirculationModel("circ_model", P_PA_0, P_LA_0, start, restart_circ_model);
         #endif
         
-        // Need to declare these out here for scope reasons 
-        // This is needed to pull variables later 
+        // This is needed to pull variables later
         VariableDatabase<NDIM>* var_db = VariableDatabase<NDIM>::getDatabase();
-        bool restart_circ_model = true;
-        CirculationModel *circ_model   = new CirculationModel("circ_model", NULL, restart_circ_model);
         
         const bool periodic_domain = grid_geometry->getPeriodicShift().min() > 0;
         if (!periodic_domain)
@@ -348,23 +367,12 @@ int main(int argc, char* argv[])
                     u_bc_coefs[d] = new muParserRobinBcCoefs(
                         bc_coefs_name, app_initializer->getComponentDatabase(bc_coefs_db_name), grid_geometry);
                 }
-
+            
                 // manually update third component, 
                 // which is the only one not easily set in the input file
                 VelocityBcCoefs *z_bdry_coeffs = new VelocityBcCoefs(fourier_ventricle, circ_model);
                 u_bc_coefs[2] = z_bdry_coeffs;
             
-            
-            
-                // index without periodicity
-                double start = input_db->getDouble("START_TIME");
-                unsigned int k = (unsigned int) floor(start / (fourier_ventricle->dt));
-            
-                // take periodic reduction
-                unsigned int idx = k % (fourier_ventricle->N_times);
-            
-                // Set Windkessel pressure to be equal to ventricular pressure
-                circ_model->d_P_Wk = MMHG_TO_CGS * fourier_ventricle->values[idx];
             
                 #ifdef DYNAMIC_BOUNDARY_STAB
             

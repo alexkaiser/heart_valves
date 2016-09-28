@@ -28,6 +28,7 @@
 
 // C++ STDLIB INCLUDES
 #include <cassert>
+#include <cmath>
 
 #include <Eigen/Dense>
 using namespace Eigen;
@@ -50,28 +51,63 @@ namespace
     // Name of output file.
     static const string DATA_FILE_NAME = "bc_data.txt";
 
-    // Three-element windkessel model
-    // Both resistances set to 0.01 mmHg s / L
-    // Taken from Peskin's book as fwd valve resistances which do not do much
-    // Compliance is pulmonary artery complaince
-    static double R_P = 0.01 * MIN_PER_L_T0_SEC_PER_ML; // peripheral resistance (mmHg ml^-1 s)
-    static double R_C = 0.01 * MIN_PER_L_T0_SEC_PER_ML; // characteristic resistance (mmHg ml^-1 s)
-    static double C   = 0.01 * 1e3;   // pulmonary vein compliance, ml / mmHg
-
-    // Time required to "ramp up" the pressure in the Windkessel model.
-    static double P_ramp = 5.0;
-    static double t_ramp = 0.05;
-
+    // constants 
+    static const double C_PA =  4.12; // Pulmonary artery compliance, ml / mmHg 
+    static const double C_PV = 10.0;  // Pulmonary vein compliance, ml / mmHg 
+    static const double C_LA =  1.6;  // Left atrial compliance ml / mmHg  
+    
+    static const double R_P  = (9.0/5.6) * MIN_PER_L_T0_SEC_PER_ML; // Pulmonary resistance, mmHg / (ml/s)
+    
+    static const double beat_time = 0.8; 
+    static const double T_on = .53;   // Pulmonary valve open 
+    static const double T_off = .75;  // Pulmonary valve closes  
+    static const double T_peak = T_on + 0.4 * (T_off - T_on); // Peak pulmonary valve flow 
+    static const double stroke_volume = 75; // ml 
+    static const double h = 2.0 * stroke_volume / (T_off - T_on); // Peak flow to get given stroke volume
+    
+    
+    inline double compute_Q_R(double t){
+        // Triangle wave flux 
+        
+        double t_reduced = t - floor(t/beat_time); 
+        
+        if (t_reduced <= T_on)
+            return 0.0; 
+        else if (t_reduced <= T_peak)
+            return ( h/(T_peak - T_on) )*t - (h/(T_peak - T_on)  )*T_on;
+        else if (t_reduced <= T_off)
+            return (-h/(T_off - T_peak))*t + (h/(T_off -  T_peak))*T_off;
+        else if (t_reduced <= beat_time)
+            return 0.0;
+        
+        TBOX_ERROR("Valid time for flux not found.");
+        return 0.0;
+    }
+    
     // Backward Euler update for windkessel model.
     inline void
-    windkessel_be_update(double& P_Wk, double& P_l_atrium, const double& Q_l_atrium, const double& t, const double& dt)
+    windkessel_be_update(double& Q_R, double& P_PA, double& Q_P, double& P_LA, const double Q_mi, const double t, const double dt)
     {
-        if (t < t_ramp)
-            P_Wk       = t * P_ramp / t_ramp; 
-        else
-            P_Wk       = ((C / dt) * P_Wk + Q_l_atrium) / (C / dt + 1.0 / R_P);
+     
+        Q_R = compute_Q_R(t);
         
-        P_l_atrium = P_Wk + R_C * Q_l_atrium;
+        double a = C_PA/dt + 1/R_P; 
+        double b = -1/R_P; 
+        double c = -1/R_P; 
+        double d = (C_PV + C_LA)/dt + 1/R_P; 
+        
+        double rhs[2];  
+        rhs[0] = (C_PA/dt)*P_PA + Q_R;
+        rhs[1] = ((C_PV + C_LA)/dt)*P_LA + Q_mi;
+        
+        double det = a*d - b*c; 
+        
+        // Closed form linear system solution 
+        P_PA = (1/det) * ( d*rhs[0] + -b*rhs[1]);
+        P_LA = (1/det) * (-c*rhs[0] +  a*rhs[1]);
+                
+        Q_P = (1/R_P) * (P_PA - P_LA);
+                
         return;
     } // windkessel_be_update
 
@@ -79,15 +115,19 @@ namespace
 
 /////////////////////////////// PUBLIC ///////////////////////////////////////
 
-CirculationModel::CirculationModel(const string& object_name, Pointer<Database> input_db, bool register_for_restart)
+CirculationModel::CirculationModel(const string& object_name, double P_PA_0, double P_LA_0, double t, bool register_for_restart)
     : d_object_name(object_name),
       d_registered_for_restart(register_for_restart),
-      d_time(0.0),
+      d_time(t),
       d_nsrc(1),           // number of sets of variables
-      d_qsrc(d_nsrc, 0.0), // flux
       d_psrc(d_nsrc, 0.0), // pressure
+      d_qsrc(d_nsrc, 0.0), // flux
       d_srcname(d_nsrc),
-      d_P_Wk(0.0),
+      d_P_PA(P_PA_0),
+      d_P_LA(P_LA_0), 
+      d_Q_R(0.0),
+      d_Q_P(0.0), 
+      d_Q_mi(0.0),
       d_bdry_interface_level_number(numeric_limits<int>::max())
 {
 #if !defined(NDEBUG)
@@ -96,52 +136,6 @@ CirculationModel::CirculationModel(const string& object_name, Pointer<Database> 
     if (d_registered_for_restart)
     {
         RestartManager::getManager()->registerRestartItem(d_object_name, this);
-    }
-
-    if (input_db)
-    {
-        /*d_bdry_interface_level_number =
-            input_db->getIntegerWithDefault("bdry_interface_level_number", d_bdry_interface_level_number);
-        string data_time_filename = input_db->getString("data_time_filename");
-        string pump_pressure_filename = input_db->getString("pump_pressure_filename");
-        string upstream_pressure_filename = input_db->getString("upstream_pressure_filename");
-        string downstream_pressure_filename = input_db->getString("downstream_pressure_filename");
-        ifstream time_ifs, pump_ifs, inflow_ifs, outflow_ifs;
-        time_ifs.open(data_time_filename.c_str(), ios::in);
-        while (time_ifs && !time_ifs.eof())
-        {
-            double t;
-            time_ifs >> t;
-            data_time.push_back(t);
-        }
-        pump_ifs.open(upstream_pressure_filename.c_str(), ios::in);
-        while (pump_ifs && !pump_ifs.eof())
-        {
-            double p;
-            pump_ifs >> p;
-            pump_pressure.push_back(p);
-        }
-        inflow_ifs.open(upstream_pressure_filename.c_str(), ios::in);
-        while (inflow_ifs && !inflow_ifs.eof())
-        {
-            double p;
-            inflow_ifs >> p;
-            upstream_pressure.push_back(p);
-        }
-        outflow_ifs.open(downstream_pressure_filename.c_str(), ios::in);
-        while (outflow_ifs && !outflow_ifs.eof())
-        {
-            double p;
-            outflow_ifs >> p;
-            downstream_pressure.push_back(p);
-        }
-        */
-        R_P = input_db->getDoubleWithDefault("R_P", R_P); // peripheral resistance (mmHg ml^-1 s)
-        R_C = input_db->getDoubleWithDefault("R_C", R_C); // characteristic resistance (mmHg ml^-1 s)
-        C   = input_db->getDoubleWithDefault("C",   C);   // total arterial compliance (ml mmHg^-1)
-        
-        std::cout << "input db got values R_P = " << R_P << "R_C = " << R_C << "C = " << C << "\n";
-        
     }
 
     // Initialize object with data read from the input and restart databases.
@@ -243,13 +237,21 @@ CirculationModel::advanceTimeDependentData(const double dt,
     
     
     #ifdef USE_WINDKESSEL
-        // The downstream (Atrial) pressure is determined by a three-element Windkessel model.
+        // The downstream (Atrial) pressure is determined by a zero-d model 
         const double t = d_time;
-        double P_l_atrium;
-        const double Q_l_atrium = d_qsrc[0];
-        double& P_Wk = d_P_Wk;
-        windkessel_be_update(P_Wk, P_l_atrium, Q_l_atrium, t, dt);
-        d_psrc[0] = P_l_atrium * MMHG_TO_CGS;
+    
+        double& Q_R  = d_Q_R;
+        double& P_PA = d_P_PA;
+        double& Q_P  = d_Q_P;
+        double& P_LA = d_P_LA;
+    
+        // Mitral flux is inward flow, d_qsrc is outward flux
+        d_Q_mi = -d_qsrc[0];
+        
+        windkessel_be_update(Q_R, P_PA, Q_P, P_LA, d_Q_mi, t, dt);
+        
+        // model in mmHg, to CGS for solver pressure
+        d_psrc[0] = d_P_LA * MMHG_TO_CGS;
     #else 
         // Downstream pressure is fixed to zero 
         d_psrc[0] = 0.0;
@@ -258,43 +260,28 @@ CirculationModel::advanceTimeDependentData(const double dt,
     // Update the current time.
     d_time += dt;
 
-    // Output the updated values.
-    const long precision = plog.precision();
-    plog.unsetf(ios_base::showpos);
-    plog.unsetf(ios_base::scientific);
-
-    plog << "============================================================================\n"
-         << "Circulation model variables at time " << d_time << ":\n";
-
-    plog << "Q_mi\t= ";
-    plog.setf(ios_base::showpos);
-    plog.setf(ios_base::scientific);
-    plog.precision(12);
-    plog << -d_qsrc[0] << "ml/s";
-    plog << "\n";
-
-    plog << "P_l_atrium\t= ";
-    plog.setf(ios_base::showpos);
-    plog.setf(ios_base::scientific);
-    plog.precision(12);
-    plog << d_psrc[0] / MMHG_TO_CGS << " mmHg";
-    plog << "\n";
-
     #ifdef USE_WINDKESSEL
-        plog << "P_Wk\t= ";
+
+        // Output the updated values.
+        const long precision = plog.precision();
+        plog.unsetf(ios_base::showpos);
+        plog.unsetf(ios_base::scientific);
+
+        plog << "============================================================================\n"
+             << "Circulation model variables at time " << d_time << ":\n";
+
+        plog << "P_PA (mmHg)\t P_LA (mmHg)\t Q_R (ml/s)\t Q_P (ml/s)\t Q_mi (ml/s)\n";
         plog.setf(ios_base::showpos);
         plog.setf(ios_base::scientific);
-        plog.precision(12);
-        plog << P_Wk << " mmHg";  // Note that windkessel uses units of mmHg so this needs no conversion
-        plog << "\n";
-    #endif
+        plog.precision(6);
+        plog << d_P_PA << ",\t " << d_P_LA << ",\t " << d_Q_R << ",\t " << d_Q_P << ",\t " << d_Q_mi << "\n";
+        plog << "============================================================================\n";
+
+        plog.unsetf(ios_base::showpos);
+        plog.unsetf(ios_base::scientific);
+        plog.precision(precision);
     
-    plog << "============================================================================\n";
-
-    plog.unsetf(ios_base::showpos);
-    plog.unsetf(ios_base::scientific);
-    plog.precision(precision);
-
+    #endif
     // Write the current state to disk.
     writeDataFile();
     return;
@@ -308,7 +295,11 @@ CirculationModel::putToDatabase(Pointer<Database> db)
     db->putDoubleArray("d_qsrc", &d_qsrc[0], d_nsrc);
     db->putDoubleArray("d_psrc", &d_psrc[0], d_nsrc);
     db->putStringArray("d_srcname", &d_srcname[0], d_nsrc);
-    db->putDouble("d_P_Wk", d_P_Wk);
+    db->putDouble("d_P_PA", d_P_PA);
+    db->putDouble("d_P_LA", d_P_LA);
+    db->putDouble("d_Q_R", d_Q_R);
+    db->putDouble("d_Q_P", d_Q_P);
+    db->putDouble("d_Q_mi", d_Q_mi);
     db->putInteger("d_bdry_interface_level_number", d_bdry_interface_level_number);
     return;
 } // putToDatabase
@@ -330,10 +321,7 @@ CirculationModel::writeDataFile() const
         if (!from_restart && !file_initialized)
         {
             ofstream fout(DATA_FILE_NAME.c_str(), ios::out);
-            fout << "% time       "
-                 << " P_LA (mmHg) "
-                 << " Q_mi (ml/min)"
-                 << " P_Wk (mmHg) "
+            fout << "% time \t P_PA (mmHg)\t d_P_LA (mmHg)\t Q_R (ml/s)\t Q_P (ml/s)\t Q_mi (ml/s)"
                  << "\n"
                  << "bc_data = [";
             file_initialized = true;
@@ -346,16 +334,7 @@ CirculationModel::writeDataFile() const
             fout.setf(ios_base::scientific);
             fout.setf(ios_base::showpos);
             fout.precision(5);
-            fout << " " << d_psrc[n] / MMHG_TO_CGS;
-            fout.setf(ios_base::scientific);
-            fout.setf(ios_base::showpos);
-            fout.precision(5);
-            fout << " " << -d_qsrc[n];
-            fout.setf(ios_base::scientific);
-            fout.setf(ios_base::showpos);
-            fout.precision(5);
-            fout << " " << d_P_Wk;
-            fout << "; \n";
+            fout << " " << d_P_PA << " " << d_P_LA << " " << d_Q_R << " " << d_Q_P << " " << d_Q_mi << "; \n";
         }
     }
     return;
@@ -383,7 +362,11 @@ CirculationModel::getFromRestart()
     db->getDoubleArray("d_qsrc", &d_qsrc[0], d_nsrc);
     db->getDoubleArray("d_psrc", &d_psrc[0], d_nsrc);
     db->getStringArray("d_srcname", &d_srcname[0], d_nsrc);
-    d_P_Wk = db->getDouble("d_P_Wk");
+    d_P_PA = db->getDouble("d_P_PA");
+    d_P_LA = db->getDouble("d_P_LA");
+    d_Q_R  = db->getDouble("d_Q_R");
+    d_Q_P  = db->getDouble("d_Q_P");
+    d_Q_mi = db->getDouble("d_Q_mi");
     d_bdry_interface_level_number = db->getInteger("d_bdry_interface_level_number");
     return;
 } // getFromRestart
