@@ -64,7 +64,7 @@ valve.num_copies = 3;
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
-valve.collagen_springs_leaflet = true; 
+valve.collagen_springs_leaflet = false; 
 
 
 % posterior leaflet data structure 
@@ -126,13 +126,14 @@ radial_and_circumferential = true;
 trapezoidal_flat_points = 0; % N/8; 
 
 % Spring constants in two directions 
-alpha    = 1.0; 
-beta     = 1.0; 
+extra_stiffness_multiplier_anterior = 1.25; 
+alpha    = 1.0 * extra_stiffness_multiplier_anterior; 
+beta     = 1.0 * extra_stiffness_multiplier_anterior; 
 p_0      = 0.0; % no pressure for now 
 ref_frac = 0.7; % generic spring constants reduced by this much 
 
 
-k_0          = 2.0; 
+k_0          = 2.0 * extra_stiffness_multiplier_anterior; 
 k_multiplier = 2.0; 
 tree_frac    = 0.5;
 

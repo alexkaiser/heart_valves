@@ -21,7 +21,7 @@ if (leaflet.min_angle < -pi) || (leaflet.max_angle > pi)
 end 
 
 
-debug = true; 
+debug = false; 
 
 
 if leaflet.radial_and_circumferential
