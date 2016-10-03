@@ -49,7 +49,7 @@ using namespace Eigen;
 namespace
 {
     // Name of output file.
-    static const string DATA_FILE_NAME = "bc_data.txt";
+    static const string DATA_FILE_NAME = "bc_data.m";
 
     // constants 
     static const double C_PA =  4.12; // Pulmonary artery compliance, ml / mmHg 
@@ -74,9 +74,9 @@ namespace
         if (t_reduced <= T_on)
             return 0.0; 
         else if (t_reduced <= T_peak)
-            return ( h/(T_peak - T_on) )*t - (h/(T_peak - T_on)  )*T_on;
+            return ( h/(T_peak - T_on) )*t_reduced - (h/(T_peak - T_on)  )*T_on;
         else if (t_reduced <= T_off)
-            return (-h/(T_off - T_peak))*t + (h/(T_off -  T_peak))*T_off;
+            return (-h/(T_off - T_peak))*t_reduced + (h/(T_off -  T_peak))*T_off;
         else if (t_reduced <= beat_time)
             return 0.0;
         
@@ -323,7 +323,7 @@ CirculationModel::writeDataFile() const
             ofstream fout(DATA_FILE_NAME.c_str(), ios::out);
             fout << "% time \t P_PA (mmHg)\t d_P_LA (mmHg)\t Q_R (ml/s)\t Q_P (ml/s)\t Q_mi (ml/s)"
                  << "\n"
-                 << "bc_data = [";
+                 << "bc_vals = [";
             file_initialized = true;
         }
 
