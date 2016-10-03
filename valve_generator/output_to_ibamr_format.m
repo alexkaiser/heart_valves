@@ -220,14 +220,26 @@ function [] = output_to_ibamr_format(valve)
                                 global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net); 
 
                             
-        % place rays for now 
+        % place rays for now
+        if anterior.radial_and_circumferential
+            k_rel_anterior = beta * k_rel;
+        else 
+            k_rel_anterior = k_rel;
+        end 
+        
         [global_idx, total_vertices, total_springs, total_targets] = ...
                                 place_rays(anterior, L, spring, vertex, target, ...
-                                        global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net);                    
+                                        global_idx, total_vertices, total_springs, total_targets, k_rel_anterior, k_target_net, ref_frac_net, eta_net);                    
 
+        if posterior.radial_and_circumferential
+            k_rel_posterior = beta * k_rel;
+        else 
+            k_rel_posterior = k_rel;
+        end 
+                                    
         [global_idx, total_vertices, total_springs, total_targets] = ...
                                 place_rays(posterior, L, spring, vertex, target, ...
-                                        global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net);                    
+                                        global_idx, total_vertices, total_springs, total_targets, k_rel_posterior, k_target_net, ref_frac_net, eta_net);                    
 
 
         % flat part of mesh with Cartesian coordinates
@@ -342,6 +354,8 @@ function [global_idx, total_vertices, total_springs, total_targets, leaflet] = .
     chordae_idx_left  = leaflet.chordae_idx_left; 
     chordae_idx_right = leaflet.chordae_idx_right; 
     ref_frac          = leaflet.ref_frac; 
+    alpha             = leaflet.alpha; 
+    beta              = leaflet.beta; 
     
     if collagen_spring
         function_idx = 1;
@@ -454,10 +468,10 @@ function [global_idx, total_vertices, total_springs, total_targets, leaflet] = .
                     nbr_idx = global_idx + point_idx_with_bc(j_nbr,k_nbr);
                     
                     if collagen_spring
-                        kappa = k_rel;         
+                        kappa = alhpa * k_rel;         
                         total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs, function_idx); 
                     else 
-                        kappa = k_rel / rest_len;         
+                        kappa = alpha * k_rel / rest_len;         
                         total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
                     end 
 
@@ -472,10 +486,10 @@ function [global_idx, total_vertices, total_springs, total_targets, leaflet] = .
                     nbr_idx = global_idx + point_idx_with_bc(j_nbr,k_nbr);
                     
                     if collagen_spring
-                        kappa = k_rel;         
+                        kappa = beta * k_rel;         
                         total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs, function_idx); 
                     else 
-                        kappa = k_rel / rest_len;         
+                        kappa = beta * k_rel / rest_len;         
                         total_springs = spring_string(spring, idx, nbr_idx, kappa, rest_len, total_springs); 
                     end 
 

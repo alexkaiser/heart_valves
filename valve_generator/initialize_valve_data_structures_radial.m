@@ -126,7 +126,7 @@ radial_and_circumferential = true;
 trapezoidal_flat_points = 0; % N/8; 
 
 % Spring constants in two directions 
-extra_stiffness_multiplier_anterior = 2.0; 
+extra_stiffness_multiplier_anterior = 1.25; 
 alpha    = 1.0 * extra_stiffness_multiplier_anterior; 
 beta     = 1.0 * extra_stiffness_multiplier_anterior; 
 p_0      = 0.0; % no pressure for now 
