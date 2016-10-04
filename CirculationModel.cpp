@@ -69,7 +69,7 @@ namespace
     inline double compute_Q_R(double t){
         // Triangle wave flux 
         
-        double t_reduced = t - floor(t/beat_time); 
+        double t_reduced = t - beat_time * floor(t/beat_time); 
         
         if (t_reduced <= T_on)
             return 0.0; 
