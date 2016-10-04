@@ -222,7 +222,7 @@ function [] = output_to_ibamr_format(valve)
                             
         % place rays for now
         if anterior.radial_and_circumferential
-            k_rel_anterior = beta * k_rel;
+            k_rel_anterior = anterior.beta * k_rel;
         else 
             k_rel_anterior = k_rel;
         end 
@@ -232,7 +232,7 @@ function [] = output_to_ibamr_format(valve)
                                         global_idx, total_vertices, total_springs, total_targets, k_rel_anterior, k_target_net, ref_frac_net, eta_net);                    
 
         if posterior.radial_and_circumferential
-            k_rel_posterior = beta * k_rel;
+            k_rel_posterior = posterior.beta * k_rel;
         else 
             k_rel_posterior = k_rel;
         end 
