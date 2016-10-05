@@ -22,7 +22,7 @@ for j=1:j_max
     end 
 end
 
-if leaflet.reflect_x
+if isfield(leaflet, 'reflect_x') && leaflet.reflect_x
     X_copy(1,:,:)     = -X_copy(1,:,:);  
 end 
 
@@ -71,7 +71,8 @@ else
 end 
 
 % add chordae 
-tree_plot(leaflet, fig); 
-
+if leaflet.chordae_tree 
+    tree_plot(leaflet, fig); 
+end 
 
 

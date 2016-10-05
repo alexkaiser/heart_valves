@@ -17,7 +17,7 @@ free_edge_idx_right = leaflet.free_edge_idx_right;
 C_left              = leaflet.chordae.C_left; 
 C_right             = leaflet.chordae.C_right; 
 
-if leaflet.reflect_x
+if isfield(leaflet, 'reflect_x') && leaflet.reflect_x
     X(1,:,:)           = -X(1,:,:);  
     C_left(1,:)        = -C_left(1,:); 
     C_right(1,:)       = -C_right(1,:); 

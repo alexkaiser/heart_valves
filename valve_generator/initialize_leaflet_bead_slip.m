@@ -63,10 +63,8 @@ end
 % information about geometry 
 [leaflet.is_internal leaflet.is_bc leaflet.linear_idx_offset leaflet.point_idx_with_bc] = get_util_arrays_bead_slip(leaflet); 
 
+
 leaflet.X = build_initial_fibers_bead_slip(leaflet); 
-
-
-% Initial configuration is reference configuration 
 
 
 % Spring constants in two directions 
@@ -76,15 +74,13 @@ leaflet.p_0      = p_0; % no pressure for now
 leaflet.ref_frac = ref_frac; % generic spring constants reduced by this much 
 
 % chordae data structures  
-leaflet.chordae_tree = true; 
-leaflet.k_0          = k_0; 
-leaflet.k_multiplier = k_multiplier; 
-leaflet.tree_frac    = tree_frac;
-leaflet.chordae      = add_chordae(leaflet); 
-
-
-
-
-
-
+if exist('k_0', 'var') && exist('k_multiplier', 'var') && exist('tree_frac', 'var')
+    leaflet.chordae_tree = true; 
+    leaflet.k_0          = k_0; 
+    leaflet.k_multiplier = k_multiplier; 
+    leaflet.tree_frac    = tree_frac;
+    leaflet.chordae      = add_chordae(leaflet); 
+else 
+    leaflet.chordae_tree = false; 
+end 
 
