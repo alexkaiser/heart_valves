@@ -4,7 +4,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 128; 
+N = 32; 
 
 % Show some output 
 plots = true; 
@@ -13,9 +13,22 @@ plots = true;
 % Many parameters are in this script 
 
 radial = true; 
+closed_bead_slip = true; 
+
 if radial
-    valve = initialize_valve_data_structures_radial(N); 
+    
+    if closed_bead_slip 
+        valve = initialize_valve_data_structures_radial_bead_slip(N); 
+    else 
+        valve = initialize_valve_data_structures_radial(N); 
+    end 
+        
 else 
+    
+    if closed_bead_slip 
+        error('diagonal fibers not implemented for closed bead slip'); 
+    end 
+    
     valve = initialize_valve_data_structures(N); 
 end 
     
@@ -39,9 +52,6 @@ save(strcat(valve.base_name, '_final_data'));
 
 % Write to simulation files 
 output_to_ibamr_format(valve); 
-
-
-
 
 
 
