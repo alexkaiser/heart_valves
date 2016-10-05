@@ -12,7 +12,12 @@ function [is_internal is_bc linear_idx_offset point_idx_with_bc] = get_util_arra
 N                       = leaflet.N; 
 j_max                   = leaflet.j_max; 
 k_max                   = leaflet.k_max; 
-trapezoidal_flat_points = leaflet.trapezoidal_flat_points; 
+
+if isfield(leaflet, 'trapezoidal_flat_points')
+    trapezoidal_flat_points = leaflet.trapezoidal_flat_points; 
+else 
+    trapezoidal_flat_points = 0; 
+end 
 
 is_internal       = zeros(j_max, k_max); 
 is_bc             = zeros(j_max, k_max); 

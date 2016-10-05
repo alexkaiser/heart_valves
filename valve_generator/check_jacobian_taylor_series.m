@@ -43,6 +43,8 @@ end
 % Or diagonally oriented fibers 
 leaflet.radial_and_circumferential = true; 
 
+leaflet.trapezoidal_flat_points = 0; 
+
 [leaflet.j_max leaflet.k_max leaflet.free_edge_idx_left leaflet.free_edge_idx_right leaflet.chordae_idx_left leaflet.chordae_idx_right] = get_free_edge_ranges(leaflet);
 
 

@@ -126,7 +126,7 @@ function J = build_jacobian(leaflet)
                     
                     if (j_nbr > 0) && (k_nbr > 0) && (leaflet.is_internal(j_nbr,k_nbr) || leaflet.is_bc(j_nbr,k_nbr))
 
-                        J_tension = tension_jacobian(X(:,j,k),X(:,j_nbr,k_nbr),R(:,j,k),R(:,j_nbr,k_nbr),alpha,ref_frac); 
+                        J_tension = tension_over_norm_jacobian(X(:,j,k),X(:,j_nbr,k_nbr),R(:,j,k),R(:,j_nbr,k_nbr),alpha,ref_frac); 
 
                         % current term is always added in 
                         % this gets no sign 
@@ -151,7 +151,7 @@ function J = build_jacobian(leaflet)
                     
                     if (j_nbr > 0) && (k_nbr > 0) && (leaflet.is_internal(j_nbr,k_nbr) || leaflet.is_bc(j_nbr,k_nbr))
 
-                        J_tension = tension_jacobian(X(:,j,k),X(:,j_nbr,k_nbr),R(:,j,k),R(:,j_nbr,k_nbr),beta,ref_frac); 
+                        J_tension = tension_over_norm_jacobian(X(:,j,k),X(:,j_nbr,k_nbr),R(:,j,k),R(:,j_nbr,k_nbr),beta,ref_frac); 
 
                         % current term is always added in 
                         % this gets no sign 
@@ -186,7 +186,7 @@ function J = build_jacobian(leaflet)
                     X_nbr = leaflet.chordae.C_left(:,idx_chordae); 
                     R_nbr = leaflet.chordae.Ref_l (:,idx_chordae);
                     
-                    J_tension = tension_jacobian(X(:,j,k),X_nbr,R(:,j,k),R_nbr,kappa,ref_frac); 
+                    J_tension = tension_over_norm_jacobian(X(:,j,k),X_nbr,R(:,j,k),R_nbr,kappa,ref_frac); 
                     
                     % current term is always added in 
                     % this gets no sign 
@@ -217,7 +217,7 @@ function J = build_jacobian(leaflet)
                     X_nbr = leaflet.chordae.C_right(:,idx_chordae); 
                     R_nbr = leaflet.chordae.Ref_r  (:,idx_chordae);
                     
-                    J_tension = tension_jacobian(X(:,j,k),X_nbr,R(:,j,k),R_nbr,kappa,ref_frac); 
+                    J_tension = tension_over_norm_jacobian(X(:,j,k),X_nbr,R(:,j,k),R_nbr,kappa,ref_frac); 
                     
                     % current term is always added in 
                     % this gets no sign 
@@ -274,7 +274,7 @@ function J = build_jacobian(leaflet)
                 end
 
                 % tension Jacobian for this spring 
-                J_tension = tension_jacobian(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac); 
+                J_tension = tension_over_norm_jacobian(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac); 
 
                 % current always gets a contribution from this spring 
                 place_tmp_block(range_current, range_current, J_tension); 

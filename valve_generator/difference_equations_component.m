@@ -66,7 +66,7 @@ if (j+k) < (N+2)
             R_nbr = R(:,j_nbr,k_nbr); 
         end 
 
-        u_tangent_term = u_tangent_term + tension_linear(X(:,j,k),X_nbr,R(:,j,k),R_nbr,alpha,ref_frac) * (X_nbr - X(:,j,k));
+        u_tangent_term = u_tangent_term + tension_linear_over_norm(X(:,j,k),X_nbr,R(:,j,k),R_nbr,alpha,ref_frac) * (X_nbr - X(:,j,k));
 
     end 
 
@@ -83,7 +83,7 @@ if (j+k) < (N+2)
             R_nbr = R(:,j_nbr,k_nbr); 
         end
 
-        v_tangent_term = v_tangent_term + tension_linear(X(:,j,k),X_nbr,R(:,j,k),R_nbr,beta,ref_frac) * (X_nbr - X(:,j,k));
+        v_tangent_term = v_tangent_term + tension_linear_over_norm(X(:,j,k),X_nbr,R(:,j,k),R_nbr,beta,ref_frac) * (X_nbr - X(:,j,k));
     end 
 
     F = pressure_term + u_tangent_term + v_tangent_term;

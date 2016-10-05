@@ -21,7 +21,12 @@ function [j_max k_max free_edge_idx_left free_edge_idx_right chordae_idx_left ch
 if leaflet.radial_and_circumferential
 
     N = leaflet.N; 
-    trapezoidal_flat_points = leaflet.trapezoidal_flat_points; 
+
+    if isfield(leaflet, 'trapezoidal_flat_points')
+        trapezoidal_flat_points = leaflet.trapezoidal_flat_points; 
+    else 
+        trapezoidal_flat_points = 0; 
+    end 
     
     j_max = N + trapezoidal_flat_points; 
     k_max = N/2; % always this  

@@ -80,7 +80,7 @@ for j=1:j_max
                 
                 if (j_nbr > 0) && (k_nbr > 0) && (leaflet.is_internal(j_nbr,k_nbr) || leaflet.is_bc(j_nbr,k_nbr))
                     
-                    u_tangent_term = u_tangent_term + tension_linear(X(:,j,k),X(:,j_nbr,k_nbr),R(:,j,k),R(:,j_nbr,k_nbr),alpha,ref_frac) * (X(:,j_nbr,k_nbr) - X(:,j,k));
+                    u_tangent_term = u_tangent_term + tension_linear_over_norm(X(:,j,k),X(:,j_nbr,k_nbr),R(:,j,k),R(:,j_nbr,k_nbr),alpha,ref_frac) * (X(:,j_nbr,k_nbr) - X(:,j,k));
                 
                 end 
             end 
@@ -92,7 +92,7 @@ for j=1:j_max
                 
                 if (j_nbr > 0) && (k_nbr > 0) && (leaflet.is_internal(j_nbr,k_nbr) || leaflet.is_bc(j_nbr,k_nbr))
                 
-                    v_tangent_term = v_tangent_term + tension_linear(X(:,j,k),X(:,j_nbr,k_nbr),R(:,j,k),R(:,j_nbr,k_nbr),beta,ref_frac) * (X(:,j_nbr,k_nbr) - X(:,j,k));
+                    v_tangent_term = v_tangent_term + tension_linear_over_norm(X(:,j,k),X(:,j_nbr,k_nbr),R(:,j,k),R(:,j_nbr,k_nbr),beta,ref_frac) * (X(:,j_nbr,k_nbr) - X(:,j,k));
                 
                 end 
             end 
@@ -114,7 +114,7 @@ for j=1:j_max
                 X_nbr = leaflet.chordae.C_left(:,idx_chordae); 
                 R_nbr = leaflet.chordae.Ref_l (:,idx_chordae);
 
-                chordae_left_term = tension_linear(X(:,j,k),X_nbr,R(:,j,k),R_nbr,kappa,ref_frac) * (X_nbr - X(:,j,k));
+                chordae_left_term = tension_linear_over_norm(X(:,j,k),X_nbr,R(:,j,k),R_nbr,kappa,ref_frac) * (X_nbr - X(:,j,k));
                    
              end 
                 
@@ -135,7 +135,7 @@ for j=1:j_max
                 X_nbr = leaflet.chordae.C_right(:,idx_chordae); 
                 R_nbr = leaflet.chordae.Ref_r  (:,idx_chordae);
 
-                chordae_right_term = tension_linear(X(:,j,k),X_nbr,R(:,j,k),R_nbr,kappa,ref_frac) * (X_nbr - X(:,j,k));
+                chordae_right_term = tension_linear_over_norm(X(:,j,k),X_nbr,R(:,j,k),R_nbr,kappa,ref_frac) * (X_nbr - X(:,j,k));
 
             end 
             
@@ -173,7 +173,7 @@ for left_side = [true false];
             % get the neighbors coordinates, reference coordinate and spring constants
             [nbr R_nbr k_val] = get_nbr_chordae(leaflet, i, nbr_idx, left_side); 
 
-            tension = tension_linear(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac) * (nbr - C(:,i));  
+            tension = tension_linear_over_norm(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac) * (nbr - C(:,i));  
 
             if left_side
                 F_chordae_left(:,i)  = F_chordae_left(:,i)  + tension; 

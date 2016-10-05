@@ -1,4 +1,4 @@
-function T = tension_linear(X_current,X_nbr,R_current,R_nbr,k_spr,ref_frac)
+function T = tension_linear_over_norm(X_current,X_nbr,R_current,R_nbr,k_spr,ref_frac)
 % 
 % Returns the tension in the linear constitutive law 
 % Multiplied by the magnitude of 
