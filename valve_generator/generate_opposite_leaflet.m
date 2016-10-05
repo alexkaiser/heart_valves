@@ -59,20 +59,25 @@ X(:,:,k_max) = [r*cos(mesh); r*sin(mesh); zeros(size(mesh))];
 for i=1:size(free_edge_idx_left, 1)
     j = free_edge_idx_left(i,1); 
     k = free_edge_idx_left(i,2); 
-    X(:,j,k) = leaflet_current.X(:,j,k); 
     
     % free edges NOT internal on reflected leaflet 
+    % treat as boundary condition 
     leaflet.is_internal(j,k) = false; 
+    leaflet.is_bc(j,k) = true; 
 end
 
 for i=1:size(free_edge_idx_right, 1)
     j = free_edge_idx_right(i,1); 
     k = free_edge_idx_right(i,2); 
-    X(:,j,k) = leaflet_current.X(:,j,k); 
     
     % free edges NOT internal on reflected leaflet 
+    % treat as boundary condition 
     leaflet.is_internal(j,k) = false; 
+    leaflet.is_bc(j,k) = true; 
 end 
+
+% copy free edge 
+X = sync_free_edge_to_anterior(leaflet_current, leaflet, X); 
 
 
 for i=1:size(free_edge_idx_left, 1)

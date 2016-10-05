@@ -18,7 +18,7 @@ free_edge_idx_right     = leaflet.free_edge_idx_right;
 
 X = NaN * zeros(3,j_max,k_max); 
 
-debug = true; 
+debug = false; 
 
 
 if leaflet.radial_and_circumferential

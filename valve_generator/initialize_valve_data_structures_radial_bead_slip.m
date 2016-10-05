@@ -67,7 +67,7 @@ valve.num_copies = 3;
 % Spring constants are different here 
 valve.collagen_springs_leaflet = false; 
 
-extra_posterior = 0; 
+extra_posterior = pi/6; 
 
 
 % posterior leaflet data structure 
