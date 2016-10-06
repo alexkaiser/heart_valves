@@ -13,7 +13,7 @@ plots = true;
 % Many parameters are in this script 
 
 radial = true; 
-closed_bead_slip = false; 
+closed_bead_slip = true; 
 
 if radial
     

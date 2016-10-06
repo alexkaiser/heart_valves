@@ -126,6 +126,30 @@ end
 leaflet.X = X; 
 
 
+% NaN mask so using bad values will give errors 
+leaflet.R = NaN * zeros(leaflet.X); 
+
+for i=1:size(free_edge_idx_left, 1)
+    j = free_edge_idx_left(i,1); 
+    k = free_edge_idx_left(i,2); 
+    
+    % Free edge and neighbors have rest positions 
+    % Set to current position for now 
+    leaflet.R(:,j  ,k  ) = leaflet.X(:,j  ,k  );  
+    leaflet.R(:,j+1,k  ) = leaflet.X(:,j+1,k  );  
+    leaflet.R(:,j  ,k+1) = leaflet.X(:,j  ,k+1);  
+end
+
+for i=1:size(free_edge_idx_right, 1)
+    j = free_edge_idx_right(i,1); 
+    k = free_edge_idx_right(i,2); 
+   
+    % right free edge has neighbors up in k 
+    % but down in j
+    leaflet.R(:,j  ,k  ) = leaflet.X(:,j  ,k  );  
+    leaflet.R(:,j-1,k  ) = leaflet.X(:,j-1,k  );  
+    leaflet.R(:,j  ,k+1) = leaflet.X(:,j  ,k+1);
+end 
 
 
 
