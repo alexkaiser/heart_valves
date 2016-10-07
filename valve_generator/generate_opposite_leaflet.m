@@ -13,6 +13,10 @@ leaflet.max_angle   = pi - leaflet.total_angle/2.0;
 
 leaflet.r = leaflet_current.r; 
 
+total_length = leaflet.total_angle * leaflet.r; 
+leaflet.du = total_length / (leaflet.N+1); 
+leaflet.dv = total_length / (leaflet.N+1); 
+
 % Radial and circumferential fibers 
 % Or diagonally oriented fibers 
 leaflet.radial_and_circumferential = leaflet_current.radial_and_circumferential; 
@@ -29,7 +33,6 @@ leaflet.chordae_idx_left    = leaflet_current.chordae_idx_left;
 leaflet.chordae_idx_right   = leaflet_current.chordae_idx_right; 
 leaflet.is_internal         = leaflet_current.is_internal; 
 leaflet.is_bc               = leaflet_current.is_bc; 
-leaflet.linear_idx_offset   = leaflet_current.linear_idx_offset; 
 leaflet.point_idx_with_bc   = leaflet_current.point_idx_with_bc; 
 
 % Spring constants in two directions 
@@ -79,6 +82,19 @@ end
 % copy free edge 
 X = sync_free_edge_to_anterior(leaflet_current, leaflet, X); 
 
+% fix indices 
+leaflet.linear_idx_offset = zeros(size(leaflet_current.linear_idx_offset)) + 3; 
+count = max(max(leaflet_current.linear_idx_offset)); 
+for k=1:k_max
+    for j=1:j_max
+        if leaflet.is_internal(j,k)
+            leaflet.linear_idx_offset(j,k) = count; 
+            count = count + 3; 
+        end 
+    end 
+end
+
+
 
 for i=1:size(free_edge_idx_left, 1)
 
@@ -127,7 +143,7 @@ leaflet.X = X;
 
 
 % NaN mask so using bad values will give errors 
-leaflet.R = NaN * zeros(leaflet.X); 
+leaflet.R = NaN * zeros(size(leaflet.X)); 
 
 for i=1:size(free_edge_idx_left, 1)
     j = free_edge_idx_left(i,1); 

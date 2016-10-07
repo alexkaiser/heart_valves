@@ -44,6 +44,10 @@ leaflet.total_angle = total_angle;
 leaflet.min_angle   = -leaflet.total_angle/2.0; 
 leaflet.max_angle   =  leaflet.total_angle/2.0; 
 
+total_length = total_angle * r; 
+leaflet.du = total_length / (N+1); 
+leaflet.dv = total_length / (N+1); 
+
 leaflet.r = r; 
 
 leaflet.left_papillary  = left_papillary; 
@@ -67,7 +71,10 @@ end
 leaflet.X = build_initial_fibers_bead_slip(leaflet); 
 
 % NaN mask so using bad values will give errors 
-leaflet.R = NaN * zeros(leaflet.X); 
+leaflet.R = NaN * zeros(size(leaflet.X)); 
+
+free_edge_idx_left  = leaflet.free_edge_idx_left; 
+free_edge_idx_right = leaflet.free_edge_idx_right; 
 
 for i=1:size(free_edge_idx_left, 1)
     j = free_edge_idx_left(i,1); 

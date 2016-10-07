@@ -11,13 +11,6 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
 % 
 
 
-% synchronize before doing anything 
-
-
-
-
-
-
 X_anterior        = valve.anterior.X; 
 R_anterior        = valve.anterior.R; 
 p_0_anterior      = valve.anterior.p_0; 
@@ -28,10 +21,13 @@ C_left            = valve.anterior.chordae.C_left;
 C_right           = valve.anterior.chordae.C_right; 
 Ref_l             = valve.anterior.chordae.Ref_l; 
 Ref_r             = valve.anterior.chordae.Ref_r; 
+k_0               = valve.anterior.chordae.k_0; 
 chordae_idx_left  = valve.anterior.chordae_idx_left; 
 chordae_idx_right = valve.anterior.chordae_idx_right;
 j_max             = valve.anterior.j_max; 
 k_max             = valve.anterior.k_max; 
+du                = valve.anterior.du; 
+dv                = valve.anterior.dv; 
 
 X_posterior        = valve.posterior.X; 
 R_posterior        = valve.posterior.R;
@@ -55,6 +51,10 @@ S_posterior_right = zeros(k_max-1,1);
 
 T_anterior  = zeros(j_max,1); 
 T_posterior = zeros(j_max,1); 
+
+free_edge_idx_left  = valve.anterior.free_edge_idx_left; 
+free_edge_idx_right = valve.anterior.free_edge_idx_right; 
+
 
 for i=1:size(free_edge_idx_left, 1)
     
@@ -94,7 +94,7 @@ for i=1:size(free_edge_idx_left, 1)
     T_anterior(j) = tension_linear(X, X_nbr, R, R_nbr, beta_anterior, ref_frac_anterior); 
     F_tmp = F_tmp + T_anterior(j) * (X-X_nbr)/norm(X-X_nbr); 
     
-    % Posterior circumferential 
+    % Posterior radial 
     X_nbr = X_posterior(:,j_nbr,k_nbr); 
     R_nbr = R_posterior(:,j_nbr,k_nbr); 
     T_posterior(j) = tension_linear(X, X_nbr, R, R_nbr, beta_posterior, ref_frac_posterior); 
@@ -103,7 +103,7 @@ for i=1:size(free_edge_idx_left, 1)
     % current node has a chordae connection
     if chordae_idx_left(j,k)
         
-        kappa = leaflet.chordae.k_0;
+        kappa = k_0;
         
         % index that free edge would have if on tree
         % remember that leaves are only in the leaflet
@@ -112,10 +112,10 @@ for i=1:size(free_edge_idx_left, 1)
         % then take the parent index of that number in chordae variables
         idx_chordae = floor(leaf_idx/2);
         
-        X_nbr = leaflet.chordae.C_left(:,idx_chordae);
-        R_nbr = leaflet.chordae.Ref_l (:,idx_chordae);
+        X_nbr = C_left(:,idx_chordae);
+        R_nbr = Ref_l (:,idx_chordae);
         
-        F_tmp = F_tmp + tension_linear(X,X_nbr,R,R_nbr,kappa,ref_frac) * (X-X_nbr)/norm(X-X_nbr); 
+        F_tmp = F_tmp + tension_linear(X,X_nbr,R,R_nbr,kappa,ref_frac_anterior) * (X-X_nbr)/norm(X-X_nbr); 
         
     else
         error('free edge point required to have chordae connection'); 
@@ -172,21 +172,21 @@ for i=1:size(free_edge_idx_right, 1)
     F_tmp = F_tmp + T_posterior(j) * (X-X_nbr)/norm(X-X_nbr); 
     
     % current node has a chordae connection
-    if chordae_idx_left(j,k)
+    if chordae_idx_right(j,k)
 
-        kappa = leaflet.chordae.k_0;
+        kappa = k_0;
         
         % index that free edge would have if on tree
         % remember that leaves are only in the leaflet
-        leaf_idx = chordae_idx_left(j,k) + N_chordae;
+        leaf_idx = chordae_idx_right(j,k) + N_chordae;
         
         % then take the parent index of that number in chordae variables
         idx_chordae = floor(leaf_idx/2);
         
-        X_nbr = leaflet.chordae.C_left(:,idx_chordae);
-        R_nbr = leaflet.chordae.Ref_l (:,idx_chordae);
+        X_nbr = C_left(:,idx_chordae);
+        R_nbr = Ref_l (:,idx_chordae);
         
-        F_tmp = F_tmp + tension_linear(X,X_nbr,R,R_nbr,kappa,ref_frac) * (X-X_nbr)/norm(X-X_nbr); 
+        F_tmp = F_tmp + tension_linear(X,X_nbr,R,R_nbr,kappa,ref_frac_anterior) * (X-X_nbr)/norm(X-X_nbr); 
         
     else
         error('free edge point required to have chordae connection'); 
@@ -196,10 +196,16 @@ for i=1:size(free_edge_idx_right, 1)
     
 end 
 
-% Tensions are equalized 
+% Tensions are equalized from left to right 
 S_anterior = (S_anterior_left + S_anterior_right)/2.0; 
 S_posterior = (S_posterior_left + S_posterior_right)/2.0; 
 
+% Convert from units of force to force densities 
+% Double check this 
+S_anterior  = S_anterior  /dv; 
+S_posterior = S_posterior /dv; 
+T_anterior  = T_anterior  /du; 
+T_posterior = T_posterior /du; 
 
 
 % interior terms of anterior leaflet 
@@ -210,7 +216,6 @@ for j=1:j_max
         if is_internal(j,k) && (~chordae_idx_left(j,k)) && (~chordae_idx_right(j,k))
 
             X = X_anterior(:,j,k); 
-            R = R_anterior(:,j,k); 
                         
             F_tmp = zeros(3,1);
             
@@ -225,7 +230,7 @@ for j=1:j_max
                 k_nbr = k; 
                 X_nbr = X_anterior(:,j_nbr,k_nbr); 
                 
-                F_tmp = F_tmp + S_anterior(k) * (X-X_nbr)/norm(X-X_nbr); 
+                F_tmp = F_tmp + S_anterior(k)/du * (X-X_nbr)/norm(X-X_nbr); 
 
             end 
              
@@ -235,7 +240,7 @@ for j=1:j_max
                 j_nbr = j; 
                 X_nbr = X_anterior(:,j_nbr,k_nbr); 
                 
-                F_tmp = F_tmp + T_anterior(j) * (X-X_nbr)/norm(X-X_nbr); 
+                F_tmp = F_tmp + T_anterior(j)/dv * (X-X_nbr)/norm(X-X_nbr); 
 
             end 
             
@@ -254,7 +259,6 @@ for j=1:j_max
         if is_internal(j,k) && (~chordae_idx_left(j,k)) && (~chordae_idx_right(j,k))
 
             X = X_posterior(:,j,k); 
-            R = R_posterior(:,j,k); 
                         
             F_tmp = zeros(3,1);
             
@@ -269,7 +273,7 @@ for j=1:j_max
                 k_nbr = k; 
                 X_nbr = X_posterior(:,j_nbr,k_nbr); 
                 
-                F_tmp = F_tmp + S_posterior(k) * (X-X_nbr)/norm(X-X_nbr); 
+                F_tmp = F_tmp + S_posterior(k)/du * (X-X_nbr)/norm(X-X_nbr); 
 
             end 
              
@@ -279,7 +283,7 @@ for j=1:j_max
                 j_nbr = j; 
                 X_nbr = X_posterior(:,j_nbr,k_nbr); 
                 
-                F_tmp = F_tmp + T_posterior(j) * (X-X_nbr)/norm(X-X_nbr); 
+                F_tmp = F_tmp + T_posterior(j)/dv * (X-X_nbr)/norm(X-X_nbr); 
 
             end 
             
@@ -315,9 +319,9 @@ for left_side = [true false];
         for nbr_idx = [left,right,parent]
 
             % get the neighbors coordinates, reference coordinate and spring constants
-            [nbr R_nbr k_val] = get_nbr_chordae(leaflet, i, nbr_idx, left_side); 
+            [nbr R_nbr k_val] = get_nbr_chordae(valve.anterior, i, nbr_idx, left_side); 
 
-            tension = tension_linear_over_norm(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac) * (nbr - C(:,i));  
+            tension = tension_linear_over_norm(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac_anterior) * (nbr - C(:,i));  
 
             if left_side
                 F_chordae_left(:,i)  = F_chordae_left(:,i)  + tension; 

@@ -1,4 +1,4 @@
-function J_tension = tension_over_norm_jacobian(X_current,X_nbr,R_current,R_nbr,k_spr,ref_frac)
+function J_tension = tension_linear_tangent_jacobian(X_current,X_nbr,R_current,R_nbr,k_spr,ref_frac)
 % 
 % Computes the contribution to the Jacobian for X and its neighbor
 % 
