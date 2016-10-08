@@ -32,26 +32,47 @@ figure;
 spy(J); 
 title('jacobian nonzero structure in jacobian tester')
 
-j_max       = leaflet.j_max; 
-k_max       = leaflet.k_max; 
-is_internal = leaflet.is_internal; 
+anterior = valve.anterior; 
+posterior = valve.posterior; 
+
+
+j_max                = anterior.j_max; 
+k_max                = anterior.k_max; 
+is_internal_anterior = anterior.is_internal; 
 
 % perturbation also does not change 
-Z = zeros(size(leaflet.X)); 
+Z_anterior = zeros(size(anterior.X)); 
 for j=1:j_max
     for k=1:k_max
-        if is_internal(j,k)
-            Z(:,j,k) = rand(3,1);  
+        if is_internal_anterior(j,k)
+            Z_anterior(:,j,k) = rand(3,1);  
         end 
     end 
 end 
 
-leaflet_Z   = leaflet; 
-leaflet_Z.X = Z; 
-leaflet_Z.chordae.C_left  = rand(size(leaflet_Z.chordae.C_left)); 
-leaflet_Z.chordae.C_right = rand(size(leaflet_Z.chordae.C_right)); 
-Z_linearized = linearize_internal_points(leaflet_Z, leaflet_Z.X, leaflet_Z.chordae.C_left, leaflet_Z.chordae.C_right); 
 
+j_max                = posterior.j_max; 
+k_max                = posterior.k_max; 
+is_internal_posterior = posterior.is_internal; 
+
+% perturbation also does not change 
+Z_posterior = zeros(size(posterior.X)); 
+for j=1:j_max
+    for k=1:k_max
+        if is_internal_posterior(j,k)
+            Z_posterior(:,j,k) = rand(3,1);  
+        end 
+    end 
+end 
+
+
+valve_Z   = valve; 
+valve_Z.anterior.X = Z_anterior; 
+valve_Z.posterior.X = Z_posterior; 
+valve_Z.anterior.chordae.C_left  = rand(size(valve_Z.anterior.chordae.C_left)); 
+valve_Z.anterior.chordae.C_right = rand(size(valve_Z.anterior.chordae.C_right));
+
+Z_linearized = linearize_internal_points_bead_slip(valve_Z, valve_Z.anterior.X, valve_Z.posterior.X, valve_Z.anterior.chordae.C_left, valve_Z.anterior.chordae.C_right); 
 
 
 fprintf('eps\t | taylor series remainder\n'); 
@@ -62,16 +83,17 @@ for i = 1:length(epsilon_vals)
     ep = epsilon_vals(i); 
     
     % make a new structure for the perturbation 
-    leaflet_perturbation   = leaflet;  
-    leaflet_perturbation.X = leaflet.X + ep*leaflet_Z.X; 
+    valve_perturbation   = valve;  
+    valve_perturbation.anterior.X  = valve.anterior.X  + ep*valve_Z.anterior.X; 
+    valve_perturbation.posterior.X = valve.posterior.X + ep*valve_Z.posterior.X; 
     
-    leaflet_perturbation.chordae.C_left  = leaflet.chordae.C_left  + ep*leaflet_Z.chordae.C_left; 
-    leaflet_perturbation.chordae.C_right = leaflet.chordae.C_right + ep*leaflet_Z.chordae.C_right; 
+    valve_perturbation.anterior.chordae.C_left  = valve.anterior.chordae.C_left  + ep*valve_Z.anterior.chordae.C_left; 
+    valve_perturbation.anterior.chordae.C_right = valve.anterior.chordae.C_right + ep*valve_Z.anterior.chordae.C_right; 
 
     % eval the difference eqns on the perturbation 
-    [F_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations(leaflet_perturbation); 
-    F_perturbed_linearized = linearize_internal_points(leaflet_perturbation, F_perturbed, F_chordae_left_perturbed, F_chordae_right_perturbed); 
-
+    [F_anterior_perturbed F_posterior_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations_bead_slip(valve_perturbation); 
+        
+    F_perturbed_linearized = linearize_internal_points_bead_slip(valve, F_anterior_perturbed, F_posterior_perturbed, F_chordae_left_perturbed, F_chordae_right_perturbed); 
     
     errors(i) = norm(F_perturbed_linearized - F_linearized - ep*J*Z_linearized, 2); 
     
@@ -107,10 +129,10 @@ for k=1:k_max
 
                 % make a new structure for the perturbation 
                 leaflet_perturbation   = leaflet;  
-                leaflet_perturbation.X = leaflet.X + ep * leaflet_Z.X; 
+                leaflet_perturbation.X = leaflet.X + ep * valve_Z.anterior.X; 
 
-                leaflet_perturbation.chordae.C_left  = leaflet.chordae.C_left  + ep*leaflet_Z.chordae.C_left; 
-                leaflet_perturbation.chordae.C_right = leaflet.chordae.C_right + ep*leaflet_Z.chordae.C_right; 
+                leaflet_perturbation.chordae.C_left  = leaflet.chordae.C_left  + ep*valve_Z.anterior.chordae.C_left; 
+                leaflet_perturbation.chordae.C_right = leaflet.chordae.C_right + ep*valve_Z.anterior.chordae.C_right; 
 
                 % eval the difference eqns on the perturbation 
                 [F_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations(leaflet_perturbation); 
@@ -157,10 +179,10 @@ for left_side = [true false]
 
             % make a new structure for the perturbation 
             leaflet_perturbation   = leaflet;  
-            leaflet_perturbation.X = leaflet.X + ep * leaflet_Z.X; 
+            leaflet_perturbation.X = leaflet.X + ep * valve_Z.anterior.X; 
 
-            leaflet_perturbation.chordae.C_left  = leaflet.chordae.C_left  + ep*leaflet_Z.chordae.C_left; 
-            leaflet_perturbation.chordae.C_right = leaflet.chordae.C_right + ep*leaflet_Z.chordae.C_right; 
+            leaflet_perturbation.chordae.C_left  = leaflet.chordae.C_left  + ep*valve_Z.anterior.chordae.C_left; 
+            leaflet_perturbation.chordae.C_right = leaflet.chordae.C_right + ep*valve_Z.anterior.chordae.C_right; 
 
             % eval the difference eqns on the perturbation 
             [F_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations(leaflet_perturbation); 
