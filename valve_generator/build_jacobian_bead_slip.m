@@ -376,7 +376,9 @@ function J = build_jacobian_bead_slip(leaflet)
     % Zero indices always ignored 
     for j=1:j_max
         for k=1:k_max
-            if leaflet.is_internal(j,k)
+            
+            % Internal points, not on free edge 
+            if leaflet.is_internal(j,k) && ~chordae_idx_left(j,k) && ~chordae_idx_right(j,k)
 
                 X = X_anterior(:,j,k); 
                 
@@ -428,8 +430,6 @@ function J = build_jacobian_bead_slip(leaflet)
                 for j_nbr = [j-1,j+1]
                     
                     k_nbr = k; 
-                    
-                    
                     
                     if (j_nbr > 0) && (k_nbr > 0) && (is_internal_anterior(j_nbr,k_nbr) || is_bc_anterior(j_nbr,k_nbr))
                     
