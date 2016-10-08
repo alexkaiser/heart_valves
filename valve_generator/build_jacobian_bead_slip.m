@@ -1,4 +1,4 @@
-function J = build_jacobian_bead_slip(leaflet)
+function J = build_jacobian_bead_slip(valve)
     % 
     % Builds the Jacobian for the current index and parameter values 
     % 
@@ -8,36 +8,41 @@ function J = build_jacobian_bead_slip(leaflet)
     % Output 
     %      J         Jacobian of difference equations 
 
-    X_anterior        = valve.anterior.X; 
-    R_anterior        = valve.anterior.R; 
-    p_0_anterior      = valve.anterior.p_0; 
-    alpha_anterior    = valve.anterior.alpha; 
-    beta_anterior     = valve.anterior.beta; 
-    ref_frac_anterior = valve.anterior.ref_frac; 
-    C_left            = valve.anterior.chordae.C_left; 
-    C_right           = valve.anterior.chordae.C_right; 
-    Ref_l             = valve.anterior.chordae.Ref_l; 
-    Ref_r             = valve.anterior.chordae.Ref_r; 
-    k_0               = valve.anterior.chordae.k_0; 
-    chordae_idx_left  = valve.anterior.chordae_idx_left; 
-    chordae_idx_right = valve.anterior.chordae_idx_right;
-    j_max             = valve.anterior.j_max; 
-    k_max             = valve.anterior.k_max; 
-    du                = valve.anterior.du; 
-    dv                = valve.anterior.dv; 
-    is_internal_anterior = valve.anterior.is_internal; 
-    free_edge_idx_left   = valve.anterior.free_edge_idx_left; 
-    free_edge_idx_right  = valve.anterior.free_edge_idx_right; 
-    linear_idx_offset_anterior = valve.anterior.linear_idx_offset; 
+    anterior  = valve.anterior; 
+    posterior = valve.posterior; 
     
-    X_posterior           = valve.posterior.X; 
-    R_posterior           = valve.posterior.R;
-    p_0_posterior         = valve.posterior.p_0; 
-    alpha_posterior       = valve.posterior.alpha; 
-    beta_posterior        = valve.posterior.beta; 
-    ref_frac_posterior    = valve.posterior.ref_frac; 
-    is_internal_posterior = valve.posterior.is_internal; 
-    linear_idx_offset_posterior = valve.posterior.linear_idx_offset; 
+    X_anterior        = anterior.X; 
+    R_anterior        = anterior.R; 
+    p_0_anterior      = anterior.p_0; 
+    alpha_anterior    = anterior.alpha; 
+    beta_anterior     = anterior.beta; 
+    ref_frac_anterior = anterior.ref_frac; 
+    C_left            = anterior.chordae.C_left; 
+    C_right           = anterior.chordae.C_right; 
+    Ref_l             = anterior.chordae.Ref_l; 
+    Ref_r             = anterior.chordae.Ref_r; 
+    k_0               = anterior.chordae.k_0; 
+    chordae_idx_left  = anterior.chordae_idx_left; 
+    chordae_idx_right = anterior.chordae_idx_right;
+    j_max             = anterior.j_max; 
+    k_max             = anterior.k_max; 
+    du                = anterior.du; 
+    dv                = anterior.dv; 
+    is_internal_anterior = anterior.is_internal; 
+    is_bc_anterior = anterior.is_bc; 
+    free_edge_idx_left   = anterior.free_edge_idx_left; 
+    free_edge_idx_right  = anterior.free_edge_idx_right; 
+    linear_idx_offset_anterior = anterior.linear_idx_offset; 
+    
+    X_posterior           = posterior.X; 
+    R_posterior           = posterior.R;
+    p_0_posterior         = posterior.p_0; 
+    alpha_posterior       = posterior.alpha; 
+    beta_posterior        = posterior.beta; 
+    ref_frac_posterior    = posterior.ref_frac; 
+    is_internal_posterior = posterior.is_internal; 
+    is_bc_posterior = posterior.is_bc; 
+    linear_idx_offset_posterior = posterior.linear_idx_offset; 
     
     [m N_chordae] = size(C_left); 
     
@@ -189,7 +194,7 @@ function J = build_jacobian_bead_slip(leaflet)
         
         J_tension = tension_linear_tangent_jacobian(X, X_nbr, R, R_nbr, beta_posterior, ref_frac_posterior);
         
-        T_anterior(j) = get_linear_tension_struct(X, X_nbr, R, R_nbr, beta_posterior/dv, ref_frac_posterior, j, k, j_nbr, k_nbr); 
+        T_posterior(j) = get_linear_tension_struct(X, X_nbr, R, R_nbr, beta_posterior/dv, ref_frac_posterior, j, k, j_nbr, k_nbr); 
 
         % current term is always added in 
         % this gets no sign 
@@ -323,7 +328,7 @@ function J = build_jacobian_bead_slip(leaflet)
         
         J_tension = tension_linear_tangent_jacobian(X, X_nbr, R, R_nbr, alpha_posterior, ref_frac_posterior);
 
-        T_anterior(j) = get_linear_tension_struct(X, X_nbr, R, R_nbr, beta_posterior/dv, ref_frac_posterior, j, k, j_nbr, k_nbr); 
+        T_posterior(j) = get_linear_tension_struct(X, X_nbr, R, R_nbr, beta_posterior/dv, ref_frac_posterior, j, k, j_nbr, k_nbr); 
         
         % current term is always added in 
         % this gets no sign 
@@ -372,23 +377,23 @@ function J = build_jacobian_bead_slip(leaflet)
     
     
     
-    % All leaflet terms, no chordae 
+    % Internal anterior leaflet 
     % Zero indices always ignored 
     for j=1:j_max
         for k=1:k_max
             
             % Internal points, not on free edge 
-            if leaflet.is_internal(j,k) && ~chordae_idx_left(j,k) && ~chordae_idx_right(j,k)
+            if is_internal_anterior(j,k) && ~chordae_idx_left(j,k) && ~chordae_idx_right(j,k)
 
                 X = X_anterior(:,j,k); 
                 
                 % vertical offset does not change while differentiating this equation 
-                range_current = linear_idx_offset(j,k) + (1:3); 
+                range_current = linear_idx_offset_anterior(j,k) + (1:3); 
 
 
                 % pressure portion 
                 % zero indexed loop because we are computing indices with mod n 
-                if p_0 ~= 0.0
+                if p_0_anterior ~= 0.0
                     
                    error('zero pressure required, non zero not implemented')
 
@@ -433,11 +438,13 @@ function J = build_jacobian_bead_slip(leaflet)
                     
                     if (j_nbr > 0) && (k_nbr > 0) && (is_internal_anterior(j_nbr,k_nbr) || is_bc_anterior(j_nbr,k_nbr))
                     
-                        X_nbr = X_anterior(:,j_nbr,k_nbr);
+                        
                         
                         if chordae_idx_left(j,k) || chordae_idx_right(j,k)
                             error('trying to apply slip model at chordae attachment point'); 
                         end 
+                        
+                        X_nbr = X_anterior(:,j_nbr,k_nbr);
                         
                         % There is a 1/du term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
@@ -450,7 +457,7 @@ function J = build_jacobian_bead_slip(leaflet)
                         
                         tangent = (X_nbr - X) / norm(X_nbr - X); 
                         
-                        J_tangent = tangent_jacobian(X(:,j,k),X(:,j_nbr,k_nbr)); 
+                        J_tangent = tangent_jacobian(X, X_nbr); 
                         
 
                         % current term is always added in 
@@ -462,10 +469,10 @@ function J = build_jacobian_bead_slip(leaflet)
                         % This takes a sign
                         if is_internal_anterior(j_nbr,k_nbr)
                             range_nbr  = linear_idx_offset_anterior(j_nbr,k_nbr) + (1:3);
-                            place_tmp_block(range_current, range_nbr, -tension * J_tension); 
+                            place_tmp_block(range_current, range_nbr, -tension * J_tangent); 
                         end 
                     
-                        % Jacobians of with respect to inherited tensions
+                        % Jacobians with respect to inherited tensions
                         J_left = grad_tension_left * tangent'; 
 
                         j_edge = S_anterior_left(k).j; 
@@ -513,34 +520,279 @@ function J = build_jacobian_bead_slip(leaflet)
 
                     j_nbr = j; 
                     
-                    if (j_nbr > 0) && (k_nbr > 0) && (leaflet.is_internal(j_nbr,k_nbr) || leaflet.is_bc(j_nbr,k_nbr))
+                    if (j_nbr > 0) && (k_nbr > 0) && (is_internal_anterior(j_nbr,k_nbr) || is_bc_anterior(j_nbr,k_nbr))
                         
                         if chordae_idx_left(j,k) || chordae_idx_right(j,k)
                             error('trying to apply slip model at chordae attachment point'); 
                         end 
                         
+                        X_nbr = X_anterior(:,j_nbr,k_nbr);
+                        
+                        % There is a 1/du term throughout from taking a finite difference derivative 
+                        % Place this on the tension variables, one of which apprears in each term 
 
-                        J_tension = tension_linear_tangent_jacobian(X(:,j,k),X(:,j_nbr,k_nbr),R(:,j,k),R(:,j_nbr,k_nbr),beta,ref_frac); 
+                        tension = (1/dv) * T_anterior(j).val; 
+                        
+                        grad_tension  = (1/dv) * T_anterior(j).G; 
+                        
+                        tangent = (X_nbr - X) / norm(X_nbr - X); 
+                        
+                        J_tangent = tangent_jacobian(X, X_nbr); 
 
                         % current term is always added in 
                         % this gets no sign 
                         % this is always at the current,current block in the matrix 
-                        place_tmp_block(range_current, range_current, J_tension); 
+                        place_tmp_block(range_current, range_current, tension * J_tangent); 
 
                         % If the neighbor is an internal point, it also gets a Jacobian contribution 
                         % This takes a sign
-                        if (j_nbr > 0) && (k_nbr > 0) && is_internal(j_nbr,k_nbr)
-                            range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
-                            place_tmp_block(range_current, range_nbr, -J_tension); 
+                        if (j_nbr > 0) && (k_nbr > 0) && is_internal_anterior(j_nbr,k_nbr)
+                            range_nbr  = linear_idx_offset_anterior(j_nbr,k_nbr) + (1:3);
+                            place_tmp_block(range_current, range_nbr, -tension * J_tangent); 
+                        end
+                        
+                        
+                        % Jacobians with respect to inherited tensions
+                        Jac = grad_tension * tangent'; 
+
+                        j_edge = T_anterior(j).j; 
+                        k_edge = T_anterior(j).k;
+                        
+                        if is_internal_anterior(j_edge,k_edge)
+                            range_nbr  = linear_idx_offset_anterior(j_edge,k_edge) + (1:3);
+                            place_tmp_block(range_current, range_nbr, Jac); 
                         end 
-                    
+                        
+                        j_nbr_tension = T_anterior(j).j_nbr; 
+                        k_nbr_tension = T_anterior(j).k_nbr;
+                        
+                        if is_internal_anterior(j_nbr_tension,k_nbr_tension)
+                            range_nbr  = linear_idx_offset_anterior(k_nbr_tension,k_nbr_tension) + (1:3);
+                            place_tmp_block(range_current, range_nbr, Jac); 
+                        end
+                        
                     end 
                 end
                 
             end
         end
     end
+    
+    
+    % Posterior internal 
+    % Note that posterior internal goes to anterior free edge 
+    % Zero indices always ignored 
+    for j=1:j_max
+        for k=1:k_max
+            
+            % Internal points, not on free edge 
+            if is_internal_posterior(j,k) && ~chordae_idx_left(j,k) && ~chordae_idx_right(j,k)
 
+                X = X_posterior(:,j,k); 
+                
+                % vertical offset does not change while differentiating this equation 
+                range_current = linear_idx_offset_posterior(j,k) + (1:3); 
+
+
+                % pressure portion 
+                % zero indexed loop because we are computing indices with mod n 
+                if p_0_posterior ~= 0.0
+                    
+                   error('zero pressure required, non zero not implemented')
+
+                end 
+
+
+                % u tension terms 
+                for j_nbr = [j-1,j+1]
+                    
+                    k_nbr = k; 
+                    
+                    if (j_nbr > 0) && (k_nbr > 0) && (is_internal_posterior(j_nbr,k_nbr) || is_bc_posterior(j_nbr,k_nbr))
+                        
+                        if chordae_idx_left(j,k) || chordae_idx_right(j,k)
+                            error('trying to apply slip model at chordae attachment point'); 
+                        end 
+  
+                        % If point of attachement is a chordae point 
+                        % then always on anterior leaflet 
+                        % Otherwise, posterior
+                        free_edge_nbr = (chordae_idx_left(j_nbr,k_nbr) || chordae_idx_right(j_nbr,k_nbr)); 
+                        
+                        if free_edge_nbr
+                            X_nbr = X_anterior(:,j_nbr,k_nbr);
+                        else                             
+                            X_nbr = X_posterior(:,j_nbr,k_nbr);
+                        end 
+                        
+                        % There is a 1/du term throughout from taking a finite difference derivative 
+                        % Place this on the tension variables, one of which apprears in each term 
+
+                        tension = (1/du) * 0.5 * (S_posterior_left(k).val + S_posterior_right(k).val); 
+                        
+                        grad_tension_left  = (1/du) * S_posterior_left(k).G; 
+                        
+                        grad_tension_right = (1/du) * S_posterior_right(k).G; 
+                        
+                        tangent = (X_nbr - X) / norm(X_nbr - X); 
+                        
+                        J_tangent = tangent_jacobian(X, X_nbr); 
+                        
+
+                        % current term is always added in 
+                        % this gets no sign 
+                        % this is always at the current,current block in the matrix 
+                        place_tmp_block(range_current, range_current, tension * J_tangent); 
+
+                        if free_edge_nbr
+                            % connection to free edge on anterior 
+                            if is_internal_anterior(j_nbr,k_nbr)
+                                range_nbr  = linear_idx_offset_anterior(j_nbr,k_nbr) + (1:3);
+                                place_tmp_block(range_current, range_nbr, -tension * J_tangent); 
+                            end
+                            
+                        else                         
+                            % connection internal to posterior 
+                            if is_internal_posterior(j_nbr,k_nbr)
+                                range_nbr  = linear_idx_offset_posterior(j_nbr,k_nbr) + (1:3);
+                                place_tmp_block(range_current, range_nbr, -tension * J_tangent); 
+                            end 
+                        end 
+                        
+                        
+                        % Jacobians with respect to inherited tensions
+                        J_left = grad_tension_left * tangent'; 
+
+                        j_edge = S_posterior_left(k).j; 
+                        k_edge = S_posterior_left(k).k;
+                        
+                        % edge term always on anterior 
+                        if is_internal_anterior(j_edge,k_edge)
+                            range_nbr  = linear_idx_offset_anterior(j_edge,k_edge) + (1:3);
+                            place_tmp_block(range_current, range_nbr, J_left); 
+                        end 
+                        
+                        % neighbor term always on posterior
+                        j_nbr_tension = S_posterior_left(k).j_nbr; 
+                        k_nbr_tension = S_posterior_left(k).k_nbr;
+                        
+                        if is_internal_posterior(j_nbr_tension,k_nbr_tension)
+                            range_nbr  = linear_idx_offset_posterior(k_nbr_tension,k_nbr_tension) + (1:3);
+                            place_tmp_block(range_current, range_nbr, J_left); 
+                        end
+                        
+                        
+                        J_right = grad_tension_right * tangent'; 
+
+                        j_edge = S_posterior_right(k).j; 
+                        k_edge = S_posterior_right(k).k;
+                        
+                        % edge term always on anterior 
+                        if is_internal_anterior(j_edge,k_edge)
+                            range_nbr  = linear_idx_offset_anterior(j_edge,k_edge) + (1:3);
+                            place_tmp_block(range_current, range_nbr, J_right); 
+                        end 
+                        
+                        j_nbr_tension = S_posterior_right(k).j_nbr; 
+                        k_nbr_tension = S_posterior_right(k).k_nbr;
+                        
+                        % neighbor term always on posterior
+                        if is_internal_posterior(j_nbr_tension,k_nbr_tension)
+                            range_nbr  = linear_idx_offset_posterior(k_nbr_tension,k_nbr_tension) + (1:3);
+                            place_tmp_block(range_current, range_nbr, J_right); 
+                        end
+                        
+                        
+                    end 
+                end 
+
+
+                % v tension terms 
+                for k_nbr = [k-1,k+1]
+
+                    j_nbr = j; 
+                    
+                    if (j_nbr > 0) && (k_nbr > 0) && (is_internal_posterior(j_nbr,k_nbr) || is_bc_posterior(j_nbr,k_nbr))
+                        
+                        if chordae_idx_left(j,k) || chordae_idx_right(j,k)
+                            error('trying to apply slip model at chordae attachment point'); 
+                        end 
+                        
+                        % If point of attachement is a chordae point 
+                        % then always on anterior leaflet 
+                        % Otherwise, posterior
+                        free_edge_nbr = (chordae_idx_left(j_nbr,k_nbr) || chordae_idx_right(j_nbr,k_nbr)); 
+                        
+                        if free_edge_nbr
+                            X_nbr = X_anterior(:,j_nbr,k_nbr);
+                        else                             
+                            X_nbr = X_posterior(:,j_nbr,k_nbr);
+                        end 
+                        
+                        
+                        
+                        % There is a 1/du term throughout from taking a finite difference derivative 
+                        % Place this on the tension variables, one of which apprears in each term 
+
+                        tension = (1/dv) * T_posterior(j).val; 
+                        
+                        grad_tension  = (1/dv) * T_posterior(j).G; 
+                        
+                        tangent = (X_nbr - X) / norm(X_nbr - X); 
+                        
+                        J_tangent = tangent_jacobian(X, X_nbr); 
+
+                        % current term is always added in 
+                        % this gets no sign 
+                        % this is always at the current,current block in the matrix 
+                        place_tmp_block(range_current, range_current, tension * J_tangent); 
+
+                        % If the neighbor is an internal point, it also gets a Jacobian contribution 
+                        % This takes a sign
+                        
+                        if free_edge_nbr
+                            
+                            if (j_nbr > 0) && (k_nbr > 0) && is_internal_anterior(j_nbr,k_nbr)
+                                range_nbr  = linear_idx_offset_anterior(j_nbr,k_nbr) + (1:3);
+                                place_tmp_block(range_current, range_nbr, -tension * J_tangent);
+                            end
+                        else
+                            if (j_nbr > 0) && (k_nbr > 0) && is_internal_posterior(j_nbr,k_nbr)
+                                range_nbr  = linear_idx_offset_posterior(j_nbr,k_nbr) + (1:3);
+                                place_tmp_block(range_current, range_nbr, -tension * J_tangent);
+                            end
+                            
+                        end
+                        
+                        % Jacobians with respect to inherited tensions
+                        Jac = grad_tension * tangent'; 
+
+                        j_edge = T_posterior(j).j; 
+                        k_edge = T_posterior(j).k;
+                        
+                        % edge always anterior 
+                        if is_internal_anterior(j_edge,k_edge)
+                            range_nbr  = linear_idx_offset_anterior(j_edge,k_edge) + (1:3);
+                            place_tmp_block(range_current, range_nbr, Jac); 
+                        end 
+                        
+                        j_nbr_tension = T_posterior(j).j_nbr; 
+                        k_nbr_tension = T_posterior(j).k_nbr;
+                        
+                        % internal always posterior
+                        if is_internal_posterior(j_nbr_tension,k_nbr_tension)
+                            range_nbr  = linear_idx_offset_posterior(k_nbr_tension,k_nbr_tension) + (1:3);
+                            place_tmp_block(range_current, range_nbr, Jac); 
+                        end
+                        
+                    end 
+                end
+                
+            end
+        end
+    end
+    
+    
 
     % chordae internal terms 
     for left_side = [true false];  
@@ -565,14 +817,14 @@ function J = build_jacobian_bead_slip(leaflet)
             for nbr_idx = [left,right,parent]
 
                 % get the neighbors coordinates, reference coordinate and spring constants
-                [nbr R_nbr k_val j_nbr k_nbr] = get_nbr_chordae(leaflet, i, nbr_idx, left_side); 
+                [nbr R_nbr k_val j_nbr k_nbr] = get_nbr_chordae(anterior, i, nbr_idx, left_side); 
 
                 % if the neighbor is in the chordae 
                 if isempty(j_nbr) && isempty(k_nbr) 
                     range_nbr = range_chordae(total_internal, N_chordae, nbr_idx, left_side); 
-                elseif is_internal(j_nbr, k_nbr)
+                elseif is_internal_anterior(j_nbr, k_nbr)
                     % neighbor is on the leaflet 
-                    range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
+                    range_nbr = linear_idx_offset_anterior(j_nbr,k_nbr) + (1:3);
                 elseif is_bc(j_nbr, k_nbr)
                     % no block added for neighbor on boundary 
                     range_nbr = []; 
@@ -581,7 +833,7 @@ function J = build_jacobian_bead_slip(leaflet)
                 end
 
                 % tension Jacobian for this spring 
-                J_tension = tension_linear_tangent_jacobian(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac); 
+                J_tension = tension_linear_tangent_jacobian(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac_anterior); 
 
                 % current always gets a contribution from this spring 
                 place_tmp_block(range_current, range_current, J_tension); 

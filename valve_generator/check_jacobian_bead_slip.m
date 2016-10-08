@@ -26,7 +26,7 @@ errors = zeros(size(epsilon_vals));
 F_linearized = linearize_internal_points_bead_slip(valve, valve.anterior.X, valve.posterior.X, valve.anterior.chordae.C_left, valve.anterior.chordae.C_right);
 
 % jacobian does not change 
-J = build_jacobian(leaflet); 
+J = build_jacobian_bead_slip(valve); 
 
 figure; 
 spy(J); 
