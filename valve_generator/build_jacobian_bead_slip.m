@@ -112,12 +112,12 @@ function J = build_jacobian_bead_slip(valve)
     for left_side = [true, false]
         
         if left_side
-            free_edge = free_edge_idx_left; 
+            free_edge_idx = free_edge_idx_left; 
             chordae_idx = chordae_idx_left; 
             C = C_left; 
             Ref = Ref_l;
         else 
-            free_edge = free_edge_idx_right; 
+            free_edge_idx = free_edge_idx_right; 
             chordae_idx = chordae_idx_right;
             C = C_right; 
             Ref = Ref_r;
@@ -125,9 +125,9 @@ function J = build_jacobian_bead_slip(valve)
         
         
         % free edge terms first              
-        for i=1:size(free_edge, 1)
-            j = free_edge(i,1);
-            k = free_edge(i,2);
+        for i=1:size(free_edge_idx, 1)
+            j = free_edge_idx(i,1);
+            k = free_edge_idx(i,2);
 
             range_current = linear_idx_offset_anterior(j,k) + (1:3); 
 
@@ -271,142 +271,6 @@ function J = build_jacobian_bead_slip(valve)
     
     end 
     
-
-    
-    
-    
-%     % free edge terms first              
-%     for i=1:size(free_edge_idx_right, 1)
-%         j = free_edge_idx_right(i,1);
-%         k = free_edge_idx_right(i,2);
-%         
-%         range_current = linear_idx_offset_anterior(j,k) + (1:3); 
-%         
-%         X = X_anterior(:,j,k); 
-%         R = R_anterior(:,j,k);
-% 
-%         % interior neighbor is left in j 
-%         j_nbr = j - 1;
-%         k_nbr = k;
-% 
-%         % Anterior circumferential 
-%         X_nbr = X_anterior(:,j_nbr,k_nbr); 
-%         R_nbr = R_anterior(:,j_nbr,k_nbr); 
-%         
-%         J_tension = tension_linear_tangent_jacobian(X, X_nbr, R, R_nbr, alpha_anterior, ref_frac_anterior);
-% 
-%         S_anterior_right(k) = get_linear_tension_struct(X, X_nbr, R, R_nbr, alpha_anterior/dv, ref_frac_anterior, j, k, j_nbr, k_nbr); 
-%         
-%         % current term is always added in 
-%         % this gets no sign 
-%         % this is always at the current,current block in the matrix 
-%         place_tmp_block(range_current, range_current, J_tension); 
-% 
-%         % If the neighbor is an internal point, it also gets a Jacobian contribution 
-%         % This takes a sign
-%         if is_internal_anterior(j_nbr,k_nbr)
-%             range_nbr  = linear_idx_offset_anterior(j_nbr,k_nbr) + (1:3);
-%             place_tmp_block(range_current, range_nbr, -J_tension); 
-%         end 
-%         
-% 
-%         % Posterior circumferential 
-%         X_nbr = X_posterior(:,j_nbr,k_nbr); 
-%         R_nbr = R_posterior(:,j_nbr,k_nbr); 
-%         
-%         J_tension = tension_linear_tangent_jacobian(X, X_nbr, R, R_nbr, alpha_posterior, ref_frac_posterior);
-%         
-%         S_posterior_right(k) = get_linear_tension_struct(X, X_nbr, R, R_nbr, alpha_posterior/dv, ref_frac_posterior, j, k, j_nbr, k_nbr); 
-% 
-%         % current term is always added in 
-%         % this gets no sign 
-%         % this is always at the current,current block in the matrix 
-%         place_tmp_block(range_current, range_current, J_tension); 
-% 
-%         % If the neighbor is an internal point, it also gets a Jacobian contribution 
-%         % This takes a sign
-%         if is_internal_posterior(j_nbr,k_nbr)
-%             range_nbr  = linear_idx_offset_posterior(j_nbr,k_nbr) + (1:3);
-%             place_tmp_block(range_current, range_nbr, -J_tension); 
-%         end 
-%         
-% 
-%         % interior neighbor is up in k 
-%         j_nbr = j;     
-%         k_nbr = k+1; 
-% 
-%         % Anterior radial
-%         X_nbr = X_anterior(:,j_nbr,k_nbr); 
-%         R_nbr = R_anterior(:,j_nbr,k_nbr); 
-%         
-%         J_tension = tension_linear_tangent_jacobian(X, X_nbr, R, R_nbr, beta_anterior, ref_frac_anterior);
-%         
-%         T_anterior(j) = get_linear_tension_struct(X, X_nbr, R, R_nbr, beta_anterior/du, ref_frac_anterior, j, k, j_nbr, k_nbr); 
-% 
-%         % current term is always added in 
-%         % this gets no sign 
-%         % this is always at the current,current block in the matrix 
-%         place_tmp_block(range_current, range_current, J_tension); 
-% 
-%         % If the neighbor is an internal point, it also gets a Jacobian contribution 
-%         % This takes a sign
-%         if is_internal_anterior(j_nbr,k_nbr)
-%             range_nbr  = linear_idx_offset_anterior(j_nbr,k_nbr) + (1:3);
-%             place_tmp_block(range_current, range_nbr, -J_tension); 
-%         end 
-% 
-%         % Posterior radial  
-%         X_nbr = X_posterior(:,j_nbr,k_nbr); 
-%         R_nbr = R_posterior(:,j_nbr,k_nbr); 
-%         
-%         J_tension = tension_linear_tangent_jacobian(X, X_nbr, R, R_nbr, beta_posterior, ref_frac_posterior);
-% 
-%         T_posterior(j) = get_linear_tension_struct(X, X_nbr, R, R_nbr, beta_posterior/du, ref_frac_posterior, j, k, j_nbr, k_nbr); 
-%         
-%         % current term is always added in 
-%         % this gets no sign 
-%         % this is always at the current,current block in the matrix 
-%         place_tmp_block(range_current, range_current, J_tension); 
-% 
-%         % If the neighbor is an internal point, it also gets a Jacobian contribution 
-%         % This takes a sign
-%         if is_internal_posterior(j_nbr,k_nbr)
-%             range_nbr  = linear_idx_offset_posterior(j_nbr,k_nbr) + (1:3);
-%             place_tmp_block(range_current, range_nbr, -J_tension); 
-%         end
-% 
-%         % current node has a chordae connection
-%         if chordae_idx_right(j,k)
-% 
-%             kappa = k_0;
-% 
-%             % index that free edge would have if on tree
-%             % remember that leaves are only in the leaflet
-%             leaf_idx = chordae_idx_right(j,k) + N_chordae;
-% 
-%             % then take the parent index of that number in chordae variables
-%             idx_chordae = floor(leaf_idx/2);
-% 
-%             X_nbr = C_right(:,idx_chordae);
-%             R_nbr = Ref_r (:,idx_chordae);
-% 
-%             J_tension = tension_linear_tangent_jacobian(X,X_nbr,R,R_nbr,kappa,ref_frac_anterior); 
-% 
-%             % current term is always added in 
-%             % this gets no sign 
-%             % this is always at the current,current block in the matrix 
-%             place_tmp_block(range_current, range_current, J_tension); 
-% 
-%             % chordae range 
-%             left_side = false; 
-%             range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side); 
-%             place_tmp_block(range_current, range_nbr, -J_tension); 
-% 
-%         else
-%             error('free edge point required to have chordae connection'); 
-%         end
-%         
-%     end 
     
     INTERNAL_OFF_DEBUG = true; 
     if ~INTERNAL_OFF_DEBUG 

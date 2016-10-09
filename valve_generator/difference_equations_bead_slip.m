@@ -56,145 +56,108 @@ free_edge_idx_left  = valve.anterior.free_edge_idx_left;
 free_edge_idx_right = valve.anterior.free_edge_idx_right; 
 
 
-for i=1:size(free_edge_idx_left, 1)
-    
-    F_tmp = zeros(3,1);
-    
-    % left free edge has spring connections up and right on both leaflets
-    
-    j = free_edge_idx_left(i,1);
-    k = free_edge_idx_left(i,2);
 
-    X = X_anterior(:,j,k); 
-    R = R_anterior(:,j,k);
-    
-    % interior neighbor is right in j 
-    j_nbr = j + 1;
-    k_nbr = k;
-    
-    % Anterior circumferential 
-    X_nbr = X_anterior(:,j_nbr,k_nbr); 
-    R_nbr = R_anterior(:,j_nbr,k_nbr); 
-    S_anterior_left(k) = tension_linear(X, X_nbr, R, R_nbr, alpha_anterior, ref_frac_anterior); 
-    F_tmp = F_tmp + S_anterior_left(k) * (X_nbr-X)/norm(X_nbr-X); 
-    
-    % Posterior circumferential 
-    X_nbr = X_posterior(:,j_nbr,k_nbr); 
-    R_nbr = R_posterior(:,j_nbr,k_nbr); 
-    S_posterior_left(k) = tension_linear(X, X_nbr, R, R_nbr, alpha_posterior, ref_frac_posterior); 
-    F_tmp = F_tmp + S_posterior_left(k) * (X_nbr-X)/norm(X_nbr-X);  
-    
-    % interior neighbor is up in k 
-    j_nbr = j;     
-    k_nbr = k+1; 
-    
-    % Anterior radial
-    X_nbr = X_anterior(:,j_nbr,k_nbr); 
-    R_nbr = R_anterior(:,j_nbr,k_nbr); 
-    T_anterior(j) = tension_linear(X, X_nbr, R, R_nbr, beta_anterior, ref_frac_anterior); 
-    F_tmp = F_tmp + T_anterior(j) * (X_nbr-X)/norm(X_nbr-X); 
-    
-    % Posterior radial 
-    X_nbr = X_posterior(:,j_nbr,k_nbr); 
-    R_nbr = R_posterior(:,j_nbr,k_nbr); 
-    T_posterior(j) = tension_linear(X, X_nbr, R, R_nbr, beta_posterior, ref_frac_posterior); 
-    F_tmp = F_tmp + T_posterior(j) * (X_nbr-X)/norm(X_nbr-X); 
-    
-    % current node has a chordae connection
-    if chordae_idx_left(j,k)
+for left_side = [true, false]
+
+    if left_side
+        free_edge_idx = free_edge_idx_left; 
+        chordae_idx = chordae_idx_left; 
+        C = C_left; 
+        Ref = Ref_l;
+    else 
+        free_edge_idx = free_edge_idx_right; 
+        chordae_idx = chordae_idx_right;
+        C = C_right; 
+        Ref = Ref_r;
+    end 
+
+    for i=1:size(free_edge_idx, 1)
+
+        F_tmp = zeros(3,1);
+
+        % left free edge has spring connections up and right on both leaflets
+
+        j = free_edge_idx(i,1);
+        k = free_edge_idx(i,2);
+
+        X = X_anterior(:,j,k); 
+        R = R_anterior(:,j,k);
+
+        % interior neighbor is right in j on left side, 
+        % left in j on right side 
+        if left_side
+            j_nbr = j + 1;
+        else 
+            j_nbr = j - 1;
+        end 
+        k_nbr = k;
+
+        % Anterior circumferential 
+        X_nbr = X_anterior(:,j_nbr,k_nbr); 
+        R_nbr = R_anterior(:,j_nbr,k_nbr); 
         
-        kappa = k_0;
+        if left_side
+            S_anterior_left(k) = tension_linear(X, X_nbr, R, R_nbr, alpha_anterior, ref_frac_anterior); 
+            F_tmp = F_tmp + S_anterior_left(k) * (X_nbr-X)/norm(X_nbr-X); 
+        else
+            S_anterior_right(k) = tension_linear(X, X_nbr, R, R_nbr, alpha_anterior, ref_frac_anterior); 
+            F_tmp = F_tmp + S_anterior_right(k) * (X_nbr-X)/norm(X_nbr-X);             
+        end
         
-        % index that free edge would have if on tree
-        % remember that leaves are only in the leaflet
-        leaf_idx = chordae_idx_left(j,k) + N_chordae;
-        
-        % then take the parent index of that number in chordae variables
-        idx_chordae = floor(leaf_idx/2);
-        
-        X_nbr = C_left(:,idx_chordae);
-        R_nbr = Ref_l (:,idx_chordae);
-        
-        F_tmp = F_tmp + tension_linear(X,X_nbr,R,R_nbr,kappa,ref_frac_anterior) * (X_nbr-X)/norm(X_nbr-X); 
-        
-    else
-        error('free edge point required to have chordae connection'); 
-    end
-    
-    F_anterior(:,j,k) = F_tmp; 
-    
+        % Posterior circumferential 
+        X_nbr = X_posterior(:,j_nbr,k_nbr); 
+        R_nbr = R_posterior(:,j_nbr,k_nbr); 
+        if left_side 
+            S_posterior_left(k) = tension_linear(X, X_nbr, R, R_nbr, alpha_posterior, ref_frac_posterior);         
+            F_tmp = F_tmp + S_posterior_left(k) * (X_nbr-X)/norm(X_nbr-X);  
+        else 
+            S_posterior_right(k) = tension_linear(X, X_nbr, R, R_nbr, alpha_posterior, ref_frac_posterior);         
+            F_tmp = F_tmp + S_posterior_right(k) * (X_nbr-X)/norm(X_nbr-X);            
+        end 
+
+        % interior neighbor is up in k, always 
+        j_nbr = j;     
+        k_nbr = k+1; 
+
+        % Anterior radial
+        X_nbr = X_anterior(:,j_nbr,k_nbr); 
+        R_nbr = R_anterior(:,j_nbr,k_nbr); 
+        T_anterior(j) = tension_linear(X, X_nbr, R, R_nbr, beta_anterior, ref_frac_anterior); 
+        F_tmp = F_tmp + T_anterior(j) * (X_nbr-X)/norm(X_nbr-X); 
+
+        % Posterior radial 
+        X_nbr = X_posterior(:,j_nbr,k_nbr); 
+        R_nbr = R_posterior(:,j_nbr,k_nbr); 
+        T_posterior(j) = tension_linear(X, X_nbr, R, R_nbr, beta_posterior, ref_frac_posterior); 
+        F_tmp = F_tmp + T_posterior(j) * (X_nbr-X)/norm(X_nbr-X); 
+
+        % current node has a chordae connection
+        if chordae_idx(j,k)
+
+            kappa = k_0;
+
+            % index that free edge would have if on tree
+            % remember that leaves are only in the leaflet
+            leaf_idx = chordae_idx(j,k) + N_chordae;
+
+            % then take the parent index of that number in chordae variables
+            idx_chordae = floor(leaf_idx/2);
+
+            X_nbr = C(:,idx_chordae);
+            R_nbr = Ref(:,idx_chordae);
+
+            F_tmp = F_tmp + tension_linear(X,X_nbr,R,R_nbr,kappa,ref_frac_anterior) * (X_nbr-X)/norm(X_nbr-X); 
+
+        else
+            error('free edge point required to have chordae connection'); 
+        end
+
+        F_anterior(:,j,k) = F_tmp; 
+
+    end 
+
 end 
 
-
-
-for i=1:size(free_edge_idx_right, 1)
-    
-    F_tmp = zeros(3,1);
-    
-    % right free edge has spring connections up and left on both leaflets
-    
-    j = free_edge_idx_right(i,1);
-    k = free_edge_idx_right(i,2);
-
-    X = X_anterior(:,j,k); 
-    R = R_anterior(:,j,k);
-    
-    % interior neighbor is left in j 
-    j_nbr = j - 1;
-    k_nbr = k;
-    
-    % Anterior circumferential 
-    X_nbr = X_anterior(:,j_nbr,k_nbr); 
-    R_nbr = R_anterior(:,j_nbr,k_nbr); 
-    S_anterior_right(k) = tension_linear(X, X_nbr, R, R_nbr, alpha_anterior, ref_frac_anterior); 
-    F_tmp = F_tmp + S_anterior_left(k) * (X_nbr-X)/norm(X_nbr-X); 
-    
-    % Posterior circumferential 
-    X_nbr = X_posterior(:,j_nbr,k_nbr); 
-    R_nbr = R_posterior(:,j_nbr,k_nbr); 
-    S_posterior_right(k) = tension_linear(X, X_nbr, R, R_nbr, alpha_posterior, ref_frac_posterior); 
-    F_tmp = F_tmp + S_posterior_left(k) * (X_nbr-X)/norm(X_nbr-X);  
-    
-    % interior neighbor is up in k 
-    j_nbr = j;     
-    k_nbr = k+1; 
-    
-    % Anterior radial
-    X_nbr = X_anterior(:,j_nbr,k_nbr); 
-    R_nbr = R_anterior(:,j_nbr,k_nbr); 
-    T_anterior(j) = tension_linear(X, X_nbr, R, R_nbr, beta_anterior, ref_frac_anterior); 
-    F_tmp = F_tmp + T_anterior(j) * (X_nbr-X)/norm(X_nbr-X); 
-    
-    % Posterior circumferential 
-    X_nbr = X_posterior(:,j_nbr,k_nbr); 
-    R_nbr = R_posterior(:,j_nbr,k_nbr); 
-    T_posterior(j) = tension_linear(X, X_nbr, R, R_nbr, beta_posterior, ref_frac_posterior); 
-    F_tmp = F_tmp + T_posterior(j) * (X_nbr-X)/norm(X_nbr-X); 
-    
-    % current node has a chordae connection
-    if chordae_idx_right(j,k)
-
-        kappa = k_0;
-        
-        % index that free edge would have if on tree
-        % remember that leaves are only in the leaflet
-        leaf_idx = chordae_idx_right(j,k) + N_chordae;
-        
-        % then take the parent index of that number in chordae variables
-        idx_chordae = floor(leaf_idx/2);
-        
-        X_nbr = C_left(:,idx_chordae);
-        R_nbr = Ref_l (:,idx_chordae);
-        
-        F_tmp = F_tmp + tension_linear(X,X_nbr,R,R_nbr,kappa,ref_frac_anterior) * (X_nbr-X)/norm(X_nbr-X); 
-        
-    else
-        error('free edge point required to have chordae connection'); 
-    end
-    
-    F_anterior(:,j,k) = F_tmp; 
-    
-end 
 
 
 INTERNAL_OFF_DEBUG = true; 
