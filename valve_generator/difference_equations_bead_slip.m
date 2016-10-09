@@ -160,7 +160,7 @@ end
 
 
 
-INTERNAL_OFF_DEBUG = true; 
+INTERNAL_OFF_DEBUG = false; 
 if ~INTERNAL_OFF_DEBUG 
 
     % Tensions are equalized from left to right 
