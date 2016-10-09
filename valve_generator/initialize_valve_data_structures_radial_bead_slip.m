@@ -78,15 +78,12 @@ total_angle_anterior = pi - extra_posterior;
 % Or diagonally oriented fibers 
 radial_and_circumferential = true; 
 
-% This many points are placed in a flat manner 
-% around the point of the free edge 
-trapezoidal_flat_points = 0; % N/8; 
 
 % Spring constants in two directions 
 alpha    = 1.0; 
 beta     = 1.0; 
 p_0      = 0.0; % no pressure for now 
-ref_frac = 0.7; % generic spring constants reduced by this much 
+ref_frac = 1.0; % generic spring constants reduced by this much 
 
 % Chordae parameters 
 k_0          = 4.0; 

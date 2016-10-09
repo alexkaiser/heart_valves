@@ -196,103 +196,108 @@ for i=1:size(free_edge_idx_right, 1)
     
 end 
 
-% Tensions are equalized from left to right 
-S_anterior = (S_anterior_left + S_anterior_right)/2.0; 
-S_posterior = (S_posterior_left + S_posterior_right)/2.0; 
 
-% Convert from units of force to force densities 
-% Double check this 
-S_anterior  = S_anterior  /dv; 
-S_posterior = S_posterior /dv; 
-T_anterior  = T_anterior  /du; 
-T_posterior = T_posterior /du; 
+INTERNAL_OFF_DEBUG = true; 
+if ~INTERNAL_OFF_DEBUG 
+
+    % Tensions are equalized from left to right 
+    S_anterior = (S_anterior_left + S_anterior_right)/2.0; 
+    S_posterior = (S_posterior_left + S_posterior_right)/2.0; 
+
+    % Convert from units of force to force densities 
+    % Double check this 
+    S_anterior  = S_anterior  /dv; 
+    S_posterior = S_posterior /dv; 
+    T_anterior  = T_anterior  /du; 
+    T_posterior = T_posterior /du; 
 
 
-% interior terms of anterior leaflet 
-is_internal = valve.anterior.is_internal; 
+    % interior terms of anterior leaflet 
+    is_internal = valve.anterior.is_internal; 
 
-for j=1:j_max
-    for k=1:k_max
-        if is_internal(j,k) && (~chordae_idx_left(j,k)) && (~chordae_idx_right(j,k))
+    for j=1:j_max
+        for k=1:k_max
+            if is_internal(j,k) && (~chordae_idx_left(j,k)) && (~chordae_idx_right(j,k))
 
-            X = X_anterior(:,j,k); 
-                        
-            F_tmp = zeros(3,1);
-            
-            % pressure term first  
-            if p_0_anterior ~= 0
-                F_tmp = F_tmp + (p_0_anterior / (du*dv)) * cross(X(:,j+1,k) - X(:,j-1,k), X(:,j,k+1) - X(:,j,k-1));                     
-            end 
-            
-            % u type fibers 
-            for j_nbr = [j-1,j+1]
-                    
-                k_nbr = k; 
-                X_nbr = X_anterior(:,j_nbr,k_nbr); 
-                
-                F_tmp = F_tmp + S_anterior(k)/du * (X_nbr-X)/norm(X_nbr-X); 
+                X = X_anterior(:,j,k); 
 
-            end 
-             
-            % v type fibers 
-            for k_nbr = [k-1,k+1]
-                    
-                j_nbr = j; 
-                X_nbr = X_anterior(:,j_nbr,k_nbr); 
-                
-                F_tmp = F_tmp + T_anterior(j)/dv * (X_nbr-X)/norm(X_nbr-X); 
+                F_tmp = zeros(3,1);
 
-            end 
-            
-            F_anterior(:,j,k) = F_tmp;
-            
-        end
+                % pressure term first  
+                if p_0_anterior ~= 0
+                    F_tmp = F_tmp + (p_0_anterior / (du*dv)) * cross(X(:,j+1,k) - X(:,j-1,k), X(:,j,k+1) - X(:,j,k-1));                     
+                end 
+
+                % u type fibers 
+                for j_nbr = [j-1,j+1]
+
+                    k_nbr = k; 
+                    X_nbr = X_anterior(:,j_nbr,k_nbr); 
+
+                    F_tmp = F_tmp + S_anterior(k)/du * (X_nbr-X)/norm(X_nbr-X); 
+
+                end 
+
+                % v type fibers 
+                for k_nbr = [k-1,k+1]
+
+                    j_nbr = j; 
+                    X_nbr = X_anterior(:,j_nbr,k_nbr); 
+
+                    F_tmp = F_tmp + T_anterior(j)/dv * (X_nbr-X)/norm(X_nbr-X); 
+
+                end 
+
+                F_anterior(:,j,k) = F_tmp;
+
+            end
+        end 
     end 
-end 
-    
 
-% interior terms of posterior leaflet 
-is_internal = valve.posterior.is_internal; 
 
-for j=1:j_max
-    for k=1:k_max
-        if is_internal(j,k) && (~chordae_idx_left(j,k)) && (~chordae_idx_right(j,k))
+    % interior terms of posterior leaflet 
+    is_internal = valve.posterior.is_internal; 
 
-            X = X_posterior(:,j,k); 
-                        
-            F_tmp = zeros(3,1);
-            
-            % pressure term first  
-            if p_0_posterior ~= 0
-                F_tmp = F_tmp + (p_0_posterior / (du*dv)) * cross(X(:,j+1,k) - X(:,j-1,k), X(:,j,k+1) - X(:,j,k-1));                     
-            end 
-            
-            % u type fibers 
-            for j_nbr = [j-1,j+1]
-                    
-                k_nbr = k; 
-                X_nbr = X_posterior(:,j_nbr,k_nbr); 
-                
-                F_tmp = F_tmp + S_posterior(k)/du * (X_nbr-X)/norm(X_nbr-X); 
+    for j=1:j_max
+        for k=1:k_max
+            if is_internal(j,k) && (~chordae_idx_left(j,k)) && (~chordae_idx_right(j,k))
 
-            end 
-             
-            % v type fibers 
-            for k_nbr = [k-1,k+1]
-                    
-                j_nbr = j; 
-                X_nbr = X_posterior(:,j_nbr,k_nbr); 
-                
-                F_tmp = F_tmp + T_posterior(j)/dv * (X_nbr-X)/norm(X_nbr-X); 
+                X = X_posterior(:,j,k); 
 
-            end 
-            
-            F_posterior(:,j,k) = F_tmp;
-            
-        end
+                F_tmp = zeros(3,1);
+
+                % pressure term first  
+                if p_0_posterior ~= 0
+                    F_tmp = F_tmp + (p_0_posterior / (du*dv)) * cross(X(:,j+1,k) - X(:,j-1,k), X(:,j,k+1) - X(:,j,k-1));                     
+                end 
+
+                % u type fibers 
+                for j_nbr = [j-1,j+1]
+
+                    k_nbr = k; 
+                    X_nbr = X_posterior(:,j_nbr,k_nbr); 
+
+                    F_tmp = F_tmp + S_posterior(k)/du * (X_nbr-X)/norm(X_nbr-X); 
+
+                end 
+
+                % v type fibers 
+                for k_nbr = [k-1,k+1]
+
+                    j_nbr = j; 
+                    X_nbr = X_posterior(:,j_nbr,k_nbr); 
+
+                    F_tmp = F_tmp + T_posterior(j)/dv * (X_nbr-X)/norm(X_nbr-X); 
+
+                end 
+
+                F_posterior(:,j,k) = F_tmp;
+
+            end
+        end 
     end 
-end 
 
+end  
 
 % chordae internal terms 
 F_chordae_left  = zeros(size(C_left )); 

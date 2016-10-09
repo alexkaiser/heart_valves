@@ -83,8 +83,8 @@ end
 X = sync_free_edge_to_anterior(leaflet_current, leaflet, X); 
 
 % fix indices 
-leaflet.linear_idx_offset = zeros(size(leaflet_current.linear_idx_offset)) + 3; 
-count = max(max(leaflet_current.linear_idx_offset)); 
+leaflet.linear_idx_offset = zeros(size(leaflet_current.linear_idx_offset)); 
+count = max(max(leaflet_current.linear_idx_offset)) + 3; 
 for k=1:k_max
     for j=1:j_max
         if leaflet.is_internal(j,k)
