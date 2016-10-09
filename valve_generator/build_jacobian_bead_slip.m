@@ -112,34 +112,35 @@ function J = build_jacobian_bead_slip(valve)
     for left_side = [true, false]
         
         if left_side
-            free_edge = free_edge_left; 
-            
-            
+            free_edge = free_edge_idx_left; 
+            chordae_idx = chordae_idx_left; 
+            C = C_left; 
+            Ref = Ref_l;
         else 
-            
-            
+            free_edge = free_edge_idx_right; 
+            chordae_idx = chordae_idx_right;
+            C = C_right; 
+            Ref = Ref_r;
         end 
         
-        S_posterior_left(k_max-1).val   = 0;  
-        S_posterior_left(k_max-1).j     = 0;
-        S_posterior_left(k_max-1).k     = 0; 
-        S_posterior_left(k_max-1).j_nbr = 0; 
-        S_posterior_left(k_max-1).k_nbr = 0; 
-        S_posterior_left(k_max-1).G     = zeros(3,1); 
-    
-
+        
         % free edge terms first              
-        for i=1:size(free_edge_idx_left, 1)
-            j = free_edge_idx_left(i,1);
-            k = free_edge_idx_left(i,2);
+        for i=1:size(free_edge, 1)
+            j = free_edge(i,1);
+            k = free_edge(i,2);
 
             range_current = linear_idx_offset_anterior(j,k) + (1:3); 
 
             X = X_anterior(:,j,k); 
             R = R_anterior(:,j,k);
 
-            % interior neighbor is right in j 
-            j_nbr = j + 1;
+            % interior neighbor is right in j on left side, 
+            % left in j on right side 
+            if left_side
+                j_nbr = j + 1;
+            else 
+                j_nbr = j - 1;
+            end 
             k_nbr = k;
 
             % Anterior circumferential 
@@ -147,9 +148,13 @@ function J = build_jacobian_bead_slip(valve)
             R_nbr = R_anterior(:,j_nbr,k_nbr); 
 
             J_tension = tension_linear_tangent_jacobian(X, X_nbr, R, R_nbr, alpha_anterior, ref_frac_anterior);
-
-            S_anterior_left(k) = get_linear_tension_struct(X, X_nbr, R, R_nbr, alpha_anterior/dv, ref_frac_anterior, j, k, j_nbr, k_nbr); 
-
+    
+            if left_side 
+                S_anterior_left(k)  = get_linear_tension_struct(X, X_nbr, R, R_nbr, alpha_anterior/dv, ref_frac_anterior, j, k, j_nbr, k_nbr); 
+            else 
+                S_anterior_right(k) = get_linear_tension_struct(X, X_nbr, R, R_nbr, alpha_anterior/dv, ref_frac_anterior, j, k, j_nbr, k_nbr); 
+            end 
+            
             % current term is always added in 
             % this gets no sign 
             % this is always at the current,current block in the matrix 
@@ -169,8 +174,12 @@ function J = build_jacobian_bead_slip(valve)
 
             J_tension = tension_linear_tangent_jacobian(X, X_nbr, R, R_nbr, alpha_posterior, ref_frac_posterior);
 
-            S_posterior_left(k) = get_linear_tension_struct(X, X_nbr, R, R_nbr, alpha_posterior/dv, ref_frac_posterior, j, k, j_nbr, k_nbr); 
-
+            if left_side
+                S_posterior_left(k)  = get_linear_tension_struct(X, X_nbr, R, R_nbr, alpha_posterior/dv, ref_frac_posterior, j, k, j_nbr, k_nbr); 
+            else 
+                S_posterior_right(k) = get_linear_tension_struct(X, X_nbr, R, R_nbr, alpha_posterior/dv, ref_frac_posterior, j, k, j_nbr, k_nbr); 
+            end 
+            
             % current term is always added in 
             % this gets no sign 
             % this is always at the current,current block in the matrix 
@@ -184,7 +193,7 @@ function J = build_jacobian_bead_slip(valve)
             end 
 
 
-            % interior neighbor is up in k 
+            % interior neighbor is up in k, always  
             j_nbr = j;     
             k_nbr = k+1; 
 
@@ -229,19 +238,19 @@ function J = build_jacobian_bead_slip(valve)
             end
 
             % current node has a chordae connection
-            if chordae_idx_left(j,k)
+            if chordae_idx(j,k)
 
                 kappa = k_0;
 
                 % index that free edge would have if on tree
                 % remember that leaves are only in the leaflet
-                leaf_idx = chordae_idx_left(j,k) + N_chordae;
+                leaf_idx = chordae_idx(j,k) + N_chordae;
 
                 % then take the parent index of that number in chordae variables
                 idx_chordae = floor(leaf_idx/2);
 
-                X_nbr = C_left(:,idx_chordae);
-                R_nbr = Ref_l (:,idx_chordae);
+                X_nbr = C(:,idx_chordae);
+                R_nbr = Ref(:,idx_chordae);
 
                 J_tension = tension_linear_tangent_jacobian(X,X_nbr,R,R_nbr,kappa,ref_frac_anterior); 
 
@@ -251,7 +260,6 @@ function J = build_jacobian_bead_slip(valve)
                 place_tmp_block(range_current, range_current, J_tension); 
 
                 % chordae range 
-                left_side = true; 
                 range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side); 
                 place_tmp_block(range_current, range_nbr, -J_tension); 
 
