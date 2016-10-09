@@ -11,30 +11,34 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
 % 
 
 
-X_anterior         = valve.anterior.X; 
-R_anterior         = valve.anterior.R; 
-p_0_anterior       = valve.anterior.p_0; 
-alpha_anterior     = valve.anterior.alpha; 
-beta_anterior      = valve.anterior.beta; 
-ref_frac_anterior  = valve.anterior.ref_frac; 
-C_left             = valve.anterior.chordae.C_left; 
-C_right            = valve.anterior.chordae.C_right; 
-Ref_l              = valve.anterior.chordae.Ref_l; 
-Ref_r              = valve.anterior.chordae.Ref_r; 
-k_0                = valve.anterior.chordae.k_0; 
-chordae_idx_left   = valve.anterior.chordae_idx_left; 
-chordae_idx_right  = valve.anterior.chordae_idx_right;
-j_max              = valve.anterior.j_max; 
-k_max              = valve.anterior.k_max; 
-du                 = valve.anterior.du; 
-dv                 = valve.anterior.dv; 
+anterior  = valve.anterior; 
+posterior = valve.posterior;
 
-X_posterior        = valve.posterior.X; 
-R_posterior        = valve.posterior.R;
-p_0_posterior      = valve.posterior.p_0; 
-alpha_posterior    = valve.posterior.alpha; 
-beta_posterior     = valve.posterior.beta; 
-ref_frac_posterior = valve.posterior.ref_frac; 
+X_anterior         = anterior.X; 
+R_anterior         = anterior.R; 
+p_0_anterior       = anterior.p_0; 
+alpha_anterior     = anterior.alpha; 
+beta_anterior      = anterior.beta; 
+ref_frac_anterior  = anterior.ref_frac; 
+C_left             = anterior.chordae.C_left; 
+C_right            = anterior.chordae.C_right; 
+Ref_l              = anterior.chordae.Ref_l; 
+Ref_r              = anterior.chordae.Ref_r; 
+k_0                = anterior.chordae.k_0; 
+chordae_idx_left   = anterior.chordae_idx_left; 
+chordae_idx_right  = anterior.chordae_idx_right;
+j_max              = anterior.j_max; 
+k_max              = anterior.k_max; 
+du                 = anterior.du; 
+dv                 = anterior.dv; 
+
+ 
+X_posterior        = posterior.X; 
+R_posterior        = posterior.R;
+p_0_posterior      = posterior.p_0; 
+alpha_posterior    = posterior.alpha; 
+beta_posterior     = posterior.beta; 
+ref_frac_posterior = posterior.ref_frac; 
 
 
 F_anterior  = zeros(size(X_anterior)); 
@@ -52,9 +56,8 @@ T_anterior        = zeros(j_max,1);
 T_posterior       = zeros(j_max,1); 
 
 
-free_edge_idx_left  = valve.anterior.free_edge_idx_left; 
-free_edge_idx_right = valve.anterior.free_edge_idx_right; 
-
+free_edge_idx_left  = anterior.free_edge_idx_left; 
+free_edge_idx_right = anterior.free_edge_idx_right;
 
 
 for left_side = [true, false]
@@ -158,106 +161,78 @@ for left_side = [true, false]
 
 end 
 
+% Tensions are equalized from left to right 
+S_anterior = (S_anterior_left + S_anterior_right)/2.0; 
+S_posterior = (S_posterior_left + S_posterior_right)/2.0; 
 
+% Convert from units of force to force densities 
+% Double check this 
+S_anterior  = S_anterior  /dv; 
+S_posterior = S_posterior /dv; 
+T_anterior  = T_anterior  /du; 
+T_posterior = T_posterior /du; 
 
 INTERNAL_OFF_DEBUG = false; 
 if ~INTERNAL_OFF_DEBUG 
 
-    % Tensions are equalized from left to right 
-    S_anterior = (S_anterior_left + S_anterior_right)/2.0; 
-    S_posterior = (S_posterior_left + S_posterior_right)/2.0; 
+    for anterior_side = [true, false]
 
-    % Convert from units of force to force densities 
-    % Double check this 
-    S_anterior  = S_anterior  /dv; 
-    S_posterior = S_posterior /dv; 
-    T_anterior  = T_anterior  /du; 
-    T_posterior = T_posterior /du; 
-
-
-    % interior terms of anterior leaflet 
-    is_internal = valve.anterior.is_internal; 
-
-    for j=1:j_max
-        for k=1:k_max
-            if is_internal(j,k) && (~chordae_idx_left(j,k)) && (~chordae_idx_right(j,k))
-
-                X = X_anterior(:,j,k); 
-
-                F_tmp = zeros(3,1);
-
-                % pressure term first  
-                if p_0_anterior ~= 0
-                    F_tmp = F_tmp + (p_0_anterior / (du*dv)) * cross(X(:,j+1,k) - X(:,j-1,k), X(:,j,k+1) - X(:,j,k-1));                     
-                end 
-
-                % u type fibers 
-                for j_nbr = [j-1,j+1]
-
-                    k_nbr = k; 
-                    X_nbr = X_anterior(:,j_nbr,k_nbr); 
-
-                    F_tmp = F_tmp + S_anterior(k)/du * (X_nbr-X)/norm(X_nbr-X); 
-
-                end 
-
-                % v type fibers 
-                for k_nbr = [k-1,k+1]
-
-                    j_nbr = j; 
-                    X_nbr = X_anterior(:,j_nbr,k_nbr); 
-
-                    F_tmp = F_tmp + T_anterior(j)/dv * (X_nbr-X)/norm(X_nbr-X); 
-
-                end 
-
-                F_anterior(:,j,k) = F_tmp;
-
-            end
+        if anterior_side 
+            is_internal = anterior.is_internal; 
+            X_current = X_anterior; 
+            p_0 = p_0_anterior; 
+            S = S_anterior; 
+            T = T_anterior; 
+        else 
+            is_internal = posterior.is_internal; 
+            X_current = X_posterior; 
+            p_0 = p_0_posterior; 
+            S = S_posterior; 
+            T = T_posterior;
         end 
-    end 
+    
+    
+        for j=1:j_max
+            for k=1:k_max
+                if is_internal(j,k) && (~chordae_idx_left(j,k)) && (~chordae_idx_right(j,k))
 
+                    X = X_current(:,j,k); 
 
-    % interior terms of posterior leaflet 
-    is_internal = valve.posterior.is_internal; 
+                    F_tmp = zeros(3,1);
 
-    for j=1:j_max
-        for k=1:k_max
-            if is_internal(j,k) && (~chordae_idx_left(j,k)) && (~chordae_idx_right(j,k))
+                    % pressure term first  
+                    if p_0 ~= 0
+                        F_tmp = F_tmp + (p_0 / (du*dv)) * cross(X(:,j+1,k) - X(:,j-1,k), X(:,j,k+1) - X(:,j,k-1));                     
+                    end 
 
-                X = X_posterior(:,j,k); 
+                    % u type fibers 
+                    for j_nbr = [j-1,j+1]
 
-                F_tmp = zeros(3,1);
+                        k_nbr = k; 
+                        X_nbr = X_anterior(:,j_nbr,k_nbr); 
 
-                % pressure term first  
-                if p_0_posterior ~= 0
-                    F_tmp = F_tmp + (p_0_posterior / (du*dv)) * cross(X(:,j+1,k) - X(:,j-1,k), X(:,j,k+1) - X(:,j,k-1));                     
-                end 
+                        F_tmp = F_tmp + S(k)/du * (X_nbr-X)/norm(X_nbr-X); 
 
-                % u type fibers 
-                for j_nbr = [j-1,j+1]
+                    end 
 
-                    k_nbr = k; 
-                    X_nbr = X_posterior(:,j_nbr,k_nbr); 
+                    % v type fibers 
+                    for k_nbr = [k-1,k+1]
 
-                    F_tmp = F_tmp + S_posterior(k)/du * (X_nbr-X)/norm(X_nbr-X); 
+                        j_nbr = j; 
+                        X_nbr = X_anterior(:,j_nbr,k_nbr); 
 
-                end 
+                        F_tmp = F_tmp + T(j)/dv * (X_nbr-X)/norm(X_nbr-X); 
 
-                % v type fibers 
-                for k_nbr = [k-1,k+1]
+                    end 
 
-                    j_nbr = j; 
-                    X_nbr = X_posterior(:,j_nbr,k_nbr); 
-
-                    F_tmp = F_tmp + T_posterior(j)/dv * (X_nbr-X)/norm(X_nbr-X); 
-
-                end 
-
-                F_posterior(:,j,k) = F_tmp;
-
-            end
-        end 
+                    if anterior_side
+                        F_anterior(:,j,k) = F_tmp;
+                    else 
+                        F_posterior(:,j,k) = F_tmp;
+                    end 
+                end
+            end 
+        end
     end 
 
 end  
@@ -287,7 +262,7 @@ for left_side = [true false];
         for nbr_idx = [left,right,parent]
 
             % get the neighbors coordinates, reference coordinate and spring constants
-            [nbr R_nbr k_val] = get_nbr_chordae(valve.anterior, i, nbr_idx, left_side); 
+            [nbr R_nbr k_val] = get_nbr_chordae(anterior, i, nbr_idx, left_side); 
 
             tension = tension_linear_over_norm(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac_anterior) * (nbr - C(:,i));  
 
