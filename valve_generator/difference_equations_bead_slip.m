@@ -11,23 +11,23 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
 % 
 
 
-X_anterior        = valve.anterior.X; 
-R_anterior        = valve.anterior.R; 
-p_0_anterior      = valve.anterior.p_0; 
-alpha_anterior    = valve.anterior.alpha; 
-beta_anterior     = valve.anterior.beta; 
-ref_frac_anterior = valve.anterior.ref_frac; 
-C_left            = valve.anterior.chordae.C_left; 
-C_right           = valve.anterior.chordae.C_right; 
-Ref_l             = valve.anterior.chordae.Ref_l; 
-Ref_r             = valve.anterior.chordae.Ref_r; 
-k_0               = valve.anterior.chordae.k_0; 
-chordae_idx_left  = valve.anterior.chordae_idx_left; 
-chordae_idx_right = valve.anterior.chordae_idx_right;
-j_max             = valve.anterior.j_max; 
-k_max             = valve.anterior.k_max; 
-du                = valve.anterior.du; 
-dv                = valve.anterior.dv; 
+X_anterior         = valve.anterior.X; 
+R_anterior         = valve.anterior.R; 
+p_0_anterior       = valve.anterior.p_0; 
+alpha_anterior     = valve.anterior.alpha; 
+beta_anterior      = valve.anterior.beta; 
+ref_frac_anterior  = valve.anterior.ref_frac; 
+C_left             = valve.anterior.chordae.C_left; 
+C_right            = valve.anterior.chordae.C_right; 
+Ref_l              = valve.anterior.chordae.Ref_l; 
+Ref_r              = valve.anterior.chordae.Ref_r; 
+k_0                = valve.anterior.chordae.k_0; 
+chordae_idx_left   = valve.anterior.chordae_idx_left; 
+chordae_idx_right  = valve.anterior.chordae_idx_right;
+j_max              = valve.anterior.j_max; 
+k_max              = valve.anterior.k_max; 
+du                 = valve.anterior.du; 
+dv                 = valve.anterior.dv; 
 
 X_posterior        = valve.posterior.X; 
 R_posterior        = valve.posterior.R;
@@ -48,9 +48,9 @@ S_anterior_left   = zeros(k_max-1,1);
 S_anterior_right  = zeros(k_max-1,1); 
 S_posterior_left  = zeros(k_max-1,1); 
 S_posterior_right = zeros(k_max-1,1); 
+T_anterior        = zeros(j_max,1); 
+T_posterior       = zeros(j_max,1); 
 
-T_anterior  = zeros(j_max,1); 
-T_posterior = zeros(j_max,1); 
 
 free_edge_idx_left  = valve.anterior.free_edge_idx_left; 
 free_edge_idx_right = valve.anterior.free_edge_idx_right; 
@@ -76,13 +76,13 @@ for i=1:size(free_edge_idx_left, 1)
     X_nbr = X_anterior(:,j_nbr,k_nbr); 
     R_nbr = R_anterior(:,j_nbr,k_nbr); 
     S_anterior_left(k) = tension_linear(X, X_nbr, R, R_nbr, alpha_anterior, ref_frac_anterior); 
-    F_tmp = F_tmp + S_anterior_left(k) * (X-X_nbr)/norm(X-X_nbr); 
+    F_tmp = F_tmp + S_anterior_left(k) * (X_nbr-X)/norm(X_nbr-X); 
     
     % Posterior circumferential 
     X_nbr = X_posterior(:,j_nbr,k_nbr); 
     R_nbr = R_posterior(:,j_nbr,k_nbr); 
     S_posterior_left(k) = tension_linear(X, X_nbr, R, R_nbr, alpha_posterior, ref_frac_posterior); 
-    F_tmp = F_tmp + S_posterior_left(k) * (X-X_nbr)/norm(X-X_nbr);  
+    F_tmp = F_tmp + S_posterior_left(k) * (X_nbr-X)/norm(X_nbr-X);  
     
     % interior neighbor is up in k 
     j_nbr = j;     
@@ -92,13 +92,13 @@ for i=1:size(free_edge_idx_left, 1)
     X_nbr = X_anterior(:,j_nbr,k_nbr); 
     R_nbr = R_anterior(:,j_nbr,k_nbr); 
     T_anterior(j) = tension_linear(X, X_nbr, R, R_nbr, beta_anterior, ref_frac_anterior); 
-    F_tmp = F_tmp + T_anterior(j) * (X-X_nbr)/norm(X-X_nbr); 
+    F_tmp = F_tmp + T_anterior(j) * (X_nbr-X)/norm(X_nbr-X); 
     
     % Posterior radial 
     X_nbr = X_posterior(:,j_nbr,k_nbr); 
     R_nbr = R_posterior(:,j_nbr,k_nbr); 
     T_posterior(j) = tension_linear(X, X_nbr, R, R_nbr, beta_posterior, ref_frac_posterior); 
-    F_tmp = F_tmp + T_posterior(j) * (X-X_nbr)/norm(X-X_nbr); 
+    F_tmp = F_tmp + T_posterior(j) * (X_nbr-X)/norm(X_nbr-X); 
     
     % current node has a chordae connection
     if chordae_idx_left(j,k)
@@ -115,7 +115,7 @@ for i=1:size(free_edge_idx_left, 1)
         X_nbr = C_left(:,idx_chordae);
         R_nbr = Ref_l (:,idx_chordae);
         
-        F_tmp = F_tmp + tension_linear(X,X_nbr,R,R_nbr,kappa,ref_frac_anterior) * (X-X_nbr)/norm(X-X_nbr); 
+        F_tmp = F_tmp + tension_linear(X,X_nbr,R,R_nbr,kappa,ref_frac_anterior) * (X_nbr-X)/norm(X_nbr-X); 
         
     else
         error('free edge point required to have chordae connection'); 
@@ -147,13 +147,13 @@ for i=1:size(free_edge_idx_right, 1)
     X_nbr = X_anterior(:,j_nbr,k_nbr); 
     R_nbr = R_anterior(:,j_nbr,k_nbr); 
     S_anterior_right(k) = tension_linear(X, X_nbr, R, R_nbr, alpha_anterior, ref_frac_anterior); 
-    F_tmp = F_tmp + S_anterior_left(k) * (X-X_nbr)/norm(X-X_nbr); 
+    F_tmp = F_tmp + S_anterior_left(k) * (X_nbr-X)/norm(X_nbr-X); 
     
     % Posterior circumferential 
     X_nbr = X_posterior(:,j_nbr,k_nbr); 
     R_nbr = R_posterior(:,j_nbr,k_nbr); 
     S_posterior_right(k) = tension_linear(X, X_nbr, R, R_nbr, alpha_posterior, ref_frac_posterior); 
-    F_tmp = F_tmp + S_posterior_left(k) * (X-X_nbr)/norm(X-X_nbr);  
+    F_tmp = F_tmp + S_posterior_left(k) * (X_nbr-X)/norm(X_nbr-X);  
     
     % interior neighbor is up in k 
     j_nbr = j;     
@@ -163,13 +163,13 @@ for i=1:size(free_edge_idx_right, 1)
     X_nbr = X_anterior(:,j_nbr,k_nbr); 
     R_nbr = R_anterior(:,j_nbr,k_nbr); 
     T_anterior(j) = tension_linear(X, X_nbr, R, R_nbr, beta_anterior, ref_frac_anterior); 
-    F_tmp = F_tmp + T_anterior(j) * (X-X_nbr)/norm(X-X_nbr); 
+    F_tmp = F_tmp + T_anterior(j) * (X_nbr-X)/norm(X_nbr-X); 
     
     % Posterior circumferential 
     X_nbr = X_posterior(:,j_nbr,k_nbr); 
     R_nbr = R_posterior(:,j_nbr,k_nbr); 
     T_posterior(j) = tension_linear(X, X_nbr, R, R_nbr, beta_posterior, ref_frac_posterior); 
-    F_tmp = F_tmp + T_posterior(j) * (X-X_nbr)/norm(X-X_nbr); 
+    F_tmp = F_tmp + T_posterior(j) * (X_nbr-X)/norm(X_nbr-X); 
     
     % current node has a chordae connection
     if chordae_idx_right(j,k)
@@ -186,7 +186,7 @@ for i=1:size(free_edge_idx_right, 1)
         X_nbr = C_left(:,idx_chordae);
         R_nbr = Ref_l (:,idx_chordae);
         
-        F_tmp = F_tmp + tension_linear(X,X_nbr,R,R_nbr,kappa,ref_frac_anterior) * (X-X_nbr)/norm(X-X_nbr); 
+        F_tmp = F_tmp + tension_linear(X,X_nbr,R,R_nbr,kappa,ref_frac_anterior) * (X_nbr-X)/norm(X_nbr-X); 
         
     else
         error('free edge point required to have chordae connection'); 
@@ -230,7 +230,7 @@ for j=1:j_max
                 k_nbr = k; 
                 X_nbr = X_anterior(:,j_nbr,k_nbr); 
                 
-                F_tmp = F_tmp + S_anterior(k)/du * (X-X_nbr)/norm(X-X_nbr); 
+                F_tmp = F_tmp + S_anterior(k)/du * (X_nbr-X)/norm(X_nbr-X); 
 
             end 
              
@@ -240,7 +240,7 @@ for j=1:j_max
                 j_nbr = j; 
                 X_nbr = X_anterior(:,j_nbr,k_nbr); 
                 
-                F_tmp = F_tmp + T_anterior(j)/dv * (X-X_nbr)/norm(X-X_nbr); 
+                F_tmp = F_tmp + T_anterior(j)/dv * (X_nbr-X)/norm(X_nbr-X); 
 
             end 
             
@@ -273,7 +273,7 @@ for j=1:j_max
                 k_nbr = k; 
                 X_nbr = X_posterior(:,j_nbr,k_nbr); 
                 
-                F_tmp = F_tmp + S_posterior(k)/du * (X-X_nbr)/norm(X-X_nbr); 
+                F_tmp = F_tmp + S_posterior(k)/du * (X_nbr-X)/norm(X_nbr-X); 
 
             end 
              
@@ -283,7 +283,7 @@ for j=1:j_max
                 j_nbr = j; 
                 X_nbr = X_posterior(:,j_nbr,k_nbr); 
                 
-                F_tmp = F_tmp + T_posterior(j)/dv * (X-X_nbr)/norm(X-X_nbr); 
+                F_tmp = F_tmp + T_posterior(j)/dv * (X_nbr-X)/norm(X_nbr-X); 
 
             end 
             
