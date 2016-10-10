@@ -166,7 +166,6 @@ S_anterior = (S_anterior_left + S_anterior_right)/2.0;
 S_posterior = (S_posterior_left + S_posterior_right)/2.0; 
 
 % Convert from units of force to force densities 
-% Double check this 
 S_anterior  = S_anterior  /dv;
 S_posterior = S_posterior /dv;
 T_anterior  = T_anterior  /du;
@@ -208,7 +207,7 @@ for anterior_side = [true, false]
                 for j_nbr = [j-1,j+1]
 
                     k_nbr = k; 
-                    X_nbr = X_anterior(:,j_nbr,k_nbr); 
+                    X_nbr = X_current(:,j_nbr,k_nbr); 
 
                     F_tmp = F_tmp + S(k)/du * (X_nbr-X)/norm(X_nbr-X); 
 
@@ -220,7 +219,7 @@ for anterior_side = [true, false]
                 for k_nbr = [k-1,k+1]
 
                     j_nbr = j; 
-                    X_nbr = X_anterior(:,j_nbr,k_nbr); 
+                    X_nbr = X_current(:,j_nbr,k_nbr); 
 
                     F_tmp = F_tmp + T(j)/dv * (X_nbr-X)/norm(X_nbr-X); 
 
