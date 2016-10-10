@@ -168,7 +168,7 @@ end
 % leaflet part 
 for k=1:k_max
     for j=1:j_max
-        if is_internal_anterior(j,k)
+        if is_internal_posterior(j,k)
 
             'posterior'
             j

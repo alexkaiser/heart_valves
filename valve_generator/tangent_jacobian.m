@@ -7,15 +7,14 @@ function J = tangent_jacobian(X_current,X_nbr)
 %     X_nbr          Relevant neighbor in X
 % 
 % Output: 
-%     J_tension      3x3 Jacobian for this tension term 
-%                    Signs are NOT included, local will get a negative 
+%     J_tension      3x3 Jacobian for this unit tangent term 
 % 
 
     X_norm = norm(X_nbr - X_current);
     
     % jacobian is an outer product 
     % plus a multiple of the identity 
-    J = 1.0 / (X_norm^3) * (X_nbr - X_current)*((X_nbr - X_current)') - 1.0 / (X_norm^3) * eye(3); 
+    J = 1.0 / (X_norm^3) * (X_nbr - X_current)*((X_nbr - X_current)') - 1.0 / X_norm * eye(3); 
      
 end 
 

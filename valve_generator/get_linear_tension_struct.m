@@ -34,5 +34,5 @@ Q.k = k;
 Q.j_nbr = j_nbr; 
 Q.k_nbr = k_nbr; 
 
-Q.G = (kappa/R_norm) * (X - X_nbr) / X_norm; 
+Q.G = -(kappa/R_norm) * (X - X_nbr) / X_norm; 
 
