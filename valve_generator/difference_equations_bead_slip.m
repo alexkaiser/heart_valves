@@ -171,7 +171,7 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
     % Tensions are equalized from left to right 
     S_anterior = (S_anterior_left + S_anterior_right)/2.0; 
     S_posterior = (S_posterior_left + S_posterior_right)/2.0; 
-
+ 
     % Convert from units of force to force densities 
     S_anterior  = S_anterior  /dv;
     S_posterior = S_posterior /dv;
@@ -211,7 +211,7 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
                         F_tmp = F_tmp + (p_0 / (du*dv)) * cross(X(:,j+1,k) - X(:,j-1,k), X(:,j,k+1) - X(:,j,k-1));                     
                     end 
 
-                    if false 
+                    if false
                     % u type fibers 
                     for j_nbr = [j-1,j+1]
 
@@ -219,11 +219,12 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
                         X_nbr = get_neighbor(); 
 
                         F_tmp = F_tmp + S(k)/du * (X_nbr-X)/norm(X_nbr-X); 
+                        % F_tmp = F_tmp + 1/du * (X_nbr-X)/norm(X_nbr-X); 
 
                     end 
                     end 
 
-                    if true 
+                    if true
                     % v type fibers 
                     for k_nbr = [k-1,k+1]
 
