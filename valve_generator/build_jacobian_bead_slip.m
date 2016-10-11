@@ -169,8 +169,14 @@ function J = build_jacobian_bead_slip(valve)
 
 
             % Posterior circumferential 
-            X_nbr = X_posterior(:,j_nbr,k_nbr); 
-            R_nbr = R_posterior(:,j_nbr,k_nbr); 
+            % At the "point" of the leaflet this must come from anterior 
+            if chordae_idx_left(j_nbr,k_nbr) || chordae_idx_right(j_nbr,k_nbr)
+                X_nbr = X_anterior(:,j_nbr,k_nbr); 
+                R_nbr = R_anterior(:,j_nbr,k_nbr); 
+            else 
+                X_nbr = X_posterior(:,j_nbr,k_nbr); 
+                R_nbr = R_posterior(:,j_nbr,k_nbr); 
+            end 
 
             J_tension = tension_linear_tangent_jacobian(X, X_nbr, R, R_nbr, alpha_posterior, ref_frac_posterior);
 
@@ -190,6 +196,12 @@ function J = build_jacobian_bead_slip(valve)
             if is_internal_posterior(j_nbr,k_nbr)
                 range_nbr  = linear_idx_offset_posterior(j_nbr,k_nbr) + (1:3);
                 place_tmp_block(range_current, range_nbr, -J_tension); 
+            
+            % if not internal posterior, the neighbor may be on the free edge 
+            elseif (chordae_idx_left(j_nbr,k_nbr) || chordae_idx_right(j_nbr,k_nbr)) && is_internal_anterior(j_nbr,k_nbr)
+                range_nbr  = linear_idx_offset_anterior(j_nbr,k_nbr) + (1:3);
+                place_tmp_block(range_current, range_nbr, -J_tension);                
+                
             end 
 
 
@@ -404,8 +416,8 @@ function J = build_jacobian_bead_slip(valve)
                             end 
 
 
-                            j_nbr_tension = S_anterior_left(k).j_nbr; 
-                            k_nbr_tension = S_anterior_left(k).k_nbr;
+                            j_nbr_tension = S_left(k).j_nbr; 
+                            k_nbr_tension = S_left(k).k_nbr;
 
                             % neighbor term is on current leaflet 
                             if is_internal(j_nbr_tension,k_nbr_tension)
@@ -451,8 +463,9 @@ function J = build_jacobian_bead_slip(valve)
                                 error('trying to apply slip model at chordae attachment point'); 
                             end 
 
-                            X_nbr = X_current(:,j_nbr,k_nbr);
-
+                            % X_nbr = X_current(:,j_nbr,k_nbr);
+                            [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
+                            
                             % There is a 1/du term throughout from taking a finite difference derivative 
                             % Place this on the tension variables, one of which apprears in each term 
 
@@ -472,10 +485,13 @@ function J = build_jacobian_bead_slip(valve)
                             % If the neighbor is an internal point, on current leaflet 
                             % it also gets a Jacobian contribution 
                             % This takes a sign
-                            if (j_nbr > 0) && (k_nbr > 0) && is_internal(j_nbr,k_nbr)
-                                range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
+                            if nbr_jacobian_needed 
                                 place_tmp_block(range_current, range_nbr, -tension * J_tangent); 
-                            end
+                            end 
+%                             if (j_nbr > 0) && (k_nbr > 0) && is_internal(j_nbr,k_nbr)
+%                                 range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
+%                                 place_tmp_block(range_current, range_nbr, -tension * J_tangent); 
+%                             end
 
 
                             % Jacobians with respect to inherited tensions
@@ -605,6 +621,28 @@ function J = build_jacobian_bead_slip(valve)
 
         nnz_placed = nnz_placed+9; 
 
+    end 
+
+
+    function [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor()
+        % nested function for getting neighbor 
+        % nested functions have full access to current work space 
+
+        if chordae_idx_left(j_nbr,k_nbr) || chordae_idx_right(j_nbr,k_nbr)
+            X_nbr = X_anterior(:,j_nbr,k_nbr); 
+            range_nbr = linear_idx_offset_anterior(j_nbr,k_nbr) + (1:3);
+            nbr_jacobian_needed = true; 
+        elseif is_internal(j_nbr,k_nbr) 
+            X_nbr = X_current(:,j_nbr,k_nbr);
+            range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
+            nbr_jacobian_needed = true;                        
+        elseif is_bc(j_nbr,k_nbr)
+            X_nbr = X_current(:,j_nbr,k_nbr); 
+            range_nbr = NaN; 
+            nbr_jacobian_needed = false; 
+        else
+            error('requesting nbr in location with no nbr'); 
+        end 
     end 
 
 end 

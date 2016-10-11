@@ -151,9 +151,11 @@ for i=1:size(free_edge_idx_left, 1)
     
     % Free edge and neighbors have rest positions 
     % Set to current position for now 
-    leaflet.R(:,j  ,k  ) = leaflet.X(:,j  ,k  );  
+    % leaflet.R(:,j  ,k  ) = leaflet.X(:,j  ,k  );  
     leaflet.R(:,j+1,k  ) = leaflet.X(:,j+1,k  );  
     leaflet.R(:,j  ,k+1) = leaflet.X(:,j  ,k+1);  
+    
+    leaflet.X(:,j  ,k  ) = NaN * leaflet.X(:,j  ,k  ); 
 end
 
 for i=1:size(free_edge_idx_right, 1)
@@ -162,10 +164,13 @@ for i=1:size(free_edge_idx_right, 1)
    
     % right free edge has neighbors up in k 
     % but down in j
-    leaflet.R(:,j  ,k  ) = leaflet.X(:,j  ,k  );  
+    % leaflet.R(:,j  ,k  ) = leaflet.X(:,j  ,k  );  
     leaflet.R(:,j-1,k  ) = leaflet.X(:,j-1,k  );  
     leaflet.R(:,j  ,k+1) = leaflet.X(:,j  ,k+1);
+    
+    leaflet.X(:,j  ,k  ) = NaN * leaflet.X(:,j  ,k  ); 
 end 
+
 
 
 
