@@ -27,9 +27,10 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
     k_max              = leaflet.k_max; 
     du                 = leaflet.du; 
     dv                 = leaflet.dv; 
+    is_internal        = leaflet.is_internal; 
 
 
-    F_leaflet = zeros(size(X_anterior)); 
+    F_leaflet = zeros(size(X_current)); 
 
 
     [m N_chordae] = size(C_left); 
@@ -96,7 +97,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
             % Anterior radial
             X_nbr = X_current(:,j_nbr,k_nbr); 
             R_nbr = R_current(:,j_nbr,k_nbr); 
-            T(j) = tension_linear(X, X_nbr, R, R_nbr, beta_anterior, ref_frac_anterior); 
+            T(j) = tension_linear(X, X_nbr, R, R_nbr, beta, ref_frac); 
             F_tmp = F_tmp + T(j) * (X_nbr-X)/norm(X_nbr-X); 
 
             % current node has a chordae connection
@@ -206,9 +207,9 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
             for nbr_idx = [left,right,parent]
 
                 % get the neighbors coordinates, reference coordinate and spring constants
-                [nbr R_nbr k_val] = get_nbr_chordae(anterior, i, nbr_idx, left_side); 
+                [nbr R_nbr k_val] = get_nbr_chordae(leaflet, i, nbr_idx, left_side); 
 
-                tension = tension_linear_over_norm(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac_anterior) * (nbr - C(:,i));  
+                tension = tension_linear_over_norm(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac) * (nbr - C(:,i));  
 
                 if left_side
                     F_chordae_left(:,i)  = F_chordae_left(:,i)  + tension; 
