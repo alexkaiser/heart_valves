@@ -10,8 +10,8 @@
 N = 4; 
 
 % Initialize structures  
-valve = initialize_valve_data_structures_radial_bead_slip(N); 
-
+attached = false; 
+valve = initialize_valve_data_structures_radial_bead_slip(N, ); 
 
 rand('twister',76599)
 
@@ -23,6 +23,7 @@ errors = zeros(size(epsilon_vals));
 
 % eval the difference eqns on the perturbation 
 [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_equations_bead_slip(valve); 
+
 F_linearized = linearize_internal_points_bead_slip(valve, F_anterior, F_posterior, F_chordae_left, F_chordae_right);
 
 % jacobian does not change 

@@ -1,4 +1,4 @@
-function [valve] = initialize_valve_data_structures_radial_bead_slip(N)
+function [valve] = initialize_valve_data_structures_radial_bead_slip(N, attached)
 % 
 % Initializes data structures for full solve.  
 % 
@@ -15,6 +15,11 @@ valve.N = N;
 valve.tol_global = 1e-10;
 valve.max_it = 40; 
 
+if exist('attached', 'var') 
+    valve.attached = attached; 
+else 
+    valve.attached = false; 
+end 
 
 % Valve skeleton parameters 
 valve.r = 1.606587877768772; 
@@ -106,14 +111,15 @@ valve.anterior = initialize_leaflet_bead_slip(N,                  ...
                                     tree_frac);  
 
 
-                           
+if attached 
+    valve.posterior = generate_opposite_leaflet(valve.anterior); 
+    fig = figure; 
+    valve_plot(valve); 
+end 
 
-valve.posterior = generate_opposite_leaflet(valve.anterior); 
 
-fig = figure; 
-valve_plot(valve); 
 
-'here'
+'done with initialize'
 
 
 

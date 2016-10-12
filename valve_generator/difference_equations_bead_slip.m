@@ -179,7 +179,7 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
     T_posterior = T_posterior /du;
 
     % Internal leaflet part 
-    for anterior_side = [true, false]
+    for anterior_side = [true]
 
         if anterior_side 
             is_internal = anterior.is_internal; 
@@ -211,7 +211,7 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
                         F_tmp = F_tmp + (p_0 / (du*dv)) * cross(X(:,j+1,k) - X(:,j-1,k), X(:,j,k+1) - X(:,j,k-1));                     
                     end 
 
-                    if false
+                    if true
                     % u type fibers 
                     for j_nbr = [j-1,j+1]
 
@@ -224,7 +224,7 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
                     end 
                     end 
 
-                    if true
+                    if false
                     % v type fibers 
                     for k_nbr = [k-1,k+1]
 

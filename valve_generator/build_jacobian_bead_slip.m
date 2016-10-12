@@ -284,7 +284,7 @@ function J = build_jacobian_bead_slip(valve)
     end 
     
     
-    for anterior_side = [true, false]
+    for anterior_side = [true]
 
         if anterior_side 
             'anterior'
@@ -462,7 +462,7 @@ function J = build_jacobian_bead_slip(valve)
 %                     end  
 
 
-                    if false
+                    if true
                     for j_nbr = [j-1,j+1]
 
                         k_nbr = k; 
@@ -479,12 +479,10 @@ function J = build_jacobian_bead_slip(valve)
                             % There is a 1/du term throughout from taking a finite difference derivative 
                             % Place this on the tension variables, one of which apprears in each term 
 
-                            tension_left  = (1/du) * S_left(k).val; 
-                            tension_right = (1/du) * S_right(k).val; 
-                            tension = (tension_left + tension_right)/2.0; 
+                            tension = (1/(2*du)) * (S_left(k).val + S_right(k).val); 
                             
-                            grad_tension_left   = (1/du) * S_left(k).G; 
-                            grad_tension_right  = (1/du) * S_right(k).G; 
+                            grad_tension_left   = (1/(2*du)) * S_left(k).G; 
+                            grad_tension_right  = (1/(2*du)) * S_right(k).G; 
                             
                             tangent = (X_nbr - X) / norm(X_nbr - X); 
 
@@ -555,7 +553,7 @@ function J = build_jacobian_bead_slip(valve)
                     end
                     end 
 
-                    if true 
+                    if false 
                     % v tension terms 
                     for k_nbr = [k-1,k+1]
 

@@ -32,9 +32,9 @@ function chordae = add_chordae(leaflet)
         error('must use a power of two'); 
     end 
     
-    if n_tree < 2
-        error('weird boundary errors possible on such a small tree'); 
-    end 
+%     if n_tree < 2
+%         error('weird boundary errors possible on such a small tree'); 
+%     end 
     
     if ~((0 < tree_frac) && (tree_frac < 1))
         error('multiplier on tree position must be between zero and one'); 
