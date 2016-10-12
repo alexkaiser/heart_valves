@@ -41,8 +41,14 @@ function leaflet = initialize_leaflet_bead_slip(N,                  ...
                                   
 leaflet.N           = N; 
 leaflet.total_angle = total_angle; 
-leaflet.min_angle   = -leaflet.total_angle/2.0; 
-leaflet.max_angle   =  leaflet.total_angle/2.0; 
+
+if reflect_x 
+    leaflet.min_angle   = pi + leaflet.total_angle/2.0;
+    leaflet.max_angle   = pi - leaflet.total_angle/2.0;
+else 
+    leaflet.min_angle   = -leaflet.total_angle/2.0; 
+    leaflet.max_angle   =  leaflet.total_angle/2.0; 
+end 
 
 total_length = total_angle * r; 
 leaflet.du = total_length / (N+1); 

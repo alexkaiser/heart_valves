@@ -118,14 +118,13 @@ valve.anterior = initialize_leaflet_bead_slip(N,                  ...
 if valve.attached 
     valve.posterior = generate_opposite_leaflet(valve.anterior); 
     fig = figure; 
-    valve_plot(valve); 
     
 else 
     
     total_angle_posterior = 2*pi - total_angle_anterior; 
     reflect_x = true; 
     
-    valve.anterior = initialize_leaflet_bead_slip(N,              ... 
+    valve.posterior = initialize_leaflet_bead_slip(N,              ... 
                                     reflect_x,                    ... 
                                     total_angle_posterior,        ...    
                                     valve.r,                      ... 
@@ -144,7 +143,7 @@ else
     
 end 
 
-
+valve_plot(valve); 
 
 'done with initialize'
 
