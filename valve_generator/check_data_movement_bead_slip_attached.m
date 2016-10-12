@@ -3,7 +3,8 @@
 N = 8; 
 
 % Initialize structures  
-valve = initialize_valve_data_structures_radial_bead_slip(N); 
+attached = true; 
+valve = initialize_valve_data_structures_radial_bead_slip(N, attached); 
 
 'orignal data'
 
@@ -13,7 +14,7 @@ valve.anterior.chordae.C_left
 valve.anterior.chordae.C_right
 
 % 'linear order on internal points'
-X_linearized = linearize_internal_points_bead_slip(valve, valve.anterior.X, valve.posterior.X, valve.anterior.chordae.C_left, valve.anterior.chordae.C_right)
+X_linearized = linearize_internal_points_bead_slip_attached(valve, valve.anterior.X, valve.posterior.X, valve.anterior.chordae.C_left, valve.anterior.chordae.C_right)
 
 
 % 'after return to normal data structure'

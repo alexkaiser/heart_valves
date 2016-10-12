@@ -10,7 +10,8 @@
 N = 4; 
 
 % Initialize structures  
-valve = initialize_valve_data_structures_radial_bead_slip(N); 
+attached = true; 
+valve = initialize_valve_data_structures_radial_bead_slip(N, attached); 
 
 
 rand('twister',76599)
@@ -22,8 +23,8 @@ errors = zeros(size(epsilon_vals));
 
 
 % eval the difference eqns on the perturbation 
-[F_anterior F_posterior F_chordae_left F_chordae_right] = difference_equations_bead_slip(valve); 
-F_linearized = linearize_internal_points_bead_slip(valve, F_anterior, F_posterior, F_chordae_left, F_chordae_right);
+[F_anterior F_posterior F_chordae_left F_chordae_right] = difference_equations_bead_slip_attached(valve); 
+F_linearized = linearize_internal_points_bead_slip_attached(valve, F_anterior, F_posterior, F_chordae_left, F_chordae_right);
 
 % jacobian does not change 
 J = build_jacobian_bead_slip(valve); 
@@ -72,7 +73,7 @@ valve_Z.posterior.X = Z_posterior;
 valve_Z.anterior.chordae.C_left  = rand(size(valve_Z.anterior.chordae.C_left)); 
 valve_Z.anterior.chordae.C_right = rand(size(valve_Z.anterior.chordae.C_right));
 
-Z_linearized = linearize_internal_points_bead_slip(valve_Z, valve_Z.anterior.X, valve_Z.posterior.X, valve_Z.anterior.chordae.C_left, valve_Z.anterior.chordae.C_right); 
+Z_linearized = linearize_internal_points_bead_slip_attached(valve_Z, valve_Z.anterior.X, valve_Z.posterior.X, valve_Z.anterior.chordae.C_left, valve_Z.anterior.chordae.C_right); 
 
 
 fprintf('eps\t | taylor series remainder\n'); 
@@ -91,9 +92,9 @@ for i = 1:length(epsilon_vals)
     valve_perturbation.anterior.chordae.C_right = valve.anterior.chordae.C_right + ep*valve_Z.anterior.chordae.C_right; 
 
     % eval the difference eqns on the perturbation 
-    [F_anterior_perturbed F_posterior_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations_bead_slip(valve_perturbation); 
+    [F_anterior_perturbed F_posterior_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations_bead_slip_attached(valve_perturbation); 
         
-    F_perturbed_linearized = linearize_internal_points_bead_slip(valve, F_anterior_perturbed, F_posterior_perturbed, F_chordae_left_perturbed, F_chordae_right_perturbed); 
+    F_perturbed_linearized = linearize_internal_points_bead_slip_attached(valve, F_anterior_perturbed, F_posterior_perturbed, F_chordae_left_perturbed, F_chordae_right_perturbed); 
     
     errors(i) = norm(F_perturbed_linearized - F_linearized - ep*J*Z_linearized, 2); 
     
@@ -138,9 +139,9 @@ for k=1:k_max
                 valve_perturbation.anterior.chordae.C_right = valve.anterior.chordae.C_right + ep*valve_Z.anterior.chordae.C_right; 
 
                 % eval the difference eqns on the perturbation 
-                [F_anterior_perturbed F_posterior_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations_bead_slip(valve_perturbation); 
+                [F_anterior_perturbed F_posterior_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations_bead_slip_attached(valve_perturbation); 
 
-                F_perturbed_linearized = linearize_internal_points_bead_slip(valve, F_anterior_perturbed, F_posterior_perturbed, F_chordae_left_perturbed, F_chordae_right_perturbed); 
+                F_perturbed_linearized = linearize_internal_points_bead_slip_attached(valve, F_anterior_perturbed, F_posterior_perturbed, F_chordae_left_perturbed, F_chordae_right_perturbed); 
 
                 diffs = F_perturbed_linearized - F_linearized - ep*J*Z_linearized; 
 
@@ -190,9 +191,9 @@ for k=1:k_max
                 valve_perturbation.anterior.chordae.C_right = valve.anterior.chordae.C_right + ep*valve_Z.anterior.chordae.C_right; 
 
                 % eval the difference eqns on the perturbation 
-                [F_anterior_perturbed F_posterior_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations_bead_slip(valve_perturbation); 
+                [F_anterior_perturbed F_posterior_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations_bead_slip_attached(valve_perturbation); 
 
-                F_perturbed_linearized = linearize_internal_points_bead_slip(valve, F_anterior_perturbed, F_posterior_perturbed, F_chordae_left_perturbed, F_chordae_right_perturbed); 
+                F_perturbed_linearized = linearize_internal_points_bead_slip_attached(valve, F_anterior_perturbed, F_posterior_perturbed, F_chordae_left_perturbed, F_chordae_right_perturbed); 
 
                 diffs = F_perturbed_linearized - F_linearized - ep*J*Z_linearized; 
 
@@ -242,9 +243,9 @@ for left_side = [true false]
             valve_perturbation.anterior.chordae.C_right = valve.anterior.chordae.C_right + ep*valve_Z.anterior.chordae.C_right; 
 
             % eval the difference eqns on the perturbation 
-            [F_anterior_perturbed F_posterior_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations_bead_slip(valve_perturbation); 
+            [F_anterior_perturbed F_posterior_perturbed F_chordae_left_perturbed F_chordae_right_perturbed] = difference_equations_bead_slip_attached(valve_perturbation); 
 
-            F_perturbed_linearized = linearize_internal_points_bead_slip(valve, F_anterior_perturbed, F_posterior_perturbed, F_chordae_left_perturbed, F_chordae_right_perturbed); 
+            F_perturbed_linearized = linearize_internal_points_bead_slip_attached(valve, F_anterior_perturbed, F_posterior_perturbed, F_chordae_left_perturbed, F_chordae_right_perturbed); 
 
             diffs = F_perturbed_linearized - F_linearized - ep*J*Z_linearized; 
 

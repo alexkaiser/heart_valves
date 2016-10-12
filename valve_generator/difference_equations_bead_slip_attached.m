@@ -1,4 +1,4 @@
-function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_equations_bead_slip(valve)
+function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_equations_bead_slip_attached(valve)
     % 
     % Evaluation of the global difference equations at j,k
     % Requires reference configuration R 

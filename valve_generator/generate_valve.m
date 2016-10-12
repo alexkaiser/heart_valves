@@ -13,20 +13,21 @@ plots = true;
 % Many parameters are in this script 
 
 radial = true; 
-closed_bead_slip = true; 
+bead_slip = true; 
+attached = false; 
 
 if radial
     
-    if closed_bead_slip 
-        valve = initialize_valve_data_structures_radial_bead_slip(N); 
+    if bead_slip 
+        valve = initialize_valve_data_structures_radial_bead_slip(N, attached); 
     else 
         valve = initialize_valve_data_structures_radial(N); 
     end 
         
 else 
     
-    if closed_bead_slip 
-        error('diagonal fibers not implemented for closed bead slip'); 
+    if bead_slip || attached 
+        error('diagonal fibers not implemented for closed bead slip or attached'); 
     end 
     
     valve = initialize_valve_data_structures(N); 

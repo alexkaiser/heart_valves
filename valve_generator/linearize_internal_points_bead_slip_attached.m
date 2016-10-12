@@ -1,4 +1,4 @@
-function v_linearized = linearize_internal_points_bead_slip(valve, v_anterior, v_posterior, v_chordae_left, v_chordae_right)
+function v_linearized = linearize_internal_points_bead_slip_attached(valve, v_anterior, v_posterior, v_chordae_left, v_chordae_right)
 %
 %  Takes the internal values in X and arranges them in a linear array 
 %  

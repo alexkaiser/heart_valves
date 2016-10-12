@@ -11,7 +11,7 @@ N = 4;
 
 % Initialize structures  
 attached = false; 
-valve = initialize_valve_data_structures_radial_bead_slip(N, ); 
+valve = initialize_valve_data_structures_radial_bead_slip(N, attached); 
 
 rand('twister',76599)
 

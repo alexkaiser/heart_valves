@@ -75,8 +75,8 @@ valve.collagen_springs_leaflet = false;
 extra_posterior = pi/6; 
 
 
-% posterior leaflet data structure 
-reflect_x   = true; 
+% anterior leaflet data structure 
+reflect_x = false; 
 total_angle_anterior = pi - extra_posterior; 
 
 % Radial and circumferential fibers 
@@ -110,11 +110,38 @@ valve.anterior = initialize_leaflet_bead_slip(N,                  ...
                                     k_multiplier,                 ... 
                                     tree_frac);  
 
+                                
+                                
+                                
+                                
 
-if attached 
+if valve.attached 
     valve.posterior = generate_opposite_leaflet(valve.anterior); 
     fig = figure; 
     valve_plot(valve); 
+    
+else 
+    
+    total_angle_posterior = 2*pi - total_angle_anterior; 
+    reflect_x = true; 
+    
+    valve.anterior = initialize_leaflet_bead_slip(N,              ... 
+                                    reflect_x,                    ... 
+                                    total_angle_posterior,        ...    
+                                    valve.r,                      ... 
+                                    valve.left_papillary,         ... 
+                                    valve.right_papillary,        ... 
+                                    radial_and_circumferential,   ...  
+                                    alpha,                        ... 
+                                    beta,                         ... 
+                                    p_0,                          ... 
+                                    ref_frac,                     ...  
+                                    k_0,                          ... 
+                                    k_multiplier,                 ... 
+                                    tree_frac);  
+
+    
+    
 end 
 
 
