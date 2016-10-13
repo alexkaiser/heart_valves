@@ -125,13 +125,17 @@ function J = build_jacobian_bead_slip(leaflet)
             % current term is always added in 
             % this gets no sign 
             % this is always at the current,current block in the matrix 
-            place_tmp_block(range_current, range_current, J_tension); 
-
+            if false 
+                place_tmp_block(range_current, range_current, J_tension); 
+            end 
+            
             % If the neighbor is an internal point, it also gets a Jacobian contribution 
             % This takes a sign
             if is_internal(j_nbr,k_nbr)
                 range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
-                place_tmp_block(range_current, range_nbr, -J_tension); 
+                if false 
+                    place_tmp_block(range_current, range_nbr, -J_tension); 
+                end 
             end 
 
             % interior neighbor is up in k, always  
@@ -149,14 +153,18 @@ function J = build_jacobian_bead_slip(leaflet)
             % current term is always added in 
             % this gets no sign 
             % this is always at the current,current block in the matrix 
-            place_tmp_block(range_current, range_current, J_tension); 
-
+            if false 
+                place_tmp_block(range_current, range_current, J_tension); 
+            end 
+            
             % If the neighbor is an internal point, it also gets a Jacobian contribution 
             % This takes a sign
             if is_internal(j_nbr,k_nbr)
                 range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
+                if false 
                 place_tmp_block(range_current, range_nbr, -J_tension); 
-            end 
+                end
+            end
 
             % current node has a chordae connection
             if chordae_idx(j,k)
@@ -178,12 +186,15 @@ function J = build_jacobian_bead_slip(leaflet)
                 % current term is always added in 
                 % this gets no sign 
                 % this is always at the current,current block in the matrix 
-                place_tmp_block(range_current, range_current, J_tension); 
-
+                if false 
+                    place_tmp_block(range_current, range_current, J_tension); 
+                end 
                 % chordae range 
                 range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side); 
-                place_tmp_block(range_current, range_nbr, -J_tension); 
-
+                
+                if false 
+                    place_tmp_block(range_current, range_nbr, -J_tension); 
+                end 
             else
                 error('free edge point required to have chordae connection'); 
             end
@@ -267,11 +278,18 @@ function J = build_jacobian_bead_slip(leaflet)
                         % There is a 1/du term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
 
-                        tension = (1/(2*du)) * (S_left(k).val + S_right(k).val); 
-
-                        grad_tension_left   = (1/(2*du)) * S_left(k).G; 
-                        grad_tension_right  = (1/(2*du)) * S_right(k).G; 
-
+                        const_tension_dbg = false; 
+                        if const_tension_dbg 
+                            tension = (1/(2*du)) * 1; % (S_left(k).val + S_right(k).val); 
+                            grad_tension_left   = 0 * (1/(2*du)) * S_left(k).G; 
+                            grad_tension_right  = 0 * (1/(2*du)) * S_right(k).G; 
+                        else 
+                            tension = (1/(2*du)) * (S_left(k).val + S_right(k).val);
+                            grad_tension_left   = (1/(2*du)) * S_left(k).G; 
+                            grad_tension_right  = (1/(2*du)) * S_right(k).G;                        
+                        end 
+                        
+                        
                         tangent = (X_nbr - X) / norm(X_nbr - X); 
 
                         J_tangent = tangent_jacobian(X, X_nbr); 
@@ -307,7 +325,7 @@ function J = build_jacobian_bead_slip(leaflet)
                         % nbr always on current leaflet 
                         % nbr jacobian gets a sign 
                         if is_internal(j_nbr_tension,k_nbr_tension)
-                            range_nbr  = linear_idx_offset(k_nbr_tension,k_nbr_tension) + (1:3);
+                            range_nbr  = linear_idx_offset(j_nbr_tension,k_nbr_tension) + (1:3);
                             place_tmp_block(range_current, range_nbr, -Jac_left); 
                         end
 
@@ -329,7 +347,7 @@ function J = build_jacobian_bead_slip(leaflet)
                         % nbr always on current leaflet 
                         % nbr jacobian gets a sign 
                         if is_internal(j_nbr_tension,k_nbr_tension)
-                            range_nbr  = linear_idx_offset(k_nbr_tension,k_nbr_tension) + (1:3);
+                            range_nbr  = linear_idx_offset(j_nbr_tension,k_nbr_tension) + (1:3);
                             place_tmp_block(range_current, range_nbr, -Jac_right); 
                         end
 
@@ -394,7 +412,7 @@ function J = build_jacobian_bead_slip(leaflet)
                         % nbr always on current leaflet 
                         % nbr jacobian gets a sign 
                         if is_internal(j_nbr_tension,k_nbr_tension)
-                            range_nbr  = linear_idx_offset(k_nbr_tension,k_nbr_tension) + (1:3);
+                            range_nbr  = linear_idx_offset(j_nbr_tension,k_nbr_tension) + (1:3);
                             place_tmp_block(range_current, range_nbr, -Jac); 
                         end
 
@@ -409,7 +427,7 @@ function J = build_jacobian_bead_slip(leaflet)
      
 
 
-
+    if false 
     % chordae internal terms 
     for left_side = [true false];  
 
@@ -460,6 +478,7 @@ function J = build_jacobian_bead_slip(leaflet)
                 end 
             end 
         end 
+    end 
     end 
  
 

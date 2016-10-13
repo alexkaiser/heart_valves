@@ -462,7 +462,7 @@ function J = build_jacobian_bead_slip_attached(valve)
 %                     end  
 
 
-                    if true
+                    if false
                     for j_nbr = [j-1,j+1]
 
                         k_nbr = k; 
@@ -523,7 +523,7 @@ function J = build_jacobian_bead_slip_attached(valve)
                             % nbr always on current leaflet 
                             % nbr jacobian gets a sign 
                             if is_internal(j_nbr_tension,k_nbr_tension)
-                                range_nbr  = linear_idx_offset(k_nbr_tension,k_nbr_tension) + (1:3);
+                                range_nbr  = linear_idx_offset(j_nbr_tension,k_nbr_tension) + (1:3);
                                 place_tmp_block(range_current, range_nbr, -Jac_left); 
                             end
                             
@@ -545,7 +545,7 @@ function J = build_jacobian_bead_slip_attached(valve)
                             % nbr always on current leaflet 
                             % nbr jacobian gets a sign 
                             if is_internal(j_nbr_tension,k_nbr_tension)
-                                range_nbr  = linear_idx_offset(k_nbr_tension,k_nbr_tension) + (1:3);
+                                range_nbr  = linear_idx_offset(j_nbr_tension,k_nbr_tension) + (1:3);
                                 place_tmp_block(range_current, range_nbr, -Jac_right); 
                             end
 
@@ -553,7 +553,7 @@ function J = build_jacobian_bead_slip_attached(valve)
                     end
                     end 
 
-                    if false 
+                    if true 
                     % v tension terms 
                     for k_nbr = [k-1,k+1]
 
@@ -590,11 +590,6 @@ function J = build_jacobian_bead_slip_attached(valve)
                             if nbr_jacobian_needed 
                                 place_tmp_block(range_current, range_nbr, -tension * J_tangent); 
                             end 
-%                             if (j_nbr > 0) && (k_nbr > 0) && is_internal(j_nbr,k_nbr)
-%                                 range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
-%                                 place_tmp_block(range_current, range_nbr, -tension * J_tangent); 
-%                             end
-
 
                             % Jacobians with respect to inherited tensions
                             Jac = grad_tension * tangent'; 
@@ -614,7 +609,7 @@ function J = build_jacobian_bead_slip_attached(valve)
                             % nbr always on current leaflet 
                             % nbr jacobian gets a sign 
                             if is_internal(j_nbr_tension,k_nbr_tension)
-                                range_nbr  = linear_idx_offset(k_nbr_tension,k_nbr_tension) + (1:3);
+                                range_nbr  = linear_idx_offset(j_nbr_tension,k_nbr_tension) + (1:3);
                                 place_tmp_block(range_current, range_nbr, -Jac); 
                             end
 

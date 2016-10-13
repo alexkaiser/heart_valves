@@ -121,7 +121,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                 error('free edge point required to have chordae connection'); 
             end
 
-            F_leaflet(:,j,k) = F_tmp; 
+            % F_leaflet(:,j,k) = F_tmp; 
 
         end 
 
@@ -155,8 +155,8 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                     k_nbr = k; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                    F_tmp = F_tmp + S(k)/du * (X_nbr-X)/norm(X_nbr-X); 
-                    % F_tmp = F_tmp + 1/du * (X_nbr-X)/norm(X_nbr-X); 
+                    % F_tmp = F_tmp + S(k)/du * (X_nbr-X)/norm(X_nbr-X); 
+                    F_tmp = F_tmp + (1/(2*du)) * (X_nbr-X)/norm(X_nbr-X); 
 
                 end 
                 end 
@@ -212,9 +212,9 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                 tension = tension_linear_over_norm(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac) * (nbr - C(:,i));  
 
                 if left_side
-                    F_chordae_left(:,i)  = F_chordae_left(:,i)  + tension; 
+                    %F_chordae_left(:,i)  = F_chordae_left(:,i)  + tension; 
                 else 
-                    F_chordae_right(:,i) = F_chordae_right(:,i) + tension; 
+                    %F_chordae_right(:,i) = F_chordae_right(:,i) + tension; 
                 end 
 
             end 
