@@ -121,7 +121,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                 error('free edge point required to have chordae connection'); 
             end
 
-            F_anterior(:,j,k) = F_tmp; 
+            F_leaflet(:,j,k) = F_tmp; 
 
         end 
 
@@ -148,7 +148,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                     F_tmp = F_tmp + (p_0 / (du*dv)) * cross(X(:,j+1,k) - X(:,j-1,k), X(:,j,k+1) - X(:,j,k-1));                     
                 end 
 
-                if true
+                if false
                 % u type fibers 
                 for j_nbr = [j-1,j+1]
 

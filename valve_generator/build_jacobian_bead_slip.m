@@ -250,7 +250,7 @@ function J = build_jacobian_bead_slip(leaflet)
 
 
 
-                if true
+                if false
                 for j_nbr = [j-1,j+1]
 
                     k_nbr = k; 
@@ -337,7 +337,7 @@ function J = build_jacobian_bead_slip(leaflet)
                 end
                 end 
 
-                if false 
+                if true
                 % v tension terms 
                 for k_nbr = [k-1,k+1]
 
