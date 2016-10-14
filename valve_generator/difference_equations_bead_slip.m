@@ -145,10 +145,9 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
 
                 % pressure term first  
                 if p_0 ~= 0
-                    F_tmp = F_tmp + (p_0 / (du*dv)) * cross(X(:,j+1,k) - X(:,j-1,k), X(:,j,k+1) - X(:,j,k-1));                     
+                    F_tmp = F_tmp + (p_0 / (4*du*dv)) * cross(X_current(:,j+1,k) - X_current(:,j-1,k), X_current(:,j,k+1) - X_current(:,j,k-1));                     
                 end 
 
-                if true
                 % u type fibers 
                 for j_nbr = [j-1,j+1]
 
@@ -156,13 +155,9 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
                     F_tmp = F_tmp + S(k)/du * (X_nbr-X)/norm(X_nbr-X); 
-                    % F_tmp = F_tmp + S_left(k)/du * (X_nbr-X)/norm(X_nbr-X); 
-                    % F_tmp = F_tmp + (1/(2*du)) * (X_nbr-X)/norm(X_nbr-X); 
 
                 end 
-                end 
 
-                if true
                 % v type fibers 
                 for k_nbr = [k-1,k+1]
 
@@ -172,16 +167,13 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                     F_tmp = F_tmp + T(j)/dv * (X_nbr-X)/norm(X_nbr-X); 
 
                 end 
-                end
 
                 F_leaflet(:,j,k) = F_tmp;
 
             end
         end 
     end
-     
-
-
+    
 
     % chordae internal terms 
     F_chordae_left  = zeros(size(C_left )); 

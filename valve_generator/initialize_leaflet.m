@@ -60,6 +60,9 @@ else
     leaflet.right_papillary = right_papillary; 
 end 
 
+leaflet.diff_eqns = @difference_equations; 
+leaflet.jacobian  = @build_jacobian;
+
 % Radial and circumferential fibers 
 % Or diagonally oriented fibers 
 leaflet.radial_and_circumferential = radial_and_circumferential; 

@@ -29,7 +29,7 @@ while err > tol
     
     tic 
 
-    J = build_jacobian(leaflet); 
+    J = leaflet.jacobian(leaflet); 
 
     jacobian_cond_info = false; 
     if jacobian_cond_info
@@ -56,7 +56,7 @@ while err > tol
         end 
     end 
            
-    [F F_chordae_left F_chordae_right] = difference_equations(leaflet); 
+    [F F_chordae_left F_chordae_right] = leaflet.diff_eqns(leaflet); 
     F_linearized      = linearize_internal_points(leaflet, F, F_chordae_left, F_chordae_right); 
     X_linearized_prev = linearize_internal_points(leaflet, leaflet.X, leaflet.chordae.C_left, leaflet.chordae.C_right); 
     

@@ -11,7 +11,7 @@ is_internal             = leaflet.is_internal;
 is_bc                   = leaflet.is_bc; 
 j_max                   = leaflet.j_max; 
 k_max                   = leaflet.k_max; 
-trapezoidal_flat_points = leaflet.trapezoidal_flat_points; 
+
 
 X           = zeros(3,j_max,k_max); 
 X_flat      = nan * zeros(2,j_max,k_max); 
@@ -26,6 +26,12 @@ debug = false;
 
 if leaflet.radial_and_circumferential
    
+    if isfield(leaflet, 'trapezoidal_flat_points')
+        trapezoidal_flat_points = leaflet.trapezoidal_flat_points; 
+    else 
+        trapezoidal_flat_points = 0; 
+    end 
+    
     mesh = linspace(leaflet.min_angle, leaflet.max_angle, j_max); 
     ring_half = [r*cos(mesh); r*sin(mesh); h*ones(size(mesh))]; 
 

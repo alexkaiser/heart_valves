@@ -29,6 +29,14 @@ valve.split_papillary = false;
 valve.radial_and_circumferential = true; 
 valve.bead_slip = true; 
 
+% function pointers 
+if attached 
+    valve.diff_eqns = @difference_equations_bead_slip_attached; 
+    valve.jacobian  = @build_jacobian_bead_slip_attached; 
+else 
+    valve.diff_eqns = @difference_equations_bead_slip; 
+    valve.jacobian  = @build_jacobian_bead_slip;
+end 
 
 % general solve parameters
 
@@ -87,7 +95,7 @@ radial_and_circumferential = true;
 % Spring constants in two directions 
 alpha    = 1.0; 
 beta     = 1.0; 
-p_0      = 0.0; % no pressure for now 
+p_0      = 1.0; % no pressure for now 
 ref_frac = 0.7; % generic spring constants reduced by this much 
 
 % Chordae parameters 

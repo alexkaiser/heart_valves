@@ -23,6 +23,9 @@ valve.right_papillary = [ -1.542417595752084;  1.611924550017006; -3.61125487196
 valve.split_papillary = false; 
 valve.radial_and_circumferential = false; 
 
+% function pointers 
+valve.diff_eqns = @difference_equations; 
+valve.jacobian  = @build_jacobian; 
 
 % general solve parameters
 

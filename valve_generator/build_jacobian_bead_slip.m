@@ -8,28 +8,28 @@ function J = build_jacobian_bead_slip(leaflet)
     % Output 
     %      J         Jacobian of difference equations 
     
-    X_current                  = leaflet.X; 
-    R_current                  = leaflet.R; 
-    p_0                = leaflet.p_0; 
-    alpha              = leaflet.alpha; 
-    beta               = leaflet.beta; 
-    ref_frac           = leaflet.ref_frac; 
-    C_left                      = leaflet.chordae.C_left; 
-    C_right                     = leaflet.chordae.C_right; 
-    Ref_l                       = leaflet.chordae.Ref_l; 
-    Ref_r                       = leaflet.chordae.Ref_r; 
-    k_0                         = leaflet.chordae.k_0; 
-    chordae_idx_left            = leaflet.chordae_idx_left; 
-    chordae_idx_right           = leaflet.chordae_idx_right;
-    j_max                       = leaflet.j_max; 
-    k_max                       = leaflet.k_max; 
-    du                          = leaflet.du; 
-    dv                          = leaflet.dv; 
-    is_internal        = leaflet.is_internal; 
-    is_bc              = leaflet.is_bc; 
-    free_edge_idx_left          = leaflet.free_edge_idx_left; 
-    free_edge_idx_right         = leaflet.free_edge_idx_right; 
-    linear_idx_offset     = leaflet.linear_idx_offset; 
+    X_current           = leaflet.X; 
+    R_current           = leaflet.R; 
+    p_0                 = leaflet.p_0; 
+    alpha               = leaflet.alpha; 
+    beta                = leaflet.beta; 
+    ref_frac            = leaflet.ref_frac; 
+    C_left              = leaflet.chordae.C_left; 
+    C_right             = leaflet.chordae.C_right; 
+    Ref_l               = leaflet.chordae.Ref_l; 
+    Ref_r               = leaflet.chordae.Ref_r; 
+    k_0                 = leaflet.chordae.k_0; 
+    chordae_idx_left    = leaflet.chordae_idx_left; 
+    chordae_idx_right   = leaflet.chordae_idx_right;
+    j_max               = leaflet.j_max; 
+    k_max               = leaflet.k_max; 
+    du                  = leaflet.du; 
+    dv                  = leaflet.dv; 
+    is_internal         = leaflet.is_internal; 
+    is_bc               = leaflet.is_bc; 
+    free_edge_idx_left  = leaflet.free_edge_idx_left; 
+    free_edge_idx_right = leaflet.free_edge_idx_right; 
+    linear_idx_offset   = leaflet.linear_idx_offset; 
     
     
     [m N_chordae] = size(C_left); 
@@ -209,49 +209,50 @@ function J = build_jacobian_bead_slip(leaflet)
                 % vertical offset does not change while differentiating this equation 
                 range_current = linear_idx_offset(j,k) + (1:3); 
 
-
                 % pressure portion 
-                % zero indexed loop because we are computing indices with mod n 
+                % always four neighbors
                 if p_0 ~= 0.0
+                    
+                    j_nbr = j+1; 
+                    k_nbr = k; 
+                    
+                    J_pressure = -(p_0/(4*du*dv)) * cross_matrix(X_current(:,j,k+1) - X_current(:,j,k-1)) ; 
 
-                   error('zero pressure required, non zero not implemented')
+                    if is_internal(j_nbr,k_nbr)
+                        range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
+                        place_tmp_block(range_current, range_nbr, J_pressure); 
+                    end 
+                    
+                    j_nbr = j-1; 
+                    k_nbr = k; 
+                    J_pressure =  (p_0/(4*du*dv)) * cross_matrix(X_current(:,j,k+1) - X_current(:,j,k-1)) ; 
+                    
+                    if is_internal(j_nbr,k_nbr)
+                        range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
+                        place_tmp_block(range_current, range_nbr, J_pressure); 
+                    end 
+                    
+                    j_nbr = j; 
+                    k_nbr = k+1; 
+                    J_pressure =  (p_0/(4*du*dv)) * cross_matrix(X_current(:,j+1,k) - X_current(:,j-1,k)) ; 
 
+                    if is_internal(j_nbr,k_nbr)
+                        range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
+                        place_tmp_block(range_current, range_nbr, J_pressure); 
+                    end 
+                    
+                    j_nbr = j; 
+                    k_nbr = k-1; 
+                    J_pressure = -(p_0/(4*du*dv)) * cross_matrix(X_current(:,j+1,k) - X_current(:,j-1,k)) ; 
 
-%                     % if any index is zero, then 
-%                     % the pressure term does not include this triangle
-%                     if j_nbr_next && k_nbr_next && j_nbr && k_nbr
-% 
-%                         % Current has two terms from a product rule 
-%                         block     =  - (p_0/6) * cross_matrix(X(:,j_nbr     ,k_nbr     ) - X(:,j,k)) ... 
-%                                      + (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));                            
-% 
-%                         place_tmp_block(range_current, range_current, block); 
-% 
-% 
-%                         % nbr term
-%                         % nbr gets differentiated away, and nbr_next stays 
-%                         % only added if this is internal 
-%                         if is_internal(j_nbr,k_nbr)
-%                             range_nbr       = linear_idx_offset(j_nbr,k_nbr) + (1:3);
-%                             block = - (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));
-%                             place_tmp_block(range_current, range_nbr, block); 
-%                         end 
-% 
-%                         % nbr_next term
-%                         % nbr_next gets differentiated away, and nbr stays and gets a sign 
-%                         % only added if this is internal 
-%                         if is_internal(j_nbr_next,k_nbr_next)
-%                             range_nbr_next  = linear_idx_offset(j_nbr_next,k_nbr_next) + (1:3);
-%                             block = (p_0/6) * cross_matrix(X(:,j_nbr,k_nbr) - X(:,j,k)); 
-%                             place_tmp_block(range_current, range_nbr_next, block); 
-%                         end 
-%                     end 
+                    if is_internal(j_nbr,k_nbr)
+                        range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
+                        place_tmp_block(range_current, range_nbr, J_pressure); 
+                    end 
 
                 end 
 
 
-
-                if true
                 for j_nbr = [j-1,j+1]
 
                     k_nbr = k; 
@@ -348,12 +349,8 @@ function J = build_jacobian_bead_slip(leaflet)
 
                     end 
                 end
-                end 
 
-
-
-
-                if true
+                
                 % v tension terms 
                 for k_nbr = [k-1,k+1]
 
@@ -417,14 +414,9 @@ function J = build_jacobian_bead_slip(leaflet)
 
                     end 
                 end
-                end 
-
             end
         end
     end
-
-     
-
 
     
     % chordae internal terms 

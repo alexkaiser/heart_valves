@@ -42,6 +42,9 @@ function leaflet = initialize_leaflet_bead_slip(N,                  ...
 leaflet.N           = N; 
 leaflet.total_angle = total_angle; 
 
+leaflet.diff_eqns = @difference_equations_bead_slip; 
+leaflet.jacobian  = @build_jacobian_bead_slip;
+
 if reflect_x 
     leaflet.min_angle   = pi + leaflet.total_angle/2.0;
     leaflet.max_angle   = pi - leaflet.total_angle/2.0;
