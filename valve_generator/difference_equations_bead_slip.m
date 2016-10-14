@@ -148,20 +148,21 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                     F_tmp = F_tmp + (p_0 / (du*dv)) * cross(X(:,j+1,k) - X(:,j-1,k), X(:,j,k+1) - X(:,j,k-1));                     
                 end 
 
-                if false
+                if true
                 % u type fibers 
                 for j_nbr = [j-1,j+1]
 
                     k_nbr = k; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                    % F_tmp = F_tmp + S(k)/du * (X_nbr-X)/norm(X_nbr-X); 
-                    F_tmp = F_tmp + (1/(2*du)) * (X_nbr-X)/norm(X_nbr-X); 
+                    F_tmp = F_tmp + S(k)/du * (X_nbr-X)/norm(X_nbr-X); 
+                    % F_tmp = F_tmp + S_left(k)/du * (X_nbr-X)/norm(X_nbr-X); 
+                    % F_tmp = F_tmp + (1/(2*du)) * (X_nbr-X)/norm(X_nbr-X); 
 
                 end 
                 end 
 
-                if true
+                if false
                 % v type fibers 
                 for k_nbr = [k-1,k+1]
 

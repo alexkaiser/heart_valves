@@ -261,7 +261,7 @@ function J = build_jacobian_bead_slip(leaflet)
 
 
 
-                if false
+                if true
                 for j_nbr = [j-1,j+1]
 
                     k_nbr = k; 
@@ -279,10 +279,15 @@ function J = build_jacobian_bead_slip(leaflet)
                         % Place this on the tension variables, one of which apprears in each term 
 
                         const_tension_dbg = false; 
+                        left_only_dbg = false; 
                         if const_tension_dbg 
                             tension = (1/(2*du)) * 1; % (S_left(k).val + S_right(k).val); 
                             grad_tension_left   = 0 * (1/(2*du)) * S_left(k).G; 
                             grad_tension_right  = 0 * (1/(2*du)) * S_right(k).G; 
+                        elseif left_only_dbg 
+                            tension = (1/du) * S_left(k).val;
+                            grad_tension_left   = (1/du) * S_left(k).G; 
+                            grad_tension_right  = 0 * S_right(k).G; 
                         else 
                             tension = (1/(2*du)) * (S_left(k).val + S_right(k).val);
                             grad_tension_left   = (1/(2*du)) * S_left(k).G; 
@@ -308,7 +313,7 @@ function J = build_jacobian_bead_slip(leaflet)
 
                         
                         % Jacobians with respect to inherited tensions
-                        Jac_left = grad_tension_left * tangent'; 
+                        Jac_left = tangent * grad_tension_left'; 
 
                         j_edge = S_left(k).j; 
                         k_edge = S_left(k).k;
@@ -330,9 +335,9 @@ function J = build_jacobian_bead_slip(leaflet)
                         end
 
                         % Jacobians with respect to inherited tensions
-                        Jac_right = grad_tension_right * tangent'; 
+                        Jac_right = tangent * grad_tension_right'; 
 
-                        j_edge = S_right(k).j; 
+                        j_edge = S_right(k).j;
                         k_edge = S_right(k).k;
 
                         % edge always on anterior 
@@ -355,7 +360,10 @@ function J = build_jacobian_bead_slip(leaflet)
                 end
                 end 
 
-                if true
+
+
+
+                if false
                 % v tension terms 
                 for k_nbr = [k-1,k+1]
 
@@ -375,12 +383,16 @@ function J = build_jacobian_bead_slip(leaflet)
 
                         tension = (1/dv) * T(j).val; 
 
-                        grad_tension  = (1/dv) * T(j).G; 
+                        grad_tension = (1/dv) * T(j).G; 
 
                         tangent = (X_nbr - X) / norm(X_nbr - X); 
 
                         J_tangent = tangent_jacobian(X, X_nbr); 
 
+                        j,k,j_nbr,k_nbr
+                        'to place tension by tangent = '
+                        tension * J_tangent
+                        
                         % current term is always added in 
                         % this gets no sign 
                         % this is always at the current,current block in the matrix 
@@ -395,7 +407,8 @@ function J = build_jacobian_bead_slip(leaflet)
 
 
                         % Jacobians with respect to inherited tensions
-                        Jac = grad_tension * tangent'; 
+                        'to place, grad T * tangent transpose'
+                        Jac = tangent * grad_tension';  
 
                         j_edge = T(j).j; 
                         k_edge = T(j).k;
