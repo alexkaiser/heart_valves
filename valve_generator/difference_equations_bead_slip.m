@@ -121,7 +121,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                 error('free edge point required to have chordae connection'); 
             end
 
-            % F_leaflet(:,j,k) = F_tmp; 
+            F_leaflet(:,j,k) = F_tmp; 
 
         end 
 
@@ -162,7 +162,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                 end 
                 end 
 
-                if false
+                if true
                 % v type fibers 
                 for k_nbr = [k-1,k+1]
 
@@ -213,9 +213,9 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                 tension = tension_linear_over_norm(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac) * (nbr - C(:,i));  
 
                 if left_side
-                    %F_chordae_left(:,i)  = F_chordae_left(:,i)  + tension; 
+                    F_chordae_left(:,i)  = F_chordae_left(:,i)  + tension; 
                 else 
-                    %F_chordae_right(:,i) = F_chordae_right(:,i) + tension; 
+                    F_chordae_right(:,i) = F_chordae_right(:,i) + tension; 
                 end 
 
             end 

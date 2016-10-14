@@ -125,17 +125,13 @@ function J = build_jacobian_bead_slip(leaflet)
             % current term is always added in 
             % this gets no sign 
             % this is always at the current,current block in the matrix 
-            if false 
-                place_tmp_block(range_current, range_current, J_tension); 
-            end 
+            place_tmp_block(range_current, range_current, J_tension); 
             
             % If the neighbor is an internal point, it also gets a Jacobian contribution 
             % This takes a sign
             if is_internal(j_nbr,k_nbr)
                 range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
-                if false 
-                    place_tmp_block(range_current, range_nbr, -J_tension); 
-                end 
+                place_tmp_block(range_current, range_nbr, -J_tension); 
             end 
 
             % interior neighbor is up in k, always  
@@ -153,17 +149,14 @@ function J = build_jacobian_bead_slip(leaflet)
             % current term is always added in 
             % this gets no sign 
             % this is always at the current,current block in the matrix 
-            if false 
-                place_tmp_block(range_current, range_current, J_tension); 
-            end 
+            place_tmp_block(range_current, range_current, J_tension); 
+
             
             % If the neighbor is an internal point, it also gets a Jacobian contribution 
             % This takes a sign
             if is_internal(j_nbr,k_nbr)
                 range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
-                if false 
                 place_tmp_block(range_current, range_nbr, -J_tension); 
-                end
             end
 
             % current node has a chordae connection
@@ -186,15 +179,12 @@ function J = build_jacobian_bead_slip(leaflet)
                 % current term is always added in 
                 % this gets no sign 
                 % this is always at the current,current block in the matrix 
-                if false 
-                    place_tmp_block(range_current, range_current, J_tension); 
-                end 
+                place_tmp_block(range_current, range_current, J_tension); 
+                
                 % chordae range 
                 range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side); 
+                place_tmp_block(range_current, range_nbr, -J_tension); 
                 
-                if false 
-                    place_tmp_block(range_current, range_nbr, -J_tension); 
-                end 
             else
                 error('free edge point required to have chordae connection'); 
             end
@@ -363,7 +353,7 @@ function J = build_jacobian_bead_slip(leaflet)
 
 
 
-                if false
+                if true
                 % v tension terms 
                 for k_nbr = [k-1,k+1]
 
@@ -389,9 +379,7 @@ function J = build_jacobian_bead_slip(leaflet)
 
                         J_tangent = tangent_jacobian(X, X_nbr); 
 
-                        j,k,j_nbr,k_nbr
-                        'to place tension by tangent = '
-                        tension * J_tangent
+                        tension * J_tangent; 
                         
                         % current term is always added in 
                         % this gets no sign 
@@ -405,9 +393,7 @@ function J = build_jacobian_bead_slip(leaflet)
                             place_tmp_block(range_current, range_nbr, -tension * J_tangent); 
                         end 
 
-
                         % Jacobians with respect to inherited tensions
-                        'to place, grad T * tangent transpose'
                         Jac = tangent * grad_tension';  
 
                         j_edge = T(j).j; 
@@ -440,7 +426,7 @@ function J = build_jacobian_bead_slip(leaflet)
      
 
 
-    if false 
+    
     % chordae internal terms 
     for left_side = [true false];  
 
@@ -492,7 +478,7 @@ function J = build_jacobian_bead_slip(leaflet)
             end 
         end 
     end 
-    end 
+     
  
 
     J = sparse(j_idx(1:nnz_placed), k_idx(1:nnz_placed), vals(1:nnz_placed), total_points, total_points, nnz_placed);  
