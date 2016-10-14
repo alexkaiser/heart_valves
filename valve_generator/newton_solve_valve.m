@@ -31,21 +31,21 @@ while err > tol
 
     J = leaflet.jacobian(leaflet); 
 
-    jacobian_cond_info = false; 
+    jacobian_cond_info = true; 
     if jacobian_cond_info
         condition_num = cond(J)
     end 
 
-    jacobian_det_info = false;  
+    jacobian_det_info = true;  
     if jacobian_det_info
         'full determinant'
         det(J)
 
         'on diagonal blocks'
-        total_internal = 3*params.N*(params.N+1)/2; 
+        total_internal = 3*sum(leaflet.is_internal(:)); 
         for block_start = 1:3:(total_internal - 1)
             
-            col_rank = rank(J(:,block_start + (0:2)), tol);  
+            col_rank = rank(full(J(:,block_start + (0:2))), tol);  
             
             if col_rank < 3
                 'found a rank deficient 3x3 block of columns'
