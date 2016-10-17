@@ -333,7 +333,7 @@ CirculationModel::writeDataFile() const
             fout << d_time;
             fout.setf(ios_base::scientific);
             fout.setf(ios_base::showpos);
-            fout.precision(5);
+            fout.precision(10);
             fout << " " << d_P_PA << " " << d_P_LA << " " << d_Q_R << " " << d_Q_P << " " << d_Q_mi << "; \n";
         }
     }

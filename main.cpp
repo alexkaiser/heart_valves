@@ -340,7 +340,7 @@ int main(int argc, char* argv[])
             // Approximate beginning pressure as read from previous simulations 
             // Note that circ model has units of mmHg
             // As does Fourier series 
-            double P_LA_0 = 6.5;
+            double P_LA_0 = 12.5;
     
             // Circulation model
             CirculationModel *circ_model   = new CirculationModel("circ_model", P_PA_0, P_LA_0, start, restart_circ_model);

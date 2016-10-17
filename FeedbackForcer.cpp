@@ -133,9 +133,9 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
         // this may be very, very large
         // consider changing it
         double k_straightener[NDIM];
-        k_straightener[0] = cycle_num >= 0 ? 1.0e4 : 0.0;
-        k_straightener[1] = cycle_num >= 0 ? 1.0e4 : 0.0;
-        k_straightener[2] = cycle_num >= 0 ? 1.0e4 : 0.0; // much lower friction in the z direction
+        k_straightener[0] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
+        k_straightener[1] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
+        k_straightener[2] = cycle_num >= 0 ?           4.0e4 : 0.0; // much lower friction in the z direction
                                                            // at U = 10cm/s, this is ~10x force of gravity 
         
         // Clamp the velocity in the x,y components
