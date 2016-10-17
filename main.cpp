@@ -276,8 +276,12 @@ int main(int argc, char* argv[])
          
             std::vector<double> flux_valve_ring;
             std::ofstream flux_output_stream;
-            
-            // no idea what these do 
+        
+            flux_output_stream.precision(14);
+            flux_output_stream.setf(ios_base::scientific);
+    
+        
+            // set below in loop
             int u_data_idx = 0; 
             int p_data_idx = 0; 
             
@@ -333,10 +337,10 @@ int main(int argc, char* argv[])
             // End systolic / beginning diastolic PA pressure
             double P_PA_0 = 18;
     
-            // Simulation starts at moment when LA and LV pressures are equal
+            // Approximate beginning pressure as read from previous simulations 
             // Note that circ model has units of mmHg
             // As does Fourier series 
-            double P_LA_0 = fourier_ventricle->values[idx];
+            double P_LA_0 = 6.5;
     
             // Circulation model
             CirculationModel *circ_model   = new CirculationModel("circ_model", P_PA_0, P_LA_0, start, restart_circ_model);

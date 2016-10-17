@@ -21,6 +21,10 @@
 #include <SideData.h>
 #include <tbox/Utilities.h>
 
+
+
+#define FLOW_STRAIGHTENER
+
 /////////////////////////////// NAMESPACE ////////////////////////////////////
 
 /////////////////////////////// STATIC ///////////////////////////////////////
@@ -112,18 +116,61 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
     const Box<NDIM> domain_box = Box<NDIM>::refine(grid_geometry->getPhysicalDomain()[0], pgeom->getRatio());
     
     
-    // pulled from open bdry stabilizer
+    // hardcoded for z axis for now
+    static const int axis = 2;
+    
+    // Flow straightener and friction (if desired)
+    #ifdef FLOW_STRAIGHTENER
+    
+        const double* const x_lower_global = grid_geometry->getXLower();
+        
+        // physical height of region of stabilization
+        // stabilization is smoothed out from bottom of domain to here
+        const double height_physical = 1.0;
+        const double max_height_force_applied = height_physical + x_lower_global[2];
+        const double center = x_lower_global[axis] + 0.5*height_physical;
+        
+        // this may be very, very large
+        // consider changing it
+        double k_straightener[NDIM];
+        k_straightener[0] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
+        k_straightener[1] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
+        k_straightener[2] = cycle_num >= 0 ?           1.0e4 : 0.0; // much lower friction in the z direction
+                                                           // at U = 10cm/s, this is ~10x force of gravity 
+        
+        // Clamp the velocity in the x,y components
+        // Clamp the velocity in the z component, but a lot less
+        for (int component = 0; component < NDIM; ++component){
+            for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
+            
+                const Index<NDIM>& i = b();
+                const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
+
+                // get the height, which determines whether there is force
+                const double z = x_lower[axis] + dx[axis] * static_cast<double>(i(axis) - patch_box.lower(axis));
+                
+                if (z < max_height_force_applied){
+                    const double U_current = U_current_data ? (*U_current_data)(i_s) : 0.0;
+                    const double U_new     = U_new_data ? (*U_new_data)(i_s) : 0.0;
+                    const double U         = (cycle_num > 0) ? 0.5 * (U_new + U_current) : U_current;
+
+                    const double weight    = smooth_kernel((z - center) / (dx[axis]*height_physical));
+                
+                    (*F_data)(i_s)        += weight*(-k_straightener[component] * U);
+                }
+            }
+        }
+    
+    #endif
+    
+    
+    // Open boundary stabilization
     double width[NDIM];
     for(int i=0; i<NDIM; i++){
         width[i] = 4.0 * dx_finest[i];
     }
 
-    
     // Attempt to prevent flow reversal points near the domain boundary.
-    
-    // hardcoded for z axis for now
-    static const int axis = 2;
-    
     for (int side = 0; side <= 1; ++side){
         const bool is_lower = (side == 0);
         
