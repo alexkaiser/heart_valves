@@ -53,7 +53,7 @@ s.width = 1920*4
 SetSaveWindowAttributes(s)
 
 
-for state in range(0,TimeSliderGetNStates(),2):
+for state in range(0,TimeSliderGetNStates()):
     try:
         if state % (TimeSliderGetNStates()/20) == 0:
             print 'On state ', state, 'of ', TimeSliderGetNStates()
@@ -80,11 +80,6 @@ movie_string = 'ffmpeg -framerate 60 -i '
 movie_string += base_name
 movie_string += '%4d.jpeg -vf scale=iw*.25:ih*.25 -r 60 -c:v libx264 -preset veryslow -crf 18 '
 movie_string += base_name + '.mp4'
-
-code = subprocess.call(movie_string, shell=True)
-if code is None:
-    print 'something wrong in movie make, call returned prematurely'
-
 
 code = subprocess.call(movie_string, shell=True)
 if code is None:

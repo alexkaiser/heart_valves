@@ -59,7 +59,7 @@ s.width = 1920*4
 SetSaveWindowAttributes(s)
 
 
-for state in range(0,TimeSliderGetNStates(),2):
+for state in range(0,TimeSliderGetNStates()):
     try:
         if state % (TimeSliderGetNStates()/20) == 0:
             print 'On state ', state, 'of ', TimeSliderGetNStates()
