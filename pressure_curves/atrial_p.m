@@ -140,7 +140,7 @@ clear x_pressure*
 clear y_pressure*
 
 % save for fun 
-save('series_data'); 
+save(sprintf('series_data_ventricular_max_%f_dt_.mat', max_y, dt)); 
 
 
 
@@ -188,6 +188,6 @@ a_n = a_n_atrium - a_n_ventricle;
 b_n = b_n_atrium - b_n_ventricle;
 file_name = 'fourier_coeffs.txt'; 
 
-output_series_coeffs_to_txt(a_0_atrium, a_n_atrium, b_n_atrium, a_0_ventricle, a_n_ventricle, b_n_ventricle, n, true_cycle_length); 
+output_series_coeffs_to_txt(a_0, a_n, b_n, n, true_cycle_length); 
 
 
