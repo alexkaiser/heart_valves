@@ -140,7 +140,7 @@ clear x_pressure*
 clear y_pressure*
 
 % save for fun 
-save(sprintf('series_data_ventricular_max_%f_dt_.mat', max_y, dt)); 
+save(sprintf('series_data_ventricular_max_%f_dt_%f.mat', max_y, dt)); 
 
 
 
