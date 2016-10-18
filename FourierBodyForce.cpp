@@ -100,76 +100,34 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
     
     //std::cout << "code thinks the lower domain is " << x_lower_global[0] << ", " << x_lower_global[1] << ", " << x_lower_global[2] << "\n" ;
     //std::cout << "code thinks the upper domain is " << x_upper_global[0] << ", " << x_upper_global[1] << ", " << x_upper_global[2] << "\n" ;
-
-    // third beat, end of atrial kick
-    const double t_off = .485 + 2.4;
-    const double t_wait_time = 0.5;
-    const double t_on = t_off + t_wait_time;
     
     const double z_domain_length = x_upper_global[2] - x_lower_global[2];
 
-    if (data_time < t_off){
+    // index without periodicity
+    unsigned int k = (unsigned int) floor(data_time / (d_fourier->dt));
+    
+    // take periodic reduction                         
+    unsigned int idx = k % (d_fourier->N_times);
+    
+    
+    double force = -MMHG_TO_CGS * d_fourier->values[idx] / z_domain_length;
 
-        // normal until after artial kick
+    #ifdef EXTRA_FWD_PRESSURE
+        const double extra_fwd_pressure_mmHg = 8.0;
+        force += -MMHG_TO_CGS * extra_fwd_pressure_mmHg / z_domain_length;
+    #endif
 
-        // index without periodicity
-        unsigned int k = (unsigned int) floor(data_time / (d_fourier->dt));
-        
-        // take periodic reduction                         
-        unsigned int idx = k % (d_fourier->N_times);
-        
-        
-        double force = -MMHG_TO_CGS * d_fourier->values[idx] / z_domain_length;
+    // Always force in the negative z direction
+    const int component = 2;
+    //for (int component = 0; component < NDIM; ++component)
+    
+    for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
+        const Index<NDIM>& i = b();
+        const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
 
-        #ifdef EXTRA_FWD_PRESSURE
-            const double extra_fwd_pressure_mmHg = 8.0;
-            force += -MMHG_TO_CGS * extra_fwd_pressure_mmHg / z_domain_length;
-        #endif
-
-        // Always force in the negative z direction
-        const int component = 2;
-        //for (int component = 0; component < NDIM; ++component)
-        
-        for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
-            const Index<NDIM>& i = b();
-            const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
-
-            (*F_data)(i_s) = force; // FORCE GOES HERE
-        }
+        (*F_data)(i_s) = force; // FORCE GOES HERE
     }
-    else if (data_time < t_on){
-        ; // force is zero, nothing added
-    }
-    else{
-        
-        const double t_effective = data_time - t_wait_time;
-        
-                // index without periodicity
-        unsigned int k = (unsigned int) floor(t_effective / (d_fourier->dt));
-        
-        // take periodic reduction                         
-        unsigned int idx = k % (d_fourier->N_times);
-        
-        
-        double force = -MMHG_TO_CGS * d_fourier->values[idx] / z_domain_length;
-
-        #ifdef EXTRA_FWD_PRESSURE
-            const double extra_fwd_pressure_mmHg = 8.0;
-            force += -MMHG_TO_CGS * extra_fwd_pressure_mmHg / z_domain_length;
-        #endif
-
-        // Always force in the negative z direction
-        const int component = 2;
-        //for (int component = 0; component < NDIM; ++component)
-        
-        for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
-            const Index<NDIM>& i = b();
-            const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
-
-            (*F_data)(i_s) = force; // FORCE GOES HERE
-        }
-        
-    }
+    
     
     
     // Flow straightener (if desired)
