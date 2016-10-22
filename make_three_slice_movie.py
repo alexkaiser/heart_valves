@@ -9,7 +9,7 @@ cwd = os.getcwd()
 count = 1
 n = 2 
 while True: 
-    if os.path.isfile('../mitral_tree_' + str(n) + '.vertex') or os.path.isfile('../mitral_tree_' + str(n) + '_radial.vertex'): 
+    if os.path.isfile('../mitral_tree_' + str(n) + '.vertex'):
         base = n
         break
 
@@ -89,8 +89,8 @@ if code is None:
 
 
 # reduce by 10x
-# 60 input, 60 output is 2x
-# 300 input, 60 output is 10x
+# 60 input, 60 output is 10x slow motion
+# 600 input, 60 output is real time 
 
 movie_string = 'ffmpeg -framerate 600 -i '
 movie_string += base_name
