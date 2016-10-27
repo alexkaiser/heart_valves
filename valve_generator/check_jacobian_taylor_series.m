@@ -11,7 +11,7 @@ epsilon_vals = 10.^(-1:-1:-8);
 
 errors = zeros(size(epsilon_vals)); 
 
-N = 8; 
+N = 16; 
 
 % Valve skeleton parameters 
 valve.r = 1.5; 
@@ -81,9 +81,10 @@ F_linearized = linearize_internal_points(leaflet, F, F_chordae_left, F_chordae_r
 % jacobian does not change 
 J = build_jacobian(leaflet); 
 
-figure; 
-spy(J); 
-title('jacobian nonzero structure in jacobian tester')
+fig = figure; 
+spy(J, '.k'); 
+title('Jacobian nonzero structure')
+% printfig(fig, 'jacobian_full')
 
 j_max       = leaflet.j_max; 
 k_max       = leaflet.k_max; 

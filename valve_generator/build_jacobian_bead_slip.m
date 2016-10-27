@@ -269,23 +269,10 @@ function J = build_jacobian_bead_slip(leaflet)
                         % There is a 1/du term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
 
-                        const_tension_dbg = false; 
-                        left_only_dbg = false; 
-                        if const_tension_dbg 
-                            tension = (1/(2*du)) * 1; % (S_left(k).val + S_right(k).val); 
-                            grad_tension_left   = 0 * (1/(2*du)) * S_left(k).G; 
-                            grad_tension_right  = 0 * (1/(2*du)) * S_right(k).G; 
-                        elseif left_only_dbg 
-                            tension = (1/du) * S_left(k).val;
-                            grad_tension_left   = (1/du) * S_left(k).G; 
-                            grad_tension_right  = 0 * S_right(k).G; 
-                        else 
-                            tension = (1/(2*du)) * (S_left(k).val + S_right(k).val);
-                            grad_tension_left   = (1/(2*du)) * S_left(k).G; 
-                            grad_tension_right  = (1/(2*du)) * S_right(k).G;                        
-                        end 
-                        
-                        
+                        tension = (1/(2*du)) * (S_left(k).val + S_right(k).val);
+                        grad_tension_left   = (1/(2*du)) * S_left(k).G; 
+                        grad_tension_right  = (1/(2*du)) * S_right(k).G;                        
+                                                 
                         tangent = (X_nbr - X) / norm(X_nbr - X); 
 
                         J_tangent = tangent_jacobian(X, X_nbr); 
@@ -375,11 +362,9 @@ function J = build_jacobian_bead_slip(leaflet)
                         tangent = (X_nbr - X) / norm(X_nbr - X); 
 
                         J_tangent = tangent_jacobian(X, X_nbr); 
-
-                        tension * J_tangent; 
                         
                         % current term is always added in 
-                        % this gets no sign 
+                        % this gets no sign  
                         % this is always at the current,current block in the matrix 
                         place_tmp_block(range_current, range_current, tension * J_tangent); 
 

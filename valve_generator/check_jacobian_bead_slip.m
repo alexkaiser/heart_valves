@@ -29,10 +29,9 @@ F_linearized = linearize_internal_points(leaflet, F_anterior, F_chordae_left, F_
 % jacobian does not change 
 J = build_jacobian_bead_slip(leaflet); 
 
-figure; 
-spy(J); 
-title('jacobian nonzero structure in jacobian tester')
-
+fig = figure; 
+spy(J, 'k'); 
+title('Jacobian nonzero structure')
 
 j_max       = leaflet.j_max; 
 k_max       = leaflet.k_max; 

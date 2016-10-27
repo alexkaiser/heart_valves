@@ -37,16 +37,41 @@ end
 if plots 
     fig = surf_plot(valve.posterior); 
     title('Reference configuration of posterior surface'); 
-    fig = surf_plot(valve.anterior); 
+    fig = surf_plot(valve.anterior, fig); 
     title('Reference configuration of anterior surface'); 
 end
-    
+
+
+valve_plot(valve)
+if radial
+    title('Refernece configuration radial fibers')
+else
+    title('Refernece configuration diagonal fibers')
+end 
+
+iteration_movie_anterior = false; 
+if iteration_movie_anterior 
+    valve.anterior.iteration_movie = iteration_movie_anterior; 
+    valve.anterior.frame = 0; 
+    valve.anterior.base_name = sprintf('%s_frames', valve.base_name); 
+    valve.anterior.springs_written = false; 
+end 
+
 % Can use a scalar pressure 
 % Or a range for continuation 
 p_range = valve.posterior.p_0; 
 
 % Solve an equilibrium problem for the current X configuration 
 valve = solve_valve(valve, p_range); 
+
+
+valve_plot(valve)
+if radial
+    title('Relaxed configuration radial fibers')
+else
+    title('Relaxed configuration diagonal fibers')
+end 
+
 
 % Save current data 
 save(strcat(valve.base_name, '_final_data')); 

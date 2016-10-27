@@ -31,12 +31,12 @@ while err > tol
 
     J = leaflet.jacobian(leaflet); 
 
-    jacobian_cond_info = true; 
+    jacobian_cond_info = false; 
     if jacobian_cond_info
         condition_num = cond(J)
     end 
 
-    jacobian_det_info = true;  
+    jacobian_det_info = false;  
     if jacobian_det_info
         'full determinant'
         det(J)
@@ -79,6 +79,20 @@ while err > tol
     end  
      
     fprintf('Global iteration = %d, \tnorm %e, \telapsed = %f\n', it, err, toc)
-           
+    
+    
+    if isfield(leaflet, 'iteration_movie') && leaflet.iteration_movie 
+        
+        if ~isfield(leaflet, 'frame')
+            error('must have frame number to make movie')
+        end 
+        
+        
+        output_leaflet_to_xyz_format(leaflet, ~leaflet.springs_written)
+        
+        leaflet.springs_written = true; 
+        leaflet.frame = leaflet.frame + 1; 
+        
+    end    
 end 
 

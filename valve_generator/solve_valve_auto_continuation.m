@@ -21,6 +21,10 @@ fprintf('Initial solve failed, applying adaptive continuation\n');
 % copy the last correct parameters 
 leaflet_okay = leaflet; 
 
+if isfield(leaflet, 'frame')
+    leaflet_okay.frame = leaflet_current.frame; 
+end 
+
 ref_current   = leaflet.ref_frac / 2; 
 ref_increment = leaflet.ref_frac / 4; 
 
@@ -64,6 +68,11 @@ while true
             ref_increment = ref_increment / 4;  
             ref_current   = ref_current / 2; 
         end
+        
+        if isfield(leaflet, 'frame')
+            leaflet_okay.frame = leaflet_current.frame; 
+        end 
+        
         
     end 
 end 
