@@ -324,41 +324,59 @@ function J = build_jacobian_bead_slip_attached(valve)
 
 
                     % pressure portion 
-                    % zero indexed loop because we are computing indices with mod n 
+                    % always four neighbors
                     if p_0 ~= 0.0
+                        
+                        % get neighbors and ranges 
+                        j_nbr = j+1; 
+                        k_nbr = k; 
+                        [X_j_plus range_j_plus jacobian_j_plus_needed] = get_neighbor(); 
 
-                       error('zero pressure required, non zero not implemented')
+                        j_nbr = j-1; 
+                        k_nbr = k; 
+                        [X_j_minus range_j_minus jacobian_j_minus_needed] = get_neighbor(); 
 
+                        j_nbr = j; 
+                        k_nbr = k+1;
+                        [X_k_plus range_k_plus jacobian_k_plus_needed] = get_neighbor(); 
 
-    %                     % if any index is zero, then 
-    %                     % the pressure term does not include this triangle
-    %                     if j_nbr_next && k_nbr_next && j_nbr && k_nbr
-    % 
-    %                         % Current has two terms from a product rule 
-    %                         block     =  - (p_0/6) * cross_matrix(X(:,j_nbr     ,k_nbr     ) - X(:,j,k)) ... 
-    %                                      + (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));                            
-    % 
-    %                         place_tmp_block(range_current, range_current, block); 
-    % 
-    % 
-    %                         % nbr term
-    %                         % nbr gets differentiated away, and nbr_next stays 
-    %                         % only added if this is internal 
-    %                         if is_internal(j_nbr,k_nbr)
-    %                             range_nbr       = linear_idx_offset(j_nbr,k_nbr) + (1:3);
-    %                             block = - (p_0/6) * cross_matrix(X(:,j_nbr_next,k_nbr_next) - X(:,j,k));
-    %                             place_tmp_block(range_current, range_nbr, block); 
-    %                         end 
-    % 
-    %                         % nbr_next term
-    %                         % nbr_next gets differentiated away, and nbr stays and gets a sign 
-    %                         % only added if this is internal 
-    %                         if is_internal(j_nbr_next,k_nbr_next)
-    %                             range_nbr_next  = linear_idx_offset(j_nbr_next,k_nbr_next) + (1:3);
-    %                             block = (p_0/6) * cross_matrix(X(:,j_nbr,k_nbr) - X(:,j,k)); 
-    %                             place_tmp_block(range_current, range_nbr_next, block); 
-    %                         end 
-    %                     end 
+                        j_nbr = j; 
+                        k_nbr = k-1; 
+                        [X_k_minus range_k_minus jacobian_k_minus_needed] = get_neighbor(); 
+                        
+
+%                         j_nbr = j+1; 
+%                         k_nbr = k; 
+
+                        J_pressure = -(p_0/(4*du*dv)) * cross_matrix(X_k_plus - X_k_minus);
+
+                        if jacobian_j_plus_needed
+                            place_tmp_block(range_current, range_j_plus, J_pressure); 
+                        end 
+ 
+%                         j_nbr = j-1; 
+%                         k_nbr = k; 
+                        J_pressure =  (p_0/(4*du*dv)) * cross_matrix(X_k_plus - X_k_minus); 
+
+                        if jacobian_j_minus_needed
+                            place_tmp_block(range_current, range_j_minus, J_pressure); 
+                        end 
+
+%                         j_nbr = j; 
+%                         k_nbr = k+1; 
+                        J_pressure =  (p_0/(4*du*dv)) * cross_matrix(X_j_plus - X_j_minus);
+
+                        if jacobian_k_plus_needed
+                            place_tmp_block(range_current, range_k_plus, J_pressure); 
+                        end 
+
+%                         j_nbr = j; 
+%                         k_nbr = k-1; 
+                        J_pressure = -(p_0/(4*du*dv)) * cross_matrix(X_j_plus - X_j_minus);
+
+                        if jacobian_k_minus_needed
+                            place_tmp_block(range_current, range_k_minus, J_pressure); 
+                        end 
 
                     end 
 
@@ -400,11 +418,6 @@ function J = build_jacobian_bead_slip_attached(valve)
                             if nbr_jacobian_needed 
                                 place_tmp_block(range_current, range_nbr, -tension * J_tangent); 
                             end 
-%                             if (j_nbr > 0) && (k_nbr > 0) && is_internal(j_nbr,k_nbr)
-%                                 range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
-%                                 place_tmp_block(range_current, range_nbr, -tension * J_tangent); 
-%                             end
-
 
                             % Jacobians with respect to inherited tensions
                             Jac_left = tangent * grad_tension_left'; 

@@ -208,7 +208,24 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
 
                     % pressure term first  
                     if p_0 ~= 0
-                        F_tmp = F_tmp + (p_0 / (du*dv)) * cross(X(:,j+1,k) - X(:,j-1,k), X(:,j,k+1) - X(:,j,k-1));                     
+                        
+                        j_nbr = j+1; 
+                        k_nbr = k; 
+                        X_j_plus = get_neighbor(); 
+
+                        j_nbr = j-1; 
+                        k_nbr = k; 
+                        X_j_minus = get_neighbor(); 
+
+                        j_nbr = j; 
+                        k_nbr = k+1;
+                        X_k_plus = get_neighbor(); 
+
+                        j_nbr = j; 
+                        k_nbr = k-1; 
+                        X_k_minus = get_neighbor(); 
+                        
+                        F_tmp = F_tmp + (p_0 / (4*du*dv)) * cross(X_j_plus - X_j_minus, X_k_plus - X_k_minus); 
                     end 
 
                     
