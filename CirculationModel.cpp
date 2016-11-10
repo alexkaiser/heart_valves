@@ -267,13 +267,15 @@ CirculationModel::advanceTimeDependentData(const double dt,
         plog.unsetf(ios_base::showpos);
         plog.unsetf(ios_base::scientific);
 
+        plog.precision(12);
+
         plog << "============================================================================\n"
              << "Circulation model variables at time " << d_time << ":\n";
 
         plog << "P_PA (mmHg)\t P_LA (mmHg)\t Q_R (ml/s)\t Q_P (ml/s)\t Q_mi (ml/s)\n";
         plog.setf(ios_base::showpos);
         plog.setf(ios_base::scientific);
-        plog.precision(6);
+        
         plog << d_P_PA << ",\t " << d_P_LA << ",\t " << d_Q_R << ",\t " << d_Q_P << ",\t " << d_Q_mi << "\n";
         plog << "============================================================================\n";
 

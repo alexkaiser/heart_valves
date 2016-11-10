@@ -25,6 +25,8 @@
 #include <iostream>
 #include <math.h>
 
+#define EXTRA_FWD_PRESSURE
+
 /////////////////////////////// NAMESPACE ////////////////////////////////////
 
 /////////////////////////////// STATIC ///////////////////////////////////////
@@ -100,6 +102,11 @@ VelocityBcCoefs::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_data,
             // sign for negative in stress tensor
             g = -MMHG_TO_CGS * d_fourier->values[idx];
         
+            #ifdef EXTRA_FWD_PRESSURE
+                const double extra_fwd_pressure_mmHg = 8.0;
+                g += MMHG_TO_CGS * extra_fwd_pressure_mmHg;
+            #endif
+
             //std::cout << "fourier pressure data on location " << location_index << " with value " << g << " or " << fourier->values[idx] << " mmHg\n";
 
         }
