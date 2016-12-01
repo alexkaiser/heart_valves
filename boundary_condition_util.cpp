@@ -115,6 +115,7 @@ VelocityBcCoefs::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_data,
             a = 0.0;
             b = 1.0;
             // Atrial side pressure from circulation model
+            // Stored in CGS units there
             g = -d_circ_model->d_psrc[0];
         }
     }

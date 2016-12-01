@@ -15,7 +15,7 @@ points_one_cycle = [0.0,   0;
 0.75, 120; 
 cycle_length, 8]; 
 
-dt = 1e-4; 
+dt = 1e-5; 
 times = (0:dt:(cycle_length-dt))'; 
 
 n_times = length(times); 
@@ -36,10 +36,10 @@ vals_three_cycle = [vals; vals; vals];
 % title('three cycle')
 
 % total width of bump 
-L = .15; 
+width = .15; 
 
 % this should integrate to one 
-cos_bump = @(x) (abs(x) <= L/4) .* (pi/L) .* cos( (2*pi/L) * x); 
+cos_bump = @(x) (abs(x) <= width/4) .* (pi/width) .* cos( (2*pi/width) * x); 
 
 % want this mesh to be aligned with the previous mesh
 % shift by scalar to be approx centered at zero 
@@ -100,9 +100,31 @@ ylabel('|a_n|, |b_n|')
 % title('Modulus of Fourier coefficients')
 printfig(fig, 'coefficients')
 
-file_name = 'fourier_coeffs_yellin.txt'; 
+file_name = 'fourier_coeffs_ventricle.txt'; 
 
-output_series_coeffs_to_txt(a_0, a_n, b_n, n_fourier_coeffs, cycle_length, file_name); 
+save('series_data_yellin')
+
+
+n_coeffs_to_output = 400; 
+
+n = n_coeffs_to_output; 
+a_n = a_n(1:n);
+b_n = b_n(1:n);
+series_no_array = @(t) a_0 + sum(a_n .* cos((2*pi/cycle_length) * (1:n) .* t)' + ...  
+                                 b_n .* sin((2*pi/cycle_length) * (1:n) .* t)' );   
+
+Series_truncated = @(t) arrayfun(series_no_array, t); 
+
+t = 0:dt:cycle_length; 
+vals_ventricle_series = Series_truncated(t); 
+fig = figure; 
+plot(t, vals_ventricle_series, 'k'); 
+title('Ventricular pressure, truncated series')
+xlabel('t')
+ylabel('p (mmHg)')
+
+
+output_series_coeffs_to_txt(a_0, a_n, b_n, n_coeffs_to_output, cycle_length, file_name); 
 
 
 

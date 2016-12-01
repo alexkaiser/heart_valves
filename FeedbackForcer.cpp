@@ -130,13 +130,12 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
         const double max_height_force_applied = height_physical + x_lower_global[2];
         const double center = x_lower_global[axis] + 0.5*height_physical;
         
-        // this may be very, very large
-        // consider changing it
+        
         double k_straightener[NDIM];
         k_straightener[0] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
         k_straightener[1] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
         k_straightener[2] = cycle_num >= 0 ?           4.0e4 : 0.0; // much lower friction in the z direction
-                                                           // at U = 10cm/s, this is ~10x force of gravity 
+                                                           
         
         // Clamp the velocity in the x,y components
         // Clamp the velocity in the z component, but a lot less
@@ -187,8 +186,6 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
             outflow_bdry = (!outflow_bdry);
         }
         
-        // don't need to mess with this loop if it is not an outflow boundary
-        
         // pulled directly from boundary stab code
         // only change is to add "outflow boundary" at all relevant places
         
@@ -214,6 +211,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                 const double U = (cycle_num > 0) ? 0.5 * (U_new + U_current) : U_current;
                 const double n = is_lower ? -1.0 : +1.0;
                 
+                // If hitting instabilities, clobber all other forcing values 
                 if ((inflow_bdry && (U * n > 0.0)) || (outflow_bdry && (U * n < 0.0))){
                     const double x = x_lower[axis] + dx[axis] * static_cast<double>(i(axis) - patch_box.lower(axis));
                     const double x_bdry = (is_lower ? x_lower[axis] : x_upper[axis]);

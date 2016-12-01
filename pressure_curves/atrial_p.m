@@ -147,15 +147,17 @@ save(sprintf('series_data_ventricular_max_%f_dt_%f.mat', max_y, dt));
 t = 0:.0001:true_cycle_length; 
 vals_atrium_series    = Series_atrium(t); 
 vals_ventricle_series = Series_ventricle(t); 
-figure; 
-plot(t, vals_atrium_series, '--'); 
+fig = figure; 
+plot(t, vals_atrium_series, '--k'); 
 hold on; 
-plot(t, vals_ventricle_series); 
+plot(t, vals_ventricle_series, 'k'); 
 legend('atrial pressure', 'ventricular pressure', 'location', 'NorthWest'); 
-title('curves from fourier seriess, one cycle')
+title('Driving pressures')
+xlabel('t')
+ylabel('p (mmHg)')
+printfig(fig, 'pressure_curves')
 
-
-figure; 
+fig = figure; 
 plot(t, vals_atrium_series - vals_ventricle_series); 
 title('Pressure difference, atrium positive')
 
@@ -163,22 +165,26 @@ t = 0:.0001:true_cycle_length*2;
 vals_atrium_series    = Series_atrium(t); 
 vals_ventricle_series = Series_ventricle(t); 
 figure; 
-plot(t, vals_atrium_series, '--'); 
+plot(t, vals_atrium_series, '--k'); 
 hold on; 
-plot(t, vals_ventricle_series); 
+plot(t, vals_ventricle_series, 'k'); 
 legend('atrial pressure', 'ventricular pressure', 'location', 'NorthWest'); 
-title('curves from fourier seriess, two cycles')
+title('Driving pressures')
+xlabel('t')
+ylabel('p (mmHg)')
+printfig(fig, 'pressure_curves_two')
 
-
-figure; 
-semilogy( abs(a_n_atrium), '--' )
+fig = figure; 
+semilogy( abs(a_n_atrium), '--k' )
 hold on 
-semilogy( abs(b_n_atrium), '-.' )
-semilogy( abs(a_n_ventricle))
-semilogy( abs(b_n_ventricle), ':')
+semilogy( abs(b_n_atrium), '-.k' )
+semilogy( abs(a_n_ventricle), 'k')
+semilogy( abs(b_n_ventricle), ':k')
 legend('atrium cos', 'atrium sin', 'ventricle cos', 'ventricle sin')
-title('abs of coefficients')
-
+xlabel('n')
+ylabel('|a_n|, |b_n|')
+% title('Modulus of Fourier coefficients')
+printfig(fig, 'coefficients')
 
 n_output = 200; 
 output_series_to_parser_format(a_0_atrium, a_n_atrium, b_n_atrium, a_0_ventricle, a_n_ventricle, b_n_ventricle, n_output, true_cycle_length); 

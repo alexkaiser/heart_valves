@@ -62,7 +62,7 @@ namespace
     static const double T_on = .53;   // Pulmonary valve open 
     static const double T_off = .75;  // Pulmonary valve closes  
     static const double T_peak = T_on + 0.4 * (T_off - T_on); // Peak pulmonary valve flow 
-    static const double stroke_volume = 75; // ml 
+    static const double stroke_volume = 75.0; // ml 
     static const double h = 2.0 * stroke_volume / (T_off - T_on); // Peak flow to get given stroke volume
     
     
