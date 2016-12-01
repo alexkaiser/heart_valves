@@ -4,7 +4,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 32; 
+N = 16; 
 
 % Show some output 
 plots = true; 
@@ -62,8 +62,11 @@ end
 p_range = valve.posterior.p_0; 
 
 % Solve an equilibrium problem for the current X configuration 
-valve = solve_valve(valve, p_range); 
-
+if radial && bead_slip && attached
+    valve = newton_solve_valve_attached(valve, valve.tol_global, valve.max_it); 
+else 
+    valve = solve_valve(valve, p_range); 
+end 
 
 valve_plot(valve)
 if radial

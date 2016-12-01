@@ -95,8 +95,8 @@ radial_and_circumferential = true;
 % Spring constants in two directions 
 alpha    =  1.0; 
 beta     =  1.0; 
-p_0      = -1.0; % no pressure for now 
-ref_frac =  0.7; % generic spring constants reduced by this much 
+p_0      = -0.0; % no pressure for now 
+ref_frac =  0.99; % generic spring constants reduced by this much 
 
 % Chordae parameters 
 k_0          = 4.0; 

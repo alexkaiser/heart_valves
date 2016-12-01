@@ -287,7 +287,6 @@ function J = build_jacobian_bead_slip_attached(valve)
     for anterior_side = [true, false]
 
         if anterior_side 
-            'anterior'
             is_internal = is_internal_anterior; 
             is_bc = is_bc_anterior; 
             linear_idx_offset = linear_idx_offset_anterior; 
@@ -297,7 +296,6 @@ function J = build_jacobian_bead_slip_attached(valve)
             S_right = S_anterior_right; 
             T = T_anterior; 
         else 
-            'posterior'
             is_internal = is_internal_posterior; 
             is_bc = is_bc_posterior; 
             linear_idx_offset = linear_idx_offset_posterior; 
