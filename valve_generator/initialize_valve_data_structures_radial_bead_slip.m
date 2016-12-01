@@ -1,4 +1,4 @@
-function [valve] = initialize_valve_data_structures_radial_bead_slip(N, attached)
+function [valve] = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only)
 % 
 % Initializes data structures for full solve.  
 % 
@@ -28,14 +28,25 @@ valve.right_papillary = [ -1.542417595752084;  1.611924550017006; -3.61125487196
 valve.split_papillary = false; 
 valve.radial_and_circumferential = true; 
 valve.bead_slip = true; 
+valve.leaflet_only = leaflet_only; 
 
 % function pointers 
 if attached 
     valve.diff_eqns = @difference_equations_bead_slip_attached; 
     valve.jacobian  = @build_jacobian_bead_slip_attached; 
+    
+    if leaflet_only
+        error('leaflet_only not implemented for attached')
+    end 
+        
 else 
-    valve.diff_eqns = @difference_equations_bead_slip; 
-    valve.jacobian  = @build_jacobian_bead_slip;
+    if leaflet_only
+        valve.diff_eqns = @difference_equations_bead_slip_leaflet_only; 
+        valve.jacobian  = @build_jacobian_bead_slip_leaflet_only;
+    else 
+        valve.diff_eqns = @difference_equations_bead_slip; 
+        valve.jacobian  = @build_jacobian_bead_slip;
+    end 
 end 
 
 % general solve parameters
@@ -95,8 +106,8 @@ radial_and_circumferential = true;
 % Spring constants in two directions 
 alpha    =  1.0; 
 beta     =  1.0; 
-p_0      = -0.0; % no pressure for now 
-ref_frac =  0.99; % generic spring constants reduced by this much 
+p_0      = -1.0; % no pressure for now 
+ref_frac =  1.0; % generic spring constants reduced by this much 
 
 % Chordae parameters 
 k_0          = 4.0; 
@@ -116,7 +127,8 @@ valve.anterior = initialize_leaflet_bead_slip(N,                  ...
                                     ref_frac,                     ...  
                                     k_0,                          ... 
                                     k_multiplier,                 ... 
-                                    tree_frac);  
+                                    tree_frac,                    ... 
+                                    leaflet_only);  
 
                                 
                                 
@@ -132,7 +144,7 @@ else
     total_angle_posterior = 2*pi - total_angle_anterior; 
     reflect_x = true; 
     
-    valve.posterior = initialize_leaflet_bead_slip(N,              ... 
+    valve.posterior = initialize_leaflet_bead_slip(N,             ...
                                     reflect_x,                    ... 
                                     total_angle_posterior,        ...    
                                     valve.r,                      ... 
@@ -145,7 +157,8 @@ else
                                     ref_frac,                     ...  
                                     k_0,                          ... 
                                     k_multiplier,                 ... 
-                                    tree_frac);  
+                                    tree_frac,                    ... 
+                                    leaflet_only);  
 
     
     

@@ -11,7 +11,8 @@ function leaflet = initialize_leaflet_bead_slip(N,                  ...
                                       ref_frac,                     ...  
                                       k_0,                          ... 
                                       k_multiplier,                 ... 
-                                      tree_frac)
+                                      tree_frac,                    ...
+                                      leaflet_only)
 %
 % Builds leaflet data structures 
 % 
@@ -38,13 +39,18 @@ function leaflet = initialize_leaflet_bead_slip(N,                  ...
 % 
 %     leaflet                       Fully initialized leaflet data structure 
 %                                   
-                                  
-leaflet.N           = N; 
-leaflet.total_angle = total_angle; 
+                
+leaflet.N            = N; 
+leaflet.total_angle  = total_angle; 
+leaflet.leaflet_only = leaflet_only; 
 
-leaflet.diff_eqns = @difference_equations_bead_slip; 
-leaflet.jacobian  = @build_jacobian_bead_slip;
-
+if leaflet_only
+    leaflet.diff_eqns = @difference_equations_bead_slip_leaflet_only; 
+    leaflet.jacobian  = @build_jacobian_bead_slip_leaflet_only;
+else 
+    leaflet.diff_eqns = @difference_equations_bead_slip; 
+    leaflet.jacobian  = @build_jacobian_bead_slip;
+end 
 if reflect_x 
     leaflet.min_angle   = pi + leaflet.total_angle/2.0;
     leaflet.max_angle   = pi - leaflet.total_angle/2.0;

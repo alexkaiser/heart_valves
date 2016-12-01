@@ -15,18 +15,20 @@ plots = true;
 radial = true; 
 bead_slip = true; 
 attached = false; 
+leaflet_only = true; 
+
 
 if radial
     
     if bead_slip 
-        valve = initialize_valve_data_structures_radial_bead_slip(N, attached); 
-    else 
+        valve = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only); 
+    else        
         valve = initialize_valve_data_structures_radial(N); 
     end 
         
 else 
     
-    if bead_slip || attached 
+    if bead_slip || attached || leaflet_only 
         error('diagonal fibers not implemented for closed bead slip or attached'); 
     end 
     

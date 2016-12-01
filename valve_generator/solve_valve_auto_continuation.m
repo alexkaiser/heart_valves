@@ -14,6 +14,10 @@ if pass_current
     leaflet = leaflet_current; 
     pass    = pass_current; 
     return
+else
+    if leaflet.leaflet_only 
+        error('Initial solve failed on leaflet only version, no continuation possible'); 
+    end 
 end 
 
 fprintf('Initial solve failed, applying adaptive continuation\n'); 

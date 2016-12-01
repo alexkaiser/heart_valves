@@ -51,6 +51,26 @@ else
     error('diag fibers not implemented with bead slip')
 end 
 
+
+% free edge on leaflet only version is a b.c. point 
+if leaflet.leaflet_only
+    for left_side = [true, false]
+        if left_side
+            free_edge_idx = leaflet.free_edge_idx_left; 
+        else 
+            free_edge_idx = leaflet.free_edge_idx_right; 
+        end 
+
+        for i=1:size(free_edge_idx, 1)
+            j = free_edge_idx(i,1);
+            k = free_edge_idx(i,2);
+            is_internal(j,k) = false; 
+            is_bc(j,k)       = true; 
+        end        
+    end 
+end 
+
+
 count = 0; 
 for k=1:k_max
     for j=1:j_max

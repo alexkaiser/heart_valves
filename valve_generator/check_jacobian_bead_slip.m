@@ -11,7 +11,8 @@ N = 8;
 
 % Initialize structures  
 attached = false; 
-valve = initialize_valve_data_structures_radial_bead_slip(N, attached); 
+leaflet_only = false; 
+valve = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only); 
 
 rand('twister',76599)
 

@@ -37,6 +37,6 @@ for k=1:k_max
     end 
 end
 
-if exist('v_left_chordae', 'var') && exist('v_right_chordae', 'var')
+if exist('v_left_chordae', 'var') && exist('v_right_chordae', 'var') && ~leaflet.leaflet_only
     v_linearized = [v_linearized; v_left_chordae(:); v_right_chordae(:)]; 
 end 

@@ -24,25 +24,28 @@ for k=1:k_max
 end 
 
 
-% copy chordae if length allows 
-C_left   = leaflet.chordae.C_left; 
-C_right  = leaflet.chordae.C_right; 
 
-[m N_chordae] = size(C_left); 
+if ~leaflet.leaflet_only
 
-idx = total_internal + 1; 
-for i=1:N_chordae
-    C_left(:,i)  = v_linearized(idx + (0:2));  
-    idx = idx + 3; 
+    % copy chordae if length allows 
+    C_left   = leaflet.chordae.C_left; 
+    C_right  = leaflet.chordae.C_right; 
+
+    [m N_chordae] = size(C_left); 
+
+    idx = total_internal + 1; 
+    for i=1:N_chordae
+        C_left(:,i)  = v_linearized(idx + (0:2));  
+        idx = idx + 3; 
+    end 
+
+    idx = total_internal + 3*N_chordae + 1; 
+    for i=1:N_chordae
+        C_right(:,i) = v_linearized(idx + (0:2));  
+        idx = idx + 3; 
+    end 
+
+    leaflet.chordae.C_left  = C_left; 
+    leaflet.chordae.C_right = C_right; 
+
 end 
-
-idx = total_internal + 3*N_chordae + 1; 
-for i=1:N_chordae
-    C_right(:,i) = v_linearized(idx + (0:2));  
-    idx = idx + 3; 
-end 
-
-leaflet.chordae.C_left  = C_left; 
-leaflet.chordae.C_right = C_right; 
-
-
