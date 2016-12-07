@@ -25,7 +25,7 @@ end
 
 
 
-if ~leaflet.leaflet_only
+if ~isfield(leaflet, 'leaflet_only') || ~leaflet.leaflet_only
 
     % copy chordae if length allows 
     C_left   = leaflet.chordae.C_left; 

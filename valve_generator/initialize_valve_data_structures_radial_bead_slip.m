@@ -13,7 +13,7 @@ function [valve] = initialize_valve_data_structures_radial_bead_slip(N, attached
 % Main data structure with everything 
 valve.N = N; 
 valve.tol_global = 1e-10;
-valve.max_it = 40; 
+valve.max_it = 4000; 
 
 if exist('attached', 'var') 
     valve.attached = attached; 
@@ -106,8 +106,8 @@ radial_and_circumferential = true;
 % Spring constants in two directions 
 alpha    =  1.0; 
 beta     =  1.0; 
-p_0      = -1.0; % no pressure for now 
-ref_frac =  1.0; % generic spring constants reduced by this much 
+p_0      = -0.5; % no pressure for now 
+ref_frac =  0.7; % generic spring constants reduced by this much 
 
 % Chordae parameters 
 k_0          = 4.0; 
@@ -164,7 +164,7 @@ else
     
 end 
 
-valve_plot(valve); 
+% valve_plot(valve); 
 
 'done with initialize'
 

@@ -7,6 +7,11 @@ pass = true;
 err = total_global_err_attached(valve); 
 it = 0; 
 
+% Checks for a monotonic decrease if true 
+% and decreases step length adaptively if not 
+back_tracking = true; 
+max_back_tracking_it = 100; 
+
 % newton step loop 
 while err > tol
     
@@ -43,6 +48,8 @@ while err > tol
     F_linearized      = linearize_internal_points_bead_slip_attached(valve, F_anterior, F_posterior, F_chordae_left, F_chordae_right); 
     X_linearized_prev = linearize_internal_points_bead_slip_attached(valve, valve.anterior.X, valve.posterior.X, valve.anterior.chordae.C_left, valve.anterior.chordae.C_right); 
     
+    err_prev = err; 
+    
     % solve the system,
     soln = J \ (-F_linearized); 
 
@@ -53,6 +60,32 @@ while err > tol
     valve = internal_points_to_2d_attached(X_linearized, valve); 
     
     err = total_global_err(valve);
+    
+    if back_tracking 
+        
+        alpha = 1.0; 
+        back_tracking_it = 0; 
+        while (err > err_prev) 
+           
+            alpha = alpha / 2.0; 
+            
+            % add in to get the next iterate 
+            X_linearized = X_linearized_prev + alpha * soln; 
+
+            % copy data back to 2d 
+            valve = internal_points_to_2d_attached(X_linearized, valve); 
+    
+            err = total_global_err(valve); 
+        
+            back_tracking_it = back_tracking_it + 1; 
+            
+            if back_tracking_it > max_back_tracking_it
+                warning('failed to find a decent guess in allowed number of iterations'); 
+                break; 
+            end 
+        end 
+        
+    end
     
     it = it + 1; 
     if it > max_it

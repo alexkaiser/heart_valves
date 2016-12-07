@@ -4,18 +4,18 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 16; 
+N = 128; 
 
 % Show some output 
-plots = true; 
+plots = false; 
 
 % Initialize structures 
 % Many parameters are in this script 
 
-radial = true; 
-bead_slip = true; 
-attached = false; 
-leaflet_only = true; 
+radial       = true; 
+bead_slip    = false; 
+attached     = false; 
+leaflet_only = false; 
 
 
 if radial
@@ -41,15 +41,16 @@ if plots
     title('Reference configuration of posterior surface'); 
     fig = surf_plot(valve.anterior, fig); 
     title('Reference configuration of anterior surface'); 
+    
+    valve_plot(valve)
+    if radial
+        title('Refernece configuration radial fibers')
+    else
+        title('Refernece configuration diagonal fibers')
+    end 
+    
 end
 
-
-valve_plot(valve)
-if radial
-    title('Refernece configuration radial fibers')
-else
-    title('Refernece configuration diagonal fibers')
-end 
 
 iteration_movie_anterior = false; 
 if iteration_movie_anterior 
@@ -61,6 +62,7 @@ end
 
 % Can use a scalar pressure 
 % Or a range for continuation 
+% p_range = valve.posterior.p_0 .* [0:.1:1]; 
 p_range = valve.posterior.p_0; 
 
 % Solve an equilibrium problem for the current X configuration 

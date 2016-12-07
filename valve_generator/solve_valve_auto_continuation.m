@@ -15,7 +15,7 @@ if pass_current
     pass    = pass_current; 
     return
 else
-    if leaflet.leaflet_only 
+    if isfield(leaflet, 'leaflet_only') && leaflet.leaflet_only 
         error('Initial solve failed on leaflet only version, no continuation possible'); 
     end 
 end 

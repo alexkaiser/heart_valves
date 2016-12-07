@@ -7,7 +7,7 @@ function valve = solve_valve(valve, p_range)
 for p_0 = p_range
 
     % when the pressure changes, just update the pressure and re-run the setup 
-    valve.posterior.p_0 = p_0; 
+    valve.anterior.p_0 = p_0; 
     valve.posterior.p_0 = p_0; 
     
     [valve.anterior pass err_anterior] = solve_valve_auto_continuation(valve.anterior, valve.tol_global, valve.max_it, 'anterior'); 

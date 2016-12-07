@@ -24,6 +24,11 @@ pass = true;
 err = total_global_err(leaflet); 
 it = 0; 
 
+% Checks for a monotonic decrease if true 
+% and decreases step length adaptively if not 
+back_tracking = true; 
+max_back_tracking_it = 50; 
+
 % newton step loop 
 while err > tol
     
@@ -60,6 +65,9 @@ while err > tol
     F_linearized      = linearize_internal_points(leaflet, F, F_chordae_left, F_chordae_right); 
     X_linearized_prev = linearize_internal_points(leaflet, leaflet.X, leaflet.chordae.C_left, leaflet.chordae.C_right); 
     
+    
+    err_prev = err; 
+    
     % solve the system,
     soln = J \ (-F_linearized); 
 
@@ -70,6 +78,36 @@ while err > tol
     leaflet = internal_points_to_2d(X_linearized, leaflet); 
     
     err = total_global_err(leaflet);         
+    
+    
+    if back_tracking 
+        
+        alpha = 1.0; 
+        back_tracking_it = 0; 
+        while (err > err_prev) 
+           
+            alpha = alpha / 2.0; 
+            
+            % add in to get the next iterate 
+            X_linearized = X_linearized_prev + alpha * soln; 
+
+            % copy data back to 2d 
+            leaflet = internal_points_to_2d(X_linearized, leaflet); 
+
+            err = total_global_err(leaflet); 
+        
+            back_tracking_it = back_tracking_it + 1; 
+            
+            if back_tracking_it > max_back_tracking_it
+                warning('failed to find a decent guess in allowed number of iterations'); 
+                break; 
+            end 
+        end 
+        
+    end 
+    
+    
+    
     
     it = it + 1; 
     if it > max_it

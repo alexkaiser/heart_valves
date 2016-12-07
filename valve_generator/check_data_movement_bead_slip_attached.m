@@ -4,7 +4,8 @@ N = 8;
 
 % Initialize structures  
 attached = true; 
-valve = initialize_valve_data_structures_radial_bead_slip(N, attached); 
+leaflet_only = false; 
+valve = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only); 
 
 'orignal data'
 
