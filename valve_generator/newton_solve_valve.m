@@ -29,6 +29,16 @@ it = 0;
 back_tracking = true; 
 max_back_tracking_it = 50; 
 
+plots = false; 
+if plots 
+    plot_freq = 10; 
+    fig = figure; 
+   
+    surf_plot(leaflet, fig); 
+    view(74,6); 
+    hold off;  
+end 
+
 % newton step loop 
 while err > tol
     
@@ -107,8 +117,6 @@ while err > tol
     end 
     
     
-    
-    
     it = it + 1; 
     if it > max_it
         warning('Global solve failed to converge in %d iterations\n', it);
@@ -117,6 +125,14 @@ while err > tol
     end  
      
     fprintf('Global iteration = %d, \tnorm %e, \telapsed = %f\n', it, err, toc)
+    
+    
+    if plots && mod(it, plot_freq) == 0 
+        surf_plot(leaflet, fig); 
+        view(74,6); 
+        title(sprintf('it = %d', it));         
+        hold off; 
+    end 
     
     
     if isfield(leaflet, 'iteration_movie') && leaflet.iteration_movie 

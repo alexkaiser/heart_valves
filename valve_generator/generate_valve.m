@@ -4,7 +4,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 128; 
+N = 32; 
 
 % Show some output 
 plots = false; 
@@ -13,7 +13,7 @@ plots = false;
 % Many parameters are in this script 
 
 radial       = true; 
-bead_slip    = false; 
+bead_slip    = true; 
 attached     = false; 
 leaflet_only = false; 
 
