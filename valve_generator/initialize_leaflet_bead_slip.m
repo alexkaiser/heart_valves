@@ -50,7 +50,9 @@ if leaflet_only
 else 
     leaflet.diff_eqns = @difference_equations_bead_slip; 
     leaflet.jacobian  = @build_jacobian_bead_slip;
+    leaflet.energy    = @energy_bead_slip;
 end 
+
 if reflect_x 
     leaflet.min_angle   = pi + leaflet.total_angle/2.0;
     leaflet.max_angle   = pi - leaflet.total_angle/2.0;

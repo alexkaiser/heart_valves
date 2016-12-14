@@ -28,8 +28,17 @@ it = 0;
 % and decreases step length adaptively if not 
 back_tracking = true; 
 max_back_tracking_it = 50; 
+use_energy = false; 
 
-plots = false; 
+if back_tracking 
+    if isfield(leaflet, 'energy')
+        use_energy = true; 
+        E = leaflet.energy(leaflet); 
+        c_backtrack = .9; 
+    end 
+end 
+
+plots = true; 
 if plots 
     plot_freq = 10; 
     fig = figure; 
@@ -78,6 +87,10 @@ while err > tol
     
     err_prev = err; 
     
+    if use_energy 
+        E_prev = E; 
+    end 
+    
     % solve the system,
     soln = J \ (-F_linearized); 
 
@@ -90,7 +103,7 @@ while err > tol
     err = total_global_err(leaflet);         
     
     
-    if back_tracking 
+    if back_tracking && (~use_energy)
         
         alpha = 1.0; 
         back_tracking_it = 0; 
@@ -109,11 +122,48 @@ while err > tol
             back_tracking_it = back_tracking_it + 1; 
             
             if back_tracking_it > max_back_tracking_it
-                warning('failed to find a decent guess in allowed number of iterations'); 
+                warning('failed to find a descent guess in allowed number of iterations'); 
                 break; 
             end 
         end 
         
+    end 
+    
+    
+    if back_tracking && use_energy
+        
+        % first order term in Taylor series, no coefficients
+        F_J_inv_F = F_linearized' * soln;  
+        
+        if F_J_inv_F <= 0.0
+           error('Hessian has not made positive definite quadratic form');  
+        end 
+        
+        E = leaflet.energy(leaflet); 
+        
+        alpha = 1.0; 
+        back_tracking_it = 0; 
+        while (E >= E_prev - c_backtrack * alpha * F_J_inv_F) 
+           
+            alpha = alpha / 2.0; 
+            
+            % add in to get the next iterate 
+            X_linearized = X_linearized_prev + alpha * soln; 
+
+            % copy data back to 2d 
+            leaflet = internal_points_to_2d(X_linearized, leaflet); 
+
+            E = leaflet.energy(leaflet); 
+        
+            back_tracking_it = back_tracking_it + 1; 
+            
+            if back_tracking_it > max_back_tracking_it
+                warning('failed to find a descent guess in allowed number of iterations'); 
+                break; 
+            end 
+        end 
+        
+        err = total_global_err(leaflet); 
     end 
     
     
@@ -124,8 +174,11 @@ while err > tol
         break; 
     end  
      
-    fprintf('Global iteration = %d, \tnorm %e, \telapsed = %f\n', it, err, toc)
-    
+    if use_energy
+        fprintf('Global iteration = %d, \tnorm %e, \tE = %e, \telapsed = %f\n', it, err, E, toc)
+    else
+        fprintf('Global iteration = %d, \tnorm %e, \telapsed = %f\n', it, err, toc)
+    end 
     
     if plots && mod(it, plot_freq) == 0 
         surf_plot(leaflet, fig); 

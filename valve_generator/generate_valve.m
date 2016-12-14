@@ -16,12 +16,13 @@ radial       = true;
 bead_slip    = true; 
 attached     = false; 
 leaflet_only = false; 
+optimization = false; 
 
 
 if radial
     
     if bead_slip 
-        valve = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only); 
+        valve = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization); 
     else        
         valve = initialize_valve_data_structures_radial(N); 
     end 
@@ -65,7 +66,7 @@ end
 % p_range = valve.posterior.p_0 .* [0:.1:1]; 
 p_range = valve.posterior.p_0; 
 
-% Solve an equilibrium problem for the current X configuration 
+
 if radial && bead_slip && attached
     valve = newton_solve_valve_attached(valve, valve.tol_global, valve.max_it); 
 else 

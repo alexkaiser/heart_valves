@@ -1,4 +1,4 @@
-function [valve] = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only)
+function [valve] = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization)
 % 
 % Initializes data structures for full solve.  
 % 
@@ -29,6 +29,7 @@ valve.split_papillary = false;
 valve.radial_and_circumferential = true; 
 valve.bead_slip = true; 
 valve.leaflet_only = leaflet_only; 
+valve.optimization = optimization; 
 
 % function pointers 
 if attached 
@@ -46,6 +47,7 @@ else
     else 
         valve.diff_eqns = @difference_equations_bead_slip; 
         valve.jacobian  = @build_jacobian_bead_slip;
+        
     end 
 end 
 
@@ -108,6 +110,13 @@ alpha    =  0.2;
 beta     =  1.0; 
 p_0      = -0.0; % no pressure for now 
 ref_frac =  0.7; % generic spring constants reduced by this much 
+
+
+% Add energy function for zero pressure case 
+if (p_0 == 0.0) && (~leaflet_only)
+    valve.energy = @energy_bead_slip; 
+end 
+
 
 % Chordae parameters 
 k_0          = alpha + beta; 

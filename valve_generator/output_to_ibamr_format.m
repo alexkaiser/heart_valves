@@ -94,7 +94,7 @@ function [] = output_to_ibamr_format(valve)
         k_rel_leaflet = ds / num_copies; 
     end 
     
-    if posterior.reflect_x
+    if isfield(posterior, 'reflect_x') && posterior.reflect_x
         posterior.X(1,:,:)                   = -posterior.X(1,:,:); 
         posterior.R(1,:,:)                   = -posterior.R(1,:,:); 
         posterior.left_papillary(1)          = -posterior.left_papillary(1); 
