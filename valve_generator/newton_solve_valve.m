@@ -26,7 +26,7 @@ it = 0;
 
 % Checks for a monotonic decrease if true 
 % and decreases step length adaptively if not 
-back_tracking = true; 
+back_tracking = false; 
 max_back_tracking_it = 50; 
 use_energy = false; 
 
@@ -37,6 +37,22 @@ if back_tracking
         c_backtrack = .9; 
     end 
 end 
+
+line_search = true; 
+if line_search
+    if isfield(leaflet, 'energy')
+        use_energy = true; 
+        E = leaflet.energy(leaflet); 
+    else 
+        error('Cannot line search without energy'); 
+    end         
+end 
+
+
+if back_tracking && line_search
+    error('only one line search strategy allowed'); 
+end 
+
 
 plots = true; 
 if plots 
@@ -165,6 +181,30 @@ while err > tol
         
         err = total_global_err(leaflet); 
     end 
+    
+    
+    if line_search && use_energy
+        
+        energy_gradient_hessian_handle = @(alpha) energy_gradient_hessian(X_linearized_prev + alpha*soln, leaflet); 
+        
+        min_alpha = 0.0; 
+        max_alpha = 1.0; 
+        
+        options = optimset('TolX', 1e2*tol, 'Display', 'off'); 
+        
+        [alpha_opt, E, exitflag, output] = fminbnd(energy_gradient_hessian_handle, min_alpha, max_alpha, options); 
+        
+        if exitflag == 1
+            fprintf('One D optimization passed with alpha = %e, \t E = %f\n', alpha_opt, E); 
+        else
+            error('One dimensional optimization failed'); 
+        end 
+        
+        X_linearized = X_linearized_prev + alpha_opt * soln; 
+        leaflet = internal_points_to_2d(X_linearized, leaflet); 
+    end 
+    
+    
     
     
     it = it + 1; 
