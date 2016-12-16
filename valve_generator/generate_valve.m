@@ -16,7 +16,7 @@ radial       = true;
 bead_slip    = true; 
 attached     = false; 
 leaflet_only = false; 
-optimization = false; 
+optimization = true; 
 repulsive_potential = true; 
 
 

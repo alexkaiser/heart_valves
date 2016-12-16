@@ -32,7 +32,7 @@ valve.leaflet_only = leaflet_only;
 valve.optimization = optimization; 
 valve.repulsive_potential = repulsive_potential; 
 valve.repulsive_power     = 1; 
-valve.repulsive_coeff     = 1e-2; 
+valve.repulsive_coeff     = 1e-3; 
 
 % function pointers 
 if attached 
