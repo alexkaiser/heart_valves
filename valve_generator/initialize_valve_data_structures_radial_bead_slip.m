@@ -1,4 +1,4 @@
-function [valve] = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization)
+function [valve] = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization, repulsive_potential)
 % 
 % Initializes data structures for full solve.  
 % 
@@ -30,6 +30,9 @@ valve.radial_and_circumferential = true;
 valve.bead_slip = true; 
 valve.leaflet_only = leaflet_only; 
 valve.optimization = optimization; 
+valve.repulsive_potential = repulsive_potential; 
+valve.repulsive_power     = 1; 
+valve.repulsive_coeff     = 1e-2; 
 
 % function pointers 
 if attached 
@@ -137,12 +140,12 @@ valve.anterior = initialize_leaflet_bead_slip(N,                  ...
                                     k_0,                          ... 
                                     k_multiplier,                 ... 
                                     tree_frac,                    ... 
-                                    leaflet_only);  
+                                    leaflet_only,                 ...
+                                    valve.repulsive_potential,    ...
+                                    valve.repulsive_power,        ... 
+                                    valve.repulsive_coeff);  
 
-                                
-                                
-                                
-                                
+                   
 
 if valve.attached 
     valve.posterior = generate_opposite_leaflet(valve.anterior); 
@@ -167,7 +170,10 @@ else
                                     k_0,                          ... 
                                     k_multiplier,                 ... 
                                     tree_frac,                    ... 
-                                    leaflet_only);  
+                                    leaflet_only,                 ...
+                                    valve.repulsive_potential,    ...
+                                    valve.repulsive_power,        ... 
+                                    valve.repulsive_coeff);  
 
     
     
