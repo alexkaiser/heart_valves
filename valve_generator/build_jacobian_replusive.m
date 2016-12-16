@@ -274,14 +274,15 @@ function J = build_jacobian_replusive(leaflet)
                 end
 
                 % tension Jacobian for this spring 
-                J_tension = k_val * tangent_jacobian(C(:,i), nbr); 
+                J_tmp = coeff * replusive_jacobian(C(:,i),nbr,p); 
+%                k_val * tangent_jacobian(C(:,i), nbr); 
 
                 % current always gets a contribution from this spring 
-                place_tmp_block(range_current, range_current, J_tension); 
+                place_tmp_block(range_current, range_current, J_tmp); 
 
                 % range may be empty if papillary muscle, in which case do nothing 
                 if ~isempty(range_nbr)
-                    place_tmp_block(range_current, range_nbr, -J_tension); 
+                    place_tmp_block(range_current, range_nbr, -J_tmp); 
                 end 
             end 
         end 
