@@ -31,8 +31,8 @@ valve.bead_slip = true;
 valve.leaflet_only = leaflet_only; 
 valve.optimization = optimization; 
 valve.repulsive_potential = repulsive_potential; 
-valve.repulsive_power     = 1; 
-valve.repulsive_coeff     = 1e-3; 
+valve.repulsive_power     = 2; 
+valve.repulsive_coeff     = (0.28) * 1.0e-3; 
 
 % function pointers 
 if attached 
