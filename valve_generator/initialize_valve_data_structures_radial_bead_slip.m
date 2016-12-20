@@ -31,8 +31,16 @@ valve.bead_slip = true;
 valve.leaflet_only = leaflet_only; 
 valve.optimization = optimization; 
 valve.repulsive_potential = repulsive_potential; 
-valve.repulsive_power     = 2; 
-valve.repulsive_coeff     = (0.28) * 1.0e-3; 
+valve.repulsive_power     = 1; 
+
+frac_repulsive = .1; 
+approx_ds = pi*valve.r / N; 
+
+valve.repulsive_coeff  = (frac_repulsive * approx_ds)^2; 
+
+% most interesting power 2 at this point 
+% valve.repulsive_power     = 2; 
+% valve.repulsive_coeff     = (0.28) * 1.0e-3;
 
 % function pointers 
 if attached 
@@ -122,8 +130,8 @@ end
 
 
 % Chordae parameters 
-k_0          = alpha + beta; 
-k_multiplier = 2.0; 
+k_0          = 0.9 * (alpha + beta); 
+k_multiplier = 1.95; 
 tree_frac    = 0.5;
 
 valve.anterior = initialize_leaflet_bead_slip(N,                  ... 

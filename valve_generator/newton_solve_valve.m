@@ -24,16 +24,35 @@ pass = true;
 err = total_global_err(leaflet); 
 it = 0; 
 
+% some versions use an energy in addition to difference equations 
+use_energy = true; 
+
+
+% Get function handles for energy, diff eqns and Jacobian 
+if use_energy
+    energy   = leaflet.energy; 
+end 
+diff_eqns = @(leaflet) diff_eqns_and_linearize(leaflet, leaflet.diff_eqns); 
+jacobian  = leaflet.jacobian; 
+
+if isfield(leaflet, 'repulsive_potential') && leaflet.repulsive_potential
+    
+    if use_energy 
+        energy = @(leaflet) (energy(leaflet) + energy_repulsive(leaflet)); 
+    end 
+    diff_eqns  = @(leaflet) (diff_eqns(leaflet) + diff_eqns_and_linearize(leaflet, @difference_equations_repulsive)); 
+    jacobian   = @(leaflet) (jacobian(leaflet)  + build_jacobian_replusive(leaflet)); 
+end 
+
+
 % Checks for a monotonic decrease if true 
 % and decreases step length adaptively if not 
 back_tracking = false; 
-max_back_tracking_it = 50; 
-use_energy = false; 
-
+max_back_tracking_it = 12; 
 if back_tracking 
     if isfield(leaflet, 'energy')
         use_energy = true; 
-        E = leaflet.energy(leaflet); 
+        E = energy(leaflet); 
         c_backtrack = .9; 
     end 
 end 
@@ -42,7 +61,7 @@ line_search = true;
 if line_search
     if isfield(leaflet, 'energy')
         use_energy = true; 
-        E = leaflet.energy(leaflet); 
+        E = energy(leaflet); 
     else 
         error('Cannot line search without energy'); 
     end         
@@ -69,7 +88,7 @@ while err > tol
     
     tic 
 
-    J = leaflet.jacobian(leaflet); 
+    J = jacobian(leaflet); 
 
     jacobian_cond_info = false; 
     if jacobian_cond_info
@@ -96,8 +115,8 @@ while err > tol
         end 
     end 
            
-    [F F_chordae_left F_chordae_right] = leaflet.diff_eqns(leaflet); 
-    F_linearized      = linearize_internal_points(leaflet, F, F_chordae_left, F_chordae_right); 
+    
+    F_linearized = diff_eqns(leaflet); 
     X_linearized_prev = linearize_internal_points(leaflet, leaflet.X, leaflet.chordae.C_left, leaflet.chordae.C_right); 
     
     
@@ -155,7 +174,7 @@ while err > tol
            error('Hessian has not made positive definite quadratic form');  
         end 
         
-        E = leaflet.energy(leaflet); 
+        E = energy(leaflet); 
         
         alpha = 1.0; 
         back_tracking_it = 0; 
@@ -169,7 +188,7 @@ while err > tol
             % copy data back to 2d 
             leaflet = internal_points_to_2d(X_linearized, leaflet); 
 
-            E = leaflet.energy(leaflet); 
+            E = energy(leaflet); 
         
             back_tracking_it = back_tracking_it + 1; 
             
