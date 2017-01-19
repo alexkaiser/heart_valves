@@ -9,8 +9,11 @@ function J = build_jacobian_replusive(leaflet)
     %      J         Jacobian of difference equations 
     
     X_current           = leaflet.X; 
+    alpha               = leaflet.alpha; 
+    beta                = leaflet.beta; 
     C_left              = leaflet.chordae.C_left; 
-    C_right             = leaflet.chordae.C_right; 
+    C_right             = leaflet.chordae.C_right;
+    k_0                 = leaflet.chordae.k_0; 
     chordae_idx_left    = leaflet.chordae_idx_left; 
     chordae_idx_right   = leaflet.chordae_idx_right;
     j_max               = leaflet.j_max; 
@@ -84,7 +87,7 @@ function J = build_jacobian_replusive(leaflet)
             % Anterior circumferential 
             X_nbr = X_current(:,j_nbr,k_nbr); 
             
-            J_tmp = coeff * replusive_jacobian(X,X_nbr,p); 
+            J_tmp = alpha * coeff * replusive_jacobian(X,X_nbr,p); 
             
             % current term is always added in 
             % this gets no sign 
@@ -105,7 +108,7 @@ function J = build_jacobian_replusive(leaflet)
             % Anterior radial
             X_nbr = X_current(:,j_nbr,k_nbr); 
 
-            J_tmp = coeff * replusive_jacobian(X,X_nbr,p); 
+            J_tmp = beta * coeff * replusive_jacobian(X,X_nbr,p); 
 
             % current term is always added in 
             % this gets no sign 
@@ -122,6 +125,8 @@ function J = build_jacobian_replusive(leaflet)
 
             % current node has a chordae connection
             if chordae_idx(j,k)
+                
+                kappa = k_0;
 
                 % index that free edge would have if on tree
                 % remember that leaves are only in the leaflet
@@ -132,7 +137,7 @@ function J = build_jacobian_replusive(leaflet)
 
                 X_nbr = C(:,idx_chordae);
 
-                J_tmp = coeff * replusive_jacobian(X,X_nbr,p); 
+                J_tmp = kappa * coeff * replusive_jacobian(X,X_nbr,p); 
 
                 % current term is always added in 
                 % this gets no sign 
@@ -182,7 +187,7 @@ function J = build_jacobian_replusive(leaflet)
 
                         % There is a 1/du term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
-                        J_tmp = coeff * replusive_jacobian(X,X_nbr,p); 
+                        J_tmp = alpha * coeff * replusive_jacobian(X,X_nbr,p); 
 
                         % current term is always added in 
                         % this gets no sign 
@@ -216,7 +221,7 @@ function J = build_jacobian_replusive(leaflet)
 
                         % There is a 1/dv term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
-                        J_tmp = coeff * replusive_jacobian(X,X_nbr,p); 
+                        J_tmp = beta * coeff * replusive_jacobian(X,X_nbr,p); 
                         
                         % current term is always added in 
                         % this gets no sign  
@@ -274,7 +279,7 @@ function J = build_jacobian_replusive(leaflet)
                 end
 
                 % tension Jacobian for this spring 
-                J_tmp = coeff * replusive_jacobian(C(:,i),nbr,p); 
+                J_tmp = k_val * coeff * replusive_jacobian(C(:,i),nbr,p); 
 %                k_val * tangent_jacobian(C(:,i), nbr); 
 
                 % current always gets a contribution from this spring 

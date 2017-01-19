@@ -9,15 +9,11 @@ function J = build_jacobian_bead_slip(leaflet)
     %      J         Jacobian of difference equations 
     
     X_current           = leaflet.X; 
-    R_current           = leaflet.R; 
     p_0                 = leaflet.p_0; 
     alpha               = leaflet.alpha; 
     beta                = leaflet.beta; 
-    ref_frac            = leaflet.ref_frac; 
     C_left              = leaflet.chordae.C_left; 
     C_right             = leaflet.chordae.C_right; 
-    Ref_l               = leaflet.chordae.Ref_l; 
-    Ref_r               = leaflet.chordae.Ref_r; 
     k_0                 = leaflet.chordae.k_0; 
     chordae_idx_left    = leaflet.chordae_idx_left; 
     chordae_idx_right   = leaflet.chordae_idx_right;

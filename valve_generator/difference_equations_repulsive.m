@@ -11,8 +11,11 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_repul
     % 
 
     X_current          = leaflet.X; 
+    alpha              = leaflet.alpha; 
+    beta               = leaflet.beta;
     C_left             = leaflet.chordae.C_left; 
-    C_right            = leaflet.chordae.C_right; 
+    C_right            = leaflet.chordae.C_right;
+    k_0                = leaflet.chordae.k_0; 
     chordae_idx_left   = leaflet.chordae_idx_left; 
     chordae_idx_right  = leaflet.chordae_idx_right;
     j_max              = leaflet.j_max; 
@@ -69,7 +72,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_repul
             % Anterior circumferential 
             X_nbr = X_current(:,j_nbr,k_nbr); 
 
-            F_tmp = F_tmp - coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
+            F_tmp = F_tmp - alpha * coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
 
             % interior neighbor is up in k, always 
             j_nbr = j;     
@@ -77,10 +80,12 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_repul
 
             % Anterior radial
             X_nbr = X_current(:,j_nbr,k_nbr); 
-            F_tmp = F_tmp - coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
+            F_tmp = F_tmp - beta * coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
 
             % current node has a chordae connection
             if chordae_idx(j,k)
+                
+                kappa = k_0;
 
                 % index that free edge would have if on tree
                 % remember that leaves are only in the leaflet
@@ -91,7 +96,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_repul
 
                 X_nbr = C(:,idx_chordae);
 
-                F_tmp = F_tmp - coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
+                F_tmp = F_tmp - kappa * coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
 
             else
                 error('free edge point required to have chordae connection'); 
@@ -119,7 +124,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_repul
                     k_nbr = k; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                    F_tmp = F_tmp - coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
+                    F_tmp = F_tmp - alpha * coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
 
                 end 
 
@@ -129,7 +134,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_repul
                     j_nbr = j; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                    F_tmp = F_tmp - coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
+                    F_tmp = F_tmp - beta *  coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
 
                 end 
 
@@ -165,7 +170,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_repul
                 % get the neighbors coordinates, reference coordinate and spring constants
                 [nbr R_nbr k_val] = get_nbr_chordae(leaflet, i, nbr_idx, left_side); 
 
-                tension = -coeff * p * (nbr - C(:,i)) / norm(nbr - C(:,i))^(p+2);  
+                tension = - k_val * coeff * p * (nbr - C(:,i)) / norm(nbr - C(:,i))^(p+2);  
 
                 if left_side
                     F_chordae_left(:,i)  = F_chordae_left(:,i)  + tension; 

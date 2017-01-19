@@ -20,8 +20,6 @@ function E = energy_bead_slip(leaflet)
     chordae_idx_right  = leaflet.chordae_idx_right;
     j_max              = leaflet.j_max; 
     k_max              = leaflet.k_max; 
-    du                 = leaflet.du; 
-    dv                 = leaflet.dv; 
     is_internal        = leaflet.is_internal; 
 
     E = 0.0; 

@@ -11,8 +11,11 @@ function E = energy_repulsive(leaflet)
 
     X_current          = leaflet.X; 
     p_0                = leaflet.p_0; 
+    alpha              = leaflet.alpha; 
+    beta               = leaflet.beta;
     C_left             = leaflet.chordae.C_left; 
     C_right            = leaflet.chordae.C_right; 
+    k_0                = leaflet.chordae.k_0; 
     chordae_idx_left   = leaflet.chordae_idx_left; 
     chordae_idx_right  = leaflet.chordae_idx_right;
     j_max              = leaflet.j_max; 
@@ -67,7 +70,7 @@ function E = energy_repulsive(leaflet)
             % Anterior circumferential 
             X_nbr = X_current(:,j_nbr,k_nbr); 
             
-            E = E + coeff / norm(X_nbr-X)^p; 
+            E = E + alpha * coeff / norm(X_nbr-X)^p; 
 
             % interior neighbor is up in k, always 
             j_nbr = j;     
@@ -75,11 +78,13 @@ function E = energy_repulsive(leaflet)
 
             % Anterior radial
             X_nbr = X_current(:,j_nbr,k_nbr); 
-            E = E + coeff / norm(X_nbr-X)^p; 
+            E = E + beta * coeff / norm(X_nbr-X)^p; 
 
             % current node has a chordae connection
             if chordae_idx(j,k)
 
+                kappa = k_0;
+                
                 % index that free edge would have if on tree
                 % remember that leaves are only in the leaflet
                 leaf_idx = chordae_idx(j,k) + N_chordae;
@@ -89,7 +94,7 @@ function E = energy_repulsive(leaflet)
 
                 X_nbr = C(:,idx_chordae);
 
-                E = E + coeff / norm(X_nbr-X)^p; 
+                E = E + kappa * coeff / norm(X_nbr-X)^p; 
 
             else
                 error('free edge point required to have chordae connection'); 
@@ -119,7 +124,7 @@ function E = energy_repulsive(leaflet)
                     k_nbr = k; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                    E = E + coeff / norm(X_nbr-X)^p; 
+                    E = E + alpha * coeff / norm(X_nbr-X)^p; 
 
                 end 
 
@@ -129,7 +134,7 @@ function E = energy_repulsive(leaflet)
                     j_nbr = j; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                    E = E + coeff / norm(X_nbr-X)^p; 
+                    E = E + beta * coeff / norm(X_nbr-X)^p; 
 
                 end 
                 
@@ -161,7 +166,7 @@ function E = energy_repulsive(leaflet)
                 % get the neighbors coordinates, reference coordinate and spring constants
                 [nbr R_nbr k_val] = get_nbr_chordae(leaflet, i, nbr_idx, left_side); 
 
-                E = E + coeff / norm(nbr - C(:,i))^p;   
+                E = E + k_val * coeff / norm(nbr - C(:,i))^p;   
 
             end 
 
