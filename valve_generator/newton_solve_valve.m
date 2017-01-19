@@ -171,7 +171,7 @@ while err > tol
         F_J_inv_F = F_linearized' * soln;  
         
         if F_J_inv_F <= 0.0
-           error('Hessian has not made positive definite quadratic form');  
+           warning('Hessian has not made positive definite quadratic form');  
         end 
         
         E = energy(leaflet); 

@@ -36,7 +36,7 @@ valve.repulsive_power     = 1;
 frac_repulsive = .09; 
 approx_ds = pi*valve.r / N; 
 
-valve.repulsive_coeff  = (frac_repulsive * approx_ds)^2; 
+valve.repulsive_coeff  = frac_repulsive * approx_ds^2; 
 
 % most interesting power 2 at this point 
 % valve.repulsive_power     = 2; 
@@ -118,7 +118,7 @@ radial_and_circumferential = true;
 
 % Spring constants in two directions 
 alpha    =  1.0; 
-beta     =  0.3; 
+beta     =  1.0; 
 p_0      = -0.0; % no pressure for now 
 ref_frac =  0.7; % generic spring constants reduced by this much 
 
@@ -130,7 +130,7 @@ end
 
 
 % Chordae parameters 
-k_multiplier = 1.99; 
+k_multiplier = 1.8; 
 % scale factor times mean of tensions going into tree position 
 k_0          = k_multiplier * 0.5 * (alpha + beta); 
 tree_frac    = 0.5;
