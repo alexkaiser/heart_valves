@@ -36,7 +36,7 @@ valve.repulsive_power     = 1;
 frac_repulsive = .09; 
 approx_ds = pi*valve.r / N; 
 
-valve.repulsive_coeff  = frac_repulsive * approx_ds^2; 
+valve.repulsive_coeff  = frac_repulsive * (approx_ds)^2; 
 
 % most interesting power 2 at this point 
 % valve.repulsive_power     = 2; 
@@ -119,7 +119,7 @@ radial_and_circumferential = true;
 % Spring constants in two directions 
 alpha    =  1.0; 
 beta     =  1.0; 
-p_0      = -0.0; % no pressure for now 
+p_0      = -0.1; % no pressure for now 
 ref_frac =  0.7; % generic spring constants reduced by this much 
 
 
@@ -164,6 +164,11 @@ else
     
     total_angle_posterior = 2*pi - total_angle_anterior; 
     reflect_x = true; 
+    
+    % reflect pressure also 
+    if reflect_x
+        p_0 = -p_0; 
+    end 
     
     valve.posterior = initialize_leaflet_bead_slip(N,             ...
                                     reflect_x,                    ... 

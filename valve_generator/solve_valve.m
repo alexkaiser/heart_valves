@@ -30,6 +30,10 @@ else
         valve.anterior.p_0 = p_0; 
         valve.posterior.p_0 = p_0; 
 
+        if valve.posterior.reflect_pressure
+            valve.posterior.p_0 = -p_0; 
+        end 
+        
         [valve.anterior pass err_anterior] = solve_valve_auto_continuation(valve.anterior, valve.tol_global, valve.max_it, 'anterior'); 
 
         if pass 

@@ -51,7 +51,7 @@ leaflet.leaflet_only = leaflet_only;
 leaflet.repulsive_potential = repulsive_potential; 
 leaflet.repulsive_power     = repulsive_power; 
 leaflet.repulsive_coeff     = repulsive_coeff; 
-
+leaflet.reflect_pressure    = reflect_x; 
 
 if leaflet_only
     leaflet.diff_eqns = @difference_equations_bead_slip_leaflet_only; 
