@@ -105,7 +105,7 @@ function [] = output_to_ibamr_format(valve)
         posterior.chordae.right_papillary(1) = -posterior.chordae.right_papillary(1); 
     end 
     
-    if anterior.reflect_x
+    if isfield(anterior, 'reflect_x') && anterior.reflect_x
         warning('Something strange, should not be reflecting on anterior leaflet')
     end 
     

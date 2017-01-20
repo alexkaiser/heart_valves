@@ -39,18 +39,18 @@ else
         end 
 
 
-    %     [valve.posterior pass err_posterior] = solve_valve_auto_continuation(valve.posterior, valve.tol_global, valve.max_it, 'posterior'); 
-    % 
-    %     if pass 
-    %         fprintf('Global solve passed posterior, err = %f\n\n', err_posterior); 
-    %     else 
-    %         fprintf('Global solve failed posterior, err = %f\n\n', err_posterior); 
-    %     end
-    %     
-    % 
+        [valve.posterior pass err_posterior] = solve_valve_auto_continuation(valve.posterior, valve.tol_global, valve.max_it, 'posterior'); 
+    
+        if pass 
+            fprintf('Global solve passed posterior, err = %f\n\n', err_posterior); 
+        else 
+            fprintf('Global solve failed posterior, err = %f\n\n', err_posterior); 
+        end
+        
+    
         fig = figure; 
-    %     fig = surf_plot(valve.posterior, fig);
-    %    hold on 
+        fig = surf_plot(valve.posterior, fig);
+        hold on 
         fig = surf_plot(valve.anterior, fig);
         title(sprintf('valve at p = %f', abs(p_0))); 
 

@@ -25,7 +25,7 @@ err = total_global_err(leaflet);
 it = 0; 
 
 % some versions use an energy in addition to difference equations 
-use_energy = true; 
+use_energy = false; 
 
 
 % Get function handles for energy, diff eqns and Jacobian 
@@ -47,17 +47,17 @@ end
 
 % Checks for a monotonic decrease if true 
 % and decreases step length adaptively if not 
-back_tracking = false; 
+back_tracking = true; 
 max_back_tracking_it = 12; 
 if back_tracking 
-    if isfield(leaflet, 'energy')
+    if use_energy
         use_energy = true; 
         E = energy(leaflet); 
         c_backtrack = .9; 
     end 
 end 
 
-line_search = true; 
+line_search = false; 
 if line_search
     if isfield(leaflet, 'energy')
         use_energy = true; 
