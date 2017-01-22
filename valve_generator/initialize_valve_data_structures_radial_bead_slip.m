@@ -117,10 +117,10 @@ radial_and_circumferential = true;
 
 
 % Spring constants in two directions 
-alpha    =  0.5; 
-beta     =  1.0; 
-p_0      = -0.1; % no pressure for now 
-ref_frac =  0.7; % generic spring constants reduced by this much 
+alpha    =  0.5;  % circumferential 
+beta     =  1.0;  % radial 
+p_0      = -0.1;  % negative sign on anterior leaflet 
+ref_frac =  0.7;  % generic spring constants reduced by this much 
 
 
 % Add energy function for zero pressure case 
@@ -130,7 +130,7 @@ end
 
 
 % Chordae parameters 
-k_multiplier = 1.9; 
+k_multiplier = 1.86; 
 % scale factor times mean of tensions going into tree position 
 k_0          = k_multiplier * 0.5 * (alpha + beta); 
 tree_frac    = 0.5;
