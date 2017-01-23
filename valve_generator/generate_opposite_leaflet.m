@@ -17,6 +17,8 @@ total_length = leaflet.total_angle * leaflet.r;
 leaflet.du = total_length / (leaflet.N+1); 
 leaflet.dv = total_length / (leaflet.N+1); 
 
+debug = false; 
+
 % Radial and circumferential fibers 
 % Or diagonally oriented fibers 
 leaflet.radial_and_circumferential = leaflet_current.radial_and_circumferential; 
@@ -99,47 +101,138 @@ for k=1:k_max
 end
 
 
+% if true, takes crude guess at closed leaflet with curvature 
+pinched_interpolant = true; 
 
-for i=1:size(free_edge_idx_left, 1)
+if pinched_interpolant 
 
-    j = free_edge_idx_left(i,1); 
-    k = free_edge_idx_left(i,2); 
+    % one dimensional mesh in straight line from commissure to commissure 
 
-    % number of points on this fiber 
-    num_points = k_max - k - 1; 
+    ring_l = X(:,1    ,k_max); 
+    ring_r = X(:,j_max,k_max);
 
-    % parameter spacing 
-    ds = 1 / (k_max - k); 
-
-    X_free = X(:,j,k); 
-    X_ring = X(:,j,k_max); 
-
-    for m=1:num_points
-        k_tmp = k + m; 
-        X(:,j,k_tmp) = (m*ds)*X_ring + (1 - m*ds)*X_free; 
+    line_comm_to_comm = zeros(3,k_max+1); 
+    ds = 1 / (j_max - 1); 
+    for m=0:j_max
+        line_comm_to_comm(:,m+1) = (m*ds)*ring_r + (1 - m*ds)*ring_l; 
     end 
 
-end
 
+    % fill in fibers interpolating between free edge and ring on each side 
+    for i=1:size(free_edge_idx_left, 1)
 
-for i=1:size(free_edge_idx_right, 1)
+        j = free_edge_idx_left(i,1); 
+        k = free_edge_idx_left(i,2); 
 
-    j = free_edge_idx_right(i,1); 
-    k = free_edge_idx_right(i,2); 
+        % number of points on this fiber 
+        num_points = k_max - k - 1; 
 
-    % number of points on this fiber 
-    num_points = k_max - k - 1; 
+        % parameter spacing 
+        ds = 1 / (k_max - k); 
 
-    % parameter spacing 
-    ds = 1 / (k_max - k); 
+        X_free = X(:,j,k); 
+        X_ring = X(:,j,k_max); 
 
-    X_free = X(:,j,k); 
-    X_ring = X(:,j,k_max); 
+        X_line_commissure = 0.5 * (line_comm_to_comm(:,j) + X_free);
 
-    for m=1:num_points
-        k_tmp = k + m; 
-        X(:,j,k_tmp) = (m*ds)*X_ring + (1 - m*ds)*X_free; 
+        num_points_first_half = floor(num_points/2); 
+        ds_first = 1 / (num_points_first_half + 1); 
+
+        num_points_second_half = num_points - num_points_first_half; 
+        ds_second = 1 / (num_points_second_half + 1); 
+
+        for m=1:num_points_first_half
+            k_tmp = k + m; 
+            X(:,j,k_tmp) = (m*ds_first)*X_line_commissure + (1 - m*ds_first)*X_free; 
+        end
+
+        for m=1:num_points_second_half
+            k_tmp = k + m + num_points_first_half; 
+            X(:,j,k_tmp) = (m*ds_second)*X_ring + (1 - m*ds_second)*X_line_commissure;                      
+        end
+
     end
+
+    for i=1:size(free_edge_idx_right, 1)
+
+        j = free_edge_idx_right(i,1); 
+        k = free_edge_idx_right(i,2); 
+
+        % number of points on this fiber 
+        num_points = k_max - k - 1; 
+
+        % parameter spacing 
+        ds = 1 / (k_max - k); 
+
+        X_free = X(:,j,k); 
+        X_ring = X(:,j,k_max); 
+
+        X_line_commissure = 0.5 * (line_comm_to_comm(:,j) + X_free);
+
+        num_points_first_half = floor(num_points/2); 
+        ds_first = 1 / (num_points_first_half + 1); 
+
+        num_points_second_half = num_points - num_points_first_half; 
+        ds_second = 1 / (num_points_second_half + 1); 
+
+        for m=1:num_points_first_half
+            k_tmp = k + m; 
+            X(:,j,k_tmp) = (m*ds_first)*X_line_commissure + (1 - m*ds_first)*X_free; 
+        end
+
+        for m=1:num_points_second_half
+            k_tmp = k + m + num_points_first_half; 
+            X(:,j,k_tmp) = (m*ds_second)*X_ring + (1 - m*ds_second)*X_line_commissure;                      
+        end
+
+    end  
+
+
+    % linear interpolant 
+    else 
+
+        for i=1:size(free_edge_idx_left, 1)
+
+            j = free_edge_idx_left(i,1); 
+            k = free_edge_idx_left(i,2); 
+
+            % number of points on this fiber 
+            num_points = k_max - k - 1; 
+
+            % parameter spacing 
+            ds = 1 / (k_max - k); 
+
+            X_free = X(:,j,k); 
+            X_ring = X(:,j,k_max); 
+
+            for m=1:num_points
+                k_tmp = k + m; 
+                X(:,j,k_tmp) = (m*ds)*X_ring + (1 - m*ds)*X_free; 
+            end 
+
+        end
+
+
+        for i=1:size(free_edge_idx_right, 1)
+
+            j = free_edge_idx_right(i,1); 
+            k = free_edge_idx_right(i,2); 
+
+            % number of points on this fiber 
+            num_points = k_max - k - 1; 
+
+            % parameter spacing 
+            ds = 1 / (k_max - k); 
+
+            X_free = X(:,j,k); 
+            X_ring = X(:,j,k_max); 
+
+            for m=1:num_points
+                k_tmp = k + m; 
+                X(:,j,k_tmp) = (m*ds)*X_ring + (1 - m*ds)*X_free; 
+            end
+
+        end 
 
 end 
 
@@ -176,6 +269,23 @@ for i=1:size(free_edge_idx_right, 1)
 end 
 
 
+if debug 
+    figure; 
+
+    x_component = squeeze(X(1,:,:)); 
+    y_component = squeeze(X(2,:,:)); 
+    z_component = squeeze(X(3,:,:)); 
+
+    width = 1.5; 
+    surf(x_component, y_component, z_component, 'LineWidth',width);
+
+    axis equal 
+    axis auto 
+
+    xlabel('x'); 
+    ylabel('y'); 
+    title('leaflet')
+end 
 
 
 

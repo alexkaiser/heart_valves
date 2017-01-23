@@ -10,7 +10,7 @@ it = 0;
 % Checks for a monotonic decrease if true 
 % and decreases step length adaptively if not 
 back_tracking = true; 
-max_back_tracking_it = 12; 
+max_back_tracking_it = 16; 
 
 
 plots = true; 
@@ -19,6 +19,7 @@ if plots
     fig = figure; 
     valve_plot(valve, fig); 
     view(74,6); 
+    pause(1); 
     hold off;  
 end 
 
@@ -112,6 +113,7 @@ while err > tol
         view(74,6); 
         title(sprintf('it = %d', it));         
         hold off; 
+        pause(1); 
     end 
     
 %     if isfield(leaflet, 'iteration_movie') && leaflet.iteration_movie 

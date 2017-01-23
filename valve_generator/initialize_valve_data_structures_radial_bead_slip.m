@@ -33,7 +33,7 @@ valve.optimization = optimization;
 valve.repulsive_potential = repulsive_potential; 
 valve.repulsive_power     = 1; 
 
-frac_repulsive = .2; 
+frac_repulsive = .1; 
 approx_ds = pi*valve.r / N; 
 
 valve.repulsive_coeff  = (frac_repulsive * approx_ds)^2; 
@@ -130,10 +130,15 @@ end
 
 
 % Chordae parameters 
-k_multiplier = 1.85; 
+k_multiplier = 1.8; 
 % scale factor times mean of tensions going into tree position 
 k_0          = k_multiplier * 0.5 * (alpha + beta); 
 tree_frac    = 0.5;
+
+% double tree strength in attached version 
+if attached 
+    k_0 = k_0 * 2.0; 
+end 
 
 valve.anterior = initialize_leaflet_bead_slip(N,                  ... 
                                     reflect_x,                    ... 
