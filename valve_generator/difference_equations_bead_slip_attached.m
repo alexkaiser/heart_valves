@@ -15,15 +15,11 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
     posterior = valve.posterior;
 
     X_anterior         = anterior.X; 
-    R_anterior         = anterior.R; 
     p_0_anterior       = anterior.p_0; 
     alpha_anterior     = anterior.alpha; 
     beta_anterior      = anterior.beta; 
-    ref_frac_anterior  = anterior.ref_frac; 
     C_left             = anterior.chordae.C_left; 
     C_right            = anterior.chordae.C_right; 
-    Ref_l              = anterior.chordae.Ref_l; 
-    Ref_r              = anterior.chordae.Ref_r; 
     k_0                = anterior.chordae.k_0; 
     chordae_idx_left   = anterior.chordae_idx_left; 
     chordae_idx_right  = anterior.chordae_idx_right;
@@ -32,28 +28,23 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
     du                 = anterior.du; 
     dv                 = anterior.dv; 
 
-
     X_posterior        = posterior.X; 
-    R_posterior        = posterior.R;
     p_0_posterior      = posterior.p_0; 
     alpha_posterior    = posterior.alpha; 
     beta_posterior     = posterior.beta; 
-    ref_frac_posterior = posterior.ref_frac; 
 
-
+    if valve.repulsive_potential 
+        p = valve.repulsive_power; 
+        coeff = valve.repulsive_coeff; 
+    else 
+        p = 1.0; 
+        coeff = 0.0; 
+    end 
+    
     F_anterior  = zeros(size(X_anterior)); 
     F_posterior = zeros(size(X_posterior)); 
 
-
     [m N_chordae] = size(C_left); 
-
-
-    S_anterior_left   = zeros(k_max-1,1); 
-    S_anterior_right  = zeros(k_max-1,1); 
-    S_posterior_left  = zeros(k_max-1,1); 
-    S_posterior_right = zeros(k_max-1,1); 
-    T_anterior        = zeros(j_max,1); 
-    T_posterior       = zeros(j_max,1); 
 
 
     free_edge_idx_left  = anterior.free_edge_idx_left; 
@@ -95,7 +86,11 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
             % Anterior circumferential 
             X_nbr = X_anterior(:,j_nbr,k_nbr); 
     
+            % tension part
             F_tmp = F_tmp + alpha_anterior * (X_nbr-X)/norm(X_nbr-X); 
+            
+            % repulsive part 
+            F_tmp = F_tmp - alpha_anterior * coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
 
             % Posterior circumferential 
             % At the "point" of the leaflet this must come from anterior 
@@ -105,7 +100,11 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
                 X_nbr = X_posterior(:,j_nbr,k_nbr); 
             end 
             
+            % tension part 
             F_tmp = F_tmp + alpha_posterior * (X_nbr-X)/norm(X_nbr-X);  
+            
+            % repulsive part 
+            F_tmp = F_tmp - alpha_posterior * coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
 
 
             % interior neighbor is up in k, always 
@@ -115,11 +114,18 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
             % Anterior radial
             X_nbr = X_anterior(:,j_nbr,k_nbr); 
             F_tmp = F_tmp + beta_anterior * (X_nbr-X)/norm(X_nbr-X); 
+            
+            % repulsive part 
+            F_tmp = F_tmp - beta_anterior * coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
 
+            
             % Posterior radial 
             X_nbr = X_posterior(:,j_nbr,k_nbr); 
             F_tmp = F_tmp + beta_posterior * (X_nbr-X)/norm(X_nbr-X); 
-
+            
+            % repulsive part 
+            F_tmp = F_tmp - beta_posterior * coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
+            
             % current node has a chordae connection
             if chordae_idx(j,k)
 
@@ -135,6 +141,9 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
                 X_nbr = C(:,idx_chordae);
                 
                 F_tmp = F_tmp + kappa * (X_nbr-X)/norm(X_nbr-X); 
+                
+                % repulsive part 
+                F_tmp = F_tmp - kappa * coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
 
             else
                 error('free edge point required to have chordae connection'); 
@@ -205,6 +214,9 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
                         X_nbr = get_neighbor(); 
 
                         F_tmp = F_tmp + alpha * (X_nbr-X)/norm(X_nbr-X); 
+                        
+                        % repulsive part 
+                        F_tmp = F_tmp - alpha * coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
 
                     end 
 
@@ -216,6 +228,9 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
                         X_nbr = get_neighbor(); 
 
                         F_tmp = F_tmp + beta * (X_nbr-X)/norm(X_nbr-X); 
+                        
+                        % repulsive part 
+                        F_tmp = F_tmp - beta *  coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
 
                     end 
                     
@@ -258,6 +273,8 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
                 [nbr R_nbr k_val] = get_nbr_chordae(anterior, i, nbr_idx, left_side); 
 
                 tension = k_val * (nbr - C(:,i)) / norm(nbr - C(:,i));  
+                
+                tension = tension - k_val * coeff * p * (nbr - C(:,i)) / norm(nbr - C(:,i))^(p+2);  
 
                 if left_side
                     F_chordae_left(:,i)  = F_chordae_left(:,i)  + tension; 
@@ -284,8 +301,6 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
         end 
     end 
     
-    
-
 end 
 
 

@@ -14,11 +14,10 @@ plots = false;
 
 radial       = true; 
 bead_slip    = true; 
-attached     = false; 
+attached     = true; 
 leaflet_only = false; 
 optimization = false; 
 repulsive_potential = true; 
-
 
 
 if radial

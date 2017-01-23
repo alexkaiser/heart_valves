@@ -10,7 +10,18 @@ it = 0;
 % Checks for a monotonic decrease if true 
 % and decreases step length adaptively if not 
 back_tracking = true; 
-max_back_tracking_it = 100; 
+max_back_tracking_it = 12; 
+
+
+plots = true; 
+if plots 
+    plot_freq = 10; 
+    fig = figure; 
+    valve_plot(valve, fig); 
+    view(74,6); 
+    hold off;  
+end 
+
 
 % newton step loop 
 while err > tol
@@ -96,6 +107,12 @@ while err > tol
      
     fprintf('Global iteration = %d, \tnorm %e, \telapsed = %f\n', it, err, toc)
     
+    if plots && mod(it, plot_freq) == 0 
+        valve_plot(valve, fig); 
+        view(74,6); 
+        title(sprintf('it = %d', it));         
+        hold off; 
+    end 
     
 %     if isfield(leaflet, 'iteration_movie') && leaflet.iteration_movie 
 %         
