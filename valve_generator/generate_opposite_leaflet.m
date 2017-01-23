@@ -38,7 +38,11 @@ leaflet.point_idx_with_bc   = leaflet_current.point_idx_with_bc;
 % Spring constants in two directions 
 leaflet.alpha    = leaflet_current.alpha; 
 leaflet.beta     = leaflet_current.beta; 
-leaflet.p_0      = leaflet_current.p_0;
+
+% pressure takes a sign after relection 
+leaflet.p_0      = -leaflet_current.p_0;
+
+
 leaflet.ref_frac = leaflet_current.ref_frac; 
 
 % No chordae here 

@@ -117,9 +117,9 @@ radial_and_circumferential = true;
 
 
 % Spring constants in two directions 
-alpha    =  0.5;  % circumferential 
+alpha    =  1.0;  % circumferential 
 beta     =  1.0;  % radial 
-p_0      = -0.1;  % negative sign on anterior leaflet 
+p_0      = -1.0;  % negative sign on anterior leaflet 
 ref_frac =  0.7;  % generic spring constants reduced by this much 
 
 
@@ -130,7 +130,7 @@ end
 
 
 % Chordae parameters 
-k_multiplier = 1.86; 
+k_multiplier = 1.8; 
 % scale factor times mean of tensions going into tree position 
 k_0          = k_multiplier * 0.5 * (alpha + beta); 
 tree_frac    = 0.5;
