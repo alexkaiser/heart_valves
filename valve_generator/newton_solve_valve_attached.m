@@ -70,7 +70,7 @@ while err > tol
     % copy data back to 2d 
     valve = internal_points_to_2d_attached(X_linearized, valve); 
     
-    err = total_global_err(valve);
+    err = total_global_err_attached(valve);
     
     if back_tracking 
         
@@ -86,7 +86,7 @@ while err > tol
             % copy data back to 2d 
             valve = internal_points_to_2d_attached(X_linearized, valve); 
     
-            err = total_global_err(valve); 
+            err = total_global_err_attached(valve); 
         
             back_tracking_it = back_tracking_it + 1; 
             
