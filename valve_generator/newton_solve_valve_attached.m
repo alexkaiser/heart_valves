@@ -91,7 +91,7 @@ while err > tol
             back_tracking_it = back_tracking_it + 1; 
             
             if back_tracking_it > max_back_tracking_it
-                warning('failed to find a decent guess in allowed number of iterations'); 
+                warning('failed to find a descent guess in allowed number of iterations'); 
                 break; 
             end 
         end 

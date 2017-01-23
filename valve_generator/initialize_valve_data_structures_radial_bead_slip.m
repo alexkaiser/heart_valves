@@ -33,7 +33,7 @@ valve.optimization = optimization;
 valve.repulsive_potential = repulsive_potential; 
 valve.repulsive_power     = 1; 
 
-frac_repulsive = .15; 
+frac_repulsive = .2; 
 approx_ds = pi*valve.r / N; 
 
 valve.repulsive_coeff  = (frac_repulsive * approx_ds)^2; 
@@ -117,9 +117,9 @@ radial_and_circumferential = true;
 
 
 % Spring constants in two directions 
-alpha    =  1.0;  % circumferential 
+alpha    =  0.5;  % circumferential 
 beta     =  1.0;  % radial 
-p_0      = -1.0;  % negative sign on anterior leaflet 
+p_0      = -0.1;  % negative sign on anterior leaflet 
 ref_frac =  0.7;  % generic spring constants reduced by this much 
 
 
@@ -130,7 +130,7 @@ end
 
 
 % Chordae parameters 
-k_multiplier = 1.8; 
+k_multiplier = 1.85; 
 % scale factor times mean of tensions going into tree position 
 k_0          = k_multiplier * 0.5 * (alpha + beta); 
 tree_frac    = 0.5;
