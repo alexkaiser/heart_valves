@@ -66,12 +66,10 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
             free_edge_idx = free_edge_idx_left; 
             chordae_idx = chordae_idx_left; 
             C = C_left; 
-            Ref = Ref_l;
         else 
             free_edge_idx = free_edge_idx_right; 
             chordae_idx = chordae_idx_right;
             C = C_right; 
-            Ref = Ref_r;
         end 
 
         for i=1:size(free_edge_idx, 1)
@@ -84,7 +82,6 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
             k = free_edge_idx(i,2);
 
             X = X_anterior(:,j,k); 
-            R = R_anterior(:,j,k);
 
             % interior neighbor is right in j on left side, 
             % left in j on right side 
@@ -97,33 +94,19 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
 
             % Anterior circumferential 
             X_nbr = X_anterior(:,j_nbr,k_nbr); 
-            R_nbr = R_anterior(:,j_nbr,k_nbr); 
-
-            if left_side
-                S_anterior_left(k) = tension_linear(X, X_nbr, R, R_nbr, alpha_anterior, ref_frac_anterior); 
-                F_tmp = F_tmp + S_anterior_left(k) * (X_nbr-X)/norm(X_nbr-X); 
-            else
-                S_anterior_right(k) = tension_linear(X, X_nbr, R, R_nbr, alpha_anterior, ref_frac_anterior); 
-                F_tmp = F_tmp + S_anterior_right(k) * (X_nbr-X)/norm(X_nbr-X);             
-            end
+    
+            F_tmp = F_tmp + alpha_anterior * (X_nbr-X)/norm(X_nbr-X); 
 
             % Posterior circumferential 
             % At the "point" of the leaflet this must come from anterior 
             if chordae_idx_left(j_nbr,k_nbr) || chordae_idx_right(j_nbr,k_nbr)
                 X_nbr = X_anterior(:,j_nbr,k_nbr); 
-                R_nbr = R_anterior(:,j_nbr,k_nbr); 
             else 
                 X_nbr = X_posterior(:,j_nbr,k_nbr); 
-                R_nbr = R_posterior(:,j_nbr,k_nbr); 
             end 
             
-            if left_side 
-                S_posterior_left(k) = tension_linear(X, X_nbr, R, R_nbr, alpha_posterior, ref_frac_posterior);         
-                F_tmp = F_tmp + S_posterior_left(k) * (X_nbr-X)/norm(X_nbr-X);  
-            else 
-                S_posterior_right(k) = tension_linear(X, X_nbr, R, R_nbr, alpha_posterior, ref_frac_posterior);         
-                F_tmp = F_tmp + S_posterior_right(k) * (X_nbr-X)/norm(X_nbr-X);            
-            end 
+            F_tmp = F_tmp + alpha_posterior * (X_nbr-X)/norm(X_nbr-X);  
+
 
             % interior neighbor is up in k, always 
             j_nbr = j;     
@@ -131,15 +114,11 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
 
             % Anterior radial
             X_nbr = X_anterior(:,j_nbr,k_nbr); 
-            R_nbr = R_anterior(:,j_nbr,k_nbr); 
-            T_anterior(j) = tension_linear(X, X_nbr, R, R_nbr, beta_anterior, ref_frac_anterior); 
-            F_tmp = F_tmp + T_anterior(j) * (X_nbr-X)/norm(X_nbr-X); 
+            F_tmp = F_tmp + beta_anterior * (X_nbr-X)/norm(X_nbr-X); 
 
             % Posterior radial 
             X_nbr = X_posterior(:,j_nbr,k_nbr); 
-            R_nbr = R_posterior(:,j_nbr,k_nbr); 
-            T_posterior(j) = tension_linear(X, X_nbr, R, R_nbr, beta_posterior, ref_frac_posterior); 
-            F_tmp = F_tmp + T_posterior(j) * (X_nbr-X)/norm(X_nbr-X); 
+            F_tmp = F_tmp + beta_posterior * (X_nbr-X)/norm(X_nbr-X); 
 
             % current node has a chordae connection
             if chordae_idx(j,k)
@@ -154,9 +133,8 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
                 idx_chordae = floor(leaf_idx/2);
 
                 X_nbr = C(:,idx_chordae);
-                R_nbr = Ref(:,idx_chordae);
-
-                F_tmp = F_tmp + tension_linear(X,X_nbr,R,R_nbr,kappa,ref_frac_anterior) * (X_nbr-X)/norm(X_nbr-X); 
+                
+                F_tmp = F_tmp + kappa * (X_nbr-X)/norm(X_nbr-X); 
 
             else
                 error('free edge point required to have chordae connection'); 
@@ -167,16 +145,8 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
         end 
 
     end 
-
-    % Tensions are equalized from left to right 
-    S_anterior = (S_anterior_left + S_anterior_right)/2.0; 
-    S_posterior = (S_posterior_left + S_posterior_right)/2.0; 
  
-    % Convert from units of force to force densities 
-    S_anterior  = S_anterior  /dv;
-    S_posterior = S_posterior /dv;
-    T_anterior  = T_anterior  /du;
-    T_posterior = T_posterior /du;
+
 
     % Internal leaflet part 
     for anterior_side = [true, false]
@@ -186,17 +156,16 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
             is_bc = anterior.is_bc; 
             X_current = X_anterior; 
             p_0 = p_0_anterior; 
-            S = S_anterior; 
-            T = T_anterior; 
+            alpha = alpha_anterior; 
+            beta = beta_anterior; 
         else 
             is_internal = posterior.is_internal; 
             is_bc = posterior.is_bc; 
             X_current = X_posterior; 
             p_0 = p_0_posterior; 
-            S = S_posterior; 
-            T = T_posterior;
+            alpha = alpha_posterior; 
+            beta = beta_posterior;
         end 
-
 
         for j=1:j_max
             for k=1:k_max
@@ -235,8 +204,7 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
                         k_nbr = k; 
                         X_nbr = get_neighbor(); 
 
-                        F_tmp = F_tmp + S(k)/du * (X_nbr-X)/norm(X_nbr-X); 
-                        % F_tmp = F_tmp + 1/du * (X_nbr-X)/norm(X_nbr-X); 
+                        F_tmp = F_tmp + alpha * (X_nbr-X)/norm(X_nbr-X); 
 
                     end 
 
@@ -247,11 +215,11 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
                         j_nbr = j; 
                         X_nbr = get_neighbor(); 
 
-                        F_tmp = F_tmp + T(j)/dv * (X_nbr-X)/norm(X_nbr-X); 
+                        F_tmp = F_tmp + beta * (X_nbr-X)/norm(X_nbr-X); 
 
                     end 
                     
-
+                    
                     if anterior_side
                         F_anterior(:,j,k) = F_tmp;
                     else 
@@ -274,10 +242,8 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
 
         if left_side
             C = C_left; 
-            Ref = Ref_l; 
         else 
             C = C_right; 
-            Ref = Ref_r; 
         end
 
         for i=1:N_chordae
@@ -291,7 +257,7 @@ function [F_anterior F_posterior F_chordae_left F_chordae_right] = difference_eq
                 % get the neighbors coordinates, reference coordinate and spring constants
                 [nbr R_nbr k_val] = get_nbr_chordae(anterior, i, nbr_idx, left_side); 
 
-                tension = tension_linear_over_norm(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac_anterior) * (nbr - C(:,i));  
+                tension = k_val * (nbr - C(:,i)) / norm(nbr - C(:,i));  
 
                 if left_side
                     F_chordae_left(:,i)  = F_chordae_left(:,i)  + tension; 

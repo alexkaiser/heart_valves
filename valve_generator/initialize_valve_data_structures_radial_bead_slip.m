@@ -33,7 +33,7 @@ valve.optimization = optimization;
 valve.repulsive_potential = repulsive_potential; 
 valve.repulsive_power     = 1; 
 
-frac_repulsive = .2; 
+frac_repulsive = .15; 
 approx_ds = pi*valve.r / N; 
 
 valve.repulsive_coeff  = (frac_repulsive * approx_ds)^2; 

@@ -65,49 +65,31 @@ function J = build_jacobian_bead_slip_attached(valve)
     j_offsets = [0 1 2 0 1 2 0 1 2]'; 
     k_offsets = [0 0 0 1 1 1 2 2 2]';
     
-    % initialize structures for tension variables and jacobians 
-    S_anterior_left(k_max-1).val   = 0;  
-    S_anterior_left(k_max-1).j     = 0;
-    S_anterior_left(k_max-1).k     = 0; 
-    S_anterior_left(k_max-1).j_nbr = 0; 
-    S_anterior_left(k_max-1).k_nbr = 0; 
-    S_anterior_left(k_max-1).G     = zeros(3,1);  
+%     % initialize structures for tension variables and jacobians 
+%     S_anterior(k_max-1).val   = 0;  
+%     S_anterior(k_max-1).j     = 0;
+%     S_anterior(k_max-1).k     = 0; 
+%     S_anterior(k_max-1).j_nbr = 0; 
+%     S_anterior(k_max-1).k_nbr = 0; 
+%     
+%     T_anterior(j_max).val   = 0;  
+%     T_anterior(j_max).j     = 0;
+%     T_anterior(j_max).k     = 0; 
+%     T_anterior(j_max).j_nbr = 0; 
+%     T_anterior(j_max).k_nbr = 0; 
+%     
+%     S_posterior(k_max-1).val   = 0;  
+%     S_posterior(k_max-1).j     = 0;
+%     S_posterior(k_max-1).k     = 0; 
+%     S_posterior(k_max-1).j_nbr = 0; 
+%     S_posterior(k_max-1).k_nbr = 0; 
+%     
+%     T_posterior(j_max).val   = 0;  
+%     T_posterior(j_max).j     = 0;
+%     T_posterior(j_max).k     = 0; 
+%     T_posterior(j_max).j_nbr = 0; 
+%     T_posterior(j_max).k_nbr = 0; 
     
-    S_anterior_right(k_max-1).val   = 0;  
-    S_anterior_right(k_max-1).j     = 0;
-    S_anterior_right(k_max-1).k     = 0; 
-    S_anterior_right(k_max-1).j_nbr = 0; 
-    S_anterior_right(k_max-1).k_nbr = 0; 
-    S_anterior_right(k_max-1).G     = zeros(3,1); 
-    
-    T_anterior(j_max).val   = 0;  
-    T_anterior(j_max).j     = 0;
-    T_anterior(j_max).k     = 0; 
-    T_anterior(j_max).j_nbr = 0; 
-    T_anterior(j_max).k_nbr = 0; 
-    T_anterior(j_max).G     = zeros(3,1); 
-    
-    S_posterior_left(k_max-1).val   = 0;  
-    S_posterior_left(k_max-1).j     = 0;
-    S_posterior_left(k_max-1).k     = 0; 
-    S_posterior_left(k_max-1).j_nbr = 0; 
-    S_posterior_left(k_max-1).k_nbr = 0; 
-    S_posterior_left(k_max-1).G     = zeros(3,1);  
-    
-    S_posterior_right(k_max-1).val   = 0;  
-    S_posterior_right(k_max-1).j     = 0;
-    S_posterior_right(k_max-1).k     = 0; 
-    S_posterior_right(k_max-1).j_nbr = 0; 
-    S_posterior_right(k_max-1).k_nbr = 0; 
-    S_posterior_right(k_max-1).G     = zeros(3,1); 
-    
-    T_posterior(j_max).val   = 0;  
-    T_posterior(j_max).j     = 0;
-    T_posterior(j_max).k     = 0; 
-    T_posterior(j_max).j_nbr = 0; 
-    T_posterior(j_max).k_nbr = 0; 
-    T_posterior(j_max).G     = zeros(3,1);
-                 
     
     for left_side = [true, false]
         
@@ -115,12 +97,10 @@ function J = build_jacobian_bead_slip_attached(valve)
             free_edge_idx = free_edge_idx_left; 
             chordae_idx = chordae_idx_left; 
             C = C_left; 
-            Ref = Ref_l;
         else 
             free_edge_idx = free_edge_idx_right; 
             chordae_idx = chordae_idx_right;
             C = C_right; 
-            Ref = Ref_r;
         end 
         
         
@@ -132,7 +112,6 @@ function J = build_jacobian_bead_slip_attached(valve)
             range_current = linear_idx_offset_anterior(j,k) + (1:3); 
 
             X = X_anterior(:,j,k); 
-            R = R_anterior(:,j,k);
 
             % interior neighbor is right in j on left side, 
             % left in j on right side 
@@ -145,26 +124,21 @@ function J = build_jacobian_bead_slip_attached(valve)
 
             % Anterior circumferential 
             X_nbr = X_anterior(:,j_nbr,k_nbr); 
-            R_nbr = R_anterior(:,j_nbr,k_nbr); 
 
-            J_tension = tension_linear_tangent_jacobian(X, X_nbr, R, R_nbr, alpha_anterior, ref_frac_anterior);
-    
-            if left_side 
-                S_anterior_left(k)  = get_linear_tension_struct(X, X_nbr, R, R_nbr, alpha_anterior/dv, ref_frac_anterior, j, k, j_nbr, k_nbr); 
-            else 
-                S_anterior_right(k) = get_linear_tension_struct(X, X_nbr, R, R_nbr, alpha_anterior/dv, ref_frac_anterior, j, k, j_nbr, k_nbr); 
-            end 
-            
+            J_tangent = alpha_anterior * tangent_jacobian(X, X_nbr); 
+   
+            %S_anterior(k) = get_prescribed_tension_struct(alpha_anterior, j, k, j_nbr, k_nbr); 
+
             % current term is always added in 
             % this gets no sign 
             % this is always at the current,current block in the matrix 
-            place_tmp_block(range_current, range_current, J_tension); 
+            place_tmp_block(range_current, range_current, J_tangent); 
 
             % If the neighbor is an internal point, it also gets a Jacobian contribution 
             % This takes a sign
             if is_internal_anterior(j_nbr,k_nbr)
                 range_nbr  = linear_idx_offset_anterior(j_nbr,k_nbr) + (1:3);
-                place_tmp_block(range_current, range_nbr, -J_tension); 
+                place_tmp_block(range_current, range_nbr, -J_tangent); 
             end 
 
 
@@ -172,36 +146,29 @@ function J = build_jacobian_bead_slip_attached(valve)
             % At the "point" of the leaflet this must come from anterior 
             if chordae_idx_left(j_nbr,k_nbr) || chordae_idx_right(j_nbr,k_nbr)
                 X_nbr = X_anterior(:,j_nbr,k_nbr); 
-                R_nbr = R_anterior(:,j_nbr,k_nbr); 
             else 
                 X_nbr = X_posterior(:,j_nbr,k_nbr); 
-                R_nbr = R_posterior(:,j_nbr,k_nbr); 
             end 
 
-            J_tension = tension_linear_tangent_jacobian(X, X_nbr, R, R_nbr, alpha_posterior, ref_frac_posterior);
-
-            if left_side
-                S_posterior_left(k)  = get_linear_tension_struct(X, X_nbr, R, R_nbr, alpha_posterior/dv, ref_frac_posterior, j, k, j_nbr, k_nbr); 
-            else 
-                S_posterior_right(k) = get_linear_tension_struct(X, X_nbr, R, R_nbr, alpha_posterior/dv, ref_frac_posterior, j, k, j_nbr, k_nbr); 
-            end 
+            J_tangent = alpha_posterior * tangent_jacobian(X, X_nbr); 
+            
+            %S_posterior(k) = get_prescribed_tension_struct(alpha_posterior, j, k, j_nbr, k_nbr); 
             
             % current term is always added in 
             % this gets no sign 
             % this is always at the current,current block in the matrix 
-            place_tmp_block(range_current, range_current, J_tension); 
+            place_tmp_block(range_current, range_current, J_tangent); 
 
             % If the neighbor is an internal point, it also gets a Jacobian contribution 
             % This takes a sign
             if is_internal_posterior(j_nbr,k_nbr)
                 range_nbr  = linear_idx_offset_posterior(j_nbr,k_nbr) + (1:3);
-                place_tmp_block(range_current, range_nbr, -J_tension); 
+                place_tmp_block(range_current, range_nbr, -J_tangent); 
             
             % if not internal posterior, the neighbor may be on the free edge 
             elseif (chordae_idx_left(j_nbr,k_nbr) || chordae_idx_right(j_nbr,k_nbr)) && is_internal_anterior(j_nbr,k_nbr)
                 range_nbr  = linear_idx_offset_anterior(j_nbr,k_nbr) + (1:3);
-                place_tmp_block(range_current, range_nbr, -J_tension);                
-                
+                place_tmp_block(range_current, range_nbr, -J_tangent);
             end 
 
 
@@ -211,42 +178,41 @@ function J = build_jacobian_bead_slip_attached(valve)
 
             % Anterior radial
             X_nbr = X_anterior(:,j_nbr,k_nbr); 
-            R_nbr = R_anterior(:,j_nbr,k_nbr); 
 
-            J_tension = tension_linear_tangent_jacobian(X, X_nbr, R, R_nbr, beta_anterior, ref_frac_anterior);
+            J_tangent = beta_anterior * tangent_jacobian(X, X_nbr); 
 
-            T_anterior(j) = get_linear_tension_struct(X, X_nbr, R, R_nbr, beta_anterior/du, ref_frac_anterior, j, k, j_nbr, k_nbr); 
+            % T_anterior(j) = get_prescribed_tension_struct(beta_anterior, j, k, j_nbr, k_nbr); 
 
             % current term is always added in 
             % this gets no sign 
             % this is always at the current,current block in the matrix 
-            place_tmp_block(range_current, range_current, J_tension); 
+            place_tmp_block(range_current, range_current, J_tangent); 
 
             % If the neighbor is an internal point, it also gets a Jacobian contribution 
             % This takes a sign
             if is_internal_anterior(j_nbr,k_nbr)
                 range_nbr  = linear_idx_offset_anterior(j_nbr,k_nbr) + (1:3);
-                place_tmp_block(range_current, range_nbr, -J_tension); 
+                place_tmp_block(range_current, range_nbr, -J_tangent); 
             end 
 
+            
             % Posterior radial  
             X_nbr = X_posterior(:,j_nbr,k_nbr); 
-            R_nbr = R_posterior(:,j_nbr,k_nbr); 
 
-            J_tension = tension_linear_tangent_jacobian(X, X_nbr, R, R_nbr, beta_posterior, ref_frac_posterior);
+            J_tangent = beta_posterior * tangent_jacobian(X, X_nbr); 
 
-            T_posterior(j) = get_linear_tension_struct(X, X_nbr, R, R_nbr, beta_posterior/du, ref_frac_posterior, j, k, j_nbr, k_nbr); 
+            % T_posterior(j) = get_prescribed_tension_struct(beta_posterior, j, k, j_nbr, k_nbr); 
 
             % current term is always added in 
             % this gets no sign 
             % this is always at the current,current block in the matrix 
-            place_tmp_block(range_current, range_current, J_tension); 
+            place_tmp_block(range_current, range_current, J_tangent); 
 
             % If the neighbor is an internal point, it also gets a Jacobian contribution 
             % This takes a sign
             if is_internal_posterior(j_nbr,k_nbr)
                 range_nbr  = linear_idx_offset_posterior(j_nbr,k_nbr) + (1:3);
-                place_tmp_block(range_current, range_nbr, -J_tension); 
+                place_tmp_block(range_current, range_nbr, -J_tangent); 
             end
 
             % current node has a chordae connection
@@ -262,18 +228,17 @@ function J = build_jacobian_bead_slip_attached(valve)
                 idx_chordae = floor(leaf_idx/2);
 
                 X_nbr = C(:,idx_chordae);
-                R_nbr = Ref(:,idx_chordae);
 
-                J_tension = tension_linear_tangent_jacobian(X,X_nbr,R,R_nbr,kappa,ref_frac_anterior); 
+                J_tangent = kappa * tangent_jacobian(X, X_nbr); 
 
                 % current term is always added in 
                 % this gets no sign 
                 % this is always at the current,current block in the matrix 
-                place_tmp_block(range_current, range_current, J_tension); 
+                place_tmp_block(range_current, range_current, J_tangent); 
 
                 % chordae range 
                 range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side); 
-                place_tmp_block(range_current, range_nbr, -J_tension); 
+                place_tmp_block(range_current, range_nbr, -J_tangent); 
 
             else
                 error('free edge point required to have chordae connection'); 
@@ -292,18 +257,16 @@ function J = build_jacobian_bead_slip_attached(valve)
             linear_idx_offset = linear_idx_offset_anterior; 
             X_current = X_anterior; 
             p_0 = p_0_anterior; 
-            S_left  = S_anterior_left; 
-            S_right = S_anterior_right; 
-            T = T_anterior; 
+            alpha = alpha_anterior; 
+            beta = beta_anterior; 
         else 
             is_internal = is_internal_posterior; 
             is_bc = is_bc_posterior; 
             linear_idx_offset = linear_idx_offset_posterior; 
             X_current = X_posterior; 
             p_0 = p_0_posterior; 
-            S_left  = S_posterior_left; 
-            S_right = S_posterior_right; 
-            T = T_posterior;
+            alpha = alpha_posterior; 
+            beta = beta_posterior; 
         end 
 
 
@@ -392,74 +355,20 @@ function J = build_jacobian_bead_slip_attached(valve)
 
                             % X_nbr = X_current(:,j_nbr,k_nbr);
                             [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
-                            
-                            % There is a 1/du term throughout from taking a finite difference derivative 
-                            % Place this on the tension variables, one of which apprears in each term 
 
-                            tension = (1/(2*du)) * (S_left(k).val + S_right(k).val); 
-                            
-                            grad_tension_left   = (1/(2*du)) * S_left(k).G; 
-                            grad_tension_right  = (1/(2*du)) * S_right(k).G; 
-                            
-                            tangent = (X_nbr - X) / norm(X_nbr - X); 
-
-                            J_tangent = tangent_jacobian(X, X_nbr); 
+                            J_tangent = alpha * tangent_jacobian(X, X_nbr); 
 
                             % current term is always added in 
                             % this gets no sign 
                             % this is always at the current,current block in the matrix 
-                            place_tmp_block(range_current, range_current, tension * J_tangent); 
+                            place_tmp_block(range_current, range_current, J_tangent); 
 
                             % If the neighbor is an internal point, on current leaflet 
                             % it also gets a Jacobian contribution 
                             % This takes a sign
                             if nbr_jacobian_needed 
-                                place_tmp_block(range_current, range_nbr, -tension * J_tangent); 
+                                place_tmp_block(range_current, range_nbr, -J_tangent); 
                             end 
-
-                            % Jacobians with respect to inherited tensions
-                            Jac_left = tangent * grad_tension_left'; 
-
-                            j_edge = S_left(k).j; 
-                            k_edge = S_left(k).k;
-
-                            % edge always on anterior 
-                            if is_internal_anterior(j_edge,k_edge)
-                                range_nbr  = linear_idx_offset_anterior(j_edge,k_edge) + (1:3);
-                                place_tmp_block(range_current, range_nbr, Jac_left); 
-                            end 
-
-                            j_nbr_tension = S_left(k).j_nbr; 
-                            k_nbr_tension = S_left(k).k_nbr;
-
-                            % nbr always on current leaflet 
-                            % nbr jacobian gets a sign 
-                            if is_internal(j_nbr_tension,k_nbr_tension)
-                                range_nbr  = linear_idx_offset(j_nbr_tension,k_nbr_tension) + (1:3);
-                                place_tmp_block(range_current, range_nbr, -Jac_left); 
-                            end
-                            
-                            % Jacobians with respect to inherited tensions
-                            Jac_right = tangent * grad_tension_right'; 
-
-                            j_edge = S_right(k).j; 
-                            k_edge = S_right(k).k;
-
-                            % edge always on anterior 
-                            if is_internal_anterior(j_edge,k_edge)
-                                range_nbr  = linear_idx_offset_anterior(j_edge,k_edge) + (1:3);
-                                place_tmp_block(range_current, range_nbr, Jac_right); 
-                            end 
-
-                            j_nbr_tension = S_right(k).j_nbr; 
-                            k_nbr_tension = S_right(k).k_nbr;
-
-                            % nbr always on current leaflet 
-                            % nbr jacobian gets a sign 
-                            if is_internal(j_nbr_tension,k_nbr_tension)
-                                range_nbr  = linear_idx_offset(j_nbr_tension,k_nbr_tension) + (1:3);
-                                place_tmp_block(range_current, range_nbr, -Jac_right); 
-                            end
 
                         end 
                     end 
@@ -478,51 +387,20 @@ function J = build_jacobian_bead_slip_attached(valve)
 
                             % X_nbr = X_current(:,j_nbr,k_nbr);
                             [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
-                            
-                            % There is a 1/du term throughout from taking a finite difference derivative 
-                            % Place this on the tension variables, one of which apprears in each term 
 
-                            tension = (1/dv) * T(j).val; 
-
-                            grad_tension  = (1/dv) * T(j).G; 
-
-                            tangent = (X_nbr - X) / norm(X_nbr - X); 
-
-                            J_tangent = tangent_jacobian(X, X_nbr); 
+                            J_tangent = beta * tangent_jacobian(X, X_nbr); 
 
                             % current term is always added in 
                             % this gets no sign 
                             % this is always at the current,current block in the matrix 
-                            place_tmp_block(range_current, range_current, tension * J_tangent); 
+                            place_tmp_block(range_current, range_current, J_tangent); 
 
                             % If the neighbor is an internal point, on current leaflet 
                             % it also gets a Jacobian contribution 
                             % This takes a sign
                             if nbr_jacobian_needed 
-                                place_tmp_block(range_current, range_nbr, -tension * J_tangent); 
+                                place_tmp_block(range_current, range_nbr, -J_tangent); 
                             end 
-
-                            % Jacobians with respect to inherited tensions
-                            Jac = tangent * grad_tension'; 
-
-                            j_edge = T_anterior(j).j; 
-                            k_edge = T_anterior(j).k;
-
-                            % edge always on anterior 
-                            if is_internal_anterior(j_edge,k_edge)
-                                range_nbr  = linear_idx_offset_anterior(j_edge,k_edge) + (1:3);
-                                place_tmp_block(range_current, range_nbr, Jac); 
-                            end 
-
-                            j_nbr_tension = T(j).j_nbr; 
-                            k_nbr_tension = T(j).k_nbr;
-
-                            % nbr always on current leaflet 
-                            % nbr jacobian gets a sign 
-                            if is_internal(j_nbr_tension,k_nbr_tension)
-                                range_nbr  = linear_idx_offset(j_nbr_tension,k_nbr_tension) + (1:3);
-                                place_tmp_block(range_current, range_nbr, -Jac); 
-                            end
 
                         end 
                     end                    
@@ -540,10 +418,8 @@ function J = build_jacobian_bead_slip_attached(valve)
 
         if left_side
             C = C_left; 
-            Ref = Ref_l; 
         else 
             C = C_right; 
-            Ref = Ref_r; 
         end 
 
         for i=1:N_chordae
@@ -574,7 +450,7 @@ function J = build_jacobian_bead_slip_attached(valve)
                 end
 
                 % tension Jacobian for this spring 
-                J_tension = tension_linear_tangent_jacobian(C(:,i), nbr, Ref(:,i), R_nbr, k_val, ref_frac_anterior); 
+                J_tension = k_val * tangent_jacobian(C(:,i), nbr); 
 
                 % current always gets a contribution from this spring 
                 place_tmp_block(range_current, range_current, J_tension); 
