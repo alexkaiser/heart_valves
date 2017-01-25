@@ -130,7 +130,7 @@ end
 
 
 % Chordae parameters 
-k_multiplier = 1.8; 
+k_multiplier = 1.87; 
 % scale factor times mean of tensions going into tree position 
 k_0          = k_multiplier * 0.5 * (alpha + beta); 
 tree_frac    = 0.5;
