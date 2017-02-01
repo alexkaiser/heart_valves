@@ -68,7 +68,7 @@ if leaflet.radial_and_circumferential
     
     % if true, takes crude guess at closed leaflet with curvature 
     % otherwise takes a linear interpolant from the free edge to the ring 
-    pinched_interpolant = true; 
+    pinched_interpolant = false; 
     
     if pinched_interpolant 
     

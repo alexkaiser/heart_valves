@@ -102,7 +102,7 @@ end
 
 
 % if true, takes crude guess at closed leaflet with curvature 
-pinched_interpolant = true; 
+pinched_interpolant = false; 
 
 if pinched_interpolant 
 
