@@ -13,9 +13,8 @@ leaflet.max_angle   = pi - leaflet.total_angle/2.0;
 
 leaflet.r = leaflet_current.r; 
 
-total_length = leaflet.total_angle * leaflet.r; 
-leaflet.du = total_length / (leaflet.N+1); 
-leaflet.dv = total_length / (leaflet.N+1); 
+leaflet.du = 1/N; 
+leaflet.dv = 1/N; 
 
 debug = false; 
 

@@ -29,9 +29,13 @@ valve.split_papillary = false;
 valve.radial_and_circumferential = true; 
 valve.bead_slip = true; 
 valve.leaflet_only = leaflet_only; 
-valve.optimization = optimization; 
-valve.repulsive_potential = repulsive_potential; 
+valve.optimization = false; 
+valve.repulsive_potential = false; 
 valve.repulsive_power     = 1; 
+
+% general mesh parameters 
+valve.du = 1/N; 
+valve.dv = 1/N; 
 
 frac_repulsive = .3; 
 approx_ds = pi*valve.r / N; 
@@ -129,10 +133,20 @@ if (p_0 == 0.0) && (~leaflet_only)
 end 
 
 
-% Chordae parameters 
-k_multiplier = 1.8; 
-% scale factor times mean of tensions going into tree position 
-k_0          = k_multiplier * 0.5 * (alpha + beta); 
+% Chordae parameters
+
+% For correct scaling the root of the tree should not change as the mesh is refined 
+% This implies (at least for now) that this parameter must be set to 2.0
+% beacause the mesh refines in powers of two 
+k_multiplier = 2.0; 
+
+% whole tree turned up or down using this coefficient 
+k_0_coeff    = 1.0; 
+
+% leaf stength of tree 
+k_0          = k_0_coeff * (alpha*valve.dv + beta*valve.du); 
+
+% determines initial tree placement in initial guess 
 tree_frac    = 0.5;
 
 % double tree strength in attached version 
