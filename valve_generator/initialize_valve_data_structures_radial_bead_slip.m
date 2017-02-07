@@ -29,8 +29,8 @@ valve.split_papillary = false;
 valve.radial_and_circumferential = true; 
 valve.bead_slip = true; 
 valve.leaflet_only = leaflet_only; 
-valve.optimization = false; 
-valve.repulsive_potential = false; 
+valve.optimization = optimization; 
+valve.repulsive_potential = repulsive_potential; 
 valve.repulsive_power     = 1; 
 
 % general mesh parameters 
