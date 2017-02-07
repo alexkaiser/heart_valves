@@ -37,10 +37,9 @@ valve.repulsive_power     = 1;
 valve.du = 1/N; 
 valve.dv = 1/N; 
 
-frac_repulsive = .3; 
-approx_ds = pi*valve.r / N; 
-
-valve.repulsive_coeff  = (frac_repulsive * approx_ds)^2; 
+% coefficient has units of 1/L, then gets squared 
+c_0 = N;  
+valve.repulsive_coeff  = 1e-6 * c_0^2; 
 
 % most interesting power 2 at this point 
 % valve.repulsive_power     = 2; 
@@ -141,7 +140,7 @@ end
 k_multiplier = 2.0; 
 
 % whole tree turned up or down using this coefficient 
-k_0_coeff    = 1.0; 
+k_0_coeff    = 0.5; 
 
 % leaf stength of tree 
 k_0          = k_0_coeff * (alpha*valve.dv + beta*valve.du); 

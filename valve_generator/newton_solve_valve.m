@@ -73,9 +73,9 @@ if back_tracking && line_search
 end 
 
 
-plots = false; 
+plots = true; 
 if plots 
-    plot_freq = 10; 
+    plot_freq = 1; 
     fig = figure; 
    
     surf_plot(leaflet, fig); 
@@ -244,6 +244,7 @@ while err > tol
         view(74,6); 
         title(sprintf('it = %d', it));         
         hold off; 
+        pause(0.5)
     end 
     
     

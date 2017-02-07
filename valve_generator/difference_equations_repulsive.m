@@ -20,6 +20,8 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_repul
     chordae_idx_right  = leaflet.chordae_idx_right;
     j_max              = leaflet.j_max; 
     k_max              = leaflet.k_max; 
+    du                 = leaflet.du; 
+    dv                 = leaflet.dv;
     is_internal        = leaflet.is_internal; 
 
     if ~leaflet.repulsive_potential
@@ -72,7 +74,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_repul
             % Anterior circumferential 
             X_nbr = X_current(:,j_nbr,k_nbr); 
 
-            F_tmp = F_tmp - alpha * coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
+            F_tmp = F_tmp - alpha * dv * coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
 
             % interior neighbor is up in k, always 
             j_nbr = j;     
@@ -80,7 +82,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_repul
 
             % Anterior radial
             X_nbr = X_current(:,j_nbr,k_nbr); 
-            F_tmp = F_tmp - beta * coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
+            F_tmp = F_tmp - beta * du * coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
 
             % current node has a chordae connection
             if chordae_idx(j,k)
@@ -124,7 +126,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_repul
                     k_nbr = k; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                    F_tmp = F_tmp - alpha * coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
+                    F_tmp = F_tmp - alpha/du * coeff * (du^2) * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
 
                 end 
 
@@ -134,7 +136,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_repul
                     j_nbr = j; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                    F_tmp = F_tmp - beta *  coeff * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
+                    F_tmp = F_tmp - beta/dv * coeff * (dv^2) * p * (X_nbr-X)/norm(X_nbr-X)^(p+2); 
 
                 end 
 
