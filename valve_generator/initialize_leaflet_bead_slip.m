@@ -71,7 +71,7 @@ else
 end 
 
 leaflet.du = 1/N; 
-leaflet.dv = 2/N; 
+leaflet.dv = 1/N; 
 
 leaflet.r = r; 
 
