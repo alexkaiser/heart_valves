@@ -4,7 +4,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 16; 
+N = 32; 
 
 % Show some output 
 plots = false; 
@@ -12,7 +12,7 @@ plots = false;
 % Initialize structures 
 % Many parameters are in this script 
 
-repulsive_potential = true; 
+repulsive_potential = false; 
 
 
 torus = initialize_torus_data_structures(N, repulsive_potential); 
@@ -23,6 +23,6 @@ torus = initialize_torus_data_structures(N, repulsive_potential);
 p_range = torus.p_0 .* [0:.1:1]; 
 
 
-% torus = solve_valve(torus, p_range); 
+torus = solve_torus(torus, p_range); 
 
 

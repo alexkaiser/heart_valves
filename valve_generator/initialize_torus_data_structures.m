@@ -12,13 +12,20 @@ function [torus] = initialize_torus_data_structures(N, repulsive_potential)
 
 % Main data structure with everything 
 torus.N = N; 
+torus.j_max = N; 
+torus.k_max = N; 
 torus.tol_global = 1e-10;
 torus.max_it = 4000; 
 
 torus.bead_slip = true; 
 torus.leaflet_only = true; 
 
-torus.repulsive_potential = repulsive_potential; 
+torus.repulsive_potential = false; 
+
+if repulsive_potential
+    error('repulsive potential not implemented for torus')
+end 
+
 torus.repulsive_power     = 1; 
 
 % general mesh parameters 
@@ -40,7 +47,11 @@ torus.r = 1;
 torus.R = 2;
 
 % number of wraps in major and minor directions 
-torus.n_wraps = 1; 
+
+% minor direction may wrap zero times 
+torus.n_wraps = 2; 
+
+% major direction must wrap at least once 
 torus.m_wraps = 1; 
 
 
@@ -93,14 +104,6 @@ torus.beta     =  1.0;  % radial
 torus.p_0      = -0.1;  % negative sign on anterior leaflet 
 
 
-
-% unit square is preimage
-u_mesh_1d = 0:torus.du:(1-torus.du); 
-v_mesh_1d = 0:torus.dv:(1-torus.dv); 
-
-[u_mesh, v_mesh] = meshgrid(u_mesh_1d, v_mesh_1d); 
-
-
 tor = @(u,v) [ sin(v) .* (torus.R + torus.r * cos(u)); ... 
                cos(v) .* (torus.R + torus.r * cos(u)); ...  
                                     torus.r * sin(u)]; 
@@ -114,7 +117,7 @@ torus.X = zeros(3,N,N);
 for k=1:N
     
     % initial u conditions go from zero 
-    u_0 = 2*pi*torus.r*torus.n_wraps * (k-1) * dt; 
+    u_0 = 2*pi*torus.r * (k-1) * dt; 
     
     for j=1:N
         
@@ -145,6 +148,32 @@ end
 axis equal 
 title('preimage')
 
+
+% set util arrays 
+torus.is_internal       =  ones(torus.j_max, torus.k_max); 
+torus.is_bc             = zeros(torus.j_max, torus.k_max); 
+torus.linear_idx_offset = zeros(torus.j_max, torus.k_max); 
+torus.point_idx_with_bc = zeros(torus.j_max, torus.k_max); 
+
+count = 0; 
+for k=1:torus.k_max
+    for j=1:torus.j_max
+        if torus.is_internal(j,k)
+            torus.linear_idx_offset(j,k) = count; 
+            count = count + 3; 
+        end 
+    end 
+end
+
+count = 0;
+for k=1:torus.k_max
+    for j=1:torus.j_max
+        if torus.is_internal(j,k) || torus.is_bc(j,k)
+            torus.point_idx_with_bc(j,k) = count; 
+            count = count + 1; 
+        end 
+    end 
+end
 
 
 

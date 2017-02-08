@@ -42,36 +42,38 @@ axis equal
 axis auto 
 hold on 
 
-if leaflet.radial_and_circumferential
+if isfield(leaflet, 'radial_and_circumferential')
+    if leaflet.radial_and_circumferential
 
-    % clean up the bc on the whole surface 
-    string_x = [X_copy(1,1,k_max), X_copy(1,2,k_max)];
-    string_y = [X_copy(2,1,k_max), X_copy(2,2,k_max)];
-    string_z = [X_copy(3,1,k_max), X_copy(3,2,k_max)];
-    plot3(string_x, string_y, string_z, 'k', 'LineWidth',width); 
+        % clean up the bc on the whole surface 
+        string_x = [X_copy(1,1,k_max), X_copy(1,2,k_max)];
+        string_y = [X_copy(2,1,k_max), X_copy(2,2,k_max)];
+        string_z = [X_copy(3,1,k_max), X_copy(3,2,k_max)];
+        plot3(string_x, string_y, string_z, 'k', 'LineWidth',width); 
 
-    string_x = [X_copy(1,j_max-1,k_max), X_copy(1,j_max,k_max)];
-    string_y = [X_copy(2,j_max-1,k_max), X_copy(2,j_max,k_max)];
-    string_z = [X_copy(3,j_max-1,k_max), X_copy(3,j_max,k_max)];
-    plot3(string_x, string_y, string_z, 'k', 'LineWidth',width); 
+        string_x = [X_copy(1,j_max-1,k_max), X_copy(1,j_max,k_max)];
+        string_y = [X_copy(2,j_max-1,k_max), X_copy(2,j_max,k_max)];
+        string_z = [X_copy(3,j_max-1,k_max), X_copy(3,j_max,k_max)];
+        plot3(string_x, string_y, string_z, 'k', 'LineWidth',width); 
 
-else
+    else
 
-    % clean up the bc on the whole surface 
-    string_x = [X_copy(1,1,N), X_copy(1,1,N+1)];
-    string_y = [X_copy(2,1,N), X_copy(2,1,N+1)];
-    string_z = [X_copy(3,1,N), X_copy(3,1,N+1)];
-    plot3(string_x, string_y, string_z, 'k', 'LineWidth',width); 
+        % clean up the bc on the whole surface 
+        string_x = [X_copy(1,1,N), X_copy(1,1,N+1)];
+        string_y = [X_copy(2,1,N), X_copy(2,1,N+1)];
+        string_z = [X_copy(3,1,N), X_copy(3,1,N+1)];
+        plot3(string_x, string_y, string_z, 'k', 'LineWidth',width); 
 
-    string_x = [X_copy(1,N,1), X_copy(1,N+1,1)];
-    string_y = [X_copy(2,N,1), X_copy(2,N+1,1)];
-    string_z = [X_copy(3,N,1), X_copy(3,N+1,1)];
-    plot3(string_x, string_y, string_z, 'k', 'LineWidth',width); 
+        string_x = [X_copy(1,N,1), X_copy(1,N+1,1)];
+        string_y = [X_copy(2,N,1), X_copy(2,N+1,1)];
+        string_z = [X_copy(3,N,1), X_copy(3,N+1,1)];
+        plot3(string_x, string_y, string_z, 'k', 'LineWidth',width); 
 
+    end 
 end 
 
 % add chordae 
-if leaflet.chordae_tree 
+if isfield(leaflet, 'chordae_tree') && leaflet.chordae_tree 
     tree_plot(leaflet, fig); 
 end 
 
