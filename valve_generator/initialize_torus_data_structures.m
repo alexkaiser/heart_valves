@@ -49,7 +49,7 @@ torus.R = 2;
 % number of wraps in major and minor directions 
 
 % minor direction may wrap zero times 
-torus.n_wraps = 2; 
+torus.n_wraps = 0; 
 
 % major direction must wrap at least once 
 torus.m_wraps = 1; 
@@ -101,7 +101,7 @@ torus.collagen_springs_leaflet = false;
 % Spring constants in two directions 
 torus.alpha    =  1.0;  % circumferential 
 torus.beta     =  1.0;  % radial 
-torus.p_0      = -0.1;  % negative sign on anterior leaflet 
+torus.p_0      =  1.0;  % negative sign on anterior leaflet 
 
 
 tor = @(u,v) [ sin(v) .* (torus.R + torus.r * cos(u)); ... 
@@ -175,8 +175,25 @@ for k=1:torus.k_max
     end 
 end
 
+torus.chordae.C_left = []; 
+torus.chordae.C_right = []; 
 
 
+data_movement_check = false; 
+if data_movement_check
+
+    'version with no movement, including b.c.s'
+    torus.X 
+
+    % 'linear order on internal points'
+    X_linearized = linearize_internal_points(torus, torus.X) 
+
+    
+    'moved back to 3d ordering'
+    torus = internal_points_to_2d(X_linearized, torus); 
+    torus.X 
+
+end 
 
 
 

@@ -244,7 +244,7 @@ while err > tol
         view(74,6); 
         title(sprintf('it = %d', it));         
         hold off; 
-        pause(0.1)
+        pause(); 
     end 
     
     

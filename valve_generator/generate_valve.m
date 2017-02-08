@@ -17,7 +17,7 @@ bead_slip    = true;
 attached     = false; 
 leaflet_only = false; 
 optimization = false; 
-repulsive_potential = true; 
+repulsive_potential = false; 
 
 
 if radial

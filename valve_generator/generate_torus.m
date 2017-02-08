@@ -4,7 +4,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 32; 
+N = 64; 
 
 % Show some output 
 plots = false; 
@@ -20,8 +20,8 @@ torus = initialize_torus_data_structures(N, repulsive_potential);
 
 % Can use a scalar pressure 
 % Or a range for continuation 
-p_range = torus.p_0 .* [0:.1:1]; 
-
+% p_range = torus.p_0 .* [0:.1:1]; 
+p_range = torus.p_0; 
 
 torus = solve_torus(torus, p_range); 
 
