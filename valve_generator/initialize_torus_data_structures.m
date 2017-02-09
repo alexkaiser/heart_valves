@@ -49,10 +49,10 @@ torus.R = 2;
 % number of wraps in major and minor directions 
 
 % minor direction may wrap zero times 
-torus.n_wraps = 0; 
+torus.n_wraps = 1; 
 
 % major direction must wrap at least once 
-torus.m_wraps = 1; 
+torus.m_wraps = 2; 
 
 
 % general solve parameters
@@ -99,13 +99,17 @@ torus.collagen_springs_leaflet = false;
 
 
 % Spring constants in two directions 
-torus.alpha    =  1.0;  % circumferential 
-torus.beta     =  1.0;  % radial 
-torus.p_0      =  1.0;  % negative sign on anterior leaflet 
+torus.alpha    =  1.0;   
+torus.beta     =  1.0;  
+
+% parametrization gives outward normal 
+% positive p_0 gives 
+torus.p_0      =  0.1;  
 
 
-tor = @(u,v) [ sin(v) .* (torus.R + torus.r * cos(u)); ... 
-               cos(v) .* (torus.R + torus.r * cos(u)); ...  
+
+tor = @(u,v) [ cos(v) .* (torus.R + torus.r * cos(u)); ... 
+               sin(v) .* (torus.R + torus.r * cos(u)); ...  
                                     torus.r * sin(u)]; 
 
 
@@ -117,12 +121,12 @@ torus.X = zeros(3,N,N);
 for k=1:N
     
     % initial u conditions go from zero 
-    u_0 = 2*pi*torus.r * (k-1) * dt; 
+    u_0 = 2*pi * (k-1) * dt; 
     
     for j=1:N
         
-        u = 2*pi*torus.r*torus.n_wraps * dt * (j-1) + u_0; 
-        v = 2*pi*torus.R*torus.m_wraps * dt * (j-1); 
+        u = 2*pi*torus.n_wraps * dt * (j-1) + u_0; 
+        v = 2*pi*torus.m_wraps * dt * (j-1); 
                 
         torus.preimage(:,j,k) = [u; v];  
         
