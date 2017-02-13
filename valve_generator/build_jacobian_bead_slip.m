@@ -249,10 +249,10 @@ function J = build_jacobian_bead_slip(leaflet)
 
                         % There is a 1/du term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
-                        J_tmp = alpha * tangent_jacobian(X, X_nbr); 
+                        J_tmp = alpha/du * tangent_jacobian(X, X_nbr); 
                         
                         if repulsive_potential
-                            J_tmp = J_tmp + alpha * coeff * replusive_jacobian(X,X_nbr,power); 
+                            J_tmp = J_tmp + alpha/du * coeff * replusive_jacobian(X,X_nbr,power); 
                         end 
 
                         % current term is always added in 
@@ -287,10 +287,10 @@ function J = build_jacobian_bead_slip(leaflet)
 
                         % There is a 1/dv term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
-                        J_tmp = beta * tangent_jacobian(X, X_nbr); 
+                        J_tmp = beta/dv * tangent_jacobian(X, X_nbr); 
                         
                         if repulsive_potential
-                            J_tmp = J_tmp + beta * coeff * replusive_jacobian(X,X_nbr,power); 
+                            J_tmp = J_tmp + beta/dv * coeff * replusive_jacobian(X,X_nbr,power); 
                         end
                         
                         % current term is always added in 

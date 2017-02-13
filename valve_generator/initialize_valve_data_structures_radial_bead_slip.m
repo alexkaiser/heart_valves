@@ -123,7 +123,7 @@ radial_and_circumferential = true;
 % Spring constants in two directions 
 alpha    =  1.0;  % circumferential 
 beta     =  1.0;  % radial 
-p_0      = 0.0; %-0.1 / 16;  % negative sign on anterior leaflet 
+p_0      = -0.2;  % negative sign on anterior leaflet 
 ref_frac =  0.7;  % generic spring constants reduced by this much 
 
 

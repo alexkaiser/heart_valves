@@ -137,7 +137,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                     k_nbr = k; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
                     tension = alpha * (1 - coeff * power * 1/norm(X_nbr-X)^(power+1)); 
-                    F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
+                    F_tmp = F_tmp + tension/du * (X_nbr-X)/norm(X_nbr-X); 
 
                 end 
 
@@ -147,7 +147,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                     j_nbr = j; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
                     tension = beta * (1 - coeff * power * 1/norm(X_nbr-X)^(power+1)); 
-                    F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
+                    F_tmp = F_tmp + tension/dv * (X_nbr-X)/norm(X_nbr-X); 
 
                 end 
 
