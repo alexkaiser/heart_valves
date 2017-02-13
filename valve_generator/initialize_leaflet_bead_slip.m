@@ -70,10 +70,8 @@ else
     leaflet.max_angle   =  leaflet.total_angle/2.0; 
 end 
 
-
-total_length = total_angle * r; 
-leaflet.du = total_length / (N+1); 
-leaflet.dv = total_length / (N+1); 
+leaflet.du = 1/N; 
+leaflet.dv = 1/N; 
 
 
 leaflet.r = r; 
