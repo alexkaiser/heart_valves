@@ -141,13 +141,16 @@ N_tree = N/2;
 % base constant for force scaling
 % this is the total force, in current units, 
 % in the leaf generation of the chordae tree 
-k_0_1 = 1.8 * 16; 
+% this is an arbitrary constant determined by guess and check 
+k_0_1 = 1.8 * 16 / 32; 
 
 % force on each leaf in the chordae tree 
 k_0   = k_0_1 / N_tree; 
 
 % constant tension at the root of the tree 
-k_root = 1.889568000000001e+01; 
+% this is determined by hand tuning k_multiplier at coarse resolution 
+% then taking the k_root 
+k_root = 1.889568000000001e+01 / 32; 
 
 % multiplier necessary to maintain constant root tension 
 % and constant total leaf tension 

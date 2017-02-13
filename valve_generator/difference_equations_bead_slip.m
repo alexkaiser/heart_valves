@@ -78,7 +78,10 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
 
             % Anterior circumferential 
             X_nbr = X_current(:,j_nbr,k_nbr); 
-            tension = alpha * (1 - coeff * power * 1/norm(X_nbr-X)^(power+1)); 
+            
+            % Multiply tension by dv to get a force,
+            % rather than a force density, here 
+            tension = alpha * dv * (1 - coeff * power * 1/norm(X_nbr-X)^(power+1)); 
             F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
 
             % interior neighbor is up in k, always 
@@ -87,7 +90,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
 
             % Anterior radial
             X_nbr = X_current(:,j_nbr,k_nbr); 
-            tension = beta * (1 - coeff * power * 1/norm(X_nbr-X)^(power+1)); 
+            tension = beta * du * (1 - coeff * power * 1/norm(X_nbr-X)^(power+1)); 
             F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
 
             % current node has a chordae connection

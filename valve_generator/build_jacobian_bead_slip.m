@@ -93,10 +93,10 @@ function J = build_jacobian_bead_slip(leaflet)
             % Anterior circumferential 
             X_nbr = X_current(:,j_nbr,k_nbr); 
             
-            J_tmp = alpha * tangent_jacobian(X, X_nbr); 
+            J_tmp = alpha * dv * tangent_jacobian(X, X_nbr); 
             
             if repulsive_potential
-                J_tmp = J_tmp + alpha * coeff * replusive_jacobian(X,X_nbr,power); 
+                J_tmp = J_tmp + alpha * dv * coeff * replusive_jacobian(X,X_nbr,power); 
             end 
             
             % current term is always added in 
@@ -118,10 +118,10 @@ function J = build_jacobian_bead_slip(leaflet)
             % Anterior radial
             X_nbr = X_current(:,j_nbr,k_nbr); 
 
-            J_tmp = beta * tangent_jacobian(X, X_nbr); 
+            J_tmp = beta * du * tangent_jacobian(X, X_nbr); 
             
             if repulsive_potential
-                J_tmp = J_tmp + beta * coeff * replusive_jacobian(X,X_nbr,power); 
+                J_tmp = J_tmp + beta * du * coeff * replusive_jacobian(X,X_nbr,power); 
             end 
 
             % current term is always added in 
