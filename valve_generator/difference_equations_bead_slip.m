@@ -68,9 +68,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
             % Anterior circumferential 
             X_nbr = X_current(:,j_nbr,k_nbr); 
 
-            % connection equations have units of force 
-            % force/length must be multiplied by a length element 
-            F_tmp = F_tmp + alpha * dv * (X_nbr-X)/norm(X_nbr-X); 
+            F_tmp = F_tmp + alpha * (X_nbr-X)/norm(X_nbr-X); 
 
             % interior neighbor is up in k, always 
             j_nbr = j;     
@@ -78,13 +76,11 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
 
             % Anterior radial
             X_nbr = X_current(:,j_nbr,k_nbr); 
-            F_tmp = F_tmp + beta * du * (X_nbr-X)/norm(X_nbr-X); 
+            F_tmp = F_tmp + beta * (X_nbr-X)/norm(X_nbr-X); 
 
             % current node has a chordae connection
             if chordae_idx(j,k)
 
-                % chordae springs use force 
-                % no change in coefficient here 
                 kappa = k_0;
 
                 % index that free edge would have if on tree
@@ -129,7 +125,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                     k_nbr = k; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                    F_tmp = F_tmp + alpha/du * (X_nbr-X)/norm(X_nbr-X); 
+                    F_tmp = F_tmp + alpha * (X_nbr-X)/norm(X_nbr-X); 
 
                 end 
 
@@ -139,7 +135,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                     j_nbr = j; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                    F_tmp = F_tmp + beta/dv * (X_nbr-X)/norm(X_nbr-X); 
+                    F_tmp = F_tmp + beta * (X_nbr-X)/norm(X_nbr-X); 
 
                 end 
 

@@ -84,7 +84,7 @@ function J = build_jacobian_bead_slip(leaflet)
             % Anterior circumferential 
             X_nbr = X_current(:,j_nbr,k_nbr); 
             
-            J_tangent = alpha * dv * tangent_jacobian(X, X_nbr); 
+            J_tangent = alpha * tangent_jacobian(X, X_nbr); 
             
             % current term is always added in 
             % this gets no sign 
@@ -105,7 +105,7 @@ function J = build_jacobian_bead_slip(leaflet)
             % Anterior radial
             X_nbr = X_current(:,j_nbr,k_nbr); 
 
-            J_tangent = beta * du * tangent_jacobian(X, X_nbr); 
+            J_tangent = beta * tangent_jacobian(X, X_nbr); 
 
             % current term is always added in 
             % this gets no sign 
@@ -134,7 +134,6 @@ function J = build_jacobian_bead_slip(leaflet)
 
                 X_nbr = C(:,idx_chordae);
 
-                % chordae terms already in units of force, do not change here 
                 J_tangent = kappa * tangent_jacobian(X, X_nbr); 
 
                 % current term is always added in 
@@ -229,7 +228,7 @@ function J = build_jacobian_bead_slip(leaflet)
 
                         % There is a 1/du term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
-                        J_tangent = alpha/du * tangent_jacobian(X, X_nbr); 
+                        J_tangent = alpha * tangent_jacobian(X, X_nbr); 
 
                         % current term is always added in 
                         % this gets no sign 
@@ -263,7 +262,7 @@ function J = build_jacobian_bead_slip(leaflet)
 
                         % There is a 1/dv term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
-                        J_tangent = beta/dv * tangent_jacobian(X, X_nbr); 
+                        J_tangent = beta * tangent_jacobian(X, X_nbr); 
                         
                         % current term is always added in 
                         % this gets no sign  
