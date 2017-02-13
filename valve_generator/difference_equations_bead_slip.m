@@ -81,7 +81,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
             
             % Multiply tension by dv to get a force,
             % rather than a force density, here 
-            tension = alpha * dv * (1 - coeff * power * 1/norm(X_nbr-X)^(power+1)); 
+            tension = alpha * dv * (1 - coeff * du^2 * power * 1/norm(X_nbr-X)^(power+1)); 
             F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
 
             % interior neighbor is up in k, always 
@@ -90,7 +90,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
 
             % Anterior radial
             X_nbr = X_current(:,j_nbr,k_nbr); 
-            tension = beta * du * (1 - coeff * power * 1/norm(X_nbr-X)^(power+1)); 
+            tension = beta * du * (1 - coeff * dv^2 * power * 1/norm(X_nbr-X)^(power+1)); 
             F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
 
             % current node has a chordae connection
@@ -106,7 +106,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                 idx_chordae = floor(leaf_idx/2);
 
                 X_nbr = C(:,idx_chordae);
-                tension = kappa * (1 - coeff * power * 1/norm(X_nbr-X)^(power+1)); 
+                tension = kappa * (1 - coeff * du^2 * power * 1/norm(X_nbr-X)^(power+1)); 
                 F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
 
             else
@@ -139,7 +139,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
 
                     k_nbr = k; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
-                    tension = alpha * (1 - coeff * power * 1/norm(X_nbr-X)^(power+1)); 
+                    tension = alpha * (1 - coeff * du^2 * power * 1/norm(X_nbr-X)^(power+1)); 
                     F_tmp = F_tmp + tension/du * (X_nbr-X)/norm(X_nbr-X); 
 
                 end 
@@ -149,7 +149,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
 
                     j_nbr = j; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
-                    tension = beta * (1 - coeff * power * 1/norm(X_nbr-X)^(power+1)); 
+                    tension = beta * (1 - coeff * dv^2 * power * 1/norm(X_nbr-X)^(power+1)); 
                     F_tmp = F_tmp + tension/dv * (X_nbr-X)/norm(X_nbr-X); 
 
                 end 
@@ -186,7 +186,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                 % get the neighbors coordinates, reference coordinate and spring constants
                 [nbr R_nbr k_val] = get_nbr_chordae(leaflet, i, nbr_idx, left_side); 
                 
-                tension = k_val * (1 - coeff * power * 1/norm(nbr - C(:,i))^(power+1)); 
+                tension = k_val * (1 - coeff * du^2 * power * 1/norm(nbr - C(:,i))^(power+1)); 
 
                 tension_by_tangent = tension * (nbr - C(:,i)) / norm(nbr - C(:,i));  
 

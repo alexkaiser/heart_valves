@@ -34,9 +34,18 @@ valve.repulsive_potential = repulsive_potential;
 valve.repulsive_power     = 1; 
 
 if repulsive_potential
-    frac_repulsive = .3; 
-    approx_ds = pi*valve.r / N; 
-    valve.repulsive_coeff  = (frac_repulsive * approx_ds)^2; 
+
+    % old scaling, remove this
+%     frac_repulsive = .3; 
+%     approx_ds = pi*valve.r / N; 
+%     valve.repulsive_coeff  = (frac_repulsive * approx_ds)^2; 
+%     
+    % good total value (not including mesh parameters) at N=32
+    repulsive_coeff_32 = 0.002238985441466; 
+    
+    % scale so that when multiplied by above value gives the correct value 
+    valve.repulsive_coeff = repulsive_coeff_32 * (32)^2; 
+
 else 
     valve.repulsive_coeff  = 0.0; 
 end 

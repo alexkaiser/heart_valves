@@ -96,7 +96,7 @@ function J = build_jacobian_bead_slip(leaflet)
             J_tmp = alpha * dv * tangent_jacobian(X, X_nbr); 
             
             if repulsive_potential
-                J_tmp = J_tmp + alpha * dv * coeff * replusive_jacobian(X,X_nbr,power); 
+                J_tmp = J_tmp + alpha * dv * du^2 * coeff * replusive_jacobian(X,X_nbr,power); 
             end 
             
             % current term is always added in 
@@ -121,7 +121,7 @@ function J = build_jacobian_bead_slip(leaflet)
             J_tmp = beta * du * tangent_jacobian(X, X_nbr); 
             
             if repulsive_potential
-                J_tmp = J_tmp + beta * du * coeff * replusive_jacobian(X,X_nbr,power); 
+                J_tmp = J_tmp + beta * du * dv^2 * coeff * replusive_jacobian(X,X_nbr,power); 
             end 
 
             % current term is always added in 
@@ -154,7 +154,7 @@ function J = build_jacobian_bead_slip(leaflet)
                 J_tmp = kappa * tangent_jacobian(X, X_nbr); 
                 
                 if repulsive_potential
-                    J_tmp = J_tmp + kappa * coeff * replusive_jacobian(X,X_nbr,power); 
+                    J_tmp = J_tmp + kappa * coeff * du^2 * replusive_jacobian(X,X_nbr,power); 
                 end 
 
                 % current term is always added in 
@@ -252,7 +252,7 @@ function J = build_jacobian_bead_slip(leaflet)
                         J_tmp = alpha/du * tangent_jacobian(X, X_nbr); 
                         
                         if repulsive_potential
-                            J_tmp = J_tmp + alpha/du * coeff * replusive_jacobian(X,X_nbr,power); 
+                            J_tmp = J_tmp + alpha/du * coeff * du^2 * replusive_jacobian(X,X_nbr,power); 
                         end 
 
                         % current term is always added in 
@@ -290,7 +290,7 @@ function J = build_jacobian_bead_slip(leaflet)
                         J_tmp = beta/dv * tangent_jacobian(X, X_nbr); 
                         
                         if repulsive_potential
-                            J_tmp = J_tmp + beta/dv * coeff * replusive_jacobian(X,X_nbr,power); 
+                            J_tmp = J_tmp + beta/dv * coeff * dv^2 * replusive_jacobian(X,X_nbr,power); 
                         end
                         
                         % current term is always added in 
@@ -352,7 +352,7 @@ function J = build_jacobian_bead_slip(leaflet)
                 J_tmp = k_val * tangent_jacobian(C(:,i), nbr); 
                 
                 if repulsive_potential
-                    J_tmp = J_tmp + k_val * coeff * replusive_jacobian(C(:,i),nbr,power); 
+                    J_tmp = J_tmp + k_val * coeff * du^2 * replusive_jacobian(C(:,i),nbr,power); 
                 end
 
                 % current always gets a contribution from this spring 
