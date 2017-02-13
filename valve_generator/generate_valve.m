@@ -4,7 +4,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 256; 
+N = 32; 
 
 % Show some output 
 plots = false; 
@@ -17,7 +17,7 @@ bead_slip    = true;
 attached     = false; 
 leaflet_only = false; 
 optimization = false; 
-repulsive_potential = false; 
+repulsive_potential = true; 
 
 
 if radial

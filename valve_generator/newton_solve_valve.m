@@ -75,7 +75,7 @@ end
 
 plots = false; 
 if plots 
-    plot_freq = 10; 
+    plot_freq = 1; 
     fig = figure; 
    
     surf_plot(leaflet, fig); 
