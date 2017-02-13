@@ -35,15 +35,6 @@ end
 diff_eqns = @(leaflet) diff_eqns_and_linearize(leaflet, leaflet.diff_eqns); 
 jacobian  = leaflet.jacobian; 
 
-if isfield(leaflet, 'repulsive_potential') && leaflet.repulsive_potential
-    
-    if use_energy 
-        energy = @(leaflet) (energy(leaflet) + energy_repulsive(leaflet)); 
-    end 
-    diff_eqns  = @(leaflet) (diff_eqns(leaflet) + diff_eqns_and_linearize(leaflet, @difference_equations_repulsive)); 
-    jacobian   = @(leaflet) (jacobian(leaflet)  + build_jacobian_replusive(leaflet)); 
-end 
-
 
 % Checks for a monotonic decrease if true 
 % and decreases step length adaptively if not 

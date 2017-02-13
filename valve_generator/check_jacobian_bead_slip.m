@@ -12,7 +12,9 @@ N = 8;
 % Initialize structures  
 attached = false; 
 leaflet_only = false; 
-valve = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only); 
+optimization = false; 
+repulsive_potential = true; 
+valve = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization, repulsive_potential); 
 
 rand('twister',76599)
 

@@ -24,6 +24,17 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
     du                 = leaflet.du; 
     dv                 = leaflet.dv; 
     is_internal        = leaflet.is_internal; 
+    
+    % repulsive potential coefficients, if used 
+    if isfield(leaflet, 'repulsive_potential') && leaflet.repulsive_potential
+        power          = leaflet.repulsive_power; 
+        coeff          = leaflet.repulsive_coeff;
+    else 
+        power          = 1; 
+        coeff          = 0; 
+    end 
+    
+ 
 
 
     F_leaflet = zeros(size(X_current)); 
@@ -67,8 +78,8 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
 
             % Anterior circumferential 
             X_nbr = X_current(:,j_nbr,k_nbr); 
-
-            F_tmp = F_tmp + alpha * (X_nbr-X)/norm(X_nbr-X); 
+            tension = alpha * (1 - coeff * power * 1/norm(X_nbr-X)^(power+1)); 
+            F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
 
             % interior neighbor is up in k, always 
             j_nbr = j;     
@@ -76,7 +87,8 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
 
             % Anterior radial
             X_nbr = X_current(:,j_nbr,k_nbr); 
-            F_tmp = F_tmp + beta * (X_nbr-X)/norm(X_nbr-X); 
+            tension = beta * (1 - coeff * power * 1/norm(X_nbr-X)^(power+1)); 
+            F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
 
             % current node has a chordae connection
             if chordae_idx(j,k)
@@ -91,8 +103,8 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                 idx_chordae = floor(leaf_idx/2);
 
                 X_nbr = C(:,idx_chordae);
-
-                F_tmp = F_tmp + kappa * (X_nbr-X)/norm(X_nbr-X); 
+                tension = kappa * (1 - coeff * power * 1/norm(X_nbr-X)^(power+1)); 
+                F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
 
             else
                 error('free edge point required to have chordae connection'); 
@@ -124,8 +136,8 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
 
                     k_nbr = k; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
-
-                    F_tmp = F_tmp + alpha * (X_nbr-X)/norm(X_nbr-X); 
+                    tension = alpha * (1 - coeff * power * 1/norm(X_nbr-X)^(power+1)); 
+                    F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
 
                 end 
 
@@ -134,8 +146,8 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
 
                     j_nbr = j; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
-
-                    F_tmp = F_tmp + beta * (X_nbr-X)/norm(X_nbr-X); 
+                    tension = beta * (1 - coeff * power * 1/norm(X_nbr-X)^(power+1)); 
+                    F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
 
                 end 
 
@@ -170,13 +182,15 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
 
                 % get the neighbors coordinates, reference coordinate and spring constants
                 [nbr R_nbr k_val] = get_nbr_chordae(leaflet, i, nbr_idx, left_side); 
+                
+                tension = k_val * (1 - coeff * power * 1/norm(nbr - C(:,i))^(power+1)); 
 
-                tension = k_val * (nbr - C(:,i)) / norm(nbr - C(:,i));  
+                tension_by_tangent = tension * (nbr - C(:,i)) / norm(nbr - C(:,i));  
 
                 if left_side
-                    F_chordae_left(:,i)  = F_chordae_left(:,i)  + tension; 
+                    F_chordae_left(:,i)  = F_chordae_left(:,i)  + tension_by_tangent; 
                 else 
-                    F_chordae_right(:,i) = F_chordae_right(:,i) + tension; 
+                    F_chordae_right(:,i) = F_chordae_right(:,i) + tension_by_tangent; 
                 end 
 
             end 

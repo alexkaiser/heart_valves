@@ -27,6 +27,15 @@ function J = build_jacobian_bead_slip(leaflet)
     free_edge_idx_right = leaflet.free_edge_idx_right; 
     linear_idx_offset   = leaflet.linear_idx_offset; 
     
+    % repulsive potential coefficients, if used 
+    if isfield(leaflet, 'repulsive_potential') && leaflet.repulsive_potential
+        repulsive_potential = true; 
+        power               = leaflet.repulsive_power; 
+        coeff               = leaflet.repulsive_coeff;
+    else 
+        repulsive_potential = false; 
+    end 
+    
     
     [m N_chordae] = size(C_left); 
     
@@ -84,18 +93,22 @@ function J = build_jacobian_bead_slip(leaflet)
             % Anterior circumferential 
             X_nbr = X_current(:,j_nbr,k_nbr); 
             
-            J_tangent = alpha * tangent_jacobian(X, X_nbr); 
+            J_tmp = alpha * tangent_jacobian(X, X_nbr); 
+            
+            if repulsive_potential
+                J_tmp = J_tmp + alpha * coeff * replusive_jacobian(X,X_nbr,power); 
+            end 
             
             % current term is always added in 
             % this gets no sign 
             % this is always at the current,current block in the matrix 
-            place_tmp_block(range_current, range_current, J_tangent); 
+            place_tmp_block(range_current, range_current, J_tmp); 
             
             % If the neighbor is an internal point, it also gets a Jacobian contribution 
             % This takes a sign
             if is_internal(j_nbr,k_nbr)
                 range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
-                place_tmp_block(range_current, range_nbr, -J_tangent); 
+                place_tmp_block(range_current, range_nbr, -J_tmp); 
             end 
 
             % interior neighbor is up in k, always  
@@ -105,19 +118,23 @@ function J = build_jacobian_bead_slip(leaflet)
             % Anterior radial
             X_nbr = X_current(:,j_nbr,k_nbr); 
 
-            J_tangent = beta * tangent_jacobian(X, X_nbr); 
+            J_tmp = beta * tangent_jacobian(X, X_nbr); 
+            
+            if repulsive_potential
+                J_tmp = J_tmp + beta * coeff * replusive_jacobian(X,X_nbr,power); 
+            end 
 
             % current term is always added in 
             % this gets no sign 
             % this is always at the current,current block in the matrix 
-            place_tmp_block(range_current, range_current, J_tangent); 
+            place_tmp_block(range_current, range_current, J_tmp); 
 
             
             % If the neighbor is an internal point, it also gets a Jacobian contribution 
             % This takes a sign
             if is_internal(j_nbr,k_nbr)
                 range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
-                place_tmp_block(range_current, range_nbr, -J_tangent); 
+                place_tmp_block(range_current, range_nbr, -J_tmp); 
             end
 
             % current node has a chordae connection
@@ -134,16 +151,20 @@ function J = build_jacobian_bead_slip(leaflet)
 
                 X_nbr = C(:,idx_chordae);
 
-                J_tangent = kappa * tangent_jacobian(X, X_nbr); 
+                J_tmp = kappa * tangent_jacobian(X, X_nbr); 
+                
+                if repulsive_potential
+                    J_tmp = J_tmp + kappa * coeff * replusive_jacobian(X,X_nbr,power); 
+                end 
 
                 % current term is always added in 
                 % this gets no sign 
                 % this is always at the current,current block in the matrix 
-                place_tmp_block(range_current, range_current, J_tangent); 
+                place_tmp_block(range_current, range_current, J_tmp); 
                 
                 % chordae range 
                 range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side); 
-                place_tmp_block(range_current, range_nbr, -J_tangent); 
+                place_tmp_block(range_current, range_nbr, -J_tmp); 
                 
             else
                 error('free edge point required to have chordae connection'); 
@@ -228,18 +249,22 @@ function J = build_jacobian_bead_slip(leaflet)
 
                         % There is a 1/du term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
-                        J_tangent = alpha * tangent_jacobian(X, X_nbr); 
+                        J_tmp = alpha * tangent_jacobian(X, X_nbr); 
+                        
+                        if repulsive_potential
+                            J_tmp = J_tmp + alpha * coeff * replusive_jacobian(X,X_nbr,power); 
+                        end 
 
                         % current term is always added in 
                         % this gets no sign 
                         % this is always at the current,current block in the matrix 
-                        place_tmp_block(range_current, range_current, J_tangent); 
+                        place_tmp_block(range_current, range_current, J_tmp); 
 
                         % If the neighbor is an internal point, on current leaflet 
                         % it also gets a Jacobian contribution 
                         % This takes a sign
                         if nbr_jacobian_needed 
-                            place_tmp_block(range_current, range_nbr, -J_tangent); 
+                            place_tmp_block(range_current, range_nbr, -J_tmp); 
                         end
 
                     end 
@@ -262,18 +287,22 @@ function J = build_jacobian_bead_slip(leaflet)
 
                         % There is a 1/dv term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
-                        J_tangent = beta * tangent_jacobian(X, X_nbr); 
+                        J_tmp = beta * tangent_jacobian(X, X_nbr); 
+                        
+                        if repulsive_potential
+                            J_tmp = J_tmp + beta * coeff * replusive_jacobian(X,X_nbr,power); 
+                        end
                         
                         % current term is always added in 
                         % this gets no sign  
                         % this is always at the current,current block in the matrix 
-                        place_tmp_block(range_current, range_current, J_tangent); 
+                        place_tmp_block(range_current, range_current, J_tmp); 
 
                         % If the neighbor is an internal point, on current leaflet 
                         % it also gets a Jacobian contribution 
                         % This takes a sign
                         if nbr_jacobian_needed 
-                            place_tmp_block(range_current, range_nbr, -J_tangent); 
+                            place_tmp_block(range_current, range_nbr, -J_tmp); 
                         end 
                         
                     end 
@@ -320,14 +349,18 @@ function J = build_jacobian_bead_slip(leaflet)
                 end
 
                 % tension Jacobian for this spring 
-                J_tension = k_val * tangent_jacobian(C(:,i), nbr); 
+                J_tmp = k_val * tangent_jacobian(C(:,i), nbr); 
+                
+                if repulsive_potential
+                    J_tmp = J_tmp + k_val * coeff * replusive_jacobian(C(:,i),nbr,power); 
+                end
 
                 % current always gets a contribution from this spring 
-                place_tmp_block(range_current, range_current, J_tension); 
+                place_tmp_block(range_current, range_current, J_tmp); 
 
                 % range may be empty if papillary muscle, in which case do nothing 
                 if ~isempty(range_nbr)
-                    place_tmp_block(range_current, range_nbr, -J_tension); 
+                    place_tmp_block(range_current, range_nbr, -J_tmp); 
                 end 
             end 
         end 
