@@ -27,24 +27,3 @@ if nargout > 2
     J = -leaflet.jacobian(leaflet_copy); 
 end
 
-
-if isfield(leaflet, 'repulsive_potential') && leaflet.repulsive_potential
-
-    E = E + energy_repulsive(leaflet_copy); 
-
-    % Difference equations are gradient of energy 
-    if nargout > 1
-        [F_2d F_chordae_left F_chordae_right] = difference_equations_repulsive(leaflet_copy); 
-
-        % Note that force is NEGATIVE gradient, but optimization just takes the gradient 
-        F = F + -linearize_internal_points(leaflet, F_2d, F_chordae_left, F_chordae_right);
-    end
-
-    % Jacobian of gradient, Hessian of energy 
-    % Similarly, this is the second deriv of energy, so is NEGATIVE Jacobian of force
-    if nargout > 2
-        J = J + -build_jacobian_replusive(leaflet_copy); 
-    end
-    
-
-end 
