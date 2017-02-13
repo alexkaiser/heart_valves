@@ -12,7 +12,7 @@ function [valve] = initialize_valve_data_structures_radial_bead_slip(N, attached
 
 % Main data structure with everything 
 valve.N = N; 
-valve.tol_global = 1e-10;
+valve.tol_global = 1e-9;
 valve.max_it = 4000; 
 
 if exist('attached', 'var') 
@@ -34,14 +34,11 @@ valve.repulsive_potential = repulsive_potential;
 valve.repulsive_power     = 1; 
 
 if repulsive_potential
-
-    % old scaling, remove this
-%     frac_repulsive = .3; 
-%     approx_ds = pi*valve.r / N; 
-%     valve.repulsive_coeff  = (frac_repulsive * approx_ds)^2; 
-%     
+ 
     % good total value (not including mesh parameters) at N=32
     repulsive_coeff_32 = 0.002238985441466; 
+    
+    % repulsive_coeff_32 = repulsive_coeff_32; 
     
     % scale so that when multiplied by above value gives the correct value 
     valve.repulsive_coeff = repulsive_coeff_32 * (32)^2; 
@@ -132,7 +129,7 @@ radial_and_circumferential = true;
 % Spring constants in two directions 
 alpha    =  1.0;  % circumferential 
 beta     =  1.0;  % radial 
-p_0      = -0.2;  % negative sign on anterior leaflet 
+p_0      = -0.12;  % negative sign on anterior leaflet 
 ref_frac =  0.7;  % generic spring constants reduced by this much 
 
 
