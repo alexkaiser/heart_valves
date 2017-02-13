@@ -73,9 +73,9 @@ if back_tracking && line_search
 end 
 
 
-plots = true; 
+plots = false; 
 if plots 
-    plot_freq = 1; 
+    plot_freq = 10; 
     fig = figure; 
    
     surf_plot(leaflet, fig); 

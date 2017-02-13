@@ -18,8 +18,6 @@ function J = build_jacobian_replusive(leaflet)
     chordae_idx_right   = leaflet.chordae_idx_right;
     j_max               = leaflet.j_max; 
     k_max               = leaflet.k_max; 
-    du                 = leaflet.du; 
-    dv                 = leaflet.dv;
     is_internal         = leaflet.is_internal; 
     is_bc               = leaflet.is_bc; 
     free_edge_idx_left  = leaflet.free_edge_idx_left; 
@@ -89,7 +87,7 @@ function J = build_jacobian_replusive(leaflet)
             % Anterior circumferential 
             X_nbr = X_current(:,j_nbr,k_nbr); 
             
-            J_tmp = alpha * dv * coeff * replusive_jacobian(X,X_nbr,p); 
+            J_tmp = alpha * coeff * replusive_jacobian(X,X_nbr,p); 
             
             % current term is always added in 
             % this gets no sign 
@@ -110,7 +108,7 @@ function J = build_jacobian_replusive(leaflet)
             % Anterior radial
             X_nbr = X_current(:,j_nbr,k_nbr); 
 
-            J_tmp = beta * du * coeff * replusive_jacobian(X,X_nbr,p); 
+            J_tmp = beta * coeff * replusive_jacobian(X,X_nbr,p); 
 
             % current term is always added in 
             % this gets no sign 
@@ -189,7 +187,7 @@ function J = build_jacobian_replusive(leaflet)
 
                         % There is a 1/du term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
-                        J_tmp = alpha/du * coeff * (du^2) * replusive_jacobian(X,X_nbr,p); 
+                        J_tmp = alpha * coeff * replusive_jacobian(X,X_nbr,p); 
 
                         % current term is always added in 
                         % this gets no sign 
@@ -223,7 +221,7 @@ function J = build_jacobian_replusive(leaflet)
 
                         % There is a 1/dv term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
-                        J_tmp = beta/dv * coeff * (dv^2) * replusive_jacobian(X,X_nbr,p); 
+                        J_tmp = beta * coeff * replusive_jacobian(X,X_nbr,p); 
                         
                         % current term is always added in 
                         % this gets no sign  
