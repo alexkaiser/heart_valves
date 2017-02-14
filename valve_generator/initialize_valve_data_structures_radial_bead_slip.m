@@ -41,7 +41,7 @@ if repulsive_potential
     % repulsive_coeff_32 = repulsive_coeff_32; 
     
     % scale so that when multiplied by above value gives the correct value 
-    valve.repulsive_coeff = repulsive_coeff_32 * (32)^2; 
+    valve.repulsive_coeff = repulsive_coeff_32 * 32^2; 
 
 else 
     valve.repulsive_coeff  = 0.0; 
@@ -129,7 +129,7 @@ radial_and_circumferential = true;
 % Spring constants in two directions 
 alpha    =  1.0;  % circumferential 
 beta     =  1.0;  % radial 
-p_0      = -0.12;  % negative sign on anterior leaflet 
+p_0      = -0.12; % negative sign on anterior leaflet 
 ref_frac =  0.7;  % generic spring constants reduced by this much 
 
 
@@ -148,7 +148,7 @@ N_tree = N/2;
 % this is the total force, in current units, 
 % in the leaf generation of the chordae tree 
 % this is an arbitrary constant determined by guess and check 
-k_0_1 = 1.8 * 16 / 32; 
+k_0_1 = 1.8 * 0.5; 
 
 % force on each leaf in the chordae tree 
 k_0   = k_0_1 / N_tree; 
