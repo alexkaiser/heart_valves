@@ -1,4 +1,4 @@
-function valve = solve_valve(valve, p_range, repulsive_coeff_range)
+function [valve pass_all] = solve_valve(valve, p_range, repulsive_coeff_range)
 % 
 % Refines valve data structure to equilibrium 
 % Applies auto-continuation to ref_frac and updates both leaflets 
@@ -21,6 +21,8 @@ if isfield(valve, 'optimization') && valve.optimization
     fig = surf_plot(valve.posterior, fig);    
     
     'cool'; 
+    
+    pass_all = false; 
     
 else 
 
@@ -97,5 +99,7 @@ else
         
         end 
     end 
+    
+    pass_all = pass_anterior && pass_posterior; 
     
 end 

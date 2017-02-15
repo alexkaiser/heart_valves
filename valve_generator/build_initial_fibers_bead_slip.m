@@ -23,7 +23,24 @@ debug = false;
 if leaflet.radial_and_circumferential
    
     % set the valve ring
+    
+    % previous version
+    % this keeps the endpoints fixed, but the internal points do not line up 
+    % when the mesh is refined 
     mesh = linspace(leaflet.min_angle, leaflet.max_angle, j_max); 
+    
+    % one extra point, 
+%     mesh = linspace(leaflet.min_angle, leaflet.max_angle, j_max + 1);
+%     
+%     % which is then thrown out
+%     % take the rightmost point on the anterior 
+%     % leftmost on posterior, arbitrarily 
+%     if leaflet.min_angle < leaflet.max_angle
+%         mesh = mesh(1:j_max); 
+%     else 
+%         mesh = mesh(2:(j_max+1)); 
+%     end 
+    
     X(:,:,k_max) = [r*cos(mesh); r*sin(mesh); zeros(size(mesh))]; 
     
     % Set free edge according to interpolating surface
