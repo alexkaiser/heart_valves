@@ -4,7 +4,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 64; 
+N = 32; 
 
 % Show some output 
 plots = false; 
@@ -67,11 +67,9 @@ end
 p_range = valve.anterior.p_0 .* [0:.1:1]; 
 % p_range = valve.posterior.p_0; 
 
-repulsive_coeff_min = valve.repulsive_coeff / 10; 
 
-number_repulsive_coeffs = 10; 
 
-repulsive_coeff_range = linspace(valve.repulsive_coeff, repulsive_coeff_min, number_repulsive_coeffs); 
+repulsive_coeff_range = [1:(-0.1):.1]; 
 
 
 if radial && bead_slip && attached

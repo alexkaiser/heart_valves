@@ -67,12 +67,23 @@ else
     if pass_all 
         if exist('repulsive_coeff_range', 'var') 
             
-            for repulsive_coeff = repulsive_coeff_range
+            c_repulsive_circumferential_orig = valve.c_repulsive_circumferential; 
+            c_repulsive_radial_orig          = valve.c_repulsive_radial; 
+            c_repulsive_chordae_orig         = valve.c_repulsive_chordae; 
             
-                % when the pressure changes, just update the pressure and re-run the setup 
-                valve.anterior.repulsive_coeff = repulsive_coeff; 
-                valve.posterior.repulsive_coeff = repulsive_coeff; 
-
+            
+            for repulsive_coeff_multiplier = repulsive_coeff_range
+            
+                % update the three repulsive coefficients on both leaflets 
+                valve.anterior.c_repulsive_circumferential = repulsive_coeff_multiplier * c_repulsive_circumferential_orig; 
+                valve.anterior.c_repulsive_radial          = repulsive_coeff_multiplier * c_repulsive_radial_orig; 
+                valve.anterior.c_repulsive_chordae         = repulsive_coeff_multiplier * c_repulsive_chordae_orig; 
+                
+                valve.posterior.c_repulsive_circumferential = repulsive_coeff_multiplier * c_repulsive_circumferential_orig; 
+                valve.posterior.c_repulsive_radial          = repulsive_coeff_multiplier * c_repulsive_radial_orig; 
+                valve.posterior.c_repulsive_chordae         = repulsive_coeff_multiplier * c_repulsive_chordae_orig; 
+                
+                                
                 [valve.anterior pass_anterior err_anterior] = solve_valve_auto_continuation(valve.anterior, valve.tol_global, valve.max_it, 'anterior'); 
 
                 if pass_anterior 
@@ -93,7 +104,7 @@ else
                 fig = surf_plot(valve.posterior, fig);
                 hold on 
                 fig = surf_plot(valve.anterior, fig);
-                title(sprintf('valve at repulsive coeff = %f', repulsive_coeff)); 
+                title(sprintf('valve at repulsive coeff scaling = %f', repulsive_coeff_multiplier)); 
         
             end 
         

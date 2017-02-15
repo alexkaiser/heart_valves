@@ -13,9 +13,7 @@ function leaflet = initialize_leaflet_bead_slip(N,                  ...
                                       k_multiplier,                 ... 
                                       tree_frac,                    ...
                                       leaflet_only,                 ...
-                                      repulsive_potential,          ...
-                                      repulsive_power,              ... 
-                                      repulsive_coeff)
+                                      valve)
 %
 % Builds leaflet data structures 
 % 
@@ -48,9 +46,12 @@ leaflet.total_angle  = total_angle;
 leaflet.leaflet_only = leaflet_only; 
 
 
-leaflet.repulsive_potential = repulsive_potential; 
-leaflet.repulsive_power     = repulsive_power; 
-leaflet.repulsive_coeff     = repulsive_coeff; 
+leaflet.repulsive_potential         = valve.repulsive_potential; 
+leaflet.repulsive_power             = valve.repulsive_power; 
+leaflet.c_repulsive_circumferential = valve.c_repulsive_circumferential; 
+leaflet.c_repulsive_radial          = valve.c_repulsive_radial; 
+leaflet.c_repulsive_chordae         = valve.c_repulsive_chordae; 
+
 leaflet.reflect_pressure    = reflect_x; 
 
 if leaflet_only
