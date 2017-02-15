@@ -69,7 +69,7 @@ p_range = valve.anterior.p_0 .* [0:.1:1];
 
 
 
-repulsive_coeff_range = [1:(-0.1):.1]; 
+repulsive_coeff_range = [.9:(-0.1):.1]; 
 
 
 if radial && bead_slip && attached
