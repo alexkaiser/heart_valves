@@ -43,7 +43,10 @@ else
         else 
             fprintf('Global solve failed anterior, err = %f\n\n', err_anterior); 
         end 
-
+        
+        valve.anterior.tension_debug = true; 
+        difference_equations_bead_slip(valve.anterior); 
+        valve.anterior.tension_debug = false; 
 
         [valve.posterior pass_posterior err_posterior] = solve_valve_auto_continuation(valve.posterior, valve.tol_global, valve.max_it, 'posterior'); 
     
@@ -52,6 +55,10 @@ else
         else 
             fprintf('Global solve failed posterior, err = %f\n\n', err_posterior); 
         end
+        
+        valve.posterior.tension_debug = true; 
+        difference_equations_bead_slip(valve.posterior); 
+        valve.posterior.tension_debug = false; 
         
     
         fig = figure; 

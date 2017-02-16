@@ -44,8 +44,8 @@ if repulsive_potential
     % valve.repulsive_coeff = repulsive_coeff_32 * 32^2; 
     
     valve.c_repulsive_circumferential = 1.0 * repulsive_coeff_base; 
-    valve.c_repulsive_radial          = 4.0 * repulsive_coeff_base; 
-    valve.c_repulsive_chordae         = 0.5 * repulsive_coeff_base; 
+    valve.c_repulsive_radial          = 2.0 * repulsive_coeff_base; 
+    valve.c_repulsive_chordae         = 1.0 * repulsive_coeff_base; 
 else 
     valve.repulsive_coeff  = 0.0; 
 end 

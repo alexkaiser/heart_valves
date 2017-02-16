@@ -38,7 +38,12 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
         c_repulsive_chordae         = 0.0; 
     end 
     
- 
+
+    if isfield(leaflet, 'tension_debug') && leaflet.tension_debug
+        tension_debug = true; 
+    else 
+        tension_debug = false; 
+    end 
 
 
     F_leaflet = zeros(size(X_current)); 
@@ -86,6 +91,13 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
             % Multiply tension by dv to get a force,
             % rather than a force density, here 
             tension = alpha * dv * (1 - c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1)); 
+            
+            if tension_debug
+                if tension < 0 
+                    fprintf('tension = %f, free edge point %d, left = %d, radial\n', tension, i, left_side); 
+                end 
+            end 
+            
             F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
 
             % interior neighbor is up in k, always 
@@ -95,6 +107,14 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
             % Anterior radial
             X_nbr = X_current(:,j_nbr,k_nbr); 
             tension = beta * du * (1 - c_repulsive_radial * dv^2 * power * 1/norm(X_nbr-X)^(power+1)); 
+            
+            if tension_debug
+                if tension < 0 
+                    fprintf('tension = %f, free edge point %d, left = %d, circumferential\n', tension, i, left_side); 
+                end 
+            end 
+            
+            
             F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
 
             % current node has a chordae connection
@@ -111,6 +131,13 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
 
                 X_nbr = C(:,idx_chordae);
                 tension = kappa * (1 - c_repulsive_chordae * du^2 * power * 1/norm(X_nbr-X)^(power+1)); 
+                
+                if tension_debug
+                    if tension < 0 
+                        fprintf('tension = %f, free edge point %d, left = %d, chordae\n', tension, i, left_side); 
+                    end 
+                end 
+                
                 F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
 
             else
@@ -144,6 +171,13 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                     k_nbr = k; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
                     tension = alpha * (1 - c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1)); 
+                    
+                    if tension_debug
+                        if tension < 0 
+                            fprintf('tension = %f, (j,k) = (%d, %d) radial\n', tension, j, k); 
+                        end 
+                    end 
+                    
                     F_tmp = F_tmp + tension/du * (X_nbr-X)/norm(X_nbr-X); 
 
                 end 
@@ -154,6 +188,14 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                     j_nbr = j; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
                     tension = beta * (1 - c_repulsive_radial * dv^2 * power * 1/norm(X_nbr-X)^(power+1)); 
+                    
+                    if tension_debug
+                        if tension < 0 
+                            fprintf('tension = %f, (j,k) = (%d, %d) circumferential\n', tension, j, k); 
+                        end 
+                    end 
+                    
+                    
                     F_tmp = F_tmp + tension/dv * (X_nbr-X)/norm(X_nbr-X); 
 
                 end 
@@ -191,6 +233,12 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                 [nbr R_nbr k_val] = get_nbr_chordae(leaflet, i, nbr_idx, left_side); 
                 
                 tension = k_val * (1 - c_repulsive_chordae * du^2 * power * 1/norm(nbr - C(:,i))^(power+1)); 
+                
+                if tension_debug
+                    if tension < 0 
+                        fprintf('tension = %f, (i, nbr_idx, left) = (%d, %d, %d) chordae\n', tension, i, nbr_idx, left_side); 
+                    end 
+                end 
 
                 tension_by_tangent = tension * (nbr - C(:,i)) / norm(nbr - C(:,i));  
 
