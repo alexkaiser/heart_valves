@@ -228,7 +228,7 @@ function [] = output_to_ibamr_format(valve)
         end 
         
         [global_idx, total_vertices, total_springs, total_targets] = ...
-                                place_rays(anterior, L, spring, vertex, target, ...
+                                place_rays(anterior, ds, valve.r, L, spring, vertex, target, ...
                                         global_idx, total_vertices, total_springs, total_targets, k_rel_anterior, k_target_net, ref_frac_net, eta_net);                    
 
         if posterior.radial_and_circumferential
@@ -238,7 +238,7 @@ function [] = output_to_ibamr_format(valve)
         end 
                                     
         [global_idx, total_vertices, total_springs, total_targets] = ...
-                                place_rays(posterior, L, spring, vertex, target, ...
+                                place_rays(posterior, ds, valve.r, L, spring, vertex, target, ...
                                         global_idx, total_vertices, total_springs, total_targets, k_rel_posterior, k_target_net, ref_frac_net, eta_net);                    
 
 
@@ -760,7 +760,7 @@ end
 
 
 function [global_idx, total_vertices, total_springs, total_targets] = ...
-                            place_rays(leaflet, L, spring, vertex, target, ...
+                            place_rays(leaflet, ds, r, L, spring, vertex, target, ...
                             global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac, eta)
     % 
     % Places rays of fibers emenating from the leaflet 
@@ -793,7 +793,7 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
     k_max       = leaflet.k_max;
     is_bc       = leaflet.is_bc; 
     is_internal = leaflet.is_internal; 
-    r           = leaflet.filter.r; 
+    % r           = leaflet.filter.r; 
     h           = 0.0;        % always place at origin 
     
     
@@ -832,10 +832,14 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
 
                     % just zero this component, they are both near 3 but maybe not exactly 
                     increment(3) = 0.0; 
+                    
+                    % set to proper mesh width regardless of other spacing 
+                    increment = ds * increment / norm(increment); 
 
 
-                    point = val; 
+                    % point = val; 
                     point_prev = pt_ring; 
+                    point = pt_ring + increment; 
                     nbr_idx = leaflet.indices_global(j,k); 
 
                     % just keep adding until points leave the domain 

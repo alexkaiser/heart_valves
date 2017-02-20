@@ -64,12 +64,11 @@ end
 
 % Can use a scalar pressure 
 % Or a range for continuation 
-p_range = valve.anterior.p_0 .* [0:.1:1]; 
-% p_range = valve.posterior.p_0; 
+% p_range = valve.anterior.p_0 .* [0:.1:1]; 
+p_range = valve.posterior.p_0; 
 
 
-
-repulsive_coeff_range = [.9:(-0.1):.1]; 
+repulsive_coeff_range = []; % [.9:(-0.1):.1]; 
 
 
 if radial && bead_slip && attached
@@ -90,7 +89,7 @@ end
 save(strcat(valve.base_name, '_final_data')); 
 
 % Write to simulation files 
-% output_to_ibamr_format(valve); 
+output_to_ibamr_format(valve); 
 
 
 

@@ -43,8 +43,8 @@ if repulsive_potential
     % scale so that when multiplied by above value gives the correct value 
     % valve.repulsive_coeff = repulsive_coeff_32 * 32^2; 
     
-    valve.c_repulsive_circumferential = 1.0 * repulsive_coeff_base; 
-    valve.c_repulsive_radial          = 2.0 * repulsive_coeff_base; 
+    valve.c_repulsive_circumferential = 2.0 * repulsive_coeff_base; 
+    valve.c_repulsive_radial          = 6.0 * repulsive_coeff_base; 
     valve.c_repulsive_chordae         = 1.0 * repulsive_coeff_base; 
 else 
     valve.repulsive_coeff  = 0.0; 
@@ -111,7 +111,7 @@ valve.X_config_is_reference = true;
 % places this many exact copies of the leaflet downward in z 
 % spring constants are all reduced by num_copies 
 % spacing is always half a mesh width 
-valve.num_copies = 3; 
+valve.num_copies = 1; 
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
@@ -132,7 +132,7 @@ radial_and_circumferential = true;
 % Spring constants in two directions 
 alpha    =  1.0;  % circumferential 
 beta     =  1.0;  % radial 
-p_0      = -0.12; % negative sign on anterior leaflet 
+p_0      =  0.0;  %-0.12; % negative sign on anterior leaflet 
 ref_frac =  0.7;  % generic spring constants reduced by this much 
 
 
@@ -159,7 +159,12 @@ k_0   = k_0_1 / N_tree;
 % constant tension at the root of the tree 
 % this is determined by hand tuning k_multiplier at coarse resolution 
 % then taking the k_root 
-k_root = 1.889568000000001e+01 / 32; 
+
+% base good value 
+% k_root = 1.889568000000001e+01 / 32; 
+
+% adjust accordingly
+k_root = 0.9 * 1.889568000000001e+01 / 32; 
 
 % multiplier necessary to maintain constant root tension 
 % and constant total leaf tension 
