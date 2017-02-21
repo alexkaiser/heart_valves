@@ -87,7 +87,7 @@ valve.L = 2.5;
 % ratio 6 is for N=32
 % ratio = 6 seems to make everything very stiff 
 % turn down by order of magnitude, see if it helps 
-valve.pressure_tension_ratio = 1.5; 
+valve.pressure_tension_ratio = 1; 
 
 
 % original spring constants were for N = 32 debug width
@@ -111,7 +111,7 @@ valve.X_config_is_reference = true;
 % places this many exact copies of the leaflet downward in z 
 % spring constants are all reduced by num_copies 
 % spacing is always half a mesh width 
-valve.num_copies = 1; 
+valve.num_copies = 3; 
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
