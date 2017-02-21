@@ -87,7 +87,7 @@ valve.L = 2.5;
 % ratio 6 is for N=32
 % ratio = 6 seems to make everything very stiff 
 % turn down by order of magnitude, see if it helps 
-valve.pressure_tension_ratio = 1; 
+valve.pressure_tension_ratio = .75; 
 
 
 % original spring constants were for N = 32 debug width
