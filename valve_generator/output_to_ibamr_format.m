@@ -37,18 +37,18 @@ function [] = output_to_ibamr_format(valve)
     collagen_springs_leaflet     = valve.collagen_springs_leaflet; 
     
 
-    vertex = fopen(strcat(base_name, '.vertex'), 'w'); 
-    spring = fopen(strcat(base_name, '.spring'), 'w'); 
-    target = fopen(strcat(base_name, '.target'), 'w'); 
-    inst   = fopen(strcat(base_name, '.inst'  ), 'w'); 
+    params.vertex = fopen(strcat(base_name, '.vertex'), 'w'); 
+    params.spring = fopen(strcat(base_name, '.spring'), 'w'); 
+    params.target = fopen(strcat(base_name, '.target'), 'w'); 
+    params.inst   = fopen(strcat(base_name, '.inst'  ), 'w'); 
 
     % keep one global index through the whole thing 
     global_idx = 0;
     
     % just count the number of vertices and strings throughout 
-    total_vertices = 0; 
-    total_springs  = 0; 
-    total_targets  = 0; 
+    params.total_vertices = 0; 
+    params.total_springs  = 0; 
+    params.total_targets  = 0; 
 
     % compute some needed constants 
     MMHG_TO_CGS = 1333.22368; 
@@ -149,28 +149,28 @@ function [] = output_to_ibamr_format(valve)
         
         left_papillary  = posterior.left_papillary; 
         posterior.left_papillary_idx = global_idx; 
-        total_vertices  = vertex_string(vertex, left_papillary, total_vertices); 
-        total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
+        params.total_vertices  = vertex_string(params.vertex, left_papillary, params.total_vertices); 
+        params.total_targets   = target_string(params.target, global_idx, k_target, params.total_targets, eta_papillary);     
         global_idx      = global_idx + 1; 
 
         right_papillary = posterior.right_papillary; 
         posterior.right_papillary_idx = global_idx; 
-        total_vertices  = vertex_string(vertex, right_papillary, total_vertices); 
-        total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
+        params.total_vertices  = vertex_string(params.vertex, right_papillary, params.total_vertices); 
+        params.total_targets   = target_string(params.target, global_idx, k_target, params.total_targets, eta_papillary);     
         global_idx      = global_idx + 1;     
 
         if valve.split_papillary
 
             left_papillary  = anterior.left_papillary; 
             anterior.left_papillary_idx = global_idx; 
-            total_vertices  = vertex_string(vertex, left_papillary, total_vertices); 
-            total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
+            params.total_vertices  = vertex_string(params.vertex, left_papillary, params.total_vertices); 
+            params.total_targets   = target_string(params.target, global_idx, k_target, params.total_targets, eta_papillary);     
             global_idx      = global_idx + 1; 
 
             right_papillary = anterior.right_papillary; 
             anterior.right_papillary_idx = global_idx; 
-            total_vertices  = vertex_string(vertex, right_papillary, total_vertices); 
-            total_targets   = target_string(target, global_idx, k_target, total_targets, eta_papillary);     
+            params.total_vertices  = vertex_string(params.vertex, right_papillary, params.total_vertices); 
+            params.total_targets   = target_string(params.target, global_idx, k_target, params.total_targets, eta_papillary);     
             global_idx      = global_idx + 1;             
 
         else
@@ -181,29 +181,29 @@ function [] = output_to_ibamr_format(valve)
         
         % posterior first 
         % leaflets 
-        [global_idx, total_vertices, total_springs, total_targets, posterior] = ...
-            add_leaflet(posterior, spring, vertex, target, ...
-                        global_idx, total_vertices, total_springs, total_targets, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet); 
+        [global_idx, params.total_vertices, params.total_springs, params.total_targets, posterior] = ...
+            add_leaflet(posterior, params.spring, params.vertex, params.target, ...
+                        global_idx, params.total_vertices, params.total_springs, params.total_targets, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet); 
 
         % posterior chordae 
         posterior.chordae.left_papillary_idx  = posterior.left_papillary_idx; 
         posterior.chordae.right_papillary_idx = posterior.right_papillary_idx; 
 
-        [global_idx, total_vertices, total_springs] = ...
-                add_chordae_tree(posterior, spring, vertex, global_idx, total_vertices, total_springs, k_rel_leaflet, collagen_springs_leaflet);  
+        [global_idx, params.total_vertices, params.total_springs] = ...
+                add_chordae_tree(posterior, params.spring, params.vertex, global_idx, params.total_vertices, params.total_springs, k_rel_leaflet, collagen_springs_leaflet);  
 
         % anterior 
-        [global_idx, total_vertices, total_springs, total_targets, anterior] = ...
-            add_leaflet(anterior, spring, vertex, target, ...
-                         global_idx, total_vertices, total_springs, total_targets, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet);   
+        [global_idx, params.total_vertices, params.total_springs, params.total_targets, anterior] = ...
+            add_leaflet(anterior, params.spring, params.vertex, params.target, ...
+                         global_idx, params.total_vertices, params.total_springs, params.total_targets, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet);   
 
 
         % anterior chordae 
         anterior.chordae.left_papillary_idx  = anterior.left_papillary_idx; 
         anterior.chordae.right_papillary_idx = anterior.right_papillary_idx; 
 
-        [global_idx, total_vertices, total_springs] = ...
-                add_chordae_tree(anterior, spring, vertex, global_idx, total_vertices, total_springs, k_rel_leaflet, collagen_springs_leaflet);  
+        [global_idx, params.total_vertices, params.total_springs] = ...
+                add_chordae_tree(anterior, params.spring, params.vertex, global_idx, params.total_vertices, params.total_springs, k_rel_leaflet, collagen_springs_leaflet);  
 
         % flat part of mesh 
         r = valve.r; 
@@ -215,9 +215,9 @@ function [] = output_to_ibamr_format(valve)
         radial_fibers = false; 
 
         % turn the polar net off for now      
-        [global_idx, total_vertices, total_springs, total_targets] = ...
-                                place_net(r, h, L, N_ring, radial_fibers, spring, vertex, target, inst, ...
-                                global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net); 
+        [global_idx, params.total_vertices, params.total_springs, params.total_targets] = ...
+                                place_net(r, h, L, N_ring, radial_fibers, params.spring, params.vertex, params.target, params.inst, ...
+                                global_idx, params.total_vertices, params.total_springs, params.total_targets, k_rel, k_target_net, ref_frac_net, eta_net); 
 
                             
         % place rays for now
@@ -227,9 +227,9 @@ function [] = output_to_ibamr_format(valve)
             k_rel_anterior = k_rel;
         end 
         
-        [global_idx, total_vertices, total_springs, total_targets] = ...
-                                place_rays(anterior, ds, valve.r, L, spring, vertex, target, ...
-                                        global_idx, total_vertices, total_springs, total_targets, k_rel_anterior, k_target_net, ref_frac_net, eta_net);                    
+        [global_idx, params.total_vertices, params.total_springs, params.total_targets] = ...
+                                place_rays(anterior, ds, valve.r, L, params.spring, params.vertex, params.target, ...
+                                        global_idx, params.total_vertices, params.total_springs, params.total_targets, k_rel_anterior, k_target_net, ref_frac_net, eta_net);                    
 
         if posterior.radial_and_circumferential
             k_rel_posterior = posterior.beta * k_rel;
@@ -237,37 +237,37 @@ function [] = output_to_ibamr_format(valve)
             k_rel_posterior = k_rel;
         end 
                                     
-        [global_idx, total_vertices, total_springs, total_targets] = ...
-                                place_rays(posterior, ds, valve.r, L, spring, vertex, target, ...
-                                        global_idx, total_vertices, total_springs, total_targets, k_rel_posterior, k_target_net, ref_frac_net, eta_net);                    
+        [global_idx, params.total_vertices, params.total_springs, params.total_targets] = ...
+                                place_rays(posterior, ds, valve.r, L, params.spring, params.vertex, params.target, ...
+                                        global_idx, params.total_vertices, params.total_springs, params.total_targets, k_rel_posterior, k_target_net, ref_frac_net, eta_net);                    
 
 
         % flat part of mesh with Cartesian coordinates
         % inner radius, stop mesh here 
         r_cartesian = r + 2*ds; 
-        [global_idx, total_vertices, total_springs, total_targets] = ...
-                                place_cartesian_net(r_cartesian, h, L, ds, spring, vertex, target, ...
-                                global_idx, total_vertices, total_springs, total_targets, k_rel, k_target_net, ref_frac_net, eta_net); 
+        [global_idx, params.total_vertices, params.total_springs, params.total_targets] = ...
+                                place_cartesian_net(r_cartesian, h, L, ds, params.spring, params.vertex, params.target, ...
+                                global_idx, params.total_vertices, params.total_springs, params.total_targets, k_rel, k_target_net, ref_frac_net, eta_net); 
  
     end 
                         
                         
     if n_lagrangian_tracers > 0
         double_z = false; 
-        [global_idx, total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, total_vertices, vertex, n_lagrangian_tracers, L, double_z); 
+        [global_idx, params.total_vertices, total_lagrangian_placed] = place_lagrangian_tracers(global_idx, params.total_vertices, params.vertex, n_lagrangian_tracers, L, double_z); 
         particles = fopen(strcat(base_name, '.particles'), 'w'); 
         fprintf(particles, '%d\n' ,total_lagrangian_placed); 
     end 
 
     % clean up files with totals 
-    fclose(vertex); 
-    fclose(spring); 
-    fclose(target); 
-    fclose(inst  ); 
+    fclose(params.vertex); 
+    fclose(params.spring); 
+    fclose(params.target); 
+    fclose(params.inst  ); 
 
-    prepend_line_with_int(strcat(base_name, '.vertex'), total_vertices); 
-    prepend_line_with_int(strcat(base_name, '.spring'), total_springs); 
-    prepend_line_with_int(strcat(base_name, '.target'), total_targets); 
+    prepend_line_with_int(strcat(base_name, '.vertex'), params.total_vertices); 
+    prepend_line_with_int(strcat(base_name, '.spring'), params.total_springs); 
+    prepend_line_with_int(strcat(base_name, '.target'), params.total_targets); 
 
 end 
 
