@@ -150,13 +150,13 @@ function [] = output_to_ibamr_format(valve)
         left_papillary  = posterior.left_papillary; 
         posterior.left_papillary_idx = global_idx; 
         params  = vertex_string(params, left_papillary); 
-        params.total_targets   = target_string(params.target, global_idx, k_target, params.total_targets, eta_papillary);     
+        params   = target_string(params, global_idx, k_target, eta_papillary);     
         global_idx      = global_idx + 1; 
 
         right_papillary = posterior.right_papillary; 
         posterior.right_papillary_idx = global_idx; 
         params = vertex_string(params, right_papillary); 
-        params.total_targets   = target_string(params.target, global_idx, k_target, params.total_targets, eta_papillary);     
+        params   = target_string(params, global_idx, k_target, eta_papillary);     
         global_idx      = global_idx + 1;     
 
         if valve.split_papillary
@@ -164,13 +164,13 @@ function [] = output_to_ibamr_format(valve)
             left_papillary  = anterior.left_papillary; 
             anterior.left_papillary_idx = global_idx; 
             params  = vertex_string(params.vertex, left_papillary); 
-            params.total_targets   = target_string(params.target, global_idx, k_target, params.total_targets, eta_papillary);     
+            params   = target_string(params, global_idx, k_target, eta_papillary);     
             global_idx      = global_idx + 1; 
 
             right_papillary = anterior.right_papillary; 
             anterior.right_papillary_idx = global_idx; 
             params  = vertex_string(params.vertex, right_papillary); 
-            params.total_targets   = target_string(params.target, global_idx, k_target, params.total_targets, eta_papillary);     
+            params   = target_string(params, global_idx, k_target, eta_papillary);     
             global_idx      = global_idx + 1;             
 
         else
@@ -290,15 +290,15 @@ function params = spring_string(params, idx, nbr, kappa, rest_len, function_idx)
     params.total_springs = params.total_springs + 1; 
 end 
 
-function total_targets = target_string(target, idx, kappa, total_targets, eta)
+function params = target_string(params, idx, kappa, eta)
     % prints a target format string to target file 
     
     if exist('eta', 'var') && (eta > 0.0)
-        fprintf(target, '%d\t %.14f\t %.14f\n', idx, kappa, eta);
+        fprintf(params.target, '%d\t %.14f\t %.14f\n', idx, kappa, eta);
     else
-        fprintf(target, '%d\t %.14f\n', idx, kappa);
+        fprintf(params.target, '%d\t %.14f\n', idx, kappa);
     end 
-    total_targets = total_targets + 1; 
+    params.total_targets = params.total_targets + 1; 
 end 
 
 
@@ -437,9 +437,9 @@ function [global_idx, params, leaflet] = add_leaflet(params, leaflet, global_idx
                 % if on boundary, this is a target point 
                 if is_bc(j,k)
                     if exist('eta', 'var')
-                        params.total_targets = target_string(params.target, idx, k_target, params.total_targets, eta);     
+                        params = target_string(params, idx, k_target, eta);     
                     else
-                        params.total_targets = target_string(params.target, idx, k_target, params.total_targets);     
+                        params = target_string(params, idx, k_target);     
                     end 
                 end 
                 
@@ -689,9 +689,9 @@ function [global_idx, params] = place_net(params, r, h, L, N, radial_fibers, glo
                 params = vertex_string(params, points(:,j,k)); 
                 points_placed = points_placed + 1; 
                 if exist('eta', 'var')
-                    params.total_targets = target_string(params.target, idx, k_target, params.total_targets, eta);     
+                    params = target_string(params, idx, k_target, eta);     
                 else
-                    params.total_targets = target_string(params.target, idx, k_target, params.total_targets);     
+                    params = target_string(params, idx, k_target);     
                 end 
                 
                 
@@ -832,9 +832,9 @@ function [global_idx, params] = place_rays(params, leaflet, ds, r, L, global_idx
 
                         % it's a target too 
                         if exist('eta', 'var')
-                            params.total_targets = target_string(params.target, idx, k_target, params.total_targets, eta);     
+                            params = target_string(params, idx, k_target, eta);     
                         else
-                            params.total_targets = target_string(params.target, idx, k_target, params.total_targets);     
+                            params = target_string(params, idx, k_target);     
                         end 
 
 
@@ -994,9 +994,9 @@ function [global_idx, params] = place_cartesian_net(params, r, h, L, ds, global_
                 params = vertex_string(params, points(:,j,k)); 
                 points_placed = points_placed + 1; 
                 if exist('eta', 'var')
-                    params.total_targets = target_string(params.target, idx, k_target, params.total_targets, eta);     
+                    params = target_string(params, idx, k_target, eta);     
                 else
-                    params.total_targets = target_string(params.target, idx, k_target, params.total_targets);     
+                    params = target_string(params, idx, k_target);     
                 end 
 
                 
