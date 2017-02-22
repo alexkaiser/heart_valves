@@ -149,13 +149,13 @@ function [] = output_to_ibamr_format(valve)
         
         left_papillary  = posterior.left_papillary; 
         posterior.left_papillary_idx = global_idx; 
-        params.total_vertices  = vertex_string(params.vertex, left_papillary, params.total_vertices); 
+        params  = vertex_string(params, left_papillary); 
         params.total_targets   = target_string(params.target, global_idx, k_target, params.total_targets, eta_papillary);     
         global_idx      = global_idx + 1; 
 
         right_papillary = posterior.right_papillary; 
         posterior.right_papillary_idx = global_idx; 
-        params.total_vertices  = vertex_string(params.vertex, right_papillary, params.total_vertices); 
+        params = vertex_string(params, right_papillary); 
         params.total_targets   = target_string(params.target, global_idx, k_target, params.total_targets, eta_papillary);     
         global_idx      = global_idx + 1;     
 
@@ -163,13 +163,13 @@ function [] = output_to_ibamr_format(valve)
 
             left_papillary  = anterior.left_papillary; 
             anterior.left_papillary_idx = global_idx; 
-            params.total_vertices  = vertex_string(params.vertex, left_papillary, params.total_vertices); 
+            params  = vertex_string(params.vertex, left_papillary); 
             params.total_targets   = target_string(params.target, global_idx, k_target, params.total_targets, eta_papillary);     
             global_idx      = global_idx + 1; 
 
             right_papillary = anterior.right_papillary; 
             anterior.right_papillary_idx = global_idx; 
-            params.total_vertices  = vertex_string(params.vertex, right_papillary, params.total_vertices); 
+            params  = vertex_string(params.vertex, right_papillary); 
             params.total_targets   = target_string(params.target, global_idx, k_target, params.total_targets, eta_papillary);     
             global_idx      = global_idx + 1;             
 
@@ -261,14 +261,14 @@ end
 
 % nest this function so it can access the z increment
 % this is bad practice and should be removed 
-function total_vertices = vertex_string(vertex, coords, total_vertices)
+function params = vertex_string(params, coords)
     % prints formatted string for current vertex to vertex file   
     
     % FIXME!!! 
     global z_offset
     
-    fprintf(vertex, '%.14f\t %.14f\t %.14f\n', coords(1), coords(2), coords(3) + z_offset); 
-    total_vertices = total_vertices + 1; 
+    fprintf(params.vertex, '%.14f\t %.14f\t %.14f\n', coords(1), coords(2), coords(3) + z_offset); 
+    params.total_vertices = params.total_vertices + 1; 
 end
 
 
@@ -367,7 +367,7 @@ function [global_idx, params, leaflet] = add_leaflet(params, leaflet, global_idx
                 
                 idx = global_idx + point_idx_with_bc(j,k);    
                 
-                params.total_vertices = vertex_string(params.vertex, X(:,j,k), params.total_vertices); 
+                params = vertex_string(params, X(:,j,k)); 
                 
                 indices_global(j,k) = idx; 
                 
@@ -536,7 +536,7 @@ function [global_idx, params] = add_chordae_tree(params, leaflet, global_idx, k_
             end 
             
             % the vertex is always placed 
-            params.total_vertices = vertex_string(params.vertex, C(:,i), params.total_vertices); 
+            params = vertex_string(params, C(:,i)); 
             
             % place the spring which goes to the parent 
             parent = floor(i/2); 
@@ -686,7 +686,7 @@ function [global_idx, params] = place_net(params, r, h, L, N, radial_fibers, glo
                 end 
                 
                 % every valid vertex is a target here 
-                params.total_vertices = vertex_string(params.vertex, points(:,j,k), params.total_vertices); 
+                params = vertex_string(params, points(:,j,k)); 
                 points_placed = points_placed + 1; 
                 if exist('eta', 'var')
                     params.total_targets = target_string(params.target, idx, k_target, params.total_targets, eta);     
@@ -828,7 +828,7 @@ function [global_idx, params] = place_rays(params, leaflet, ds, r, L, global_idx
                         idx = global_idx;
 
                         % point 
-                        params.total_vertices = vertex_string(params.vertex, point, params.total_vertices); 
+                        params = vertex_string(params, point); 
 
                         % it's a target too 
                         if exist('eta', 'var')
@@ -991,7 +991,7 @@ function [global_idx, params] = place_cartesian_net(params, r, h, L, ds, global_
                 end 
                 
                 % every valid vertex is a target here 
-                params.total_vertices = vertex_string(params.vertex, points(:,j,k), params.total_vertices); 
+                params = vertex_string(params, points(:,j,k)); 
                 points_placed = points_placed + 1; 
                 if exist('eta', 'var')
                     params.total_targets = target_string(params.target, idx, k_target, params.total_targets, eta);     
@@ -1067,7 +1067,7 @@ function [global_idx, params, total_lagrangian_placed] = place_lagrangian_tracer
                 y = j * dx - L/2; 
                 z = k * dx + z_min + z_extra_offset; 
                 
-                params.total_vertices = vertex_string(params.vertex, [x y z], params.total_vertices); 
+                params = vertex_string(params, [x y z]); 
     
                 total_lagrangian_placed = total_lagrangian_placed + 1; 
                 global_idx = global_idx + 1; 
