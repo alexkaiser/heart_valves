@@ -43,7 +43,7 @@ function [] = output_to_ibamr_format(valve)
     params.inst   = fopen(strcat(base_name, '.inst'  ), 'w'); 
 
     % keep one global index through the whole thing 
-    global_idx = 0;
+    params.global_idx = 0;
     
     % just count the number of vertices and strings throughout 
     params.total_vertices = 0; 
@@ -148,30 +148,30 @@ function [] = output_to_ibamr_format(valve)
     for z_offset = z_offset_vals
         
         left_papillary  = posterior.left_papillary; 
-        posterior.left_papillary_idx = global_idx; 
+        posterior.left_papillary_idx = params.global_idx; 
         params  = vertex_string(params, left_papillary); 
-        params   = target_string(params, global_idx, k_target, eta_papillary);     
-        global_idx      = global_idx + 1; 
+        params   = target_string(params, params.global_idx, k_target, eta_papillary);     
+        params.global_idx      = params.global_idx + 1; 
 
         right_papillary = posterior.right_papillary; 
-        posterior.right_papillary_idx = global_idx; 
+        posterior.right_papillary_idx = params.global_idx; 
         params = vertex_string(params, right_papillary); 
-        params   = target_string(params, global_idx, k_target, eta_papillary);     
-        global_idx      = global_idx + 1;     
+        params   = target_string(params, params.global_idx, k_target, eta_papillary);     
+        params.global_idx      = params.global_idx + 1;     
 
         if valve.split_papillary
 
             left_papillary  = anterior.left_papillary; 
-            anterior.left_papillary_idx = global_idx; 
+            anterior.left_papillary_idx = params.global_idx; 
             params  = vertex_string(params.vertex, left_papillary); 
-            params   = target_string(params, global_idx, k_target, eta_papillary);     
-            global_idx      = global_idx + 1; 
+            params   = target_string(params, params.global_idx, k_target, eta_papillary);     
+            params.global_idx      = params.global_idx + 1; 
 
             right_papillary = anterior.right_papillary; 
-            anterior.right_papillary_idx = global_idx; 
+            anterior.right_papillary_idx = params.global_idx; 
             params  = vertex_string(params.vertex, right_papillary); 
-            params   = target_string(params, global_idx, k_target, eta_papillary);     
-            global_idx      = global_idx + 1;             
+            params   = target_string(params, params.global_idx, k_target, eta_papillary);     
+            params.global_idx      = params.global_idx + 1;             
 
         else
             anterior.left_papillary_idx  = posterior.left_papillary_idx;
@@ -181,23 +181,23 @@ function [] = output_to_ibamr_format(valve)
         
         % posterior first 
         % leaflets 
-        [global_idx, params, posterior] = add_leaflet(params, posterior, global_idx, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet); 
+        [params, posterior] = add_leaflet(params, posterior, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet); 
 
         % posterior chordae 
         posterior.chordae.left_papillary_idx  = posterior.left_papillary_idx; 
         posterior.chordae.right_papillary_idx = posterior.right_papillary_idx; 
 
-        [global_idx, params] = add_chordae_tree(params, posterior, global_idx, k_rel_leaflet, collagen_springs_leaflet);  
+        [params] = add_chordae_tree(params, posterior, k_rel_leaflet, collagen_springs_leaflet);  
 
         % anterior 
-        [global_idx, params, anterior] = add_leaflet(params, anterior, global_idx, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet);   
+        [params, anterior] = add_leaflet(params, anterior, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet);   
 
 
         % anterior chordae 
         anterior.chordae.left_papillary_idx  = anterior.left_papillary_idx; 
         anterior.chordae.right_papillary_idx = anterior.right_papillary_idx; 
 
-        [global_idx, params] = add_chordae_tree(params, anterior, global_idx, k_rel_leaflet, collagen_springs_leaflet);  
+        [params] = add_chordae_tree(params, anterior, k_rel_leaflet, collagen_springs_leaflet);  
 
         % flat part of mesh 
         r = valve.r; 
@@ -209,7 +209,7 @@ function [] = output_to_ibamr_format(valve)
         radial_fibers = false; 
 
         % turn the polar net off for now      
-        [global_idx, params] = place_net(params, r, h, L, N_ring, radial_fibers, global_idx, k_rel, k_target_net, ref_frac_net, eta_net); 
+        [params] = place_net(params, r, h, L, N_ring, radial_fibers, k_rel, k_target_net, ref_frac_net, eta_net); 
 
                             
         % place rays for now
@@ -219,7 +219,7 @@ function [] = output_to_ibamr_format(valve)
             k_rel_anterior = k_rel;
         end 
         
-        [global_idx, params] = place_rays(params, anterior, ds, valve.r, L, global_idx, k_rel_anterior, k_target_net, ref_frac_net, eta_net);                    
+        [params] = place_rays(params, anterior, ds, valve.r, L, k_rel_anterior, k_target_net, ref_frac_net, eta_net);                    
 
         if posterior.radial_and_circumferential
             k_rel_posterior = posterior.beta * k_rel;
@@ -227,20 +227,20 @@ function [] = output_to_ibamr_format(valve)
             k_rel_posterior = k_rel;
         end 
                                     
-        [global_idx, params] = place_rays(params, posterior, ds, valve.r, L, global_idx, k_rel_posterior, k_target_net, ref_frac_net, eta_net);                    
+        [params] = place_rays(params, posterior, ds, valve.r, L, k_rel_posterior, k_target_net, ref_frac_net, eta_net);                    
 
 
         % flat part of mesh with Cartesian coordinates
         % inner radius, stop mesh here 
         r_cartesian = r + 2*ds; 
-        [global_idx, params] = place_cartesian_net(params, r_cartesian, h, L, ds, global_idx, k_rel, k_target_net, ref_frac_net, eta_net); 
+        [params] = place_cartesian_net(params, r_cartesian, h, L, ds, k_rel, k_target_net, ref_frac_net, eta_net); 
  
     end 
                         
                         
     if n_lagrangian_tracers > 0
         double_z = false; 
-        [global_idx, params, total_lagrangian_placed] = place_lagrangian_tracers(params, global_idx, n_lagrangian_tracers, L, double_z); 
+        [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_lagrangian_tracers, L, double_z); 
         particles = fopen(strcat(base_name, '.particles'), 'w'); 
         fprintf(particles, '%d\n' ,total_lagrangian_placed); 
     end 
@@ -321,7 +321,7 @@ function [] = prepend_line_with_int(file_name, val)
 end 
 
 
-function [global_idx, params, leaflet] = add_leaflet(params, leaflet, global_idx, k_rel, k_target, eta, collagen_spring)
+function [params, leaflet] = add_leaflet(params, leaflet, k_rel, k_target, eta, collagen_spring)
                       
     % Places all main data into IBAMR format for this leaflet
     % Updates running totals on the way 
@@ -365,7 +365,7 @@ function [global_idx, params, leaflet] = add_leaflet(params, leaflet, global_idx
             % every internal and boundary point written to the file 
             if is_internal(j,k) || is_bc(j,k)
                 
-                idx = global_idx + point_idx_with_bc(j,k);    
+                idx = params.global_idx + point_idx_with_bc(j,k);    
                 
                 params = vertex_string(params, X(:,j,k)); 
                 
@@ -385,7 +385,7 @@ function [global_idx, params, leaflet] = add_leaflet(params, leaflet, global_idx
 
                     R_nbr = leaflet.chordae.Ref_l(:,idx_chordae); 
 
-                    nbr_idx = global_idx + total_leaflet + idx_chordae - 1; 
+                    nbr_idx = params.global_idx + total_leaflet + idx_chordae - 1; 
 
                     rest_len = ref_frac * norm(R_nbr - R(:,j,k)); 
 
@@ -415,7 +415,7 @@ function [global_idx, params, leaflet] = add_leaflet(params, leaflet, global_idx
 
                     R_nbr = leaflet.chordae.Ref_r(:,idx_chordae); 
 
-                    nbr_idx = global_idx + total_leaflet + idx_chordae - 1; 
+                    nbr_idx = params.global_idx + total_leaflet + idx_chordae - 1; 
                     
                     % right gets incremented by N_chordae again     
                     nbr_idx = nbr_idx + N_chordae;     
@@ -449,7 +449,7 @@ function [global_idx, params, leaflet] = add_leaflet(params, leaflet, global_idx
                 if (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr, k_nbr))
                     
                     rest_len = ref_frac * norm(R(:,j_nbr,k_nbr) - R(:,j,k)); 
-                    nbr_idx = global_idx + point_idx_with_bc(j_nbr,k_nbr);
+                    nbr_idx = params.global_idx + point_idx_with_bc(j_nbr,k_nbr);
                     
                     if collagen_spring
                         kappa = alhpa * k_rel;         
@@ -467,7 +467,7 @@ function [global_idx, params, leaflet] = add_leaflet(params, leaflet, global_idx
                 if (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr, k_nbr))
                     
                     rest_len = ref_frac * norm(R(:,j_nbr,k_nbr) - R(:,j,k)); 
-                    nbr_idx = global_idx + point_idx_with_bc(j_nbr,k_nbr);
+                    nbr_idx = params.global_idx + point_idx_with_bc(j_nbr,k_nbr);
                     
                     if collagen_spring
                         kappa = beta * k_rel;         
@@ -485,13 +485,13 @@ function [global_idx, params, leaflet] = add_leaflet(params, leaflet, global_idx
     end
     
     leaflet.indices_global = indices_global; 
-    global_idx = global_idx + pts_placed;
+    params.global_idx = params.global_idx + pts_placed;
 
 end 
 
 
 
-function [global_idx, params] = add_chordae_tree(params, leaflet, global_idx, k_rel, collagen_spring)
+function [params] = add_chordae_tree(params, leaflet, k_rel, collagen_spring)
 
     % Adds chordae tree to IBAMR format files 
     % No targets here, so files and and count not included 
@@ -528,7 +528,7 @@ function [global_idx, params] = add_chordae_tree(params, leaflet, global_idx, k_
         
         for i=1:N_chordae
 
-            idx = global_idx + i - 1; % subtract one ibamr is zero indexed 
+            idx = params.global_idx + i - 1; % subtract one ibamr is zero indexed 
             
             % right side gets an extra factor of N_chordae
             if ~left_side
@@ -551,7 +551,7 @@ function [global_idx, params] = add_chordae_tree(params, leaflet, global_idx, k_
                 end
                 
             else
-                nbr_idx = parent + global_idx - 1; % subtract one, ibamr zero indexed  
+                nbr_idx = parent + params.global_idx - 1; % subtract one, ibamr zero indexed  
                 if ~left_side
                     nbr_idx = nbr_idx + N_chordae; 
                 end 
@@ -575,12 +575,12 @@ function [global_idx, params] = add_chordae_tree(params, leaflet, global_idx, k_
         
     end 
     
-    global_idx = global_idx + 2*N_chordae; 
+    params.global_idx = params.global_idx + 2*N_chordae; 
 
 end 
                         
                         
-function [global_idx, params] = place_net(params, r, h, L, N, radial_fibers, global_idx, k_rel, k_target, ref_frac, eta)
+function [params] = place_net(params, r, h, L, N, radial_fibers, k_rel, k_target, ref_frac, eta)
     % 
     % Places a polar coordinate mesh in a box 
     % Starts with N points evenly spaced at radius R
@@ -600,7 +600,7 @@ function [global_idx, params] = place_net(params, r, h, L, N, radial_fibers, glo
     %     vertex 
     %     target
     %     inst 
-    %     global_idx       Running totals  
+    %     params.global_idx       Running totals  
     %     total_vertices 
     %     total_springs 
     %     total_targets 
@@ -667,7 +667,7 @@ function [global_idx, params] = place_net(params, r, h, L, N, radial_fibers, glo
             if ~isnan(indices(j,k))
  
                 last_idx = idx; 
-                idx = indices(j,k) + global_idx; 
+                idx = indices(j,k) + params.global_idx; 
                 
                 % instrument file on 
                 if k == 1
@@ -700,7 +700,7 @@ function [global_idx, params] = place_net(params, r, h, L, N, radial_fibers, glo
                     if ~isnan(indices(j+1,k))
                         rest_len = ref_frac * norm(points(:,j,k) - points(:,j+1,k)); 
                         kappa = k_rel / rest_len;
-                        nbr_idx = indices(j+1,k) + global_idx; 
+                        nbr_idx = indices(j+1,k) + params.global_idx; 
                         params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
                     end 
                 end 
@@ -711,7 +711,7 @@ function [global_idx, params] = place_net(params, r, h, L, N, radial_fibers, glo
                    if ~isnan(indices(1,k)) 
                        rest_len = ref_frac * norm(points(:,j,k) - points(:,1,k)); 
                        kappa = k_rel / rest_len;
-                       nbr_idx = indices(1,k) + global_idx; 
+                       nbr_idx = indices(1,k) + params.global_idx; 
                        params = spring_string(params, nbr_idx, idx, kappa, rest_len); 
                    end 
                 end 
@@ -722,7 +722,7 @@ function [global_idx, params] = place_net(params, r, h, L, N, radial_fibers, glo
                         if ~isnan(indices(j,k+1))
                             rest_len = ref_frac * norm(points(:,j,k) - points(:,j,k+1)); 
                             kappa = k_rel / rest_len; 
-                            nbr_idx = indices(j,k+1) + global_idx; 
+                            nbr_idx = indices(j,k+1) + params.global_idx; 
                             params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
                         end 
                     end 
@@ -735,12 +735,12 @@ function [global_idx, params] = place_net(params, r, h, L, N, radial_fibers, glo
         end 
     end 
     
-    global_idx = global_idx + points_placed; 
+    params.global_idx = params.global_idx + points_placed; 
 
 end 
 
 
-function [global_idx, params] = place_rays(params, leaflet, ds, r, L, global_idx, k_rel, k_target, ref_frac, eta)
+function [params] = place_rays(params, leaflet, ds, r, L, k_rel, k_target, ref_frac, eta)
     % 
     % Places rays of fibers emenating from the leaflet 
     % Angle of rays makes them (roughly) geodesics 
@@ -761,7 +761,7 @@ function [global_idx, params] = place_rays(params, leaflet, ds, r, L, global_idx
     %     vertex 
     %     target
     %     inst 
-    %     global_idx       Running totals  
+    %     params.global_idx       Running totals  
     %     total_vertices 
     %     total_springs 
     %     total_targets 
@@ -825,7 +825,7 @@ function [global_idx, params] = place_rays(params, leaflet, ds, r, L, global_idx
                     while norm(point(1:2), inf) < L   
 
                         % grab the index 
-                        idx = global_idx;
+                        idx = params.global_idx;
 
                         % point 
                         params = vertex_string(params, point); 
@@ -846,7 +846,7 @@ function [global_idx, params] = place_rays(params, leaflet, ds, r, L, global_idx
 
                         point_prev = point; 
                         point      = point + increment; 
-                        global_idx = global_idx + 1; 
+                        params.global_idx = params.global_idx + 1; 
                         nbr_idx    = idx; 
                     end 
 
@@ -922,7 +922,7 @@ end
 
 
 
-function [global_idx, params] = place_cartesian_net(params, r, h, L, ds, global_idx, k_rel, k_target, ref_frac, eta)
+function [params] = place_cartesian_net(params, r, h, L, ds, k_rel, k_target, ref_frac, eta)
     % 
     % Places a cartesian coordinate mesh in a box 
     % This is to avoid issues with the polar mesh at the edge 
@@ -936,7 +936,7 @@ function [global_idx, params] = place_cartesian_net(params, r, h, L, ds, global_
     %     h                Height of valve ring 
     %     L                Box width -- point must have max norm less than L to be included 
     %     ds               Mesh is placed starting ds from boundary 
-    %     global_idx       Running totals  
+    %     params.global_idx       Running totals  
     %     total_vertices 
     %     total_springs 
     %     total_targets 
@@ -984,7 +984,7 @@ function [global_idx, params] = place_cartesian_net(params, r, h, L, ds, global_
             if ~isnan(indices(j,k))
  
                 last_idx = idx; 
-                idx = indices(j,k) + global_idx; 
+                idx = indices(j,k) + params.global_idx; 
                 
                 if last_idx >= idx
                     error('should always be placing points in order, something wrong'); 
@@ -1005,7 +1005,7 @@ function [global_idx, params] = place_cartesian_net(params, r, h, L, ds, global_
                     if ~isnan(indices(j+1,k))
                         rest_len = ref_frac * norm(points(:,j,k) - points(:,j+1,k)); 
                         kappa = k_rel / rest_len;
-                        nbr_idx = indices(j+1,k) + global_idx; 
+                        nbr_idx = indices(j+1,k) + params.global_idx; 
                         params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
                     end 
                 end 
@@ -1015,7 +1015,7 @@ function [global_idx, params] = place_cartesian_net(params, r, h, L, ds, global_
                     if ~isnan(indices(j,k+1))
                         rest_len = ref_frac * norm(points(:,j,k) - points(:,j,k+1)); 
                         kappa = k_rel / rest_len; 
-                        nbr_idx = indices(j,k+1) + global_idx; 
+                        nbr_idx = indices(j,k+1) + params.global_idx; 
                         params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
                     end 
                 end 
@@ -1025,17 +1025,17 @@ function [global_idx, params] = place_cartesian_net(params, r, h, L, ds, global_
         end 
     end 
     
-    global_idx = global_idx + points_placed; 
+    params.global_idx = params.global_idx + points_placed; 
 
 end 
 
 
 
-function [global_idx, params, total_lagrangian_placed] = place_lagrangian_tracers(params, global_idx, n_lagrangian_tracers, L, double_z)
+function [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_lagrangian_tracers, L, double_z)
     % Places a uniform cartesian mesh of lagrangian particle tracers 
     % Simple lopp implementation 
     %
-    %     global_idx               Running totals  
+    %     params.global_idx               Running totals  
     %     total_vertices 
     %     vertex                   vertex file for writing  
     %     n_lagrangian_tracers
@@ -1070,7 +1070,7 @@ function [global_idx, params, total_lagrangian_placed] = place_lagrangian_tracer
                 params = vertex_string(params, [x y z]); 
     
                 total_lagrangian_placed = total_lagrangian_placed + 1; 
-                global_idx = global_idx + 1; 
+                params.global_idx = params.global_idx + 1; 
             end 
         end 
     end 
