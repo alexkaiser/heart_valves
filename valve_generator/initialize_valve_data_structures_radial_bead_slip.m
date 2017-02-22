@@ -1,4 +1,4 @@
-function [valve] = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization, repulsive_potential)
+function [valve] = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization, repulsive_potential, decreasing_tension)
 % 
 % Initializes data structures for full solve.  
 % 
@@ -51,9 +51,26 @@ else
 end 
 
 
-% most interesting power 2 at this point 
-% valve.repulsive_power     = 2; 
-% valve.repulsive_coeff     = (0.28) * 1.0e-3;
+valve.decreasing_tension = decreasing_tension; 
+
+if decreasing_tension
+ 
+    % good total value (not including mesh parameters) at N=32
+    dec_tension_coeff_32 = 0.002238985441466; 
+    
+    dec_tension_coeff_base = dec_tension_coeff_32 * 32^2; 
+    
+    % scale so that when multiplied by above value gives the correct value 
+    % valve.repulsive_coeff = repulsive_coeff_32 * 32^2; 
+    
+    valve.c_dec_tension_circumferential = 1.0 * dec_tension_coeff_base; 
+    valve.c_dec_tension_radial          = 1.0 * dec_tension_coeff_base; 
+    valve.c_dec_tension_chordae         = 1.0 * dec_tension_coeff_base; 
+else 
+    valve.dec_tension  = 0.0; 
+end 
+
+
 
 % function pointers 
 if attached 

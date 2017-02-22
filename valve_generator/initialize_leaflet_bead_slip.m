@@ -47,10 +47,30 @@ leaflet.leaflet_only = leaflet_only;
 
 
 leaflet.repulsive_potential         = valve.repulsive_potential; 
-leaflet.repulsive_power             = valve.repulsive_power; 
-leaflet.c_repulsive_circumferential = valve.c_repulsive_circumferential; 
-leaflet.c_repulsive_radial          = valve.c_repulsive_radial; 
-leaflet.c_repulsive_chordae         = valve.c_repulsive_chordae; 
+if leaflet.repulsive_potential         
+    leaflet.repulsive_power             = valve.repulsive_power; 
+    leaflet.c_repulsive_circumferential = valve.c_repulsive_circumferential; 
+    leaflet.c_repulsive_radial          = valve.c_repulsive_radial; 
+    leaflet.c_repulsive_chordae         = valve.c_repulsive_chordae; 
+else 
+    leaflet.repulsive_power             = 1; 
+    leaflet.c_repulsive_circumferential = 0; 
+    leaflet.c_repulsive_radial          = 0; 
+    leaflet.c_repulsive_chordae         = 0; 
+end
+
+
+leaflet.decreasing_tension         = valve.decreasing_tension;
+if leaflet.decreasing_tension         
+    leaflet.c_dec_tension_circumferential = valve.c_dec_tension_circumferential; 
+    leaflet.c_dec_tension_radial          = valve.c_dec_tension_radial; 
+    leaflet.c_dec_tension_chordae         = valve.c_dec_tension_chordae; 
+else 
+    leaflet.c_dec_tension_circumferential = 0; 
+    leaflet.c_dec_tension_radial          = 0; 
+    leaflet.c_dec_tension_chordae         = 0; 
+end 
+
 
 leaflet.reflect_pressure    = reflect_x; 
 

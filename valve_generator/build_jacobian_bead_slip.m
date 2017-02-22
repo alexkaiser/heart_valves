@@ -42,6 +42,18 @@ function J = build_jacobian_bead_slip(leaflet)
         c_repulsive_chordae         = 0.0; 
     end 
     
+    if isfield(leaflet, 'decreasing_tension') && leaflet.decreasing_tension
+        decreasing_tension = true; 
+        c_dec_tension_circumferential = leaflet.c_dec_tension_circumferential; 
+        c_dec_tension_radial          = leaflet.c_dec_tension_radial; 
+        c_dec_tension_chordae         = leaflet.c_dec_tension_chordae; 
+    else 
+        decreasing_tension = false; 
+        c_dec_tension_circumferential = 0.0; 
+        c_dec_tension_radial          = 0.0; 
+        c_dec_tension_chordae         = 0.0; 
+    end 
+    
     
     [m N_chordae] = size(C_left); 
     
@@ -105,6 +117,10 @@ function J = build_jacobian_bead_slip(leaflet)
                 J_tmp = J_tmp + alpha * dv * du^2 * c_repulsive_circumferential * replusive_jacobian(X,X_nbr,power); 
             end 
             
+            if decreasing_tension
+                J_tmp = J_tmp + alpha * dv * dec_tension_jacobian(X,X_nbr,du,c_dec_tension_circumferential); 
+            end 
+            
             % current term is always added in 
             % this gets no sign 
             % this is always at the current,current block in the matrix 
@@ -129,6 +145,10 @@ function J = build_jacobian_bead_slip(leaflet)
             if repulsive_potential
                 J_tmp = J_tmp + beta * du * dv^2 * c_repulsive_radial * replusive_jacobian(X,X_nbr,power); 
             end 
+            
+            if decreasing_tension
+                J_tmp = J_tmp + beta * du * dec_tension_jacobian(X,X_nbr,dv,c_dec_tension_radial); 
+            end
 
             % current term is always added in 
             % this gets no sign 
@@ -162,6 +182,10 @@ function J = build_jacobian_bead_slip(leaflet)
                 if repulsive_potential
                     J_tmp = J_tmp + kappa * c_repulsive_chordae * du^2 * replusive_jacobian(X,X_nbr,power); 
                 end 
+                
+                if decreasing_tension
+                    J_tmp = J_tmp + kappa * dec_tension_jacobian(X,X_nbr,du,c_dec_tension_chordae); 
+                end
 
                 % current term is always added in 
                 % this gets no sign 
@@ -260,6 +284,10 @@ function J = build_jacobian_bead_slip(leaflet)
                         if repulsive_potential
                             J_tmp = J_tmp + alpha/du * c_repulsive_circumferential * du^2 * replusive_jacobian(X,X_nbr,power); 
                         end 
+                        
+                        if decreasing_tension
+                            J_tmp = J_tmp + alpha/du * dec_tension_jacobian(X,X_nbr,du,c_dec_tension_circumferential); 
+                        end 
 
                         % current term is always added in 
                         % this gets no sign 
@@ -297,6 +325,10 @@ function J = build_jacobian_bead_slip(leaflet)
                         
                         if repulsive_potential
                             J_tmp = J_tmp + beta/dv * c_repulsive_radial * dv^2 * replusive_jacobian(X,X_nbr,power); 
+                        end
+                        
+                        if decreasing_tension
+                            J_tmp = J_tmp + beta/dv * dec_tension_jacobian(X,X_nbr,dv,c_dec_tension_radial); 
                         end
                         
                         % current term is always added in 
@@ -359,6 +391,10 @@ function J = build_jacobian_bead_slip(leaflet)
                 
                 if repulsive_potential
                     J_tmp = J_tmp + k_val * c_repulsive_chordae * du^2 * replusive_jacobian(C(:,i),nbr,power); 
+                end
+                
+                if decreasing_tension
+                    J_tmp = J_tmp + k_val * dec_tension_jacobian(C(:,i), nbr, du, c_dec_tension_chordae); 
                 end
 
                 % current always gets a contribution from this spring 

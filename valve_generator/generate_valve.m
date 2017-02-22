@@ -17,13 +17,14 @@ bead_slip    = true;
 attached     = false; 
 leaflet_only = false; 
 optimization = false; 
-repulsive_potential = true; 
+repulsive_potential = false; 
+decreasing_tension = true; 
 
 
 if radial
     
     if bead_slip 
-        valve = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization, repulsive_potential); 
+        valve = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization, repulsive_potential, decreasing_tension); 
     else        
         valve = initialize_valve_data_structures_radial(N); 
     end 

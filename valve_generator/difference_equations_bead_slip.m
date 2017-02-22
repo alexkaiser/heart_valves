@@ -27,15 +27,29 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
     
     % repulsive potential coefficients, if used 
     if isfield(leaflet, 'repulsive_potential') && leaflet.repulsive_potential
-        power          = leaflet.repulsive_power; 
+        repulsive_potential         = true; 
+        power                       = leaflet.repulsive_power; 
         c_repulsive_circumferential = leaflet.c_repulsive_circumferential; 
         c_repulsive_radial          = leaflet.c_repulsive_radial; 
         c_repulsive_chordae         = leaflet.c_repulsive_chordae; 
     else 
-        power          = 1; 
+        repulsive_potential         = false; 
+        power                       = 1; 
         c_repulsive_circumferential = 0.0; 
         c_repulsive_radial          = 0.0; 
         c_repulsive_chordae         = 0.0; 
+    end 
+    
+    if isfield(leaflet, 'decreasing_tension') && leaflet.decreasing_tension
+        decreasing_tension = true; 
+        c_dec_tension_circumferential = leaflet.c_dec_tension_circumferential; 
+        c_dec_tension_radial          = leaflet.c_dec_tension_radial; 
+        c_dec_tension_chordae         = leaflet.c_dec_tension_chordae; 
+    else 
+        decreasing_tension = false; 
+        c_dec_tension_circumferential = 0.0; 
+        c_dec_tension_radial          = 0.0; 
+        c_dec_tension_chordae         = 0.0; 
     end 
     
 
@@ -90,8 +104,16 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
             
             % Multiply tension by dv to get a force,
             % rather than a force density, here 
-            tension = alpha * dv * (1 - c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1)); 
+            tension = alpha * dv; 
             
+            if repulsive_potential
+                tension = tension - alpha * dv * c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
+            end 
+            
+            if decreasing_tension
+                tension = tension + alpha * dv * tension_decreasing(X, X_nbr, du, c_dec_tension_circumferential) ; 
+            end 
+                
             if tension_debug
                 if tension < 0 
                     fprintf('tension = %f, free edge point %d, left = %d, radial\n', tension, i, left_side); 
@@ -106,7 +128,15 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
 
             % Anterior radial
             X_nbr = X_current(:,j_nbr,k_nbr); 
-            tension = beta * du * (1 - c_repulsive_radial * dv^2 * power * 1/norm(X_nbr-X)^(power+1)); 
+            tension = beta * du; 
+            
+            if repulsive_potential
+                tension = tension - beta * du * c_repulsive_radial * dv^2 * power * 1/norm(X_nbr-X)^(power+1); 
+            end 
+            
+            if decreasing_tension
+                tension = tension + beta * du * tension_decreasing(X, X_nbr, dv, c_dec_tension_radial) ; 
+            end
             
             if tension_debug
                 if tension < 0 
@@ -130,7 +160,15 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                 idx_chordae = floor(leaf_idx/2);
 
                 X_nbr = C(:,idx_chordae);
-                tension = kappa * (1 - c_repulsive_chordae * du^2 * power * 1/norm(X_nbr-X)^(power+1)); 
+                tension = kappa; 
+                
+                if repulsive_potential
+                    tension = tension - kappa * c_repulsive_chordae * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
+                end 
+                
+                if decreasing_tension
+                    tension = tension + kappa * tension_decreasing(X, X_nbr, du, c_dec_tension_chordae) ; 
+                end
                 
                 if tension_debug
                     if tension < 0 
@@ -170,7 +208,16 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
 
                     k_nbr = k; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
-                    tension = alpha * (1 - c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1)); 
+                    
+                    tension = alpha; 
+                    
+                    if repulsive_potential
+                        tension = tension - alpha * c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
+                    end 
+                                
+                    if decreasing_tension
+                        tension = tension + alpha * tension_decreasing(X, X_nbr, du, c_dec_tension_circumferential) ; 
+                    end 
                     
                     if tension_debug
                         if tension < 0 
@@ -187,7 +234,16 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
 
                     j_nbr = j; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
-                    tension = beta * (1 - c_repulsive_radial * dv^2 * power * 1/norm(X_nbr-X)^(power+1)); 
+                    
+                    tension = beta; 
+                    
+                    if repulsive_potential
+                        tension = tension - beta * c_repulsive_radial * dv^2 * power * 1/norm(X_nbr-X)^(power+1); 
+                    end 
+                    
+                    if decreasing_tension
+                        tension = tension + beta * tension_decreasing(X, X_nbr, dv, c_dec_tension_radial) ; 
+                    end
                     
                     if tension_debug
                         if tension < 0 
@@ -232,7 +288,15 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                 % get the neighbors coordinates, reference coordinate and spring constants
                 [nbr R_nbr k_val] = get_nbr_chordae(leaflet, i, nbr_idx, left_side); 
                 
-                tension = k_val * (1 - c_repulsive_chordae * du^2 * power * 1/norm(nbr - C(:,i))^(power+1)); 
+                tension = k_val; 
+                
+                if repulsive_potential
+                    tension = tension - k_val * c_repulsive_chordae * du^2 * power * 1/norm(nbr - C(:,i))^(power+1); 
+                end 
+                
+                if decreasing_tension
+                    tension = tension + k_val * tension_decreasing(C(:,i), nbr, du, c_dec_tension_chordae) ; 
+                end
                 
                 if tension_debug
                     if tension < 0 
