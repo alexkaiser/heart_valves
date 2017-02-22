@@ -187,8 +187,7 @@ function [] = output_to_ibamr_format(valve)
         posterior.chordae.left_papillary_idx  = posterior.left_papillary_idx; 
         posterior.chordae.right_papillary_idx = posterior.right_papillary_idx; 
 
-        [global_idx, params.total_vertices, params.total_springs] = ...
-                add_chordae_tree(params, posterior, global_idx, params.total_vertices, params.total_springs, k_rel_leaflet, collagen_springs_leaflet);  
+        [global_idx, params] = add_chordae_tree(params, posterior, global_idx, k_rel_leaflet, collagen_springs_leaflet);  
 
         % anterior 
         [global_idx, params, anterior] = add_leaflet(params, anterior, global_idx, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet);   
@@ -198,8 +197,7 @@ function [] = output_to_ibamr_format(valve)
         anterior.chordae.left_papillary_idx  = anterior.left_papillary_idx; 
         anterior.chordae.right_papillary_idx = anterior.right_papillary_idx; 
 
-        [global_idx, params.total_vertices, params.total_springs] = ...
-                add_chordae_tree(params, anterior, global_idx, params.total_vertices, params.total_springs, k_rel_leaflet, collagen_springs_leaflet);  
+        [global_idx, params] = add_chordae_tree(params, anterior, global_idx, k_rel_leaflet, collagen_springs_leaflet);  
 
         % flat part of mesh 
         r = valve.r; 
@@ -211,9 +209,7 @@ function [] = output_to_ibamr_format(valve)
         radial_fibers = false; 
 
         % turn the polar net off for now      
-        [global_idx, params.total_vertices, params.total_springs, params.total_targets] = ...
-                                place_net(params, r, h, L, N_ring, radial_fibers, ...
-                                global_idx, params.total_vertices, params.total_springs, params.total_targets, k_rel, k_target_net, ref_frac_net, eta_net); 
+        [global_idx, params] = place_net(params, r, h, L, N_ring, radial_fibers, global_idx, k_rel, k_target_net, ref_frac_net, eta_net); 
 
                             
         % place rays for now
@@ -223,9 +219,7 @@ function [] = output_to_ibamr_format(valve)
             k_rel_anterior = k_rel;
         end 
         
-        [global_idx, params.total_vertices, params.total_springs, params.total_targets] = ...
-                                place_rays(params, anterior, ds, valve.r, L, ...
-                                        global_idx, params.total_vertices, params.total_springs, params.total_targets, k_rel_anterior, k_target_net, ref_frac_net, eta_net);                    
+        [global_idx, params] = place_rays(params, anterior, ds, valve.r, L, global_idx, k_rel_anterior, k_target_net, ref_frac_net, eta_net);                    
 
         if posterior.radial_and_circumferential
             k_rel_posterior = posterior.beta * k_rel;
@@ -233,18 +227,16 @@ function [] = output_to_ibamr_format(valve)
             k_rel_posterior = k_rel;
         end 
                                     
-        [global_idx, params.total_vertices, params.total_springs, params.total_targets] = ...
-                                place_rays(params, posterior, ds, valve.r, L, ...
-                                        global_idx, params.total_vertices, params.total_springs, params.total_targets, k_rel_posterior, k_target_net, ref_frac_net, eta_net);                    
+        [global_idx, params] = place_rays(params, posterior, ds, valve.r, L, global_idx, k_rel_posterior, k_target_net, ref_frac_net, eta_net);                    
 
-
-        % flat part of mesh with Cartesian coordinates
-        % inner radius, stop mesh here 
-        r_cartesian = r + 2*ds; 
-        [global_idx, params.total_vertices, params.total_springs, params.total_targets] = ...
-                                place_cartesian_net(params, r_cartesian, h, L, ds, ...
-                                global_idx, params.total_vertices, params.total_springs, params.total_targets, k_rel, k_target_net, ref_frac_net, eta_net); 
- 
+% 
+%         % flat part of mesh with Cartesian coordinates
+%         % inner radius, stop mesh here 
+%         r_cartesian = r + 2*ds; 
+%         [global_idx, params.total_vertices, params.total_springs, params.total_targets] = ...
+%                                 place_cartesian_net(params, r_cartesian, h, L, ds, ...
+%                                 global_idx, params.total_vertices, params.total_springs, params.total_targets, k_rel, k_target_net, ref_frac_net, eta_net); 
+%  
     end 
                         
                         
@@ -501,8 +493,7 @@ end
 
 
 
-function [global_idx, total_vertices, total_springs] = ...
-                add_chordae_tree(params, leaflet, global_idx, total_vertices, total_springs, k_rel, collagen_spring)
+function [global_idx, params] = add_chordae_tree(params, leaflet, global_idx, k_rel, collagen_spring)
 
     % Adds chordae tree to IBAMR format files 
     % No targets here, so files and and count not included 
@@ -547,7 +538,7 @@ function [global_idx, total_vertices, total_springs] = ...
             end 
             
             % the vertex is always placed 
-            total_vertices = vertex_string(params.vertex, C(:,i), total_vertices); 
+            params.total_vertices = vertex_string(params.vertex, C(:,i), params.total_vertices); 
             
             % place the spring which goes to the parent 
             parent = floor(i/2); 
@@ -576,11 +567,11 @@ function [global_idx, total_vertices, total_springs] = ...
             if collagen_spring 
                 kappa = k_rel * k_val; 
                 % list nbr index first because nbr is parent and has lower index
-                total_springs = spring_string(params.spring, nbr_idx, idx, kappa, rest_len, total_springs, function_idx);            
+                params.total_springs = spring_string(params.spring, nbr_idx, idx, kappa, rest_len, params.total_springs, function_idx);            
             else 
                 kappa = k_rel * k_val / rest_len; 
                 % list nbr index first because nbr is parent and has lower index
-                total_springs = spring_string(params.spring, nbr_idx, idx, kappa, rest_len, total_springs);        
+                params.total_springs = spring_string(params.spring, nbr_idx, idx, kappa, rest_len, params.total_springs);        
             end 
         end 
         
@@ -591,9 +582,7 @@ function [global_idx, total_vertices, total_springs] = ...
 end 
                         
                         
-function [global_idx, total_vertices, total_springs, total_targets] = ...
-                            place_net(params, r, h, L, N, radial_fibers, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac, eta)
+function [global_idx, params] = place_net(params, r, h, L, N, radial_fibers, global_idx, k_rel, k_target, ref_frac, eta)
     % 
     % Places a polar coordinate mesh in a box 
     % Starts with N points evenly spaced at radius R
@@ -699,12 +688,12 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                 end 
                 
                 % every valid vertex is a target here 
-                total_vertices = vertex_string(params.vertex, points(:,j,k), total_vertices); 
+                params.total_vertices = vertex_string(params.vertex, points(:,j,k), params.total_vertices); 
                 points_placed = points_placed + 1; 
                 if exist('eta', 'var')
-                    total_targets = target_string(params.target, idx, k_target, total_targets, eta);     
+                    params.total_targets = target_string(params.target, idx, k_target, params.total_targets, eta);     
                 else
-                    total_targets = target_string(params.target, idx, k_target, total_targets);     
+                    params.total_targets = target_string(params.target, idx, k_target, params.total_targets);     
                 end 
                 
                 
@@ -714,7 +703,7 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                         rest_len = ref_frac * norm(points(:,j,k) - points(:,j+1,k)); 
                         kappa = k_rel / rest_len;
                         nbr_idx = indices(j+1,k) + global_idx; 
-                        total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, total_springs); 
+                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs); 
                     end 
                 end 
                 
@@ -725,7 +714,7 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                        rest_len = ref_frac * norm(points(:,j,k) - points(:,1,k)); 
                        kappa = k_rel / rest_len;
                        nbr_idx = indices(1,k) + global_idx; 
-                       total_springs = spring_string(params.spring, nbr_idx, idx, kappa, rest_len, total_springs); 
+                       params.total_springs = spring_string(params.spring, nbr_idx, idx, kappa, rest_len, params.total_springs); 
                    end 
                 end 
                 
@@ -736,7 +725,7 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                             rest_len = ref_frac * norm(points(:,j,k) - points(:,j,k+1)); 
                             kappa = k_rel / rest_len; 
                             nbr_idx = indices(j,k+1) + global_idx; 
-                            total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, total_springs); 
+                            params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs); 
                         end 
                     end 
                 end 
@@ -753,9 +742,7 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
 end 
 
 
-function [global_idx, total_vertices, total_springs, total_targets] = ...
-                            place_rays(params, leaflet, ds, r, L, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac, eta)
+function [global_idx, params] = place_rays(params, leaflet, ds, r, L, global_idx, k_rel, k_target, ref_frac, eta)
     % 
     % Places rays of fibers emenating from the leaflet 
     % Angle of rays makes them (roughly) geodesics 
@@ -843,13 +830,13 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                         idx = global_idx;
 
                         % point 
-                        total_vertices = vertex_string(params.vertex, point, total_vertices); 
+                        params.total_vertices = vertex_string(params.vertex, point, params.total_vertices); 
 
                         % it's a target too 
                         if exist('eta', 'var')
-                            total_targets = target_string(params.target, idx, k_target, total_targets, eta);     
+                            params.total_targets = target_string(params.target, idx, k_target, params.total_targets, eta);     
                         else
-                            total_targets = target_string(params.target, idx, k_target, total_targets);     
+                            params.total_targets = target_string(params.target, idx, k_target, params.total_targets);     
                         end 
 
 
@@ -857,7 +844,7 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                         kappa = k_rel / rest_len;
 
 
-                        total_springs = spring_string(params.spring, nbr_idx, idx, kappa, rest_len, total_springs);
+                        params.total_springs = spring_string(params.spring, nbr_idx, idx, kappa, rest_len, params.total_springs);
 
                         point_prev = point; 
                         point      = point + increment; 
