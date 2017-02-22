@@ -187,7 +187,7 @@ function [] = output_to_ibamr_format(valve)
         posterior.chordae.left_papillary_idx  = posterior.left_papillary_idx; 
         posterior.chordae.right_papillary_idx = posterior.right_papillary_idx; 
 
-        [params] = add_chordae_tree(params, posterior, k_rel_leaflet, collagen_springs_leaflet);  
+        params = add_chordae_tree(params, posterior, k_rel_leaflet, collagen_springs_leaflet);  
 
         % anterior 
         [params, anterior] = add_leaflet(params, anterior, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet);   
@@ -197,7 +197,7 @@ function [] = output_to_ibamr_format(valve)
         anterior.chordae.left_papillary_idx  = anterior.left_papillary_idx; 
         anterior.chordae.right_papillary_idx = anterior.right_papillary_idx; 
 
-        [params] = add_chordae_tree(params, anterior, k_rel_leaflet, collagen_springs_leaflet);  
+        params = add_chordae_tree(params, anterior, k_rel_leaflet, collagen_springs_leaflet);  
 
         % flat part of mesh 
         r = valve.r; 
@@ -209,7 +209,7 @@ function [] = output_to_ibamr_format(valve)
         radial_fibers = false; 
 
         % turn the polar net off for now      
-        [params] = place_net(params, r, h, L, N_ring, radial_fibers, k_rel, k_target_net, ref_frac_net, eta_net); 
+        params = place_net(params, r, h, L, N_ring, radial_fibers, k_rel, k_target_net, ref_frac_net, eta_net); 
 
                             
         % place rays for now
@@ -219,7 +219,7 @@ function [] = output_to_ibamr_format(valve)
             k_rel_anterior = k_rel;
         end 
         
-        [params] = place_rays(params, anterior, ds, valve.r, L, k_rel_anterior, k_target_net, ref_frac_net, eta_net);                    
+        params = place_rays(params, anterior, ds, valve.r, L, k_rel_anterior, k_target_net, ref_frac_net, eta_net);                    
 
         if posterior.radial_and_circumferential
             k_rel_posterior = posterior.beta * k_rel;
@@ -227,13 +227,13 @@ function [] = output_to_ibamr_format(valve)
             k_rel_posterior = k_rel;
         end 
                                     
-        [params] = place_rays(params, posterior, ds, valve.r, L, k_rel_posterior, k_target_net, ref_frac_net, eta_net);                    
+        params = place_rays(params, posterior, ds, valve.r, L, k_rel_posterior, k_target_net, ref_frac_net, eta_net);                    
 
 
         % flat part of mesh with Cartesian coordinates
         % inner radius, stop mesh here 
         r_cartesian = r + 2*ds; 
-        [params] = place_cartesian_net(params, r_cartesian, h, L, ds, k_rel, k_target_net, ref_frac_net, eta_net); 
+        params = place_cartesian_net(params, r_cartesian, h, L, ds, k_rel, k_target_net, ref_frac_net, eta_net); 
  
     end 
                         
@@ -242,7 +242,7 @@ function [] = output_to_ibamr_format(valve)
         double_z = false; 
         [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_lagrangian_tracers, L, double_z); 
         particles = fopen(strcat(base_name, '.particles'), 'w'); 
-        fprintf(particles, '%d\n' ,total_lagrangian_placed); 
+        fprintf(particles, '%d\n', total_lagrangian_placed); 
     end 
 
     % clean up files with totals 
@@ -491,7 +491,7 @@ end
 
 
 
-function [params] = add_chordae_tree(params, leaflet, k_rel, collagen_spring)
+function params = add_chordae_tree(params, leaflet, k_rel, collagen_spring)
 
     % Adds chordae tree to IBAMR format files 
     % No targets here, so files and and count not included 
@@ -580,7 +580,7 @@ function [params] = add_chordae_tree(params, leaflet, k_rel, collagen_spring)
 end 
                         
                         
-function [params] = place_net(params, r, h, L, N, radial_fibers, k_rel, k_target, ref_frac, eta)
+function params = place_net(params, r, h, L, N, radial_fibers, k_rel, k_target, ref_frac, eta)
     % 
     % Places a polar coordinate mesh in a box 
     % Starts with N points evenly spaced at radius R
@@ -740,7 +740,7 @@ function [params] = place_net(params, r, h, L, N, radial_fibers, k_rel, k_target
 end 
 
 
-function [params] = place_rays(params, leaflet, ds, r, L, k_rel, k_target, ref_frac, eta)
+function params = place_rays(params, leaflet, ds, r, L, k_rel, k_target, ref_frac, eta)
     % 
     % Places rays of fibers emenating from the leaflet 
     % Angle of rays makes them (roughly) geodesics 
@@ -922,7 +922,7 @@ end
 
 
 
-function [params] = place_cartesian_net(params, r, h, L, ds, k_rel, k_target, ref_frac, eta)
+function params = place_cartesian_net(params, r, h, L, ds, k_rel, k_target, ref_frac, eta)
     % 
     % Places a cartesian coordinate mesh in a box 
     % This is to avoid issues with the polar mesh at the edge 
