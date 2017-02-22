@@ -272,22 +272,22 @@ function params = vertex_string(params, coords)
 end
 
 
-function total_springs = spring_string(spring, idx, nbr, kappa, rest_len, total_springs, function_idx)
+function params = spring_string(params, idx, nbr, kappa, rest_len, function_idx)
     % prints a spring format string to string file 
     if nbr <= idx
         error('By convention, only place springs with the second index larger to prevent duplicates'); 
     end 
     
-    fprintf(spring, '%d\t %d\t %.14f\t %.14f', idx, nbr, kappa, rest_len); 
+    fprintf(params.spring, '%d\t %d\t %.14f\t %.14f', idx, nbr, kappa, rest_len); 
     
     % index for custom spring functions 
     if exist('function_idx', 'var') 
         fprintf(spring, '\t%d', function_idx); 
     end 
     
-    fprintf(spring, '\n'); 
+    fprintf(params.spring, '\n'); 
     
-    total_springs = total_springs + 1; 
+    params.total_springs = params.total_springs + 1; 
 end 
 
 function total_targets = target_string(target, idx, kappa, total_targets, eta)
@@ -393,10 +393,10 @@ function [global_idx, params, leaflet] = add_leaflet(params, leaflet, global_idx
                         % relative constant here
                         % other parameters coded into function 
                         kappa = k_rel * chordae.k_0; 
-                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs, function_idx); 
+                        params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
                     else 
                         kappa = k_rel * chordae.k_0 / rest_len; 
-                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs); 
+                        params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
                     end 
 
                 end 
@@ -426,10 +426,10 @@ function [global_idx, params, leaflet] = add_leaflet(params, leaflet, global_idx
                         % relative constant here
                         % other parameters coded into function 
                         kappa = k_rel * chordae.k_0; 
-                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs, function_idx); 
+                        params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
                     else 
                         kappa = k_rel * chordae.k_0 / rest_len; 
-                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs); 
+                        params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
                     end 
 
                 end 
@@ -453,10 +453,10 @@ function [global_idx, params, leaflet] = add_leaflet(params, leaflet, global_idx
                     
                     if collagen_spring
                         kappa = alhpa * k_rel;         
-                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs, function_idx); 
+                        params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
                     else 
                         kappa = alpha * k_rel / rest_len;         
-                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs); 
+                        params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
                     end 
 
                 end 
@@ -471,10 +471,10 @@ function [global_idx, params, leaflet] = add_leaflet(params, leaflet, global_idx
                     
                     if collagen_spring
                         kappa = beta * k_rel;         
-                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs, function_idx); 
+                        params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
                     else 
                         kappa = beta * k_rel / rest_len;         
-                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs); 
+                        params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
                     end 
 
                 end 
@@ -565,11 +565,11 @@ function [global_idx, params] = add_chordae_tree(params, leaflet, global_idx, k_
             if collagen_spring 
                 kappa = k_rel * k_val; 
                 % list nbr index first because nbr is parent and has lower index
-                params.total_springs = spring_string(params.spring, nbr_idx, idx, kappa, rest_len, params.total_springs, function_idx);            
+                params = spring_string(params, nbr_idx, idx, kappa, rest_len, function_idx);            
             else 
                 kappa = k_rel * k_val / rest_len; 
                 % list nbr index first because nbr is parent and has lower index
-                params.total_springs = spring_string(params.spring, nbr_idx, idx, kappa, rest_len, params.total_springs);        
+                params = spring_string(params, nbr_idx, idx, kappa, rest_len);        
             end 
         end 
         
@@ -701,7 +701,7 @@ function [global_idx, params] = place_net(params, r, h, L, N, radial_fibers, glo
                         rest_len = ref_frac * norm(points(:,j,k) - points(:,j+1,k)); 
                         kappa = k_rel / rest_len;
                         nbr_idx = indices(j+1,k) + global_idx; 
-                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs); 
+                        params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
                     end 
                 end 
                 
@@ -712,7 +712,7 @@ function [global_idx, params] = place_net(params, r, h, L, N, radial_fibers, glo
                        rest_len = ref_frac * norm(points(:,j,k) - points(:,1,k)); 
                        kappa = k_rel / rest_len;
                        nbr_idx = indices(1,k) + global_idx; 
-                       params.total_springs = spring_string(params.spring, nbr_idx, idx, kappa, rest_len, params.total_springs); 
+                       params = spring_string(params, nbr_idx, idx, kappa, rest_len); 
                    end 
                 end 
                 
@@ -723,7 +723,7 @@ function [global_idx, params] = place_net(params, r, h, L, N, radial_fibers, glo
                             rest_len = ref_frac * norm(points(:,j,k) - points(:,j,k+1)); 
                             kappa = k_rel / rest_len; 
                             nbr_idx = indices(j,k+1) + global_idx; 
-                            params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs); 
+                            params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
                         end 
                     end 
                 end 
@@ -842,7 +842,7 @@ function [global_idx, params] = place_rays(params, leaflet, ds, r, L, global_idx
                         kappa = k_rel / rest_len;
 
 
-                        params.total_springs = spring_string(params.spring, nbr_idx, idx, kappa, rest_len, params.total_springs);
+                        params = spring_string(params, nbr_idx, idx, kappa, rest_len);
 
                         point_prev = point; 
                         point      = point + increment; 
@@ -1006,7 +1006,7 @@ function [global_idx, params] = place_cartesian_net(params, r, h, L, ds, global_
                         rest_len = ref_frac * norm(points(:,j,k) - points(:,j+1,k)); 
                         kappa = k_rel / rest_len;
                         nbr_idx = indices(j+1,k) + global_idx; 
-                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs); 
+                        params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
                     end 
                 end 
                                 
@@ -1016,7 +1016,7 @@ function [global_idx, params] = place_cartesian_net(params, r, h, L, ds, global_
                         rest_len = ref_frac * norm(points(:,j,k) - points(:,j,k+1)); 
                         kappa = k_rel / rest_len; 
                         nbr_idx = indices(j,k+1) + global_idx; 
-                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs); 
+                        params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
                     end 
                 end 
                 
