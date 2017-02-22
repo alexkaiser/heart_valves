@@ -229,14 +229,12 @@ function [] = output_to_ibamr_format(valve)
                                     
         [global_idx, params] = place_rays(params, posterior, ds, valve.r, L, global_idx, k_rel_posterior, k_target_net, ref_frac_net, eta_net);                    
 
-% 
-%         % flat part of mesh with Cartesian coordinates
-%         % inner radius, stop mesh here 
-%         r_cartesian = r + 2*ds; 
-%         [global_idx, params.total_vertices, params.total_springs, params.total_targets] = ...
-%                                 place_cartesian_net(params, r_cartesian, h, L, ds, ...
-%                                 global_idx, params.total_vertices, params.total_springs, params.total_targets, k_rel, k_target_net, ref_frac_net, eta_net); 
-%  
+
+        % flat part of mesh with Cartesian coordinates
+        % inner radius, stop mesh here 
+        r_cartesian = r + 2*ds; 
+        [global_idx, params] = place_cartesian_net(params, r_cartesian, h, L, ds, global_idx, k_rel, k_target_net, ref_frac_net, eta_net); 
+ 
     end 
                         
                         
@@ -924,9 +922,7 @@ end
 
 
 
-function [global_idx, total_vertices, total_springs, total_targets] = ...
-                            place_cartesian_net(params, r, h, L, ds, ...
-                            global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, ref_frac, eta)
+function [global_idx, params] = place_cartesian_net(params, r, h, L, ds, global_idx, k_rel, k_target, ref_frac, eta)
     % 
     % Places a cartesian coordinate mesh in a box 
     % This is to avoid issues with the polar mesh at the edge 
@@ -995,12 +991,12 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                 end 
                 
                 % every valid vertex is a target here 
-                total_vertices = vertex_string(params.vertex, points(:,j,k), total_vertices); 
+                params.total_vertices = vertex_string(params.vertex, points(:,j,k), params.total_vertices); 
                 points_placed = points_placed + 1; 
                 if exist('eta', 'var')
-                    total_targets = target_string(params.target, idx, k_target, total_targets, eta);     
+                    params.total_targets = target_string(params.target, idx, k_target, params.total_targets, eta);     
                 else
-                    total_targets = target_string(params.target, idx, k_target, total_targets);     
+                    params.total_targets = target_string(params.target, idx, k_target, params.total_targets);     
                 end 
 
                 
@@ -1010,7 +1006,7 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                         rest_len = ref_frac * norm(points(:,j,k) - points(:,j+1,k)); 
                         kappa = k_rel / rest_len;
                         nbr_idx = indices(j+1,k) + global_idx; 
-                        total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, total_springs); 
+                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs); 
                     end 
                 end 
                                 
@@ -1020,7 +1016,7 @@ function [global_idx, total_vertices, total_springs, total_targets] = ...
                         rest_len = ref_frac * norm(points(:,j,k) - points(:,j,k+1)); 
                         kappa = k_rel / rest_len; 
                         nbr_idx = indices(j,k+1) + global_idx; 
-                        total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, total_springs); 
+                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs); 
                     end 
                 end 
                 
