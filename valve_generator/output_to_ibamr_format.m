@@ -181,9 +181,7 @@ function [] = output_to_ibamr_format(valve)
         
         % posterior first 
         % leaflets 
-        [global_idx, params.total_vertices, params.total_springs, params.total_targets, posterior] = ...
-            add_leaflet(params, posterior, ...
-                        global_idx, params.total_vertices, params.total_springs, params.total_targets, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet); 
+        [global_idx, params, posterior] = add_leaflet(params, posterior, global_idx, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet); 
 
         % posterior chordae 
         posterior.chordae.left_papillary_idx  = posterior.left_papillary_idx; 
@@ -193,9 +191,7 @@ function [] = output_to_ibamr_format(valve)
                 add_chordae_tree(params, posterior, global_idx, params.total_vertices, params.total_springs, k_rel_leaflet, collagen_springs_leaflet);  
 
         % anterior 
-        [global_idx, params.total_vertices, params.total_springs, params.total_targets, anterior] = ...
-            add_leaflet(params, anterior, ...
-                         global_idx, params.total_vertices, params.total_springs, params.total_targets, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet);   
+        [global_idx, params, anterior] = add_leaflet(params, anterior, global_idx, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet);   
 
 
         % anterior chordae 
@@ -335,8 +331,7 @@ function [] = prepend_line_with_int(file_name, val)
 end 
 
 
-function [global_idx, total_vertices, total_springs, total_targets, leaflet] = ...
-                add_leaflet(params, leaflet, global_idx, total_vertices, total_springs, total_targets, k_rel, k_target, eta, collagen_spring)
+function [global_idx, params, leaflet] = add_leaflet(params, leaflet, global_idx, k_rel, k_target, eta, collagen_spring)
                       
     % Places all main data into IBAMR format for this leaflet
     % Updates running totals on the way 
@@ -382,7 +377,7 @@ function [global_idx, total_vertices, total_springs, total_targets, leaflet] = .
                 
                 idx = global_idx + point_idx_with_bc(j,k);    
                 
-                total_vertices = vertex_string(params.vertex, X(:,j,k), total_vertices); 
+                params.total_vertices = vertex_string(params.vertex, X(:,j,k), params.total_vertices); 
                 
                 indices_global(j,k) = idx; 
                 
@@ -408,10 +403,10 @@ function [global_idx, total_vertices, total_springs, total_targets, leaflet] = .
                         % relative constant here
                         % other parameters coded into function 
                         kappa = k_rel * chordae.k_0; 
-                        total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, total_springs, function_idx); 
+                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs, function_idx); 
                     else 
                         kappa = k_rel * chordae.k_0 / rest_len; 
-                        total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, total_springs); 
+                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs); 
                     end 
 
                 end 
@@ -441,10 +436,10 @@ function [global_idx, total_vertices, total_springs, total_targets, leaflet] = .
                         % relative constant here
                         % other parameters coded into function 
                         kappa = k_rel * chordae.k_0; 
-                        total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, total_springs, function_idx); 
+                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs, function_idx); 
                     else 
                         kappa = k_rel * chordae.k_0 / rest_len; 
-                        total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, total_springs); 
+                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs); 
                     end 
 
                 end 
@@ -452,9 +447,9 @@ function [global_idx, total_vertices, total_springs, total_targets, leaflet] = .
                 % if on boundary, this is a target point 
                 if is_bc(j,k)
                     if exist('eta', 'var')
-                        total_targets = target_string(params.target, idx, k_target, total_targets, eta);     
+                        params.total_targets = target_string(params.target, idx, k_target, params.total_targets, eta);     
                     else
-                        total_targets = target_string(params.target, idx, k_target, total_targets);     
+                        params.total_targets = target_string(params.target, idx, k_target, params.total_targets);     
                     end 
                 end 
                 
@@ -468,10 +463,10 @@ function [global_idx, total_vertices, total_springs, total_targets, leaflet] = .
                     
                     if collagen_spring
                         kappa = alhpa * k_rel;         
-                        total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, total_springs, function_idx); 
+                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs, function_idx); 
                     else 
                         kappa = alpha * k_rel / rest_len;         
-                        total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, total_springs); 
+                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs); 
                     end 
 
                 end 
@@ -486,10 +481,10 @@ function [global_idx, total_vertices, total_springs, total_targets, leaflet] = .
                     
                     if collagen_spring
                         kappa = beta * k_rel;         
-                        total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, total_springs, function_idx); 
+                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs, function_idx); 
                     else 
                         kappa = beta * k_rel / rest_len;         
-                        total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, total_springs); 
+                        params.total_springs = spring_string(params.spring, idx, nbr_idx, kappa, rest_len, params.total_springs); 
                     end 
 
                 end 
