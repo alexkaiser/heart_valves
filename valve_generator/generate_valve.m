@@ -4,7 +4,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 32; 
+N = 128; 
 
 % Show some output 
 plots = false; 
@@ -65,8 +65,8 @@ end
 
 % Can use a scalar pressure 
 % Or a range for continuation 
-% p_range = valve.anterior.p_0 .* [0:.1:1]; 
-p_range = valve.posterior.p_0; 
+p_range = valve.anterior.p_0 .* [0:.1:1]; 
+% p_range = valve.posterior.p_0; 
 
 
 repulsive_coeff_range = []; % [.9:(-0.1):.1]; 
@@ -75,7 +75,9 @@ repulsive_coeff_range = []; % [.9:(-0.1):.1];
 if radial && bead_slip && attached
     valve = newton_solve_valve_attached(valve, valve.tol_global, valve.max_it); 
 else 
-    valve = solve_valve(valve, p_range, repulsive_coeff_range); 
+%     valve = solve_valve(valve, p_range, repulsive_coeff_range); 
+
+    valve = solve_valve(valve, p_range); 
 end 
 
 valve_plot(valve)

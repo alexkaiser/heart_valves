@@ -60,9 +60,6 @@ if decreasing_tension
     
     dec_tension_coeff_base = dec_tension_coeff_32 * 32^2; 
     
-    % scale so that when multiplied by above value gives the correct value 
-    % valve.repulsive_coeff = repulsive_coeff_32 * 32^2; 
-    
     valve.c_dec_tension_circumferential = 1.0 * dec_tension_coeff_base; 
     valve.c_dec_tension_radial          = 1.0 * dec_tension_coeff_base; 
     valve.c_dec_tension_chordae         = 1.0 * dec_tension_coeff_base; 
@@ -149,7 +146,7 @@ radial_and_circumferential = true;
 % Spring constants in two directions 
 alpha    =  1.0;  % circumferential 
 beta     =  1.0;  % radial 
-p_0      =  0.0;  %-0.12; % negative sign on anterior leaflet 
+p_0      =  -0.16; %-0.12; % negative sign on anterior leaflet 
 ref_frac =  0.7;  % generic spring constants reduced by this much 
 
 
