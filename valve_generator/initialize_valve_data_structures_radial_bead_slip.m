@@ -109,7 +109,8 @@ valve.pressure_tension_ratio = .75;
 % use this refintement number accordingly 
 valve.refinement = N/32.0; 
 
-valve.p_physical = 100; 
+MMHG_TO_CGS = 1333.22368;
+valve.p_physical = 100 * MMHG_TO_CGS; 
 
 % scaling for target points 
 valve.target_multiplier = 40; 
@@ -142,11 +143,23 @@ total_angle_anterior = pi - extra_posterior;
 % Or diagonally oriented fibers 
 radial_and_circumferential = true; 
 
+% at some point we used program units, and p_0 = 0.16 in these units
+% swap to CGS units, want this to be equal to 100 mmHg
+p_program_old = valve.p_physical / 0.16; 
+
+% physical units create a scalar multiple of the old 
+% this multiple is large number, so we want to scale the old tolerance accordingly 
+valve.tol_global = valve.tol_global * p_program_old;
+
 
 % Spring constants in two directions 
-alpha    =  1.0;  % circumferential 
-beta     =  1.0;  % radial 
-p_0      =  -0.16; %-0.12; % negative sign on anterior leaflet 
+alpha    =  1.0 * p_program_old;  % circumferential 
+beta     =  1.0 * p_program_old;  % radial
+
+p_0      =  -valve.p_physical; %-0.12; % negative sign on anterior leaflet 
+
+% p_0      =  -0.16; %-0.12; % negative sign on anterior leaflet 
+
 ref_frac =  0.7;  % generic spring constants reduced by this much 
 
 
@@ -165,7 +178,7 @@ N_tree = N/2;
 % this is the total force, in current units, 
 % in the leaf generation of the chordae tree 
 % this is an arbitrary constant determined by guess and check 
-k_0_1 = 1.8 * 0.5; 
+k_0_1 = 1.8 * 0.5 * p_program_old; 
 
 % force on each leaf in the chordae tree 
 k_0   = k_0_1 / N_tree; 
@@ -178,7 +191,7 @@ k_0   = k_0_1 / N_tree;
 % k_root = 1.889568000000001e+01 / 32; 
 
 % adjust accordingly
-k_root = 0.9 * 1.889568000000001e+01 / 32; 
+k_root = 0.9 * (1.889568000000001e+01 / 32) * p_program_old; 
 
 % multiplier necessary to maintain constant root tension 
 % and constant total leaf tension 
