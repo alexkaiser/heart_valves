@@ -12,7 +12,6 @@ function [valve] = initialize_valve_data_structures_radial_bead_slip(N, attached
 
 % Main data structure with everything 
 valve.N = N; 
-valve.tol_global = 1e-9;
 valve.max_it = 4000; 
 
 if exist('attached', 'var') 
@@ -101,7 +100,7 @@ valve.L = 2.5;
 % ratio 6 is for N=32
 % ratio = 6 seems to make everything very stiff 
 % turn down by order of magnitude, see if it helps 
-valve.pressure_tension_ratio = .75; 
+valve.pressure_tension_ratio = 0.11; 
 
 
 % original spring constants were for N = 32 debug width
@@ -143,22 +142,19 @@ total_angle_anterior = pi - extra_posterior;
 % Or diagonally oriented fibers 
 radial_and_circumferential = true; 
 
-% at some point we used program units, and p_0 = 0.16 in these units
-% swap to CGS units, want this to be equal to 100 mmHg
-p_program_old = valve.p_physical / 0.16; 
+% base constant for tensions 
+valve.tension_base = valve.p_physical / valve.pressure_tension_ratio; 
 
 % physical units create a scalar multiple of the old 
 % this multiple is large number, so we want to scale the old tolerance accordingly 
-valve.tol_global = valve.tol_global * p_program_old;
+% 8.3326e-04 is a good number here
+valve.tol_global = 1e-4; 
 
 
 % Spring constants in two directions 
-alpha    =  1.0 * p_program_old;  % circumferential 
-beta     =  1.0 * p_program_old;  % radial
-
-p_0      =  -valve.p_physical; %-0.12; % negative sign on anterior leaflet 
-
-% p_0      =  -0.16; %-0.12; % negative sign on anterior leaflet 
+alpha    =  valve.tension_base;  % circumferential 
+beta     =  valve.tension_base;  % radial
+p_0      = -valve.p_physical; 
 
 ref_frac =  0.7;  % generic spring constants reduced by this much 
 
@@ -178,7 +174,7 @@ N_tree = N/2;
 % this is the total force, in current units, 
 % in the leaf generation of the chordae tree 
 % this is an arbitrary constant determined by guess and check 
-k_0_1 = 1.8 * 0.5 * p_program_old; 
+k_0_1 = 1.8 * valve.tension_base; 
 
 % force on each leaf in the chordae tree 
 k_0   = k_0_1 / N_tree; 
@@ -187,11 +183,11 @@ k_0   = k_0_1 / N_tree;
 % this is determined by hand tuning k_multiplier at coarse resolution 
 % then taking the k_root 
 
-% base good value 
+% base good value, old program units  
 % k_root = 1.889568000000001e+01 / 32; 
 
 % adjust accordingly
-k_root = 0.9 * (1.889568000000001e+01 / 32) * p_program_old; 
+k_root = (1.889568000000001e+01 / 32) * valve.tension_base; 
 
 % multiplier necessary to maintain constant root tension 
 % and constant total leaf tension 
