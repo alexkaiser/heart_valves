@@ -4,7 +4,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 8; 
+N = 32; 
 
 % Show some output 
 plots = false; 
@@ -69,7 +69,7 @@ p_range = valve.anterior.p_0 .* (0:.1:1);
 % p_range = valve.posterior.p_0; 
 
 linear_open_config  = true; 
-p_range_linear      = valve.anterior.p_0 .* (1:-.1:0); 
+p_range_linear      = 0.0; % valve.anterior.p_0 .* (1:-.1:0); 
 strain = .1; 
 repulsive_coeff_range = []; % [.9:(-0.1):.1]; 
 
@@ -79,14 +79,26 @@ if radial && bead_slip && attached
 else 
 %     valve = solve_valve(valve, p_range, repulsive_coeff_range); 
 
-    valve = solve_valve(valve, p_range, linear_open_config, p_range_linear, strain); 
+    [valve valve_linear pass_all] = solve_valve(valve, p_range, linear_open_config, p_range_linear, strain); 
 end 
 
+fig = figure; 
 valve_plot(valve)
 if radial
-    title('Relaxed configuration radial fibers')
+    title('Pressurized configuration radial fibers')
 else
     title('Relaxed configuration diagonal fibers')
+end 
+
+fig = figure; 
+valve_plot(valve_linear)
+title('Relaxed configuration radial fibers, linear constitutive law'); 
+
+
+if pass_all 
+    fprintf('Final solve passed.\n'); 
+else 
+    fprintf('Final solve failed.\n'); 
 end 
 
 
