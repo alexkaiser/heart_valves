@@ -76,19 +76,26 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_linea
             end 
             k_nbr = k;
 
+            % spring and rest length indices are always at the minimum value  
+            j_spr = min(j, j_nbr); 
+            k_spr = min(k, k_nbr); 
+                        
             % Anterior circumferential 
             X_nbr = X_current(:,j_nbr,k_nbr); 
             
-            tension = tension_linear(X,X_nbr,R_u(j,k),k_u(j,k)); 
+            tension = tension_linear(X,X_nbr,R_u(j_spr,k_spr),k_u(j_spr,k_spr)); 
             F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
 
             % interior neighbor is up in k, always 
             j_nbr = j;     
             k_nbr = k+1; 
+            
+            j_spr = min(j, j_nbr); 
+            k_spr = min(k, k_nbr); 
 
             % Anterior radial
             X_nbr = X_current(:,j_nbr,k_nbr); 
-            tension = tension_linear(X,X_nbr,R_v(j,k),k_v(j,k)); 
+            tension = tension_linear(X,X_nbr,R_v(j_spr,k_spr),k_v(j_spr,k_spr)); 
             F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
 
             % current node has a chordae connection
@@ -129,7 +136,8 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_linea
 
                 % pressure term first  
                 if p_0 ~= 0
-                    F_tmp = F_tmp + (p_0 / (4*du*dv)) * cross(X_current(:,j+1,k) - X_current(:,j-1,k), X_current(:,j,k+1) - X_current(:,j,k-1));                     
+                    % Multiply pressure term by du dv to get units of force 
+                    F_tmp = F_tmp + (p_0 / 4) * cross(X_current(:,j+1,k) - X_current(:,j-1,k), X_current(:,j,k+1) - X_current(:,j,k-1));                     
                 end 
 
                 % u type fibers 
@@ -138,7 +146,10 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_linea
                     k_nbr = k; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
                     
-                    tension = tension_linear(X,X_nbr,R_u(j,k),k_u(j,k));                    
+                    j_spr = min(j, j_nbr); 
+                    k_spr = min(k, k_nbr);
+                    
+                    tension = tension_linear(X,X_nbr,R_u(j_spr,k_spr),k_u(j_spr,k_spr)); 
                     F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
                 end 
 
@@ -148,7 +159,10 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_linea
                     j_nbr = j; 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
                     
-                    tension = tension_linear(X,X_nbr,R_v(j,k),k_v(j,k)); 
+                    j_spr = min(j, j_nbr); 
+                    k_spr = min(k, k_nbr);
+                    
+                    tension = tension_linear(X,X_nbr,R_v(j_spr,k_spr),k_v(j_spr,k_spr)); 
                     F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
                 end 
 

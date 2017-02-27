@@ -235,7 +235,7 @@ function J = build_jacobian_linear(leaflet)
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
 
-                        J_tmp = tension_linear_tangent_jacobian(X,X_nbr,R_u(j,k),k_u(j,k));                    
+                        J_tmp = (1/du) * tension_linear_tangent_jacobian(X,X_nbr,R_u(j,k),k_u(j,k));                    
 
                         % current term is always added in 
                         % this gets no sign 
@@ -269,7 +269,7 @@ function J = build_jacobian_linear(leaflet)
 
                         % There is a 1/dv term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
-                        J_tmp = tension_linear_tangent_jacobian(X,X_nbr,R_v(j,k),k_v(j,k));
+                        J_tmp = (1/dv) * tension_linear_tangent_jacobian(X,X_nbr,R_v(j,k),k_v(j,k));
                         
                         % current term is always added in 
                         % this gets no sign  

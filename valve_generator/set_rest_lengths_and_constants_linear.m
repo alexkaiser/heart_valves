@@ -104,7 +104,11 @@ for left_side = [true, false]
             j_nbr = j - 1;
         end 
         k_nbr = k;
-
+            
+        % spring and rest length indices are always at the minimum value  
+        j_spr = min(j, j_nbr); 
+        k_spr = min(k, k_nbr); 
+            
         % Anterior circumferential 
         X_nbr = X_current(:,j_nbr,k_nbr); 
 
@@ -120,11 +124,13 @@ for left_side = [true, false]
             tension = tension + alpha * dv * tension_decreasing(X, X_nbr, du, c_dec_tension_circumferential) ; 
         end 
 
-        [k_u(j,k) R_u(j,k)] = get_rest_len_and_spring_constant_linear(X, X_nbr, tension, strain); 
+        [k_u(j_spr,k_spr) R_u(j_spr,k_spr)] = get_rest_len_and_spring_constant_linear(X, X_nbr, tension, strain); 
 
         % interior neighbor is up in k, always 
         j_nbr = j;     
         k_nbr = k+1; 
+        j_spr = min(j, j_nbr); 
+        k_spr = min(k, k_nbr); 
 
         % Anterior radial
         X_nbr = X_current(:,j_nbr,k_nbr); 
@@ -138,7 +144,7 @@ for left_side = [true, false]
             tension = tension + beta * du * tension_decreasing(X, X_nbr, dv, c_dec_tension_radial) ; 
         end
 
-        [k_v(j,k) R_v(j,k)] = get_rest_len_and_spring_constant_linear(X, X_nbr, tension, strain); 
+        [k_v(j_spr,k_spr) R_v(j_spr,k_spr)] = get_rest_len_and_spring_constant_linear(X, X_nbr, tension, strain); 
 
         % current node has a chordae connection
         if chordae_idx(j,k)
@@ -184,11 +190,15 @@ for j=1:j_max
 
             X = X_current(:,j,k); 
 
-
             % u type fibers 
-            for j_nbr = [j-1,j+1]
-
+            % set constants in up direction only here 
+            for j_nbr = [j-1,j+1] 
+                
                 k_nbr = k; 
+
+                j_spr = min(j, j_nbr); 
+                k_spr = min(k, k_nbr);
+                
                 X_nbr = X_current(:,j_nbr,k_nbr); 
 
                 tension = alpha; 
@@ -205,15 +215,20 @@ for j=1:j_max
                 % So we must multiply by a legnth element to get force 
                 % Take the opposing length element 
                 tension = dv * tension; 
-                
-                [k_u(j,k) R_u(j,k)] = get_rest_len_and_spring_constant_linear(X, X_nbr, tension, strain); 
 
+                [k_u(j,k) R_u(j,k)] = get_rest_len_and_spring_constant_linear(X, X_nbr, tension, strain); 
+                
             end 
 
-            % v type fibers 
-            for k_nbr = [k-1,k+1]
 
+            % v type fibers 
+            for k_nbr = [k-1,k+1] 
+                
                 j_nbr = j; 
+                
+                j_spr = min(j, j_nbr); 
+                k_spr = min(k, k_nbr);
+                
                 X_nbr = X_current(:,j_nbr,k_nbr); 
 
                 tension = beta; 
@@ -225,13 +240,12 @@ for j=1:j_max
                 if decreasing_tension
                     tension = tension + beta * tension_decreasing(X, X_nbr, dv, c_dec_tension_radial) ; 
                 end
-                
+
                 tension = du * tension; 
 
                 [k_v(j,k) R_v(j,k)] = get_rest_len_and_spring_constant_linear(X, X_nbr, tension, strain); 
-
+                
             end 
-
         end
     end 
 end
@@ -252,7 +266,7 @@ for left_side = [true false];
         right  = 2*i + 1;
         parent = floor(i/2); 
 
-        for nbr_idx = [left,right,parent]
+        for nbr_idx = [left,right,parent] 
 
             % get the neighbors coordinates, reference coordinate and spring constants
             [nbr R_nbr k_val] = get_nbr_chordae(leaflet, i, nbr_idx, left_side); 
@@ -273,7 +287,7 @@ for left_side = [true false];
                 [k_chordae_right(i) R_chordae_right(i)] = get_rest_len_and_spring_constant_linear(C(:,i), nbr, tension, strain); 
             end 
 
-        end 
+        end          
     end 
 end 
 
