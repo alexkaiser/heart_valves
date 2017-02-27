@@ -92,10 +92,14 @@ function J = build_jacobian_linear(leaflet)
             end 
             k_nbr = k;
 
+            % spring and rest length indices are always at the minimum value  
+            j_spr = min(j, j_nbr);
+            k_spr = min(k, k_nbr);
+            
             % Anterior circumferential 
             X_nbr = X_current(:,j_nbr,k_nbr); 
             
-            J_tmp = tension_linear_tangent_jacobian(X,X_nbr,R_u(j,k),k_u(j,k)); 
+            J_tmp = tension_linear_tangent_jacobian(X,X_nbr,R_u(j_spr,k_spr),k_u(j_spr,k_spr)); 
             
             % current term is always added in 
             % this gets no sign 
@@ -112,11 +116,13 @@ function J = build_jacobian_linear(leaflet)
             % interior neighbor is up in k, always  
             j_nbr = j;     
             k_nbr = k+1; 
-
+            j_spr = min(j, j_nbr);
+            k_spr = min(k, k_nbr);
+            
             % Anterior radial
             X_nbr = X_current(:,j_nbr,k_nbr); 
 
-            J_tmp = tension_linear_tangent_jacobian(X,X_nbr,R_v(j,k),k_v(j,k));
+            J_tmp = tension_linear_tangent_jacobian(X,X_nbr,R_v(j_spr,k_spr),k_v(j_spr,k_spr));
 
             % current term is always added in 
             % this gets no sign 
@@ -185,7 +191,7 @@ function J = build_jacobian_linear(leaflet)
                     j_nbr = j+1; 
                     k_nbr = k; 
                     
-                    J_pressure = -(p_0/(4*du*dv)) * cross_matrix(X_current(:,j,k+1) - X_current(:,j,k-1)) ; 
+                    J_pressure = -(p_0/4) * cross_matrix(X_current(:,j,k+1) - X_current(:,j,k-1)) ; 
 
                     if is_internal(j_nbr,k_nbr)
                         range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
@@ -194,7 +200,7 @@ function J = build_jacobian_linear(leaflet)
                     
                     j_nbr = j-1; 
                     k_nbr = k; 
-                    J_pressure =  (p_0/(4*du*dv)) * cross_matrix(X_current(:,j,k+1) - X_current(:,j,k-1)) ; 
+                    J_pressure =  (p_0/4) * cross_matrix(X_current(:,j,k+1) - X_current(:,j,k-1)) ; 
                     
                     if is_internal(j_nbr,k_nbr)
                         range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
@@ -203,7 +209,7 @@ function J = build_jacobian_linear(leaflet)
                     
                     j_nbr = j; 
                     k_nbr = k+1; 
-                    J_pressure =  (p_0/(4*du*dv)) * cross_matrix(X_current(:,j+1,k) - X_current(:,j-1,k)) ; 
+                    J_pressure =  (p_0/4) * cross_matrix(X_current(:,j+1,k) - X_current(:,j-1,k)) ; 
 
                     if is_internal(j_nbr,k_nbr)
                         range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
@@ -212,7 +218,7 @@ function J = build_jacobian_linear(leaflet)
                     
                     j_nbr = j; 
                     k_nbr = k-1; 
-                    J_pressure = -(p_0/(4*du*dv)) * cross_matrix(X_current(:,j+1,k) - X_current(:,j-1,k)) ; 
+                    J_pressure = -(p_0/4) * cross_matrix(X_current(:,j+1,k) - X_current(:,j-1,k)) ; 
 
                     if is_internal(j_nbr,k_nbr)
                         range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
@@ -232,10 +238,13 @@ function J = build_jacobian_linear(leaflet)
                             error('trying to apply slip model at chordae attachment point'); 
                         end 
 
+                        j_spr = min(j, j_nbr); 
+                        k_spr = min(k, k_nbr);
+                        
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
 
-                        J_tmp = (1/du) * tension_linear_tangent_jacobian(X,X_nbr,R_u(j,k),k_u(j,k));                    
+                        J_tmp = tension_linear_tangent_jacobian(X,X_nbr,R_u(j_spr,k_spr),k_u(j_spr,k_spr));                    
 
                         % current term is always added in 
                         % this gets no sign 
@@ -264,12 +273,13 @@ function J = build_jacobian_linear(leaflet)
                             error('trying to apply slip model at chordae attachment point'); 
                         end 
 
+                        j_spr = min(j, j_nbr); 
+                        k_spr = min(k, k_nbr);
+                        
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
-
-                        % There is a 1/dv term throughout from taking a finite difference derivative 
-                        % Place this on the tension variables, one of which apprears in each term 
-                        J_tmp = (1/dv) * tension_linear_tangent_jacobian(X,X_nbr,R_v(j,k),k_v(j,k));
+ 
+                        J_tmp = tension_linear_tangent_jacobian(X,X_nbr,R_v(j_spr,k_spr),k_v(j_spr,k_spr));
                         
                         % current term is always added in 
                         % this gets no sign  
