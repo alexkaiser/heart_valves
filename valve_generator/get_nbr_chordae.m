@@ -23,8 +23,27 @@ j=[];
 k=[]; 
 
 X       = leaflet.X; 
-R       = leaflet.R; 
 chordae = leaflet.chordae; 
+
+if isfield(leaflet, 'R_free_edge_left')  && isfield(leaflet, 'k_free_edge_left') && ... 
+   isfield(leaflet, 'R_free_edge_right') && isfield(leaflet, 'k_free_edge_right') 
+    
+    free_edge_constants_set = true; 
+    
+    if left_side 
+        R_free_edge = leaflet.R_free_edge_left;
+        k_free_edge = leaflet.k_free_edge_left;
+    else 
+        R_free_edge = leaflet.R_free_edge_right;
+        k_free_edge = leaflet.k_free_edge_right;
+    end 
+else
+    
+    free_edge_constants_set = false;
+
+end 
+
+
 
 if left_side 
     C     = chordae.C_left; 
@@ -32,62 +51,73 @@ if left_side
     pap   = chordae.left_papillary; 
     k_spr = chordae.k_l; 
     k_0   = chordae.k_0; 
+    free_edge_idx = leaflet.free_edge_idx_left; 
 else 
     C     = chordae.C_right; 
     R_ch  = chordae.Ref_r; 
     pap   = chordae.right_papillary;
     k_spr = chordae.k_r; 
     k_0   = chordae.k_0; 
+    free_edge_idx = leaflet.free_edge_idx_right; 
 end
+
+
+
+
 
 [m max_internal] = size(C); 
 
-% parent direction neighbor may be the papillary muscle
-% this occurs precisely when requesting the zero index
-if nbr_idx == 0 
-    nbr   = pap; 
-    R_nbr = pap; 
-
 % if neighbors are out of the chordae region
 % then they may be on the leaflet 
-elseif nbr_idx > max_internal
+if nbr_idx > max_internal
     
-    free_edge_idx = nbr_idx - max_internal; 
-    if left_side 
-        j = leaflet.free_edge_idx_left (free_edge_idx,1); 
-        k = leaflet.free_edge_idx_left (free_edge_idx,2); 
-    else 
-        j = leaflet.free_edge_idx_right(free_edge_idx,1); 
-        k = leaflet.free_edge_idx_right(free_edge_idx,2); 
-    end 
+    idx = nbr_idx - max_internal; 
+
+    j = free_edge_idx(idx,1); 
+    k = free_edge_idx(idx,2); 
     
     nbr   = X(:,j,k); 
-    R_nbr = R(:,j,k); 
-
+        
+    if free_edge_constants_set
+        % fetch from free edge arrays if available 
+        R_nbr = R_free_edge(idx); 
+        k_val = k_free_edge(idx); 
+    else 
+        % free edge springs are all k_0 if not  
+        R_nbr = []; 
+        k_val = k_0;
+    end 
+    
 % the neighbor is within the tree of chordae 
 else 
-    nbr   = C(:,nbr_idx); 
-    R_nbr = R_ch(:,nbr_idx); 
+    
+    % parent direction neighbor may be the papillary muscle
+    % this occurs precisely when requesting the zero index
+    if nbr_idx == 0 
+        
+        nbr   = pap; 
+        
+        % papillary muscle is always parent, so current location owns constant
+        R_nbr = R_ch(i); 
+        k_val = k_spr(i);
+        
+    else
+
+        nbr   = C(:,nbr_idx); 
+        R_nbr = R_ch(nbr_idx); 
+
+        % spring constants
+        if nbr_idx < i 
+            % nbr_idx is only less if nbr is the parent 
+            % parent wise owned by this index 
+            k_val = k_spr(i);                      
+
+        else 
+
+            % child's parent-direction spring is at child's index 
+            k_val = k_spr(nbr_idx);     
+        end 
+    
+    end 
 end 
-
-% spring constants
-if nbr_idx < i 
-    % nbr_idx is only less if nbr is the parent 
-    % parent wise owned by this index 
-    k_val = k_spr(i);       
-
-% connections from chordae to leaflet have value k_0
-elseif nbr_idx > max_internal 
-
-    k_val = k_0;                 
-
-else 
-
-    % child's parent-direction spring is at child's index 
-    k_val = k_spr(nbr_idx);     
-
-end 
-
-
-
 

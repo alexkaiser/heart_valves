@@ -1,10 +1,14 @@
-function T = tension_linear(X_current,X_nbr,R_current,R_nbr,k_spr,ref_frac)
+function T = tension_linear(X_current,X_nbr,R,k_spr,ref_frac)
 % 
 % Returns the tension in the linear constitutive law 
 % 
 %
 
-R_norm = ref_frac * norm(R_current - R_nbr); 
-X_norm =            norm(X_current - X_nbr); 
+if ~exist('ref_frac', 'var')
+    ref_frac = 1; 
+end 
 
-T = k_spr * (X_norm/R_norm - 1.0); 
+R      = ref_frac * R; 
+X_norm = norm(X_current - X_nbr); 
+
+T = k_spr * (X_norm/R - 1.0); 

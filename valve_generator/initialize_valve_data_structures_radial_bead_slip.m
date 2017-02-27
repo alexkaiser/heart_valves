@@ -96,10 +96,8 @@ valve.base_name = sprintf('mitral_tree_%d', N);
 % box width 
 valve.L = 2.5; 
 
-% pressure / spring constant ratio  
-% ratio 6 is for N=32
-% ratio = 6 seems to make everything very stiff 
-% turn down by order of magnitude, see if it helps 
+% pressure / tension coefficient ratio
+% this tension coefficient is the maximum tension that a fiber can support 
 valve.pressure_tension_ratio = 0.11; 
 
 
