@@ -104,18 +104,18 @@ else
     else
 
         nbr   = C(:,nbr_idx); 
-        R_nbr = R_ch(nbr_idx); 
-
+        
         % spring constants
         if nbr_idx < i 
             % nbr_idx is only less if nbr is the parent 
             % parent wise owned by this index 
             k_val = k_spr(i);                      
-
+            R_nbr = R_ch(i); 
         else 
 
             % child's parent-direction spring is at child's index 
             k_val = k_spr(nbr_idx);     
+            R_nbr = R_ch(nbr_idx); 
         end 
     
     end 

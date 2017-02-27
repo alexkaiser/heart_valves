@@ -216,7 +216,7 @@ for j=1:j_max
                 % Take the opposing length element 
                 tension = dv * tension; 
 
-                [k_u(j,k) R_u(j,k)] = get_rest_len_and_spring_constant_linear(X, X_nbr, tension, strain); 
+                [k_u(j_spr,k_spr) R_u(j_spr,k_spr)] = get_rest_len_and_spring_constant_linear(X, X_nbr, tension, strain); 
                 
             end 
 
@@ -243,7 +243,7 @@ for j=1:j_max
 
                 tension = du * tension; 
 
-                [k_v(j,k) R_v(j,k)] = get_rest_len_and_spring_constant_linear(X, X_nbr, tension, strain); 
+                [k_v(j_spr,k_spr) R_v(j_spr,k_spr)] = get_rest_len_and_spring_constant_linear(X, X_nbr, tension, strain); 
                 
             end 
         end
@@ -266,8 +266,8 @@ for left_side = [true false];
         right  = 2*i + 1;
         parent = floor(i/2); 
 
-        for nbr_idx = [left,right,parent] 
-
+%         for nbr_idx = [left,right,parent] 
+         for nbr_idx = [parent] 
             % get the neighbors coordinates, reference coordinate and spring constants
             [nbr R_nbr k_val] = get_nbr_chordae(leaflet, i, nbr_idx, left_side); 
 
