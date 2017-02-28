@@ -60,7 +60,7 @@ if decreasing_tension
     dec_tension_coeff_base = dec_tension_coeff_32 * 32^2; 
     
     valve.c_dec_tension_circumferential = 1.0 * dec_tension_coeff_base; 
-    valve.c_dec_tension_radial          = 1.5 * dec_tension_coeff_base; 
+    valve.c_dec_tension_radial          = 1.0 * dec_tension_coeff_base; 
     valve.c_dec_tension_chordae         = 1.0 * dec_tension_coeff_base; 
 else 
     valve.dec_tension  = 0.0; 
@@ -172,7 +172,7 @@ N_tree = N/2;
 % this is the total force, in current units, 
 % in the leaf generation of the chordae tree 
 % this is an arbitrary constant determined by guess and check 
-k_0_1 = 1.8 * valve.tension_base; 
+k_0_1 = 0.5 * 1.8 * valve.tension_base; 
 
 % force on each leaf in the chordae tree 
 k_0   = k_0_1 / N_tree; 
@@ -185,7 +185,7 @@ k_0   = k_0_1 / N_tree;
 % k_root = 1.889568000000001e+01 / 32; 
 
 % adjust accordingly
-k_root = (1.889568000000001e+01 / 32) * valve.tension_base; 
+k_root = 0.9 * (1.889568000000001e+01 / 32) * valve.tension_base; 
 
 % multiplier necessary to maintain constant root tension 
 % and constant total leaf tension 
