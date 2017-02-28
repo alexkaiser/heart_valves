@@ -19,8 +19,6 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_linea
     chordae_idx_right  = leaflet.chordae_idx_right;
     j_max              = leaflet.j_max; 
     k_max              = leaflet.k_max; 
-    du                 = leaflet.du; 
-    dv                 = leaflet.dv; 
     is_internal        = leaflet.is_internal; 
     
     R_u = leaflet.R_u;

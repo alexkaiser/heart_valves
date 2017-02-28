@@ -4,7 +4,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 32; 
+N = 128; 
 
 % Show some output 
 plots = false; 
@@ -70,7 +70,7 @@ p_range = valve.anterior.p_0 .* (0:.1:1);
 
 linear_open_config  = true; 
 p_range_linear      = 0.0; % valve.anterior.p_0 .* (1:-.1:0); 
-strain = .1; 
+strain = 0.16; 
 repulsive_coeff_range = []; % [.9:(-0.1):.1]; 
 
 
@@ -83,7 +83,7 @@ else
 end 
 
 fig = figure; 
-valve_plot(valve)
+fig = valve_plot(valve, fig); 
 if radial
     title('Pressurized configuration radial fibers')
 else
@@ -91,7 +91,7 @@ else
 end 
 
 fig = figure; 
-valve_plot(valve_linear)
+fig = valve_plot(valve_linear, fig); 
 title('Relaxed configuration radial fibers, linear constitutive law'); 
 
 
@@ -106,7 +106,7 @@ end
 save(strcat(valve.base_name, '_final_data')); 
 
 % Write to simulation files 
-output_to_ibamr_format(valve); 
+output_to_ibamr_format(valve_linear); 
 
 
 

@@ -60,7 +60,7 @@ if decreasing_tension
     dec_tension_coeff_base = dec_tension_coeff_32 * 32^2; 
     
     valve.c_dec_tension_circumferential = 1.0 * dec_tension_coeff_base; 
-    valve.c_dec_tension_radial          = 1.0 * dec_tension_coeff_base; 
+    valve.c_dec_tension_radial          = 1.5 * dec_tension_coeff_base; 
     valve.c_dec_tension_chordae         = 1.0 * dec_tension_coeff_base; 
 else 
     valve.dec_tension  = 0.0; 
@@ -154,7 +154,7 @@ alpha    =  valve.tension_base;  % circumferential
 beta     =  valve.tension_base;  % radial
 p_0      = -valve.p_physical; 
 
-ref_frac =  0.7;  % generic spring constants reduced by this much 
+ref_frac =  1.0;  % generic spring constants reduced by this much 
 
 
 % Add energy function for zero pressure case 

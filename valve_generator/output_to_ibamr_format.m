@@ -23,19 +23,22 @@ function [] = output_to_ibamr_format(valve)
     %    Files written in IBAMR format 
     % 
     
-    N                            = valve.N; 
-    base_name                    = valve.base_name; 
-    L                            = valve.L; 
-    pressure_tension_ratio       = valve.pressure_tension_ratio; 
-    posterior                    = valve.posterior; 
-    anterior                     = valve.anterior; 
-    p_physical                   = valve.p_physical; 
-    target_multiplier            = valve.target_multiplier; 
-    refinement                   = valve.refinement; 
-    n_lagrangian_tracers         = valve.n_lagrangian_tracers; 
-    num_copies                   = valve.num_copies; 
-    collagen_springs_leaflet     = valve.collagen_springs_leaflet; 
+    N                         = valve.N; 
+    base_name                 = valve.base_name; 
+    L                         = valve.L; 
+    posterior                 = valve.posterior; 
+    anterior                  = valve.anterior; 
+    tension_base              = valve.tension_base; 
+    du                        = valve.anterior.du; 
+    target_multiplier         = valve.target_multiplier; 
+    n_lagrangian_tracers      = valve.n_lagrangian_tracers; 
+    num_copies                = valve.num_copies; 
+    collagen_springs_leaflet  = valve.collagen_springs_leaflet; 
     
+    
+    if collagen_springs_leaflet 
+        error('collagen curve springs not implemented in new units'); 
+    end   
 
     params.vertex = fopen(strcat(base_name, '.vertex'), 'w'); 
     params.spring = fopen(strcat(base_name, '.spring'), 'w'); 
@@ -50,14 +53,11 @@ function [] = output_to_ibamr_format(valve)
     params.total_springs  = 0; 
     params.total_targets  = 0; 
 
-    % compute some needed constants 
-    MMHG_TO_CGS = 1333.22368; 
-    p_cgs = p_physical * MMHG_TO_CGS; 
 
-    % value of the relative spring constant is determined by the ratio 
-    k_rel = p_cgs / pressure_tension_ratio; 
-    k_rel = k_rel / num_copies; 
-    
+    % Spring constant base for targets and 
+    % Approximate force is tension_base multiplied by a length element 
+    k_rel = tension_base * du / num_copies; 
+        
     % base rate for target spring constants
     % target constant for a single point 
     % this does not scale when the mesh is changed 
@@ -73,10 +73,7 @@ function [] = output_to_ibamr_format(valve)
     % can also just divide by refinement because not want them to get stiffer
     k_target_net = k_target; % / refinement; 
     m_net = 0.0; 
-    eta_net = 0.0; % sqrt(m_net * k_target_net);    
-    
-    % relative spring constants drop when the mesh is refined 
-    k_rel = k_rel / refinement; 
+    eta_net = 0.0; % sqrt(m_net * k_target_net);
 
     % output the left and right papillary as the first two vertices and targets
     
@@ -95,14 +92,15 @@ function [] = output_to_ibamr_format(valve)
     end 
     
     if isfield(posterior, 'reflect_x') && posterior.reflect_x
-        posterior.X(1,:,:)                   = -posterior.X(1,:,:); 
-        posterior.R(1,:,:)                   = -posterior.R(1,:,:); 
-        posterior.left_papillary(1)          = -posterior.left_papillary(1); 
-        posterior.right_papillary(1)         = -posterior.right_papillary(1); 
-        posterior.chordae.C_left (1,:,:)     = -posterior.chordae.C_left (1,:,:);
-        posterior.chordae.C_right(1,:,:)     = -posterior.chordae.C_right(1,:,:);
-        posterior.chordae.left_papillary(1)  = -posterior.chordae.left_papillary(1); 
-        posterior.chordae.right_papillary(1) = -posterior.chordae.right_papillary(1); 
+        error('reflection not implemented in linear post slip model'); 
+%         posterior.X(1,:,:)                   = -posterior.X(1,:,:); 
+%         posterior.R(1,:,:)                   = -posterior.R(1,:,:); 
+%         posterior.left_papillary(1)          = -posterior.left_papillary(1); 
+%         posterior.right_papillary(1)         = -posterior.right_papillary(1); 
+%         posterior.chordae.C_left (1,:,:)     = -posterior.chordae.C_left (1,:,:);
+%         posterior.chordae.C_right(1,:,:)     = -posterior.chordae.C_right(1,:,:);
+%         posterior.chordae.left_papillary(1)  = -posterior.chordae.left_papillary(1); 
+%         posterior.chordae.right_papillary(1) = -posterior.chordae.right_papillary(1); 
     end 
     
     if isfield(anterior, 'reflect_x') && anterior.reflect_x
@@ -321,7 +319,7 @@ function [] = prepend_line_with_int(file_name, val)
 end 
 
 
-function [params, leaflet] = add_leaflet(params, leaflet, k_rel, k_target, eta, collagen_spring)
+function [params, leaflet] = add_leaflet(params, leaflet, num_copies, k_target, eta, collagen_spring)
                       
     % Places all main data into IBAMR format for this leaflet
     % Updates running totals on the way 
@@ -337,9 +335,17 @@ function [params, leaflet] = add_leaflet(params, leaflet, k_rel, k_target, eta, 
     chordae           = leaflet.chordae;
     chordae_idx_left  = leaflet.chordae_idx_left; 
     chordae_idx_right = leaflet.chordae_idx_right; 
-    ref_frac          = leaflet.ref_frac; 
-    alpha             = leaflet.alpha; 
-    beta              = leaflet.beta; 
+
+    R_u = leaflet.R_u;
+    k_u = leaflet.k_u;
+    R_v = leaflet.R_v;
+    k_v = leaflet.k_v;
+
+    R_free_edge_left   = leaflet.R_free_edge_left;
+    k_free_edge_left   = leaflet.k_free_edge_left;
+    R_free_edge_right  = leaflet.R_free_edge_right;
+    k_free_edge_right  = leaflet.k_free_edge_right; 
+    
     
     if collagen_spring
         function_idx = 1;
@@ -376,6 +382,9 @@ function [params, leaflet] = add_leaflet(params, leaflet, k_rel, k_target, eta, 
                     
                     % current node has a chordae connection
                     
+                    % chordae_idx tells what free edge index to use 
+                    i = chordae_idx_left(j,k); 
+                    
                     % index that free edge would have if on tree
                     % remember that leaves are only in the leaflet 
                     leaf_idx = chordae_idx_left(j,k) + N_chordae; 
@@ -383,19 +392,19 @@ function [params, leaflet] = add_leaflet(params, leaflet, k_rel, k_target, eta, 
                     % then take the parent index of that number in chordae variables 
                     idx_chordae = floor(leaf_idx/2);  
 
-                    R_nbr = leaflet.chordae.Ref_l(:,idx_chordae); 
-
                     nbr_idx = params.global_idx + total_leaflet + idx_chordae - 1; 
 
-                    rest_len = ref_frac * norm(R_nbr - R(:,j,k)); 
+                    rest_len = R_free_edge_left(i); 
 
+                    kappa = k_free_edge_left(i); 
+                    
                     if collagen_spring 
                         % relative constant here
                         % other parameters coded into function 
                         kappa = k_rel * chordae.k_0; 
                         params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
                     else 
-                        kappa = k_rel * chordae.k_0 / rest_len; 
+                        kappa = kappa / (rest_len * num_copies); 
                         params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
                     end 
 
@@ -406,6 +415,8 @@ function [params, leaflet] = add_leaflet(params, leaflet, k_rel, k_target, eta, 
                     
                     % current node has a chordae connection
                     
+                    i = chordae_idx_right(j,k); 
+                    
                     % index that free edge would have if on tree
                     % remember that leaves are only in the leaflet 
                     leaf_idx = chordae_idx_right(j,k) + N_chordae; 
@@ -413,14 +424,14 @@ function [params, leaflet] = add_leaflet(params, leaflet, k_rel, k_target, eta, 
                     % then take the parent index of that number in chordae variables 
                     idx_chordae = floor(leaf_idx/2);  
 
-                    R_nbr = leaflet.chordae.Ref_r(:,idx_chordae); 
-
                     nbr_idx = params.global_idx + total_leaflet + idx_chordae - 1; 
                     
                     % right gets incremented by N_chordae again     
                     nbr_idx = nbr_idx + N_chordae;     
                         
-                    rest_len = ref_frac * norm(R_nbr - R(:,j,k)); 
+                    rest_len = R_free_edge_right(i); 
+
+                    kappa = k_free_edge_right(i); 
 
                     if collagen_spring 
                         % relative constant here
@@ -428,7 +439,7 @@ function [params, leaflet] = add_leaflet(params, leaflet, k_rel, k_target, eta, 
                         kappa = k_rel * chordae.k_0; 
                         params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
                     else 
-                        kappa = k_rel * chordae.k_0 / rest_len; 
+                        kappa = kappa / (rest_len * num_copies); 
                         params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
                     end 
 
@@ -448,14 +459,17 @@ function [params, leaflet] = add_leaflet(params, leaflet, k_rel, k_target, eta, 
                 k_nbr = k; 
                 if (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr, k_nbr))
                     
-                    rest_len = ref_frac * norm(R(:,j_nbr,k_nbr) - R(:,j,k)); 
+                    % since always moving in up direction, j_spr = j, k_spr = k
+                    rest_len = R_u(j,k); 
+                    kappa    = k_u(j,k); 
+                    
                     nbr_idx = params.global_idx + point_idx_with_bc(j_nbr,k_nbr);
                     
                     if collagen_spring
                         kappa = alhpa * k_rel;         
                         params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
                     else 
-                        kappa = alpha * k_rel / rest_len;         
+                        kappa = kappa / (rest_len * num_copies); 
                         params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
                     end 
 
@@ -466,14 +480,17 @@ function [params, leaflet] = add_leaflet(params, leaflet, k_rel, k_target, eta, 
                 k_nbr = k + 1; 
                 if (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr, k_nbr))
                     
-                    rest_len = ref_frac * norm(R(:,j_nbr,k_nbr) - R(:,j,k)); 
+                    % since always moving in up direction, j_spr = j, k_spr = k
+                    rest_len = R_v(j,k); 
+                    kappa    = k_v(j,k); 
+                    
                     nbr_idx = params.global_idx + point_idx_with_bc(j_nbr,k_nbr);
                     
                     if collagen_spring
                         kappa = beta * k_rel;         
                         params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
                     else 
-                        kappa = beta * k_rel / rest_len;         
+                        kappa = kappa / (rest_len * num_copies); 
                         params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
                     end 
 
@@ -491,7 +508,7 @@ end
 
 
 
-function params = add_chordae_tree(params, leaflet, k_rel, collagen_spring)
+function params = add_chordae_tree(params, leaflet, num_copies, collagen_spring)
 
     % Adds chordae tree to IBAMR format files 
     % No targets here, so files and and count not included 
@@ -501,14 +518,7 @@ function params = add_chordae_tree(params, leaflet, k_rel, collagen_spring)
     end 
     
     chordae         = leaflet.chordae; 
-    ref_frac        = leaflet.ref_frac; 
-    
-    C_left          = chordae.C_left;  
-    C_right         = chordae.C_right;  
-    Ref_l           = chordae.Ref_l;  
-    Ref_r           = chordae.Ref_r; 
 
-    
     [m N_chordae] = size(chordae.C_left); 
     
     if collagen_spring
@@ -519,11 +529,9 @@ function params = add_chordae_tree(params, leaflet, k_rel, collagen_spring)
     for left_side = [true false];  
         
         if left_side
-            C = C_left; 
-            Ref = Ref_l; 
+            C = chordae.C_left; 
         else 
-            C = C_right; 
-            Ref = Ref_r; 
+            C = chordae.C_right; 
         end 
         
         for i=1:N_chordae
@@ -558,16 +566,14 @@ function params = add_chordae_tree(params, leaflet, k_rel, collagen_spring)
             end 
             
             % get the neighbors coordinates, reference coordinate and spring constants
-            [nbr R_nbr k_val] = get_nbr_chordae(leaflet, i, parent, left_side); 
-            
-            rest_len = ref_frac * norm(R_nbr - Ref(:,i)); 
+            [nbr rest_len kappa] = get_nbr_chordae(leaflet, i, parent, left_side); 
             
             if collagen_spring 
                 kappa = k_rel * k_val; 
                 % list nbr index first because nbr is parent and has lower index
                 params = spring_string(params, nbr_idx, idx, kappa, rest_len, function_idx);            
             else 
-                kappa = k_rel * k_val / rest_len; 
+                kappa = kappa / (rest_len * num_copies); 
                 % list nbr index first because nbr is parent and has lower index
                 params = spring_string(params, nbr_idx, idx, kappa, rest_len);        
             end 

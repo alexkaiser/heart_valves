@@ -313,5 +313,5 @@ leaflet_linear.chordae.k_r    = k_chordae_right;
 leaflet_linear.diff_eqns = @difference_equations_linear; 
 leaflet_linear.jacobian = @build_jacobian_linear; 
 
-
+leaflet_linear.ref_frac = 1.0; 
 
