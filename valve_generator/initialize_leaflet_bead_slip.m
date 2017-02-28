@@ -45,6 +45,8 @@ leaflet.N            = N;
 leaflet.total_angle  = total_angle; 
 leaflet.leaflet_only = leaflet_only; 
 
+leaflet.tension_base = valve.tension_base; 
+
 
 leaflet.repulsive_potential         = valve.repulsive_potential; 
 if leaflet.repulsive_potential         

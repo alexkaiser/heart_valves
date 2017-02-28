@@ -128,20 +128,9 @@ function [] = output_to_ibamr_format(valve)
     end 
     
     
-    if valve.X_config_is_reference
-        anterior.R               = anterior.X; 
-        anterior.chordae.Ref_l   = anterior.chordae.C_left;  
-        anterior.chordae.Ref_r   = anterior.chordae.C_right;  
-        anterior.ref_frac        = 1.0; 
-        
-        posterior.R              = posterior.X; 
-        posterior.chordae.Ref_l  = posterior.chordae.C_left;  
-        posterior.chordae.Ref_r  = posterior.chordae.C_right;  
-        posterior.ref_frac       = 1.0;
-    end 
-    
     % ugh this is terrible fix it it makes my head hurt by I'm tired 
     global z_offset
+    
     
     for z_offset = z_offset_vals
         
@@ -179,23 +168,22 @@ function [] = output_to_ibamr_format(valve)
         
         % posterior first 
         % leaflets 
-        [params, posterior] = add_leaflet(params, posterior, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet); 
+        [params, posterior] = add_leaflet(params, posterior, num_copies, k_target_ring, eta_ring, collagen_springs_leaflet); 
 
         % posterior chordae 
         posterior.chordae.left_papillary_idx  = posterior.left_papillary_idx; 
         posterior.chordae.right_papillary_idx = posterior.right_papillary_idx; 
 
-        params = add_chordae_tree(params, posterior, k_rel_leaflet, collagen_springs_leaflet);  
+        params = add_chordae_tree(params, posterior, num_copies, collagen_springs_leaflet);  
 
         % anterior 
-        [params, anterior] = add_leaflet(params, anterior, k_rel_leaflet, k_target_ring, eta_ring, collagen_springs_leaflet);   
-
+        [params, anterior] = add_leaflet(params, anterior, num_copies, k_target_ring, eta_ring, collagen_springs_leaflet);   
 
         % anterior chordae 
         anterior.chordae.left_papillary_idx  = anterior.left_papillary_idx; 
         anterior.chordae.right_papillary_idx = anterior.right_papillary_idx; 
 
-        params = add_chordae_tree(params, anterior, k_rel_leaflet, collagen_springs_leaflet);  
+        params = add_chordae_tree(params, anterior, num_copies, collagen_springs_leaflet);  
 
         % flat part of mesh 
         r = valve.r; 
@@ -208,24 +196,10 @@ function [] = output_to_ibamr_format(valve)
 
         % turn the polar net off for now      
         params = place_net(params, r, h, L, N_ring, radial_fibers, k_rel, k_target_net, ref_frac_net, eta_net); 
-
-                            
-        % place rays for now
-        if anterior.radial_and_circumferential
-            k_rel_anterior = anterior.beta * k_rel;
-        else 
-            k_rel_anterior = k_rel;
-        end 
         
-        params = place_rays(params, anterior, ds, valve.r, L, k_rel_anterior, k_target_net, ref_frac_net, eta_net);                    
-
-        if posterior.radial_and_circumferential
-            k_rel_posterior = posterior.beta * k_rel;
-        else 
-            k_rel_posterior = k_rel;
-        end 
-                                    
-        params = place_rays(params, posterior, ds, valve.r, L, k_rel_posterior, k_target_net, ref_frac_net, eta_net);                    
+        % approximate geodesic continutations of fibers 
+        params = place_rays(params, anterior,  ds, valve.r, L, k_rel, k_target_net, ref_frac_net, eta_net);                                       
+        params = place_rays(params, posterior, ds, valve.r, L, k_rel, k_target_net, ref_frac_net, eta_net);                    
 
 
         % flat part of mesh with Cartesian coordinates
@@ -326,7 +300,6 @@ function [params, leaflet] = add_leaflet(params, leaflet, num_copies, k_target, 
 
     % Unpack needed data 
     X                 = leaflet.X; 
-    R                 = leaflet.R; 
     j_max             = leaflet.j_max; 
     k_max             = leaflet.k_max; 
     is_internal       = leaflet.is_internal;
