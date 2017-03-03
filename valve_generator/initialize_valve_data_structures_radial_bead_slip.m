@@ -115,7 +115,7 @@ valve.target_multiplier = 40;
 % number of lagrangian tracers in each dimension 
 % arranged in a mesh near the origin
 % z direction is doubled 
-valve.n_lagrangian_tracers = 8; 
+valve.n_lagrangian_tracers = 0; 
 
 % Uses configuration of X 
 valve.X_config_is_reference = true; 

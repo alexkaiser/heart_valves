@@ -174,12 +174,12 @@ function [] = output_to_ibamr_format(valve)
  
     end 
                                             
-%     if n_lagrangian_tracers > 0
-%         double_z = false; 
-%         [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_lagrangian_tracers, L, double_z); 
-%         particles = fopen(strcat(base_name, '.particles'), 'w'); 
-%         fprintf(particles, '%d\n', total_lagrangian_placed); 
-%     end 
+    if n_lagrangian_tracers > 0
+        double_z = false; 
+        [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_lagrangian_tracers, L, double_z); 
+        particles = fopen(strcat(base_name, '.particles'), 'w'); 
+        fprintf(particles, '%d\n', total_lagrangian_placed); 
+    end 
 
     % finally, write all vertices 
     params = write_all_vertices(params); 
@@ -240,7 +240,7 @@ function params = spring_string(params, idx, nbr, kappa, rest_len, function_idx)
 end 
 
 
-function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds)
+function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies)
     % 
     % Add one or more springs 
     % If the rest length is more than 2 times the specificed mesh width
@@ -268,7 +268,7 @@ function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, 
     
     % Just one spring placed here 
     if N_springs <= 1 
-        k_abs = k_rel / rest_len; 
+        k_abs = k_rel / (rest_len * num_copies); 
         params = spring_string(params, idx, nbr_idx, k_abs, rest_len); 
     else 
         
@@ -321,7 +321,7 @@ function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, 
             R = L / (strain + 1); 
             
             % Absolute spring constant must be used in spring file 
-            k_abs = k_rel / R; 
+            k_abs = k_rel / (R * num_copies); 
             
             % Finally, write the spring string 
             params = spring_string(params, min_idx, max_idx, k_abs, R); 
@@ -543,7 +543,7 @@ function [params, leaflet] = add_leaflet_springs(params, leaflet, num_copies, ds
                         kappa = k_rel * chordae.k_0; 
                         params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
                     else 
-                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds); 
+                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies); 
                     end 
 
                 end 
@@ -574,7 +574,7 @@ function [params, leaflet] = add_leaflet_springs(params, leaflet, num_copies, ds
                         kappa = k_rel * chordae.k_0; 
                         params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
                     else
-                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds);
+                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies);
                     end 
 
                 end 
@@ -598,7 +598,7 @@ function [params, leaflet] = add_leaflet_springs(params, leaflet, num_copies, ds
 %                         k_abs = k_rel / (rest_len * num_copies); 
 %                         params = spring_string(params, idx, nbr_idx, k_abs, rest_len); 
                         
-                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds);
+                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies);
                     end 
 
                 end 
@@ -618,7 +618,7 @@ function [params, leaflet] = add_leaflet_springs(params, leaflet, num_copies, ds
                         kappa = beta * k_rel;         
                         params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
                     else 
-                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds);
+                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies);
                     end 
 
                 end 
@@ -686,7 +686,7 @@ function params = add_chordae_tree_springs(params, leaflet, num_copies, ds, coll
                 params = spring_string(params, nbr_idx, idx, kappa, rest_len, function_idx);            
             else 
                 % list nbr index first because nbr is parent and has lower index
-                params = place_spring_and_split(params, nbr_idx, idx, k_rel, rest_len, ds);
+                params = place_spring_and_split(params, nbr_idx, idx, k_rel, rest_len, ds, num_copies);
                 
             end 
         end 
