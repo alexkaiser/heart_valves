@@ -96,7 +96,7 @@ function [] = output_to_ibamr_format(valve)
     % m_effective_papillary = 1.0 * pi * filter_params_posterior.r^2; 
     eta_papillary         = 0.0; %sqrt(k_target/2 * m_effective_papillary); 
     
-    % spacing 
+    % Approximate mesh spacing 
     ds = 2*L / N;
     
     
@@ -146,39 +146,34 @@ function [] = output_to_ibamr_format(valve)
         [params posterior] = assign_indices_vertex_target(params, posterior, assign_papillary, k_target, eta); 
         
         % write springs 
-        [params, anterior] = add_springs(params, anterior, num_copies, k_target, eta, collagen_springs_leaflet); 
+        [params, anterior] = add_springs(params, anterior, num_copies, ds, collagen_springs_leaflet); 
         
-        [params, posterior] = add_springs(params, posterior, num_copies, k_target, eta, collagen_springs_leaflet); 
- 
+        [params, posterior] = add_springs(params, posterior, num_copies, ds, collagen_springs_leaflet); 
+
+        % flat part of mesh 
+        r = valve.r; 
+        N_ring = 2 * N;
+        h = 0.0; % ring always set at zero 
+        ref_frac_net = 1.0; 
+
+        % no radial fibers, instead geodesics from the leaflet 
+        radial_fibers = false; 
+
+        % turn the polar net off for now      
+        params = place_net(params, r, h, L, N_ring, radial_fibers, k_rel, k_target_net, ref_frac_net, eta_net); 
         
-        
-        
-% 
-%         % flat part of mesh 
-%         r = valve.r; 
-%         N_ring = 2 * N;
-%         h = 0.0; % ring always set at zero 
-%         ref_frac_net = 1.0; 
-% 
-%         % no radial fibers, instead geodesics from the leaflet 
-%         radial_fibers = false; 
-% 
-%         % turn the polar net off for now      
-%         params = place_net(params, r, h, L, N_ring, radial_fibers, k_rel, k_target_net, ref_frac_net, eta_net); 
-%         
-%         % approximate geodesic continutations of fibers 
-%         params = place_rays(params, anterior,  ds, valve.r, L, k_rel, k_target_net, ref_frac_net, eta_net);                                       
-%         params = place_rays(params, posterior, ds, valve.r, L, k_rel, k_target_net, ref_frac_net, eta_net);                    
-% 
-% 
-%         % flat part of mesh with Cartesian coordinates
-%         % inner radius, stop mesh here 
-%         r_cartesian = r + 2*ds; 
-%         params = place_cartesian_net(params, r_cartesian, h, L, ds, k_rel, k_target_net, ref_frac_net, eta_net); 
+        % approximate geodesic continutations of fibers 
+        params = place_rays(params, anterior,  ds, valve.r, L, k_rel, k_target_net, ref_frac_net, eta_net);                                       
+        params = place_rays(params, posterior, ds, valve.r, L, k_rel, k_target_net, ref_frac_net, eta_net);                    
+
+
+        % flat part of mesh with Cartesian coordinates
+        % inner radius, stop mesh here 
+        r_cartesian = r + 2*ds; 
+        params = place_cartesian_net(params, r_cartesian, h, L, ds, k_rel, k_target_net, ref_frac_net, eta_net); 
  
     end 
-                        
-                        
+                                            
 %     if n_lagrangian_tracers > 0
 %         double_z = false; 
 %         [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_lagrangian_tracers, L, double_z); 
@@ -243,6 +238,103 @@ function params = spring_string(params, idx, nbr, kappa, rest_len, function_idx)
     
     params.total_springs = params.total_springs + 1; 
 end 
+
+
+function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds)
+    % 
+    % Add one or more springs 
+    % If the rest length is more than 2 times the specificed mesh width
+    % Then it is split into multiple springs 
+    % 
+    % Note that the constant passed in must be the relative spring constant 
+    % 
+
+    if nbr_idx <= idx
+        error('By convention, only place springs with the second index larger to prevent duplicates'); 
+    end 
+    
+    N_springs = floor(rest_len / ds); 
+
+    max_strain = .01; 
+    
+    X     = params.vertices(:,idx + 1); 
+    X_nbr = params.vertices(:,nbr_idx + 1); 
+    
+    strain = (norm(X_nbr - X) - rest_len) / rest_len; 
+    
+    if strain > max_strain 
+        warning(sprintf('strain = %f, idx = %d, nbr = %d', strain, idx, nbr_idx)); 
+    end 
+    
+    % Just one spring placed here 
+    if N_springs <= 1 
+        k_abs = k_rel / rest_len; 
+        params = spring_string(params, idx, nbr_idx, k_abs, rest_len); 
+    else 
+        
+        % increment of new points 
+        step = (X_nbr - X)/N_springs; 
+        
+        X_vertices_new = zeros(3,N_springs + 1); 
+        
+        % set new coordinates 
+        for i=0:N_springs
+            X_vertices_new(:,i+1) = X + i*step; 
+        end 
+        
+        if X ~= X_vertices_new(:,1)
+            error('First vertex must be equal to X'); 
+        end 
+        
+        if X_nbr ~= X_vertices_new(:,N_springs + 1)
+            error('Last vertex must be equal to X_nbr'); 
+        end
+        
+        
+        % first index is always first index suppied 
+        idx_tmp = idx; 
+        
+        for i=1:N_springs 
+            
+            % place the upper new vertex if it is not placed already 
+            if i<N_springs 
+                params.vertices(:,params.global_idx + 1) = X_vertices_new(:,i+1); 
+                
+                % new vertex's index is current (zero indexed) global index 
+                nbr_idx_tmp = params.global_idx; 
+
+                params.global_idx = params.global_idx + 1;
+                
+            else 
+                % last spring upper limit is the previous neighbor 
+                nbr_idx_tmp = nbr_idx; 
+            end 
+            
+            % global indices placed in order by convention 
+            min_idx = min(idx_tmp, nbr_idx_tmp); 
+            max_idx = max(idx_tmp, nbr_idx_tmp); 
+        
+            % Current length 
+            L = norm(X_vertices_new(i+1) - X_vertices_new(i)); 
+            
+            % Rest length determined by strain 
+            R = L / (strain + 1); 
+            
+            % Absolute spring constant must be used in spring file 
+            k_abs = k_rel / R; 
+            
+            % Finally, write the spring string 
+            params = spring_string(params, min_idx, max_idx, k_abs, R); 
+            
+            % lower index is always previous upper index 
+            idx_tmp = nbr_idx_tmp; 
+            
+        end 
+    
+    end 
+
+end 
+
 
 function params = target_string(params, idx, kappa, eta)
     % prints a target format string to target file 
@@ -369,15 +461,15 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, assign
 end 
  
 
-function [params, leaflet] = add_springs(params, leaflet, num_copies, k_target, eta, collagen_spring)
+function [params, leaflet] = add_springs(params, leaflet, num_copies, ds, collagen_spring)
 
-    [params, leaflet] = add_leaflet_springs(params, leaflet, num_copies, k_target, eta, collagen_spring); 
-    params = add_chordae_tree_springs(params, leaflet, num_copies, collagen_spring); 
+    [params, leaflet] = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_spring); 
+    params            = add_chordae_tree_springs(params, leaflet, num_copies, ds, collagen_spring); 
 
 end 
 
 
-function [params, leaflet] = add_leaflet_springs(params, leaflet, num_copies, k_target, eta, collagen_spring)
+function [params, leaflet] = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_spring)
                       
     % Places all main data into IBAMR format for this leaflet
     % Updates running totals on the way 
@@ -404,11 +496,9 @@ function [params, leaflet] = add_leaflet_springs(params, leaflet, num_copies, k_
     
     
     if collagen_spring
+        error('not implemeneted'); 
         function_idx = 1;
     end 
-
-    % Counter for number of points put down 
-    pts_placed = 0; 
     
     if isfield(leaflet, 'chordae') && ~isempty(chordae)
         [m N_chordae] = size(leaflet.chordae.C_left); 
@@ -445,7 +535,7 @@ function [params, leaflet] = add_leaflet_springs(params, leaflet, num_copies, k_
 
                     rest_len = R_free_edge_left(i); 
 
-                    kappa = k_free_edge_left(i); 
+                    k_rel = k_free_edge_left(i); 
                     
                     if collagen_spring 
                         % relative constant here
@@ -453,8 +543,7 @@ function [params, leaflet] = add_leaflet_springs(params, leaflet, num_copies, k_
                         kappa = k_rel * chordae.k_0; 
                         params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
                     else 
-                        kappa = kappa / (rest_len * num_copies); 
-                        params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
+                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds); 
                     end 
 
                 end 
@@ -477,16 +566,15 @@ function [params, leaflet] = add_leaflet_springs(params, leaflet, num_copies, k_
                         
                     rest_len = R_free_edge_right(i); 
 
-                    kappa = k_free_edge_right(i); 
+                    k_rel = k_free_edge_right(i); 
 
                     if collagen_spring 
                         % relative constant here
                         % other parameters coded into function 
                         kappa = k_rel * chordae.k_0; 
                         params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
-                    else 
-                        kappa = kappa / (rest_len * num_copies); 
-                        params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
+                    else
+                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds);
                     end 
 
                 end 
@@ -499,7 +587,7 @@ function [params, leaflet] = add_leaflet_springs(params, leaflet, num_copies, k_
                     
                     % since always moving in up direction, j_spr = j, k_spr = k
                     rest_len = R_u(j,k); 
-                    kappa    = k_u(j,k); 
+                    k_rel    = k_u(j,k); 
                     
                     nbr_idx = leaflet.indices_global(j_nbr,k_nbr);
                     
@@ -507,8 +595,10 @@ function [params, leaflet] = add_leaflet_springs(params, leaflet, num_copies, k_
                         kappa = alhpa * k_rel;         
                         params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
                     else 
-                        kappa = kappa / (rest_len * num_copies); 
-                        params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
+%                         k_abs = k_rel / (rest_len * num_copies); 
+%                         params = spring_string(params, idx, nbr_idx, k_abs, rest_len); 
+                        
+                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds);
                     end 
 
                 end 
@@ -520,7 +610,7 @@ function [params, leaflet] = add_leaflet_springs(params, leaflet, num_copies, k_
                     
                     % since always moving in up direction, j_spr = j, k_spr = k
                     rest_len = R_v(j,k); 
-                    kappa    = k_v(j,k); 
+                    k_rel    = k_v(j,k); 
                     
                     nbr_idx = leaflet.indices_global(j_nbr,k_nbr);
                     
@@ -528,22 +618,19 @@ function [params, leaflet] = add_leaflet_springs(params, leaflet, num_copies, k_
                         kappa = beta * k_rel;         
                         params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
                     else 
-                        kappa = kappa / (rest_len * num_copies); 
-                        params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
+                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds);
                     end 
 
                 end 
                 
-                pts_placed = pts_placed + 1; 
             end 
         end 
     end
-
 end 
 
 
 
-function params = add_chordae_tree_springs(params, leaflet, num_copies, collagen_spring)
+function params = add_chordae_tree_springs(params, leaflet, num_copies, ds, collagen_spring)
 
     % Adds chordae tree to IBAMR format files 
     % No targets here, so files and and count not included 
@@ -557,6 +644,7 @@ function params = add_chordae_tree_springs(params, leaflet, num_copies, collagen
     [m N_chordae] = size(chordae.C_left); 
     
     if collagen_spring
+        error('not implemeneted'); 
         function_idx = 1;
     end
     
@@ -590,16 +678,16 @@ function params = add_chordae_tree_springs(params, leaflet, num_copies, collagen
             end 
             
             % get the neighbors coordinates, reference coordinate and spring constants
-            [nbr rest_len kappa] = get_nbr_chordae(leaflet, i, parent, left_side); 
+            [nbr rest_len k_rel] = get_nbr_chordae(leaflet, i, parent, left_side); 
             
             if collagen_spring 
                 kappa = k_rel * k_val; 
                 % list nbr index first because nbr is parent and has lower index
                 params = spring_string(params, nbr_idx, idx, kappa, rest_len, function_idx);            
             else 
-                kappa = kappa / (rest_len * num_copies); 
                 % list nbr index first because nbr is parent and has lower index
-                params = spring_string(params, nbr_idx, idx, kappa, rest_len);        
+                params = place_spring_and_split(params, nbr_idx, idx, k_rel, rest_len, ds);
+                
             end 
         end 
         
@@ -650,13 +738,13 @@ function params = place_net(params, r, h, L, N, radial_fibers, k_rel, k_target, 
     points = zeros(3,N,M);
 
     % just keep a list of valid indices, mark NAN if out of physical bounds 
-    indices = zeros(N,M); 
-    idx = 0; 
-    points_placed = 0; 
+    indices_global = zeros(N,M); 
     
-
+    instrument_idx = 0; 
+    
     rad = r; 
     
+    % compute vertex positions and add to array 
     for k=1:M
         for j=1:N
             
@@ -666,11 +754,21 @@ function params = place_net(params, r, h, L, N, radial_fibers, k_rel, k_target, 
             % if one norm is less than L, then the point is within the domain  
             if norm(coords_horiz, inf) < L 
                 points(:,j,k) = [coords_horiz; h]; 
-                indices(j,k) = idx; 
-                idx = idx + 1;                 
+                indices_global(j,k) = params.global_idx; 
+                params.vertices(:,params.global_idx + 1) = points(:,j,k); 
+                
+                % every valid vertex is a target point here 
+                if exist('eta', 'var')
+                    params = target_string(params, params.global_idx, k_target, eta);     
+                else
+                    params = target_string(params, params.global_idx, k_target);     
+                end 
+
+                params.global_idx = params.global_idx + 1;                   
+
             else 
                 points(:,j,k) = NaN * ones(3,1);
-                indices(j,k) = NaN; 
+                indices_global(j,k) = NaN; 
             end     
             
         end 
@@ -692,66 +790,50 @@ function params = place_net(params, r, h, L, N, radial_fibers, k_rel, k_target, 
         for j=1:N
             
             % just ignore the nan 
-            if ~isnan(indices(j,k))
+            if ~isnan(indices_global(j,k))
  
                 last_idx = idx; 
-                idx = indices(j,k) + params.global_idx; 
+                idx = indices_global(j,k); 
                 
                 % instrument file on 
                 if k == 1
-                
-                    if j ~= (indices(j,k)+1)
-                        error('local indices should go with j'); 
-                    end 
-                
-                    fprintf(params.inst, '%d \t0 \t %d\n', idx, indices(j,k)); 
-                    
+                    fprintf(params.inst, '%d \t0 \t %d\n', idx, instrument_idx); 
+                    instrument_idx = instrument_idx + 1; 
                 end 
-                    
                 
                 if last_idx >= idx
                     error('should always be placing points in order, something wrong'); 
                 end 
-                
-                % every valid vertex is a target here 
-                params = vertex_string(params, points(:,j,k)); 
-                points_placed = points_placed + 1; 
-                if exist('eta', 'var')
-                    params = target_string(params, idx, k_target, eta);     
-                else
-                    params = target_string(params, idx, k_target);     
-                end 
-                
-                
+
                 % check up directions for springs 
                 if (j+1) < N
-                    if ~isnan(indices(j+1,k))
+                    if ~isnan(indices_global(j+1,k))
                         rest_len = ref_frac * norm(points(:,j,k) - points(:,j+1,k)); 
-                        kappa = k_rel / rest_len;
-                        nbr_idx = indices(j+1,k) + params.global_idx; 
-                        params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
+                        k_abs = k_rel / rest_len;
+                        nbr_idx = indices_global(j+1,k); 
+                        params = spring_string(params, idx, nbr_idx, k_abs, rest_len); 
                     end 
                 end 
                 
                 % don't forget the periodic direction in j
                 if (j+1) == N
                    % need to make sure that the 1,k point is also not a NaN  
-                   if ~isnan(indices(1,k)) 
+                   if ~isnan(indices_global(1,k)) 
                        rest_len = ref_frac * norm(points(:,j,k) - points(:,1,k)); 
-                       kappa = k_rel / rest_len;
-                       nbr_idx = indices(1,k) + params.global_idx; 
-                       params = spring_string(params, nbr_idx, idx, kappa, rest_len); 
+                       k_abs = k_rel / rest_len;
+                       nbr_idx = indices_global(1,k); 
+                       params = spring_string(params, nbr_idx, idx, k_abs, rest_len); 
                    end 
                 end 
                 
                 % check up directions for springs 
                 if radial_fibers
                     if (k+1) < M
-                        if ~isnan(indices(j,k+1))
+                        if ~isnan(indices_global(j,k+1))
                             rest_len = ref_frac * norm(points(:,j,k) - points(:,j,k+1)); 
-                            kappa = k_rel / rest_len; 
-                            nbr_idx = indices(j,k+1) + params.global_idx; 
-                            params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
+                            k_abs = k_rel / rest_len; 
+                            nbr_idx = indices_global(j,k+1); 
+                            params = spring_string(params, idx, nbr_idx, k_abs, rest_len); 
                         end 
                     end 
                 end 
@@ -761,9 +843,7 @@ function params = place_net(params, r, h, L, N, radial_fibers, k_rel, k_target, 
             end 
            
         end 
-    end 
-    
-    params.global_idx = params.global_idx + points_placed; 
+    end  
 
 end 
 
@@ -800,7 +880,6 @@ function params = place_rays(params, leaflet, ds, r, L, k_rel, k_target, ref_fra
     k_max       = leaflet.k_max;
     is_bc       = leaflet.is_bc; 
     is_internal = leaflet.is_internal; 
-    % r           = leaflet.filter.r; 
     h           = 0.0;        % always place at origin 
     
     
@@ -855,9 +934,9 @@ function params = place_rays(params, leaflet, ds, r, L, k_rel, k_target, ref_fra
                         % grab the index 
                         idx = params.global_idx;
 
-                        % point 
-                        params = vertex_string(params, point); 
-
+                        % place point 
+                        params.vertices(:,params.global_idx + 1) = point; 
+                        
                         % it's a target too 
                         if exist('eta', 'var')
                             params = target_string(params, idx, k_target, eta);     
@@ -865,12 +944,10 @@ function params = place_rays(params, leaflet, ds, r, L, k_rel, k_target, ref_fra
                             params = target_string(params, idx, k_target);     
                         end 
 
-
                         rest_len = ref_frac * norm(point - point_prev); 
-                        kappa = k_rel / rest_len;
+                        k_abs = k_rel / rest_len;
 
-
-                        params = spring_string(params, nbr_idx, idx, kappa, rest_len);
+                        params = spring_string(params, nbr_idx, idx, k_abs, rest_len);
 
                         point_prev = point; 
                         point      = point + increment; 
@@ -942,7 +1019,6 @@ function [val] = get_geodesic_continued_point(x, pt_ring, r, h)
         error('rotated value must be out of the plane'); 
     end 
     
-
 end 
 
 
@@ -975,10 +1051,7 @@ function params = place_cartesian_net(params, r, h, L, ds, k_rel, k_target, ref_
     points = zeros(3,N,N);
 
     % just keep a list of valid indices, mark NAN if out of physical bounds 
-    indices = zeros(N,N); 
-    idx = 0; 
-    points_placed = 0; 
-    
+    indices_global = zeros(N,N);     
     
     % This loop should be one indexed, 
     % because we want to start not at the edge but ds in 
@@ -989,12 +1062,24 @@ function params = place_cartesian_net(params, r, h, L, ds, k_rel, k_target, ref_
             
             % if one norm is less than L, then the point is within the domain  
             if (norm(coords_horiz, inf) < L) && (norm(coords_horiz,2) > r) 
+                
                 points(:,j,k) = [coords_horiz; h]; 
-                indices(j,k) = idx; 
-                idx = idx + 1;                 
+                indices_global(j,k) = params.global_idx; 
+                params.vertices(:,params.global_idx + 1) = points(:,j,k);
+
+                % every valid vertex is a target point here 
+                if exist('eta', 'var')
+                    params = target_string(params, params.global_idx, k_target, eta);     
+                else
+                    params = target_string(params, params.global_idx, k_target);     
+                end 
+
+                params.global_idx = params.global_idx + 1; 
+                
+                
             else 
                 points(:,j,k) = NaN * ones(3,1);
-                indices(j,k) = NaN; 
+                indices_global(j,k) = NaN; 
             end     
             
         end 
@@ -1009,42 +1094,32 @@ function params = place_cartesian_net(params, r, h, L, ds, k_rel, k_target, ref_
         for j=1:N
             
             % just ignore the NaNs 
-            if ~isnan(indices(j,k))
+            if ~isnan(indices_global(j,k))
  
                 last_idx = idx; 
-                idx = indices(j,k) + params.global_idx; 
+                idx = indices_global(j,k); 
                 
                 if last_idx >= idx
                     error('should always be placing points in order, something wrong'); 
                 end 
-                
-                % every valid vertex is a target here 
-                params = vertex_string(params, points(:,j,k)); 
-                points_placed = points_placed + 1; 
-                if exist('eta', 'var')
-                    params = target_string(params, idx, k_target, eta);     
-                else
-                    params = target_string(params, idx, k_target);     
-                end 
 
-                
                 % check up directions for springs 
                 if (j+1) <= N
-                    if ~isnan(indices(j+1,k))
+                    if ~isnan(indices_global(j+1,k))
                         rest_len = ref_frac * norm(points(:,j,k) - points(:,j+1,k)); 
-                        kappa = k_rel / rest_len;
-                        nbr_idx = indices(j+1,k) + params.global_idx; 
-                        params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
+                        k_abs = k_rel / rest_len;
+                        nbr_idx = indices_global(j+1,k); 
+                        params = spring_string(params, idx, nbr_idx, k_abs, rest_len); 
                     end 
                 end 
                                 
                 % check up directions for springs 
                 if (k+1) <= N
-                    if ~isnan(indices(j,k+1))
+                    if ~isnan(indices_global(j,k+1))
                         rest_len = ref_frac * norm(points(:,j,k) - points(:,j,k+1)); 
-                        kappa = k_rel / rest_len; 
-                        nbr_idx = indices(j,k+1) + params.global_idx; 
-                        params = spring_string(params, idx, nbr_idx, kappa, rest_len); 
+                        k_abs = k_rel / rest_len; 
+                        nbr_idx = indices_global(j,k+1); 
+                        params = spring_string(params, idx, nbr_idx, k_abs, rest_len); 
                     end 
                 end 
                 
@@ -1052,8 +1127,6 @@ function params = place_cartesian_net(params, r, h, L, ds, k_rel, k_target, ref_
            
         end 
     end 
-    
-    params.global_idx = params.global_idx + points_placed; 
 
 end 
 
@@ -1095,7 +1168,7 @@ function [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_
                 y = j * dx - L/2; 
                 z = k * dx + z_min + z_extra_offset; 
                 
-                params = vertex_string(params, [x y z]); 
+                params.vertices(:,params.global_idx + 1) = [x y z]; 
     
                 total_lagrangian_placed = total_lagrangian_placed + 1; 
                 params.global_idx = params.global_idx + 1; 
