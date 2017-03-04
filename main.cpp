@@ -111,7 +111,7 @@ inline double deriv_spring_collagen(double R, const double* params, int lag_mast
 
 #define MAX_STEP_FOR_CHANGE 1000
 
-// #define MOVING_PAPILLARY
+#define MOVING_PAPILLARY
 
 
 namespace{
@@ -729,12 +729,12 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDa
         return; 
 
 
-    const static double LEFT_PAPILLARY[3]  = {-0.972055648767080, -1.611924550017006, -2.990100960298683};
-    const static double RIGHT_PAPILLARY[3] = {-1.542417595752084,  1.611924550017006, -3.611254871967348};
+    const static double LEFT_PAPILLARY[3]  = {-0.972055648767080, -1.611924550017006, -2.990100960298683 + 1.0};
+    const static double RIGHT_PAPILLARY[3] = {-1.542417595752084,  1.611924550017006, -3.611254871967348 + 1.0};
 
     // max absolute value of the pressure difference
     const static double MAX_ABS_VAL_PRESSURE_DIFF = 106.0;
-    const static double MAX_DISPLACEMENT_SYSTOLE  = 0.5; // papillary tips move this far at their peak
+    const static double MAX_DISPLACEMENT_SYSTOLE  = 1.0; // papillary tips move this far at their peak
     
     // We require that the structures are associated with the finest level of
     // the patch hierarchy.
