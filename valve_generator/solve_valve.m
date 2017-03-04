@@ -125,8 +125,8 @@ else
         fprintf('Closed configurations passed, generating open configuration with linear constitutive law.\n'); 
         
         valve_linear = valve; 
-        valve_linear.anterior  = set_rest_lengths_and_constants_linear(valve.anterior, strain); 
-        valve_linear.posterior = set_rest_lengths_and_constants_linear(valve.posterior, strain);       
+        valve_linear.anterior  = set_rest_lengths_and_constants_linear(valve.anterior,  strain, valve.left_papillary_diastolic, valve.right_papillary_diastolic); 
+        valve_linear.posterior = set_rest_lengths_and_constants_linear(valve.posterior, strain, valve.left_papillary_diastolic, valve.right_papillary_diastolic);       
         valve_linear.diff_eqns = @difference_equations_linear; 
         valve_linear.jacobian  = @build_jacobian_linear; 
         

@@ -22,8 +22,17 @@ end
 
 % Valve skeleton parameters 
 valve.r = 1.606587877768772; 
-valve.left_papillary  = [ -0.972055648767080; -1.611924550017006; -2.990100960298683]; 
-valve.right_papillary = [ -1.542417595752084;  1.611924550017006; -3.611254871967348]; 
+
+% original, supposedly diastolic but we have been using as systolic 
+% valve.left_papillary  = [ -0.972055648767080; -1.611924550017006; -2.990100960298683]; 
+% valve.right_papillary = [ -1.542417595752084;  1.611924550017006; -3.611254871967348]; 
+
+valve.left_papillary  = [ -0.972055648767080; -1.611924550017006; -2.990100960298683] + [0; 0; -0.0];
+valve.right_papillary = [ -1.542417595752084;  1.611924550017006; -3.611254871967348] + [0; 0; -0.0]; 
+
+valve.left_papillary_diastolic  = valve.left_papillary  + [0; 0; 1.0]; 
+valve.right_papillary_diastolic = valve.right_papillary + [0; 0; 1.0]; 
+
 valve.split_papillary = false; 
 valve.radial_and_circumferential = true; 
 valve.bead_slip = true; 

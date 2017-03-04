@@ -262,8 +262,10 @@ function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, 
     
     strain = (norm(X_nbr - X) - rest_len) / rest_len; 
     
+    fprintf('strain = %e, idx = %d, nbr = %d\n', strain, idx, nbr_idx)
+    
     if strain > max_strain 
-        warning(sprintf('strain = %f, idx = %d, nbr = %d', strain, idx, nbr_idx)); 
+        warning(sprintf('strain = %e, idx = %d, nbr = %d\n', strain, idx, nbr_idx)); 
     end 
     
     % Just one spring placed here 
