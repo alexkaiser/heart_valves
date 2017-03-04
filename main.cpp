@@ -435,6 +435,7 @@ int main(int argc, char* argv[])
 
 
         #ifdef FOURIER_SERIES_BODY_FORCE
+            fourier_series_data *fourier_body_force;
             const bool z_periodic = (grid_geometry->getPeriodicShift())[2];
             if (z_periodic){
                 pout << "to Fourier series creation with body force\n";
@@ -442,7 +443,7 @@ int main(int argc, char* argv[])
                 dt = input_db->getDouble("DT");
             
                 pout << "to constructor\n";
-                fourier_series_data *fourier_body_force = new fourier_series_data("fourier_coeffs.txt", dt);
+                fourier_body_force = new fourier_series_data("fourier_coeffs.txt", dt);
                 pout << "series data successfully built\n";
         
                 Pointer<FourierBodyForce> body_force = new FourierBodyForce(fourier_body_force, navier_stokes_integrator, patch_hierarchy);
@@ -585,7 +586,9 @@ int main(int argc, char* argv[])
             // update target locations if they are moving
             #ifdef MOVING_PAPILLARY
                 #ifdef FOURIER_SERIES_BODY_FORCE
-                    update_target_point_positions(patch_hierarchy, l_data_manager, loop_time, dt, fourier_body_force);
+                    if (z_periodic){
+                        update_target_point_positions(patch_hierarchy, l_data_manager, loop_time, dt, fourier_body_force);
+                    }
                 #else
                     pout << "other papillary movement not implemented, must use periodic with fourier series for now\n";
                     SAMRAI_MPI::abort();
