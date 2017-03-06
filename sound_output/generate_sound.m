@@ -31,10 +31,47 @@ flux_spline = spline(times, flux, sample_points_desired);
 
 fig = figure; 
 plot(sample_points_desired, flux_spline)
+title('flux, as spline')
 
-flux_spline_normalized = 10 * flux_spline / max(abs(flux_spline)); 
+flux_spline_normalized = flux_spline / max(abs(flux_spline)); 
 
 sound(flux_spline_normalized, audio_rate)
+
+
+log_filter = @(x) sign(x) .* (((abs(x) < 1) .* abs(x)) + ((abs(x) > 1) .* log(abs(x)))); 
+
+flux_log_filtered   = log_filter(flux_spline); 
+fig = figure; 
+plot(sample_points_desired, flux_log_filtered)
+title('flux with log filter, non-normalized');
+flux_log_filtered_normalized = flux_log_filtered / max(abs(flux_log_filtered)); 
+sound(flux_log_filtered_normalized, audio_rate)
+fig = figure; 
+plot(sample_points_desired, flux_log_filtered_normalized)
+title('flux with log filter'); 
+
+flux_log_log_filtered   = log_filter(flux_log_filtered); 
+fig = figure; 
+plot(sample_points_desired, flux_log_log_filtered)
+title('flux with log log filter, non-normalized');
+flux_log_log_filtered_normalized = flux_log_log_filtered / max(abs(flux_log_log_filtered)); 
+sound(flux_log_log_filtered_normalized, audio_rate)
+fig = figure; 
+plot(sample_points_desired, flux_log_filtered_normalized)
+title('flux with log log filter');
+
+
+n = 100; 
+nth_root_filter = @(x) sign(x) .* abs(x).^(1/n); 
+
+flux_nth_root_filtered   = nth_root_filter(flux_spline_normalized); 
+
+flux_nth_root_filtered_normalized = flux_nth_root_filtered / max(abs(flux_nth_root_filtered)); 
+sound(flux_nth_root_filtered, audio_rate)
+fig = figure; 
+plot(sample_points_desired, flux_nth_root_filtered)
+title('flux with nth root filter');
+
 
 % audiowrite('heart_sounds.wav',flux_spline_normalized,audio_rate)
 
