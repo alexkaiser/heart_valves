@@ -69,7 +69,7 @@ if decreasing_tension
     dec_tension_coeff_base = dec_tension_coeff_32 * 32^2; 
     
     valve.c_dec_tension_circumferential = 1.0 * dec_tension_coeff_base; 
-    valve.c_dec_tension_radial          = 1.0 * dec_tension_coeff_base; 
+    valve.c_dec_tension_radial          = 2.0 * dec_tension_coeff_base; 
     valve.c_dec_tension_chordae         = 1.0 * dec_tension_coeff_base; 
 else 
     valve.dec_tension  = 0.0; 
@@ -159,8 +159,8 @@ valve.tol_global = 1e-3;
 
 
 % Spring constants in two directions 
-alpha    =       valve.tension_base;  % circumferential 
-beta     =       valve.tension_base;  % radial
+alpha    = 1.0 * valve.tension_base;  % circumferential 
+beta     = 1.0 * valve.tension_base;  % radial
 p_0      =      -valve.p_physical; 
 
 ref_frac =  1.0;  % generic spring constants reduced by this much 
@@ -197,7 +197,7 @@ k_0   = k_0_1 / N_tree;
 
 % adjust accordingly
 % note that 1.889568000000001e+01 / 32 = 0.5905
-k_root = 1.0 * (1.889568000000001e+01 / 32) * valve.tension_base; 
+k_root = 0.9 * (1.889568000000001e+01 / 32) * valve.tension_base; 
 
 % multiplier necessary to maintain constant root tension 
 % and constant total leaf tension 
