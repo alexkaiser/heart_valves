@@ -97,6 +97,7 @@ function [] = output_to_ibamr_format(valve)
     eta_papillary         = 0.0; %sqrt(k_target/2 * m_effective_papillary); 
     
     % Approximate mesh spacing 
+    % L = 2.5 = radius (of square) in sup norm, half total length of domain 
     ds = 2*L / N;
     
     
@@ -137,7 +138,7 @@ function [] = output_to_ibamr_format(valve)
          
         [params anterior] = assign_indices_vertex_target(params, anterior, assign_papillary, k_target, eta); 
         
-        if valve.split_papillary
+        if ~valve.split_papillary
             assign_papillary = false; 
             posterior.left_papillary_idx  = anterior.left_papillary_idx; 
             posterior.right_papillary_idx = anterior.right_papillary_idx; 
@@ -146,9 +147,8 @@ function [] = output_to_ibamr_format(valve)
         [params posterior] = assign_indices_vertex_target(params, posterior, assign_papillary, k_target, eta); 
         
         % write springs 
-        [params, anterior] = add_springs(params, anterior, num_copies, ds, collagen_springs_leaflet); 
-        
-        [params, posterior] = add_springs(params, posterior, num_copies, ds, collagen_springs_leaflet); 
+        params = add_springs(params, anterior,  num_copies, ds, collagen_springs_leaflet); 
+        params = add_springs(params, posterior, num_copies, ds, collagen_springs_leaflet); 
 
         % flat part of mesh 
         r = valve.r; 
@@ -169,7 +169,7 @@ function [] = output_to_ibamr_format(valve)
 
         % flat part of mesh with Cartesian coordinates
         % inner radius, stop mesh here 
-        r_cartesian = r + 2*ds; 
+        r_cartesian = r + 4*ds; 
         params = place_cartesian_net(params, r_cartesian, h, L, ds, k_rel, k_target_net, ref_frac_net, eta_net); 
  
     end 
@@ -317,7 +317,7 @@ function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, 
             max_idx = max(idx_tmp, nbr_idx_tmp); 
         
             % Current length 
-            L = norm(X_vertices_new(i+1) - X_vertices_new(i)); 
+            L = norm(X_vertices_new(:,i+1) - X_vertices_new(:,i)); 
             
             % Rest length determined by strain 
             R = L / (strain + 1); 
@@ -463,21 +463,20 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, assign
 end 
  
 
-function [params, leaflet] = add_springs(params, leaflet, num_copies, ds, collagen_spring)
+function params = add_springs(params, leaflet, num_copies, ds, collagen_spring)
 
-    [params, leaflet] = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_spring); 
-    params            = add_chordae_tree_springs(params, leaflet, num_copies, ds, collagen_spring); 
+    params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_spring); 
+    params = add_chordae_tree_springs(params, leaflet, num_copies, ds, collagen_spring); 
 
 end 
 
 
-function [params, leaflet] = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_spring)
+function params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_spring)
                       
     % Places all main data into IBAMR format for this leaflet
     % Updates running totals on the way 
 
     % Unpack needed data 
-    X                 = leaflet.X; 
     j_max             = leaflet.j_max; 
     k_max             = leaflet.k_max; 
     is_internal       = leaflet.is_internal;
