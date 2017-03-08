@@ -66,7 +66,7 @@ if isfield(leaflet, 'N_ring_to_ring') && leaflet.N_ring_to_ring > 0
     % ring_k_idx(j) tells us that X(j, ring_k_idx(j)) is a ring point 
     ring_k_idx = zeros(j_max,1); 
     
-    k_idx = k_max; 
+    k_idx = k_max + 1;
     % indices go up while fibers are being laid down 
     for j=1:N_ring_to_ring
         ring_k_idx(j) = k_idx;

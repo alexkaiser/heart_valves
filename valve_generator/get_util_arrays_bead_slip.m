@@ -1,4 +1,4 @@
-function [is_internal is_bc linear_idx_offset point_idx_with_bc] = get_util_arrays_bead_slip(leaflet)
+function leaflet = get_util_arrays_bead_slip(leaflet)
 % 
 % Returns three arrays with information about the geometry 
 % 
@@ -96,3 +96,10 @@ for k=1:k_max
         end 
     end 
 end
+
+
+leaflet.is_internal       = is_internal;
+leaflet.is_bc             = is_bc;
+leaflet.linear_idx_offset = linear_idx_offset;
+leaflet.point_idx_with_bc = point_idx_with_bc;
+

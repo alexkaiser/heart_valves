@@ -1,14 +1,13 @@
 function [X] = build_initial_fibers_bead_slip(leaflet)
 %
-% Builds reference coffee cone surface 
+% Builds initial fibers for current layout 
 % 
 
-N                       = leaflet.N; 
+
 r                       = leaflet.r; 
-is_internal             = leaflet.is_internal; 
-is_bc                   = leaflet.is_bc; 
 j_max                   = leaflet.j_max; 
 k_max                   = leaflet.k_max; 
+ring_k_idx              = leaflet.ring_k_idx; 
 
 left_papillary          = leaflet.left_papillary; 
 right_papillary         = leaflet.right_papillary; 
@@ -41,12 +40,16 @@ if leaflet.radial_and_circumferential
 %         mesh = mesh(2:(j_max+1)); 
 %     end 
     
-    X(:,:,k_max) = [r*cos(mesh); r*sin(mesh); zeros(size(mesh))]; 
+    % X(:,:,k_max) = [r*cos(mesh); r*sin(mesh); zeros(size(mesh))]; 
+    
+    for j=1:j_max
+        X(:,j,ring_k_idx(j)) = [r*cos(mesh(j)); r*sin(mesh(j)); 0.0]; 
+    end 
     
     % Set free edge according to interpolating surface
     
-    ring_l = X(:,1    ,k_max); 
-    ring_r = X(:,j_max,k_max); 
+    ring_l = X(:, 1    , ring_k_idx(1    )); 
+    ring_r = X(:, j_max, ring_k_idx(j_max)); 
     
     ds = 1/(j_max - 1); 
     
@@ -88,6 +91,8 @@ if leaflet.radial_and_circumferential
     pinched_interpolant = false; 
     
     if pinched_interpolant 
+        
+        error('not updated for mesh with possible ring to ring fibers'); 
     
         % one dimensional mesh in straight line from commissure to commissure 
         
@@ -181,13 +186,13 @@ if leaflet.radial_and_circumferential
             k = free_edge_idx_left(i,2); 
 
             % number of points on this fiber 
-            num_points = k_max - k - 1; 
+            num_points = ring_k_idx(j) - k - 1; 
 
             % parameter spacing 
-            ds = 1 / (k_max - k); 
+            ds = 1 / (ring_k_idx(j) - k); 
 
             X_free = X(:,j,k); 
-            X_ring = X(:,j,k_max); 
+            X_ring = X(:,j,ring_k_idx(j)); 
 
             for m=1:num_points
                 k_tmp = k + m; 
@@ -202,13 +207,13 @@ if leaflet.radial_and_circumferential
             k = free_edge_idx_right(i,2); 
 
             % number of points on this fiber 
-            num_points = k_max - k - 1; 
+            num_points = ring_k_idx(j) - k - 1; 
 
             % parameter spacing 
-            ds = 1 / (k_max - k); 
+            ds = 1 / (ring_k_idx(j) - k); 
 
             X_free = X(:,j,k); 
-            X_ring = X(:,j,k_max); 
+            X_ring = X(:,j,ring_k_idx(j)); 
 
             for m=1:num_points
                 k_tmp = k + m; 

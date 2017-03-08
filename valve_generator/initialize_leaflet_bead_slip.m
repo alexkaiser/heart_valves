@@ -117,44 +117,44 @@ end
 leaflet = get_free_edge_ranges_bead_slip(leaflet);
 
 % information about geometry 
-[leaflet.is_internal leaflet.is_bc leaflet.linear_idx_offset leaflet.point_idx_with_bc] = get_util_arrays_bead_slip(leaflet); 
+leaflet = get_util_arrays_bead_slip(leaflet); 
 
 
 leaflet.X = build_initial_fibers_bead_slip(leaflet); 
 
-% NaN mask so using bad values will give errors 
-leaflet.R = NaN * zeros(size(leaflet.X)); 
-
-free_edge_idx_left  = leaflet.free_edge_idx_left; 
-free_edge_idx_right = leaflet.free_edge_idx_right; 
-
-for i=1:size(free_edge_idx_left, 1)
-    j = free_edge_idx_left(i,1); 
-    k = free_edge_idx_left(i,2); 
-    
-    % Free edge and neighbors have rest positions 
-    % Set to current position for now 
-    leaflet.R(:,j  ,k  ) = leaflet.X(:,j  ,k  );  
-    leaflet.R(:,j+1,k  ) = leaflet.X(:,j+1,k  );  
-    leaflet.R(:,j  ,k+1) = leaflet.X(:,j  ,k+1);  
-end
-
-for i=1:size(free_edge_idx_right, 1)
-    j = free_edge_idx_right(i,1); 
-    k = free_edge_idx_right(i,2); 
-   
-    % right free edge has neighbors up in k 
-    % but down in j
-    leaflet.R(:,j  ,k  ) = leaflet.X(:,j  ,k  );  
-    leaflet.R(:,j-1,k  ) = leaflet.X(:,j-1,k  );  
-    leaflet.R(:,j  ,k+1) = leaflet.X(:,j  ,k+1);
-end 
+% % NaN mask so using bad values will give errors 
+% leaflet.R = NaN * zeros(size(leaflet.X)); 
+% 
+% free_edge_idx_left  = leaflet.free_edge_idx_left; 
+% free_edge_idx_right = leaflet.free_edge_idx_right; 
+% 
+% for i=1:size(free_edge_idx_left, 1)
+%     j = free_edge_idx_left(i,1); 
+%     k = free_edge_idx_left(i,2); 
+%     
+%     % Free edge and neighbors have rest positions 
+%     % Set to current position for now 
+%     leaflet.R(:,j  ,k  ) = leaflet.X(:,j  ,k  );  
+%     leaflet.R(:,j+1,k  ) = leaflet.X(:,j+1,k  );  
+%     leaflet.R(:,j  ,k+1) = leaflet.X(:,j  ,k+1);  
+% end
+% 
+% for i=1:size(free_edge_idx_right, 1)
+%     j = free_edge_idx_right(i,1); 
+%     k = free_edge_idx_right(i,2); 
+%    
+%     % right free edge has neighbors up in k 
+%     % but down in j
+%     leaflet.R(:,j  ,k  ) = leaflet.X(:,j  ,k  );  
+%     leaflet.R(:,j-1,k  ) = leaflet.X(:,j-1,k  );  
+%     leaflet.R(:,j  ,k+1) = leaflet.X(:,j  ,k+1);
+% end 
 
 
 % Spring constants in two directions 
 leaflet.alpha    = alpha; 
 leaflet.beta     = beta; 
-leaflet.p_0      = p_0; % no pressure for now 
+leaflet.p_0      = p_0; 
 leaflet.ref_frac = ref_frac; % generic spring constants reduced by this much 
 
 % chordae data structures  
