@@ -13,6 +13,7 @@ function leaflet = initialize_leaflet_bead_slip(N,                  ...
                                       k_multiplier,                 ... 
                                       tree_frac,                    ...
                                       leaflet_only,                 ...
+                                      N_ring_to_ring,                 ...
                                       valve)
 %
 % Builds leaflet data structures 
@@ -46,6 +47,8 @@ leaflet.total_angle  = total_angle;
 leaflet.leaflet_only = leaflet_only; 
 
 leaflet.tension_base = valve.tension_base; 
+
+leaflet.N_ring_to_ring = N_ring_to_ring; 
 
 
 leaflet.repulsive_potential         = valve.repulsive_potential; 
@@ -111,7 +114,7 @@ if ~radial_and_circumferential
     error('slip model only implemented for radial and circumferential')
 end 
 
-[leaflet.j_max leaflet.k_max leaflet.free_edge_idx_left leaflet.free_edge_idx_right leaflet.chordae_idx_left leaflet.chordae_idx_right] = get_free_edge_ranges_bead_slip(leaflet);
+leaflet = get_free_edge_ranges_bead_slip(leaflet);
 
 % information about geometry 
 [leaflet.is_internal leaflet.is_bc leaflet.linear_idx_offset leaflet.point_idx_with_bc] = get_util_arrays_bead_slip(leaflet); 

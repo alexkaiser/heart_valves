@@ -9,9 +9,12 @@ function [is_internal is_bc linear_idx_offset point_idx_with_bc] = get_util_arra
 %                          are the indices for the vector X(:,j,k)
 % 
 
-N                       = leaflet.N; 
+
 j_max                   = leaflet.j_max; 
 k_max                   = leaflet.k_max; 
+ring_k_idx              = leaflet.ring_k_idx; 
+free_edge_idx_left      = leaflet.free_edge_idx_left; 
+free_edge_idx_right     = leaflet.free_edge_idx_right; 
 
 is_internal       = zeros(j_max, k_max); 
 is_bc             = zeros(j_max, k_max); 
@@ -23,30 +26,33 @@ if leaflet.radial_and_circumferential
     
     % radial and circumferential fiber layout 
     
-    % valve ring at k_max
-    k=k_max; 
+    % valve ring at (j,ring_k_idx(j))
     for j=1:j_max 
-        is_bc(j,k) = true; 
+        is_bc(j,ring_k_idx(j)) = true; 
     end 
     
     % loop from left free edge then up in k 
-    j = k_max-1;  
-    for k=1:(k_max-1)
-        for k_tmp=k:(k_max-1)
-            is_internal(j,k_tmp) = true; 
+    for left_side = [true, false]
+
+        if left_side
+            free_edge_idx = free_edge_idx_left; 
+        else 
+            free_edge_idx = free_edge_idx_right;  
         end 
-        j = j - 1; 
+
+        for i=1:size(free_edge_idx, 1)
+
+            j = free_edge_idx(i,1);
+            k = free_edge_idx(i,2);
+
+            while ~is_bc(j,k)
+                is_internal(j,k) = true; 
+                k = k+1; 
+            end 
+        end 
+
     end 
 
-    
-    j = k_max-1 + 1; 
-    for k=1:(k_max-1)
-        for k_tmp=k:(k_max-1)
-            is_internal(j,k_tmp) = true; 
-        end 
-        j = j + 1; 
-    end 
-        
 else 
     error('diag fibers not implemented with bead slip')
 end 
