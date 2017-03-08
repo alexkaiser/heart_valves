@@ -168,9 +168,9 @@ ref_frac =  1.0;  % generic spring constants reduced by this much
 
 % Places this many extra fibers from ring to ring 
 % Must be 0 <= N_ring_to_ring <= (N/2)
-N_ring_to_ring_anterior = N/2 - 1;
+N_ring_to_ring_anterior = N/8;
 
-N_ring_to_ring_posterior = N/2 - 1;
+N_ring_to_ring_posterior = N/8;
 
 
 % Add energy function for zero pressure case 

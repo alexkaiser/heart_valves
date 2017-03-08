@@ -20,10 +20,8 @@ k_max               = leaflet.k_max;
 du                  = leaflet.du; 
 dv                  = leaflet.dv; 
 is_internal         = leaflet.is_internal; 
-is_bc               = leaflet.is_bc; 
 free_edge_idx_left  = leaflet.free_edge_idx_left; 
 free_edge_idx_right = leaflet.free_edge_idx_right;
-tension_base        = leaflet.tension_base; 
 
 [m N_chordae] = size(C_left); 
 
@@ -251,35 +249,6 @@ for j=1:j_max
         end
     end 
 end
- 
-
-% place springs in ring as well 
-% that is, at the location where k = k_max; 
-k = k_max; 
-for j=1:(j_max-1) 
-    if ~is_bc(j,k)
-        error('trying to use ring convention at non-ring location');       
-    end 
-    
-    j_nbr = j+1; 
-    k_nbr = k; 
-    
-    % add these for consistency even though they are just j,k
-    j_spr = min(j, j_nbr); 
-    k_spr = min(k, k_nbr);
-    
-    X = X_current(:,j,k); 
-    X_nbr = X_current(:,j_nbr,k_nbr); 
-    
-    R_u(j_spr,k_spr) = norm(X - X_nbr); 
-    
-    % Generic max spring constant in units of force 
-    k_u(j_spr,k_spr) = tension_base * du; 
-
-end 
-
-
-
 
 
 for left_side = [true false];  

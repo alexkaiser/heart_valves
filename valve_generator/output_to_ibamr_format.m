@@ -511,7 +511,7 @@ function params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_
     for k=1:k_max
         for j=1:j_max
             
-            % every internal and boundary point written to the file 
+            % every internal and boundary point may have springs connected to it 
             if is_internal(j,k) || is_bc(j,k)
                 
                 % global index of current opint 
@@ -586,20 +586,24 @@ function params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_
                 k_nbr = k; 
                 if (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr, k_nbr))
                     
-                    % since always moving in up direction, j_spr = j, k_spr = k
-                    rest_len = R_u(j,k); 
-                    k_rel    = k_u(j,k); 
+                    % no bc to bc springs 
+                    if ~(is_bc(j, k) && is_bc(j_nbr, k_nbr))
                     
-                    nbr_idx = leaflet.indices_global(j_nbr,k_nbr);
-                    
-                    if collagen_spring
-                        kappa = alhpa * k_rel;         
-                        params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
-                    else 
-%                         k_abs = k_rel / (rest_len * num_copies); 
-%                         params = spring_string(params, idx, nbr_idx, k_abs, rest_len); 
-                        
-                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies);
+                        % since always moving in up direction, j_spr = j, k_spr = k
+                        rest_len = R_u(j,k); 
+                        k_rel    = k_u(j,k); 
+
+                        nbr_idx = leaflet.indices_global(j_nbr,k_nbr);
+
+                        if collagen_spring
+                            kappa = alhpa * k_rel;         
+                            params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
+                        else 
+    %                         k_abs = k_rel / (rest_len * num_copies); 
+    %                         params = spring_string(params, idx, nbr_idx, k_abs, rest_len); 
+
+                            params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies);
+                        end 
                     end 
 
                 end 
@@ -609,17 +613,21 @@ function params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_
                 k_nbr = k + 1; 
                 if (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr, k_nbr))
                     
-                    % since always moving in up direction, j_spr = j, k_spr = k
-                    rest_len = R_v(j,k); 
-                    k_rel    = k_v(j,k); 
+                    % no bc to bc springs 
+                    if ~(is_bc(j, k) && is_bc(j_nbr, k_nbr))
                     
-                    nbr_idx = leaflet.indices_global(j_nbr,k_nbr);
-                    
-                    if collagen_spring
-                        kappa = beta * k_rel;         
-                        params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
-                    else 
-                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies);
+                        % since always moving in up direction, j_spr = j, k_spr = k
+                        rest_len = R_v(j,k); 
+                        k_rel    = k_v(j,k); 
+
+                        nbr_idx = leaflet.indices_global(j_nbr,k_nbr);
+
+                        if collagen_spring
+                            kappa = beta * k_rel;         
+                            params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
+                        else 
+                            params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies);
+                        end 
                     end 
 
                 end 
@@ -897,16 +905,20 @@ function params = place_rays(params, leaflet, ds, r, L, k_rel, k_target, ref_fra
 
                 % only get a fiber if the previous point is included in the leaflet  
                 neighbors = []; 
-                j_nbr = j-1; 
-                k_nbr = k; 
-                if (j_nbr > 0) &&  (k_nbr > 0) && is_internal(j_nbr,k_nbr)
-                    neighbors = [X(:,j-1,k), neighbors] ; 
-                end
                 
+                % possible to have both directions of j nbr
+                for j_nbr = [j-1,j+1]
+                    k_nbr = k; 
+                    if (j_nbr > 0) &&  (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && is_internal(j_nbr,k_nbr)
+                        neighbors = [X(:,j_nbr,k_nbr), neighbors] ; 
+                    end
+                end 
+                
+                % k_nbr always down 
                 j_nbr = j; 
                 k_nbr = k-1; 
-                if (j_nbr > 0) &&  (k_nbr > 0) && is_internal(j_nbr,k_nbr)
-                    neighbors = [X(:,j,k-1), neighbors] ; 
+                if (j_nbr > 0) &&  (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && is_internal(j_nbr,k_nbr)
+                    neighbors = [X(:,j_nbr,k_nbr), neighbors] ; 
                 end        
 
                 for x = neighbors 
@@ -1013,11 +1025,11 @@ function [val] = get_geodesic_continued_point(x, pt_ring, r, h)
     val = rotation_matrix_z(theta) * val; 
     
     if abs(val(3) - h) > tol 
-        error('rotated value is not in plane'); 
+        error('rotated value is not near plane'); 
     end 
     
     if norm(val(1:2)) <= r 
-        error('rotated value must be out of the plane'); 
+        error('rotated value must be out of the valve ring'); 
     end 
     
 end 
