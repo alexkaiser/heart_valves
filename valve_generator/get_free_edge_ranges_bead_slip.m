@@ -55,39 +55,63 @@ end
 
 
 
-if isfield(leaflet, 'N_ring_to_ring') && leaflet.N_ring_to_ring > 0
+if isfield(leaflet, 'ring_to_ring_range') && (~isempty(leaflet.ring_to_ring_range)) && (max(leaflet.ring_to_ring_range) > 0) 
     
-    N_ring_to_ring = leaflet.N_ring_to_ring; 
+    if length(leaflet.ring_to_ring_range) == 1  
+        min_ring_to_ring = 1; 
+        max_ring_to_ring = leaflet.ring_to_ring_range; 
+    elseif length(leaflet.ring_to_ring_range) == 2  
+        min_ring_to_ring = leaflet.ring_to_ring_range(1); 
+        max_ring_to_ring = leaflet.ring_to_ring_range(2); 
+    else 
+        error('Must specify exactly one or two indices for ring to ring fibers'); 
+    end 
     
-    if N_ring_to_ring > (N/2 - 1)
+    % number of fibers placed 
+    % N_ring_to_ring = 
+    
+    if max_ring_to_ring > (N/2 - 1)
         error('Not enough ring points to add that many ring to ring fibers'); 
     end 
     
     % ring_k_idx(j) tells us that X(j, ring_k_idx(j)) is a ring point 
     ring_k_idx = zeros(j_max,1); 
     
+    % first k_idx is one up from internal 
     k_idx = k_max + 1;
+    
+    % points on ring with no connecting fibers 
+    for j=1:(min_ring_to_ring-1)
+        ring_k_idx(j) = k_idx; 
+    end 
+    
     % indices go up while fibers are being laid down 
-    for j=1:N_ring_to_ring
+    for j=min_ring_to_ring:max_ring_to_ring
         ring_k_idx(j) = k_idx;
         k_idx = k_idx + 1; 
     end 
     
     % indices stay same here, no more connecting fibers 
-    if N_ring_to_ring < (N/2)
-        for j=(N_ring_to_ring + 1):(j_max - N_ring_to_ring)
+    if max_ring_to_ring < (N/2)
+        for j=(max_ring_to_ring + 1):(j_max - max_ring_to_ring)
             ring_k_idx(j) = k_idx; 
         end 
     end 
     
     % indices go back down towards the other commissure 
-    for j=(j_max - N_ring_to_ring + 1):j_max
+    for j=(j_max - max_ring_to_ring + 1):(j_max - min_ring_to_ring + 1)
         k_idx = k_idx - 1; 
         ring_k_idx(j) = k_idx; 
     end
     
+    % points on ring with no connecting fibers at other end 
+    for j=(j_max - min_ring_to_ring + 2):j_max
+        ring_k_idx(j) = k_idx; 
+    end 
+    
+    
     % arrays are now resized  
-    k_max = k_max + N_ring_to_ring + 1; 
+    k_max = k_max + (max_ring_to_ring - min_ring_to_ring) + 2; 
     
     % resize and zero pad chordae arrays
     chordae_idx_left (j_max,k_max) = 0; 
