@@ -168,7 +168,7 @@ ref_frac =  1.0;  % generic spring constants reduced by this much
 
 % Places this many extra fibers from ring to ring 
 % Must be 0 <= N_ring_to_ring <= (N/2)
-ring_to_ring_anterior_range  = [(3*N/16), (3*N/8)];
+ring_to_ring_anterior_range  = [(N/8), (3*N/8)];
 ring_to_ring_posterior_range = [(3*N/16), (3*N/8)];
 
 
