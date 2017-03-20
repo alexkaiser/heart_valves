@@ -699,10 +699,15 @@ int main(int argc, char* argv[])
             if (SAMRAI_MPI::getRank() == 0){
                 flux_output_stream << "]; \n\n"; 
                 
-                flux_output_stream << "fig = figure;\n subplot(2,1,1);\n plot(data(:,1), -data(:,2));\n xlabel('t');\n ylabel('flux (cm^3 / s)  ');\n";
-                flux_output_stream << "hold on;\n plot(data(:,1), 0*data(:,2)); \n"; 
+                flux_output_stream << "fig = figure;\n plot(data(:,1), -data(:,2), 'k');\n";
+                flux_output_stream << "hold on;\n";
+                flux_output_stream << "plot(data(:,1), 0*data(:,2), '--k'); \n";
                 flux_output_stream << "dt = " << dt << "; \n"; 
-                flux_output_stream << "net_flux = dt*cumsum(-data(:,2));\n subplot(2,1,2);\n plot(data(:,1), net_flux);\n xlabel('t');\n ylabel('net flux (cm^3)');\n"; 
+                flux_output_stream << "net_flux = dt*cumsum(-data(:,2));\n "; 
+                flux_output_stream << "plot(data(:,1), net_flux);\n";
+                flux_output_stream << "xlabel('t');\n ylabel('ml/s, ml');\n";
+                flux_output_stream << "legend('flux', 'net flux', 'Location', 'NorthWest')\n";
+                flux_output_stream << "plot(data(:,1), 0*data(:,2), ':k');\n";
                 flux_output_stream << "printfig(fig,'flux.eps');\n"; 
                 
                 flux_output_stream.close();
