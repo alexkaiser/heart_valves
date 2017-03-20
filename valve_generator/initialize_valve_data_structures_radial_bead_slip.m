@@ -116,7 +116,7 @@ valve.pressure_tension_ratio = 0.11 * 0.975;
 valve.refinement = N/32.0; 
 
 MMHG_TO_CGS = 1333.22368;
-valve.p_physical = 100 * MMHG_TO_CGS; 
+valve.p_physical = 110 * MMHG_TO_CGS; 
 
 % scaling for target points 
 valve.target_multiplier = 40; 
@@ -168,8 +168,8 @@ ref_frac =  1.0;  % generic spring constants reduced by this much
 
 % Places this many extra fibers from ring to ring 
 % Must be 0 <= N_ring_to_ring <= (N/2)
-ring_to_ring_anterior_range  = 0; % [(N/8), (3*N/8)];
-ring_to_ring_posterior_range = 0; % [(3*N/16), (3*N/8)];
+ring_to_ring_anterior_range  = [(N/8), (3*N/8)];
+ring_to_ring_posterior_range = [(3*N/16), (3*N/8)];
 
 
 % Add energy function for zero pressure case 
