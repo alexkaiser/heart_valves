@@ -543,6 +543,9 @@ int main(int argc, char* argv[])
             
         }
  
+        
+        double dt_original = time_integrator->getMaximumTimeStepSize();
+
 
         // Main time step loop.
         double loop_time_end = time_integrator->getEndTime();
@@ -701,10 +704,9 @@ int main(int argc, char* argv[])
                 
                 flux_output_stream << "fig = figure;\n plot(data(:,1), -data(:,2), 'k');\n";
                 flux_output_stream << "hold on;\n";
-                flux_output_stream << "plot(data(:,1), 0*data(:,2), '--k'); \n";
-                flux_output_stream << "dt = " << dt << "; \n"; 
+                flux_output_stream << "dt = " << dt_original << "; \n"; 
                 flux_output_stream << "net_flux = dt*cumsum(-data(:,2));\n "; 
-                flux_output_stream << "plot(data(:,1), net_flux);\n";
+                flux_output_stream << "plot(data(:,1), net_flux, '--k');\n";
                 flux_output_stream << "xlabel('t');\n ylabel('ml/s, ml');\n";
                 flux_output_stream << "legend('flux', 'net flux', 'Location', 'NorthWest')\n";
                 flux_output_stream << "plot(data(:,1), 0*data(:,2), ':k');\n";
