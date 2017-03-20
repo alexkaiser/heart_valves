@@ -703,7 +703,7 @@ int main(int argc, char* argv[])
                 flux_output_stream << "hold on;\n";
                 flux_output_stream << "plot(data(:,1), 0*data(:,2), '--k'); \n";
                 flux_output_stream << "dt = " << dt << "; \n"; 
-                flux_output_stream << "net_flux = dt*cumsum(-data(:,2));\n "; 
+                flux_output_stream << "net_flux = dt*cumsum(-data(:,2));\n ";
                 flux_output_stream << "plot(data(:,1), net_flux);\n";
                 flux_output_stream << "xlabel('t');\n ylabel('ml/s, ml');\n";
                 flux_output_stream << "legend('flux', 'net flux', 'Location', 'NorthWest')\n";
@@ -733,8 +733,8 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDa
     // so positive pressure drives forward flow
 
     // quick return at beginning so that things do not move in discontinuous manner
-    if (current_time < 0.1)
-        return; 
+    //if (current_time < 0.1)
+    //    return;
 
 
     const static double LEFT_PAPILLARY[3]  = {-0.972055648767080, -1.611924550017006, -2.990100960298683 + 1.0};

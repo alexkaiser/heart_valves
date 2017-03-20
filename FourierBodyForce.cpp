@@ -104,7 +104,11 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
     const double z_domain_length = x_upper_global[2] - x_lower_global[2];
 
     // index without periodicity
-    unsigned int k = (unsigned int) floor(data_time / (d_fourier->dt));
+    
+    // start in systole, closed configuration
+    double t_adjusted = data_time + 0.635;
+    
+    unsigned int k = (unsigned int) floor(t_adjusted / (d_fourier->dt));
     
     // take periodic reduction                         
     unsigned int idx = k % (d_fourier->N_times);
