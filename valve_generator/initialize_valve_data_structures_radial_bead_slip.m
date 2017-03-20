@@ -116,7 +116,7 @@ valve.pressure_tension_ratio = 0.11 * 0.975;
 valve.refinement = N/32.0; 
 
 MMHG_TO_CGS = 1333.22368;
-valve.p_physical = 110 * MMHG_TO_CGS; 
+valve.p_physical = 120 * MMHG_TO_CGS; 
 
 % scaling for target points 
 valve.target_multiplier = 40; 
