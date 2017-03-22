@@ -138,12 +138,11 @@ valve.num_copies = 1;
 % Spring constants are different here 
 valve.collagen_springs_leaflet = false; 
 
-extra_posterior = pi/6; 
-
 
 % anterior leaflet data structure 
 reflect_x = false; 
-total_angle_anterior = pi - extra_posterior; 
+total_angle_anterior = 5*pi/6; 
+angles_anterior = [-total_angle_anterior/2, total_angle_anterior/2]; 
 
 % Radial and circumferential fibers 
 % Or diagonally oriented fibers 
@@ -168,8 +167,8 @@ ref_frac =  1.0;  % generic spring constants reduced by this much
 
 % Places this many extra fibers from ring to ring 
 % Must be 0 <= N_ring_to_ring <= (N/2)
-ring_to_ring_anterior_range  = [(N/8), (3*N/8)];
-ring_to_ring_posterior_range = [(3*N/16), (3*N/8)];
+ring_to_ring_anterior_range  = [1, (3*N/8)];
+ring_to_ring_posterior_range = [1, (3*N/8)];
 
 
 % Add energy function for zero pressure case 
@@ -219,7 +218,7 @@ end
 
 valve.anterior = initialize_leaflet_bead_slip(N,                  ... 
                                     reflect_x,                    ... 
-                                    total_angle_anterior,         ...    
+                                    angles_anterior,              ...    
                                     valve.r,                      ... 
                                     valve.left_papillary,         ... 
                                     valve.right_papillary,        ... 
@@ -244,6 +243,9 @@ if valve.attached
 else 
     
     total_angle_posterior = 2*pi - total_angle_anterior; 
+    
+    
+    angles_posterior = [pi + total_angle_posterior/2, pi - total_angle_posterior/2]; 
     reflect_x = true; 
     
     % reflect pressure also 
@@ -253,7 +255,7 @@ else
     
     valve.posterior = initialize_leaflet_bead_slip(N,             ...
                                     reflect_x,                    ... 
-                                    total_angle_posterior,        ...    
+                                    angles_posterior,             ...    
                                     valve.r,                      ... 
                                     valve.left_papillary,         ... 
                                     valve.right_papillary,        ... 
