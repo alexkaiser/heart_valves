@@ -756,7 +756,8 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDa
     nodes.insert(nodes.end(), ghost_nodes.begin(), ghost_nodes.end());
 
     // index without periodicity in Fourier series
-    unsigned int k = (unsigned int) floor(current_time / (fourier_body_force->dt));
+    double t_adjusted = current_time + 0.635;
+    unsigned int k = (unsigned int) floor(t_adjusted / (fourier_body_force->dt));
     
     // take periodic reduction                         
     unsigned int idx = k % (fourier_body_force->N_times);
