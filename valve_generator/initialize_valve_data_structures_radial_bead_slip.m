@@ -141,7 +141,7 @@ valve.collagen_springs_leaflet = false;
 
 % anterior leaflet data structure 
 reflect_x = false; 
-total_angle_anterior = 3*pi/6; 
+total_angle_anterior = 5*pi/6; 
 angles_anterior = [-total_angle_anterior/2, total_angle_anterior/2]; 
 
 % Radial and circumferential fibers 
@@ -167,8 +167,8 @@ ref_frac =  1.0;  % generic spring constants reduced by this much
 
 % Places this many extra fibers from ring to ring 
 % Must be 0 <= N_ring_to_ring <= (N/2)
-ring_to_ring_anterior_range  = [1, (3*N/8)];
-ring_to_ring_posterior_range = [1, (3*N/8)];
+ring_to_ring_anterior_range  = 0; %[1, (3*N/8)];
+ring_to_ring_posterior_range = 0; %[1, (3*N/8)];
 
 
 % Add energy function for zero pressure case 
@@ -281,15 +281,37 @@ valve.commissural_leaflets = true;
 
 if valve.commissural_leaflets 
 
+    % parameters for both 
     reflect_x = false; 
-    
     total_angle_each_commissural = 3*pi/6; 
-    
     N_comm = N; 
     
-    angels_left_comm = [-pi/2 - total_angle_each_commissural/2, -pi/2 + total_angle_each_commissural/2]; 
     
-    ring_to_ring_left_comm = []; 
+    % Spring constants in two directions 
+    alpha    = 1.0 * valve.tension_base;  % circumferential 
+    beta     = 1.0 * valve.tension_base;  % radial
+
+    % tree has half as many leaves as total number of radial fibers N
+    N_tree = N_comm/2; 
+
+    % base constant for force scaling
+    k_0_1 = 1.0 * valve.tension_base; 
+
+    % force on each leaf in the chordae tree 
+    k_0   = k_0_1 / N_tree; 
+
+    % root tension 
+    k_root = 0.7 * (1.889568000000001e+01 / 32) * valve.tension_base; 
+
+    % multiplier necessary to maintain constant root tension 
+    % and constant total leaf tension 
+    k_multiplier = 2.0 * (k_root/k_0_1)^(1/log2(N_tree)); 
+    
+    
+    % left parameters  
+    center_left = -pi/2 - pi/12; 
+    angels_left_comm = [center_left - total_angle_each_commissural/2, center_left + total_angle_each_commissural/2]; 
+    ring_to_ring_left_comm = 0; 
     
     % both trees anchored to left papillary here 
     valve.comm_left = initialize_leaflet_bead_slip(N_comm,        ...
@@ -311,16 +333,15 @@ if valve.commissural_leaflets
                                     valve); 
     
     
-    % Even though N is different because these leaflets are smaller 
-    % The 
+    
+    % Even though N may be different, the mesh spacing paramters should be the same
     valve.comm_left.du = valve.anterior.du; 
     valve.comm_left.dv = valve.anterior.du; 
     
-    
-
-    angels_right_comm = [pi/2 - total_angle_each_commissural/2, pi/2 + total_angle_each_commissural/2]; 
-    
-    ring_to_ring_right_comm = []; 
+    % right parameters 
+    center_right = pi/2 + pi/12; 
+    angels_right_comm = [center_right - total_angle_each_commissural/2, center_right + total_angle_each_commissural/2]; 
+    ring_to_ring_right_comm = 0; 
     
     % both trees anchored to left papillary here 
     valve.comm_right = initialize_leaflet_bead_slip(N_comm,        ...
@@ -342,30 +363,12 @@ if valve.commissural_leaflets
                                     valve); 
     
     
-    % Even though N is different because these leaflets are smaller 
-    % The 
-    valve.comm_left.du = valve.anterior.du; 
-    valve.comm_left.dv = valve.anterior.du;
+    % Even though N may be different, the mesh spacing paramters should be the same 
+    valve.comm_right.du = valve.anterior.du; 
+    valve.comm_right.dv = valve.anterior.du;
     
-    
-
-    valve_plot(valve); 
 end 
     
-
-disp('done with initialize'); 
-
-
-
-
-
-
-
-
-
-
-
-
-
+disp('Done with initialize.'); 
 
 
