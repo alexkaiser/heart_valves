@@ -4,6 +4,7 @@ function [valve valve_linear pass_all] = solve_valve(valve, p_range, linear_open
 % Applies auto-continuation to ref_frac and updates both leaflets 
 % 
 
+debug = false; 
 
 if isfield(valve, 'optimization') && valve.optimization 
 
@@ -56,15 +57,39 @@ else
             fprintf('Global solve failed posterior, err = %f\n\n', err_posterior); 
         end
         
-        valve.posterior.tension_debug = true; 
-        difference_equations_bead_slip(valve.posterior); 
-        valve.posterior.tension_debug = false; 
+        if isfield(valve, 'comm_left') && isfield(valve, 'comm_right')
+            
+            valve.comm_left.p_0 = p_0; 
+            
+            [valve.comm_left pass_comm_left err_comm_left] = solve_valve_auto_continuation(valve.comm_left, valve.tol_global, valve.max_it, 'comm_left');
+
+            if pass_comm_left 
+                fprintf('Global solve passed comm_left, err = %f\n\n', err_comm_left); 
+            else 
+                fprintf('Global solve failed comm_left, err = %f\n\n', err_comm_left); 
+            end
         
+            valve.comm_right.p_0 = p_0; 
+            
+            [valve.comm_right pass_comm_right err_comm_right] = solve_valve_auto_continuation(valve.comm_right, valve.tol_global, valve.max_it, 'comm_right');
+
+            if pass_comm_right 
+                fprintf('Global solve passed comm_right, err = %f\n\n', err_comm_right); 
+            else 
+                fprintf('Global solve failed comm_right, err = %f\n\n', err_comm_right); 
+            end
+            
+        end 
+        
+
+        if debug
+            valve.posterior.tension_debug = true; 
+            difference_equations_bead_slip(valve.posterior); 
+            valve.posterior.tension_debug = false; 
+        end 
     
         fig = figure; 
-        fig = surf_plot(valve.posterior, fig);
-        hold on 
-        fig = surf_plot(valve.anterior, fig);
+        fig = valve_plot(valve, fig);
         title(sprintf('valve at p = %f', abs(p_0))); 
 
     end
