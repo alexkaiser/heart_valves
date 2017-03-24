@@ -37,7 +37,7 @@ if split_papillary
     % vector pointing along line from left to right papillary 
     l_to_r_papillary = (valve.right_papillary - valve.left_papillary); 
     l_to_r_papillary = l_to_r_papillary / norm(l_to_r_papillary);
-    papillary_increment = 0.1; 
+    papillary_increment = 0.15; 
 else 
     l_to_r_papillary = zeros(3,1); 
     papillary_increment = 0.0;
