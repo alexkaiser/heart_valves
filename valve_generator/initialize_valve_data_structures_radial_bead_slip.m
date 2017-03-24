@@ -107,7 +107,7 @@ valve.L = 2.5;
 
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support 
-valve.pressure_tension_ratio = 0.11 * 0.975; 
+valve.pressure_tension_ratio = 0.11; % 0.11 * 0.975; % good value without commissural leaflets
 
 
 % original spring constants were for N = 32 debug width
@@ -116,7 +116,7 @@ valve.pressure_tension_ratio = 0.11 * 0.975;
 valve.refinement = N/32.0; 
 
 MMHG_TO_CGS = 1333.22368;
-valve.p_physical = 140 * MMHG_TO_CGS; 
+valve.p_physical = 110 * MMHG_TO_CGS; 
 
 % scaling for target points 
 valve.target_multiplier = 40; 
@@ -238,7 +238,6 @@ valve.anterior = initialize_leaflet_bead_slip(N,                  ...
 
 if valve.attached 
     valve.posterior = generate_opposite_leaflet(valve.anterior); 
-    fig = figure; 
     
 else 
     
@@ -285,23 +284,24 @@ if valve.commissural_leaflets
     reflect_x = false; 
     total_angle_each_commissural = 3*pi/6; 
     N_comm = N; 
-    
+    valve.commissural_tension_base = 0.5 * valve.tension_base; 
     
     % Spring constants in two directions 
-    alpha    = 1.0 * valve.tension_base;  % circumferential 
-    beta     = 1.0 * valve.tension_base;  % radial
+    
+    alpha    = 1.0 * valve.commissural_tension_base;  % circumferential 
+    beta     = 1.0 * valve.commissural_tension_base;  % radial
 
     % tree has half as many leaves as total number of radial fibers N
     N_tree = N_comm/2; 
 
     % base constant for force scaling
-    k_0_1 = 1.0 * valve.tension_base; 
+    k_0_1 = 1.0 * valve.commissural_tension_base; 
 
     % force on each leaf in the chordae tree 
     k_0   = k_0_1 / N_tree; 
 
     % root tension 
-    k_root = 0.7 * (1.889568000000001e+01 / 32) * valve.tension_base; 
+    k_root = 0.7 * (1.889568000000001e+01 / 32) * valve.commissural_tension_base; 
 
     % multiplier necessary to maintain constant root tension 
     % and constant total leaf tension 

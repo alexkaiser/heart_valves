@@ -155,6 +155,11 @@ else
         valve_linear.diff_eqns = @difference_equations_linear; 
         valve_linear.jacobian  = @build_jacobian_linear; 
         
+        if isfield(valve_linear, 'comm_left') && isfield(valve_linear, 'comm_right')
+            valve_linear.comm_left  = set_rest_lengths_and_constants_linear(valve.comm_left,  strain, valve.left_papillary_diastolic,  valve.left_papillary_diastolic); 
+            valve_linear.comm_right = set_rest_lengths_and_constants_linear(valve.comm_right, strain, valve.right_papillary_diastolic, valve.right_papillary_diastolic);
+        end 
+        
         if linear_open_config 
 
             for p_0 = p_range_linear
@@ -188,10 +193,33 @@ else
                 valve_linear.posterior.tension_debug = false; 
 
 
+                if isfield(valve_linear, 'comm_left') && isfield(valve_linear, 'comm_right')
+
+                    valve_linear.comm_left.p_0 = p_0; 
+
+                    [valve_linear.comm_left pass_comm_left err_comm_left] = solve_valve_auto_continuation(valve_linear.comm_left, valve_linear.tol_global, valve_linear.max_it, 'comm_left');
+
+                    if pass_comm_left 
+                        fprintf('Global solve passed comm_left, err = %f\n\n', err_comm_left); 
+                    else 
+                        fprintf('Global solve failed comm_left, err = %f\n\n', err_comm_left); 
+                    end
+
+                    valve_linear.comm_right.p_0 = p_0; 
+
+                    [valve_linear.comm_right pass_comm_right err_comm_right] = solve_valve_auto_continuation(valve_linear.comm_right, valve_linear.tol_global, valve_linear.max_it, 'comm_right');
+
+                    if pass_comm_right 
+                        fprintf('Global solve passed comm_right, err = %f\n\n', err_comm_right); 
+                    else 
+                        fprintf('Global solve failed comm_right, err = %f\n\n', err_comm_right); 
+                    end
+
+                end 
+                
+                
                 fig = figure; 
-                fig = surf_plot(valve_linear.posterior, fig);
-                hold on 
-                fig = surf_plot(valve_linear.anterior, fig);
+                fig = valve_plot(valve_linear, fig);
                 title(sprintf('valve, linear constitutive, at p = %f', abs(p_0))); 
 
             end
