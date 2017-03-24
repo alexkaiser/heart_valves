@@ -37,7 +37,7 @@ if split_papillary
     % vector pointing along line from left to right papillary 
     l_to_r_papillary = (valve.right_papillary - valve.left_papillary); 
     l_to_r_papillary = l_to_r_papillary / norm(l_to_r_papillary);
-    papillary_increment = 0.08; 
+    papillary_increment = 0.1; 
 else 
     l_to_r_papillary = zeros(3,1); 
     papillary_increment = 0.0;
@@ -305,7 +305,7 @@ if valve.commissural_leaflets
     reflect_x = false; 
     total_angle_each_commissural = 3*pi/6; 
     N_comm = N; 
-    valve.commissural_tension_base = 1.0 * valve.tension_base; 
+    valve.commissural_tension_base = 0.5 * valve.tension_base; 
     
     % Spring constants in two directions 
     
@@ -330,7 +330,7 @@ if valve.commissural_leaflets
     
     
     % left parameters  
-    center_left = -pi/2 - pi/12; 
+    center_left = -pi/2 - pi/6; 
     angels_left_comm = [center_left - total_angle_each_commissural/2, center_left + total_angle_each_commissural/2]; 
     ring_to_ring_left_comm = 0; 
     
@@ -363,7 +363,7 @@ if valve.commissural_leaflets
     valve.comm_left.dv = valve.anterior.du; 
     
     % right parameters 
-    center_right = pi/2 + pi/12; 
+    center_right = pi/2 + pi/6; 
     angels_right_comm = [center_right - total_angle_each_commissural/2, center_right + total_angle_each_commissural/2]; 
     ring_to_ring_right_comm = 0; 
     
