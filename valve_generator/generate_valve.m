@@ -65,7 +65,7 @@ end
 
 % Can use a scalar pressure 
 % Or a range for continuation 
-p_range = valve.anterior.p_0 .* [0:.1:.9, .925:.025:1]; 
+p_range = valve.anterior.p_0 .* (0:.2:1); %[0:.1:.9, .925:.025:1]; 
 % p_range = valve.posterior.p_0; 
 
 linear_open_config  = true; 
