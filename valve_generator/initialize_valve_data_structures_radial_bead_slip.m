@@ -303,7 +303,7 @@ if valve.commissural_leaflets
 
     % parameters for both 
     reflect_x = false; 
-    total_angle_each_commissural = 3*pi/6; 
+    total_angle_each_commissural = 3*pi/6 + pi/12; 
     N_comm = N; 
     valve.commissural_tension_base = 0.5 * valve.tension_base; 
     
