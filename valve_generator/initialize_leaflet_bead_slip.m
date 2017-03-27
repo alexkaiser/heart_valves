@@ -1,6 +1,6 @@
 function leaflet = initialize_leaflet_bead_slip(N,                  ... 
                                       reflect_x,                    ...  
-                                      total_angle,                  ... 
+                                      angles,                       ... 
                                       r,                            ... 
                                       left_papillary,               ... 
                                       right_papillary,              ... 
@@ -43,7 +43,6 @@ function leaflet = initialize_leaflet_bead_slip(N,                  ...
 %                                   
                 
 leaflet.N            = N; 
-leaflet.total_angle  = total_angle; 
 leaflet.leaflet_only = leaflet_only; 
 
 leaflet.tension_base = valve.tension_base; 
@@ -88,13 +87,14 @@ else
     leaflet.energy    = @energy_bead_slip;
 end 
 
-if reflect_x 
-    leaflet.min_angle   = pi + leaflet.total_angle/2.0;
-    leaflet.max_angle   = pi - leaflet.total_angle/2.0;
-else 
-    leaflet.min_angle   = -leaflet.total_angle/2.0; 
-    leaflet.max_angle   =  leaflet.total_angle/2.0; 
+
+if length(angles) ~= 2
+    error('Must provide min and max angle'); 
 end 
+
+leaflet.min_angle = angles(1); 
+leaflet.max_angle = angles(2); 
+
 
 leaflet.du = 1/N; 
 leaflet.dv = 1/N; 
