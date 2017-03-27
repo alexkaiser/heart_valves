@@ -30,6 +30,37 @@ end
 
 pass_all = pass_anterior && pass_posterior; 
 
+
+if isfield(valve, 'comm_left') && isfield(valve, 'comm_right')
+
+    p_initial = 0; 
+    p_goal    = valve.comm_left.p_0;
+
+    [valve.comm_left pass_comm_left err_comm_left] = solve_valve_pressure_auto_continuation(valve.comm_left, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal, valve.max_consecutive_fails, valve.max_total_fails); 
+
+    if pass_comm_left 
+        fprintf('Global solve passed comm_left, err = %e\n\n', err_comm_left); 
+    else 
+        fprintf('Global solve failed comm_left, err = %e\n\n', err_comm_left); 
+    end
+
+    p_initial = 0; 
+    p_goal    = valve.comm_right.p_0; 
+
+    [valve.comm_right pass_comm_right err_comm_right] = solve_valve_pressure_auto_continuation(valve.comm_right, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal, valve.max_consecutive_fails, valve.max_total_fails); 
+
+    if pass_comm_right 
+        fprintf('Global solve passed comm_right, err = %e\n\n', err_comm_right); 
+    else 
+        fprintf('Global solve failed comm_right, err = %e\n\n', err_comm_right); 
+    end
+
+    pass_all = pass_all && pass_comm_left && pass_comm_right; 
+    
+end 
+
+
+
 if pass_all
 
     fprintf('Closed configurations passed, generating open configuration with linear constitutive law.\n'); 
@@ -63,9 +94,40 @@ if pass_all
         fprintf('Global solve failed anterior, err = %e\n\n', err_posterior); 
     end 
 
-else 
-    error('Solves failed to converge.'); 
+
+    if isfield(valve_linear, 'comm_left') && isfield(valve_linear, 'comm_right')
+        
+        valve_linear.comm_left  = set_rest_lengths_and_constants_linear(valve.comm_left,  strain, valve.left_papillary_diastolic,  valve.left_papillary_diastolic); 
+        valve_linear.comm_right = set_rest_lengths_and_constants_linear(valve.comm_right, strain, valve.right_papillary_diastolic, valve.right_papillary_diastolic);
+
+        p_initial = valve_linear.comm_left.p_0;
+        p_goal    = 0;
+        
+        [valve.comm_left pass_comm_left err_comm_left] = solve_valve_pressure_auto_continuation(valve.comm_left, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal, valve.max_consecutive_fails, valve.max_total_fails); 
+
+        if pass_comm_left 
+            fprintf('Global solve passed comm_left, err = %f\n\n', err_comm_left); 
+        else 
+            fprintf('Global solve failed comm_left, err = %f\n\n', err_comm_left); 
+        end
+
+        p_initial = valve_linear.comm_left.p_0;
+        p_goal    = 0; 
+
+        [valve.comm_right pass_comm_right err_comm_right] = solve_valve_pressure_auto_continuation(valve.comm_right, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal, valve.max_consecutive_fails, valve.max_total_fails); 
+
+        if pass_comm_right 
+            fprintf('Global solve passed comm_right, err = %f\n\n', err_comm_right); 
+        else 
+            fprintf('Global solve failed comm_right, err = %f\n\n', err_comm_right); 
+        end
+        
+        pass_all = pass_all && pass_comm_left && pass_comm_right; 
+
+    end 
     
+else 
+    error('Solves failed to converge, did not produce models.'); 
 end 
 
 
