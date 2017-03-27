@@ -7,7 +7,7 @@ function [valve valve_linear pass_all] = solve_valve(valve, p_range, linear_open
 p_initial = 0; 
 p_goal    = valve.anterior.p_0; 
 
-[valve.anterior pass_anterior err_anterior] = solve_valve_pressure_auto_continuation(valve.anterior, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal); 
+[valve.anterior pass_anterior err_anterior] = solve_valve_pressure_auto_continuation(valve.anterior, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal, valve.max_consecutive_fails, valve.max_total_fails); 
 
 if pass_anterior 
     fprintf('Global solve passed anterior, err = %e\n\n', err_anterior); 
@@ -19,7 +19,7 @@ end
 p_initial = 0; 
 p_goal    = valve.posterior.p_0; 
 
-[valve.posterior pass_posterior err_posterior] = solve_valve_pressure_auto_continuation(valve.posterior, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal); 
+[valve.posterior pass_posterior err_posterior] = solve_valve_pressure_auto_continuation(valve.posterior, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal, valve.max_consecutive_fails, valve.max_total_fails); 
 
 if pass_anterior 
     fprintf('Global solve passed anterior, err = %e\n\n', err_posterior); 
@@ -43,7 +43,7 @@ if pass_all
     p_initial = valve_linear.anterior.p_0; 
     p_goal    = 0; 
 
-    [valve_linear.anterior pass_anterior err_anterior] = solve_valve_pressure_auto_continuation(valve_linear.anterior, valve_linear.tol_global, valve_linear.max_it, valve_linear.max_it_continuation, p_initial, p_goal); 
+    [valve_linear.anterior pass_anterior err_anterior] = solve_valve_pressure_auto_continuation(valve_linear.anterior, valve_linear.tol_global, valve_linear.max_it, valve_linear.max_it_continuation, p_initial, p_goal, valve_linear.max_consecutive_fails, valve_linear.max_total_fails); 
 
     if pass_anterior 
         fprintf('Global solve passed anterior, err = %e\n\n', err_anterior); 
@@ -55,7 +55,7 @@ if pass_all
     p_initial = valve_linear.posterior.p_0; 
     p_goal    = 0; 
 
-    [valve_linear.posterior pass_posterior err_posterior] = solve_valve_pressure_auto_continuation(valve_linear.posterior, valve.tol_global, valve_linear.max_it, valve_linear.max_it_continuation, p_initial, p_goal); 
+    [valve_linear.posterior pass_posterior err_posterior] = solve_valve_pressure_auto_continuation(valve_linear.posterior, valve.tol_global, valve_linear.max_it, valve_linear.max_it_continuation, p_initial, p_goal, valve_linear.max_consecutive_fails, valve_linear.max_total_fails); 
 
     if pass_anterior 
         fprintf('Global solve passed anterior, err = %e\n\n', err_posterior); 

@@ -1,4 +1,4 @@
-function [leaflet pass err] = newton_solve_valve(leaflet, tol, max_it) 
+function [leaflet pass err] = newton_solve_valve(leaflet, tol, max_it, max_consecutive_fails, max_total_fails) 
 %
 % Full valve build. 
 % Solves the nonlinear difference equations at each component. 
@@ -62,6 +62,20 @@ end
 if back_tracking && line_search
     error('only one line search strategy allowed'); 
 end 
+
+
+consecutive_fails = 0; 
+total_fails = 0; 
+
+if ~exist('max_consecutive_fails', 'var')
+    max_consecutive_fails = inf; 
+end 
+
+if ~exist('max_total_fails', 'var')
+    max_total_fails = inf; 
+end
+
+
 
 
 plots = false; 
@@ -133,8 +147,14 @@ while err > tol
         
         alpha = 1.0; 
         back_tracking_it = 0; 
-        while (err > err_prev) 
+        while true 
            
+            % pass
+            if (err < err_prev) 
+                consecutive_fails = 0; 
+                break; 
+            end 
+            
             alpha = alpha / 2.0; 
             
             % add in to get the next iterate 
@@ -148,7 +168,16 @@ while err > tol
             back_tracking_it = back_tracking_it + 1; 
             
             if back_tracking_it > max_back_tracking_it
-                warning('failed to find a descent guess in allowed number of iterations'); 
+                warning('Failed to find a descent guess in allowed number of iterations.'); 
+                consecutive_fails = consecutive_fails + 1; 
+                total_fails = total_fails + 1; 
+                
+                % After search, if error has grown by an order or magnitude, return control
+                if err > (10 * err_prev)
+                    error('Error growth by over one order of magnitude. Return control to parent.'); 
+                end 
+                
+                % Move along with this guess 
                 break; 
             end 
         end 
@@ -223,7 +252,16 @@ while err > tol
         pass = false; 
         break; 
     end  
-     
+    
+    if consecutive_fails > max_consecutive_fails
+        error('Too many consecutive failures on line search. Return control to parent.'); 
+    end 
+    
+    if total_fails > max_total_fails
+        error('Too many total failures on line search. Return control to parent.'); 
+    end 
+    
+    
     if use_energy
         fprintf('Global iteration = %d, \tnorm %e, \tE = %e, \telapsed = %f\n', it, err, E, toc)
     else
