@@ -30,8 +30,8 @@ valve.r = 1.606587877768772;
 valve.left_papillary  = [ -0.972055648767080; -1.611924550017006; -2.990100960298683] + [0; 0; -0.0];
 valve.right_papillary = [ -1.542417595752084;  1.611924550017006; -3.611254871967348] + [0; 0; -0.0]; 
 
-valve.left_papillary_diastolic  = valve.left_papillary  ; %+ [0.0; 0; 1.0]; 
-valve.right_papillary_diastolic = valve.right_papillary ; %+ [0.0; 0; 1.0]; 
+valve.left_papillary_diastolic  = valve.left_papillary  + [0.0; 0; 1.0]; 
+valve.right_papillary_diastolic = valve.right_papillary + [0.0; 0; 1.0]; 
 
 valve.split_papillary = false; 
 valve.radial_and_circumferential = true; 
@@ -119,7 +119,7 @@ MMHG_TO_CGS = 1333.22368;
 valve.p_physical = 110 * MMHG_TO_CGS; 
 
 % scaling for target points 
-valve.target_multiplier = 40; 
+valve.target_multiplier = 40/128; 
 
 % number of lagrangian tracers in each dimension 
 % arranged in a mesh near the origin

@@ -71,7 +71,7 @@ function [] = output_to_ibamr_format(valve)
     % base rate for target spring constants
     % target constant for a single point 
     % this does not scale when the mesh is changed 
-    k_target = target_multiplier * k_rel; 
+    k_target = target_multiplier * tension_base / num_copies; 
     
     % No general target damping for now 
     eta = 0.0; 

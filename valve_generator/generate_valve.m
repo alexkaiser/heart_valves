@@ -69,7 +69,7 @@ p_range = valve.anterior.p_0 .* (0:.2:1); %[0:.1:.9, .925:.025:1];
 % p_range = valve.posterior.p_0; 
 
 linear_open_config  = true; 
-p_range_linear      = 0.0; % valve.anterior.p_0 .* (1:-.1:0); 
+p_range_linear      = valve.anterior.p_0 .* (1:-.2:0); 
 strain = 0.16; 
 repulsive_coeff_range = []; % [.9:(-0.1):.1]; 
 
