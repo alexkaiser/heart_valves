@@ -65,8 +65,8 @@ if pass_all
 
     fprintf('Closed configurations passed, generating open configuration with linear constitutive law.\n'); 
     valve_linear = valve; 
-    valve_linear.anterior  = set_rest_lengths_and_constants_linear(valve.anterior,  strain, valve.left_papillary_diastolic, valve.right_papillary_diastolic); 
-    valve_linear.posterior = set_rest_lengths_and_constants_linear(valve.posterior, strain, valve.left_papillary_diastolic, valve.right_papillary_diastolic);       
+    valve_linear.anterior  = set_rest_lengths_and_constants_linear(valve.anterior,  strain); 
+    valve_linear.posterior = set_rest_lengths_and_constants_linear(valve.posterior, strain);       
     valve_linear.diff_eqns = @difference_equations_linear; 
     valve_linear.jacobian  = @build_jacobian_linear; 
 
@@ -97,8 +97,8 @@ if pass_all
 
     if isfield(valve_linear, 'comm_left') && isfield(valve_linear, 'comm_right')
         
-        valve_linear.comm_left  = set_rest_lengths_and_constants_linear(valve.comm_left,  strain, valve.left_papillary_diastolic,  valve.left_papillary_diastolic); 
-        valve_linear.comm_right = set_rest_lengths_and_constants_linear(valve.comm_right, strain, valve.right_papillary_diastolic, valve.right_papillary_diastolic);
+        valve_linear.comm_left  = set_rest_lengths_and_constants_linear(valve.comm_left,  strain); 
+        valve_linear.comm_right = set_rest_lengths_and_constants_linear(valve.comm_right, strain);
 
         p_initial = valve_linear.comm_left.p_0;
         p_goal    = 0;
