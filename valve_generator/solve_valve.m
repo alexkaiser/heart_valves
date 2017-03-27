@@ -1,8 +1,78 @@
 function [valve valve_linear pass_all] = solve_valve(valve, p_range, linear_open_config, p_range_linear, strain, repulsive_coeff_range)
 % 
 % Refines valve data structure to equilibrium 
-% Applies auto-continuation to ref_frac and updates both leaflets 
+% Applies auto-continuation to pressure and updates both leaflets 
 % 
+
+p_initial = 0; 
+p_goal    = valve.anterior.p_0; 
+
+[valve.anterior pass_anterior err_anterior] = solve_valve_pressure_auto_continuation(valve.anterior, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal); 
+
+if pass_anterior 
+    fprintf('Global solve passed anterior, err = %e\n\n', err_anterior); 
+else 
+    fprintf('Global solve failed anterior, err = %e\n\n', err_anterior); 
+end 
+
+
+p_initial = 0; 
+p_goal    = valve.posterior.p_0; 
+
+[valve.posterior pass_posterior err_posterior] = solve_valve_pressure_auto_continuation(valve.posterior, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal); 
+
+if pass_anterior 
+    fprintf('Global solve passed anterior, err = %e\n\n', err_posterior); 
+else 
+    fprintf('Global solve failed anterior, err = %e\n\n', err_posterior); 
+end 
+
+
+pass_all = pass_anterior && pass_posterior; 
+
+if pass_all
+
+    fprintf('Closed configurations passed, generating open configuration with linear constitutive law.\n'); 
+    valve_linear = valve; 
+    valve_linear.anterior  = set_rest_lengths_and_constants_linear(valve.anterior,  strain, valve.left_papillary_diastolic, valve.right_papillary_diastolic); 
+    valve_linear.posterior = set_rest_lengths_and_constants_linear(valve.posterior, strain, valve.left_papillary_diastolic, valve.right_papillary_diastolic);       
+    valve_linear.diff_eqns = @difference_equations_linear; 
+    valve_linear.jacobian  = @build_jacobian_linear; 
+
+
+    p_initial = valve_linear.anterior.p_0; 
+    p_goal    = 0; 
+
+    [valve_linear.anterior pass_anterior err_anterior] = solve_valve_pressure_auto_continuation(valve_linear.anterior, valve_linear.tol_global, valve_linear.max_it, valve_linear.max_it_continuation, p_initial, p_goal); 
+
+    if pass_anterior 
+        fprintf('Global solve passed anterior, err = %e\n\n', err_anterior); 
+    else 
+        fprintf('Global solve failed anterior, err = %e\n\n', err_anterior); 
+    end 
+
+
+    p_initial = valve_linear.posterior.p_0; 
+    p_goal    = 0; 
+
+    [valve_linear.posterior pass_posterior err_posterior] = solve_valve_pressure_auto_continuation(valve_linear.posterior, valve.tol_global, valve_linear.max_it, valve_linear.max_it_continuation, p_initial, p_goal); 
+
+    if pass_anterior 
+        fprintf('Global solve passed anterior, err = %e\n\n', err_posterior); 
+    else 
+        fprintf('Global solve failed anterior, err = %e\n\n', err_posterior); 
+    end 
+
+else 
+    error('Solves failed to converge.'); 
+    
+end 
+
+
+
+return; 
+
+
 
 
 if isfield(valve, 'optimization') && valve.optimization 

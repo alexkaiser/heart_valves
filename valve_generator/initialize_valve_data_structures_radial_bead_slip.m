@@ -13,6 +13,7 @@ function [valve] = initialize_valve_data_structures_radial_bead_slip(N, attached
 % Main data structure with everything 
 valve.N = N; 
 valve.max_it = 4000; 
+valve.max_it_continuation = 20; 
 
 if exist('attached', 'var') 
     valve.attached = attached; 
