@@ -36,11 +36,11 @@ valve.left_papillary  = [ -0.972055648767080; -1.611924550017006; -2.99010096029
 valve.right_papillary = [ -1.542417595752084;  1.611924550017006; -3.611254871967348] + [0; 0; -0.0]; 
 
 
-valve.commissural_leaflets = true; 
+valve.commissural_leaflets = false; 
 
 % Places papillary attachments in linear interpolant between single point tips 
 
-if valve.commissural_leaflets 
+if true %valve.commissural_leaflets 
     split_papillary = true; 
     % vector pointing along line from left to right papillary 
     l_to_r_papillary = (valve.right_papillary - valve.left_papillary); 
@@ -52,7 +52,7 @@ else
     papillary_increment = 0.0;
 end 
 
-diastolic_increment = [0; 0; 1.0]; 
+diastolic_increment = [0; 0; 0.0]; 
 valve.left_papillary_diastolic  = valve.left_papillary  + diastolic_increment; 
 valve.right_papillary_diastolic = valve.right_papillary + diastolic_increment; 
 
@@ -130,9 +130,12 @@ valve.base_name = sprintf('mitral_tree_%d', N);
 valve.L = 2.5; 
 
 % pressure / tension coefficient ratio
-% this tension coefficient is the maximum tension that a fiber can support 
-valve.pressure_tension_ratio = 0.07; % 0.11 * 0.975; 
-
+% this tension coefficient is the maximum tension that a fiber can support
+if true %valve.commissural_leaflets 
+    valve.pressure_tension_ratio = 0.1; % 0.11 * 0.975; 
+else 
+    valve.pressure_tension_ratio = 0.07; % 0.11 * 0.975; 
+end 
 
 % original spring constants were for N = 32 debug width
 % spring constants get multiplied by 32/N, so they are halfed if N==64
@@ -180,11 +183,14 @@ valve.tension_base = valve.p_physical / valve.pressure_tension_ratio;
 % 8.3326e-04 is a good number here
 valve.tol_global = 1e-3; 
 
+% pressure on each leaflet is constant, and always a physical pressure 
+p_0 = -valve.p_physical; 
+
 
 % Spring constants in two directions 
 alpha    = 1.0 * valve.tension_base;  % circumferential 
 beta     = 1.0 * valve.tension_base;  % radial
-p_0      =      -valve.p_physical; 
+
 
 ref_frac =  1.0;  % generic spring constants reduced by this much 
 
@@ -274,8 +280,8 @@ if valve.attached
     
 else 
     
-    if valve.commissural_leaflets
-        total_angle_posterior = 3*pi/6; 
+    if true %valve.commissural_leaflets
+        total_angle_posterior = 4*pi/6; 
     else 
         total_angle_posterior = 7*pi/6; 
     end 

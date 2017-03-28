@@ -264,9 +264,9 @@ function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, 
     
     fprintf('strain = %e, idx = %d, nbr = %d\n', strain, idx, nbr_idx)
     
-    if strain > max_strain 
-        warning(sprintf('strain = %e, idx = %d, nbr = %d\n', strain, idx, nbr_idx)); 
-    end 
+%     if strain > max_strain 
+%         warning(sprintf('strain = %e, idx = %d, nbr = %d\n', strain, idx, nbr_idx)); 
+%     end 
     
     % Just one spring placed here 
     if N_springs <= 1 
