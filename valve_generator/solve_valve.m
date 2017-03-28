@@ -44,6 +44,10 @@ if isfield(valve, 'comm_left') && isfield(valve, 'comm_right')
         fprintf('Global solve failed comm_left, err = %e\n\n', err_comm_left); 
     end
 
+    fig = figure; 
+    surf_plot(valve.comm_left, fig); 
+    hold on
+    
     p_initial = 0; 
     p_goal    = valve.comm_right.p_0; 
 
@@ -55,10 +59,7 @@ if isfield(valve, 'comm_left') && isfield(valve, 'comm_right')
         fprintf('Global solve failed comm_right, err = %e\n\n', err_comm_right); 
     end
     
-    fig = figure; 
     surf_plot(valve.comm_right, fig); 
-    hold on
-    surf_plot(valve.comm_left, fig); 
 
     pass_all = pass_all && pass_comm_left && pass_comm_right; 
     

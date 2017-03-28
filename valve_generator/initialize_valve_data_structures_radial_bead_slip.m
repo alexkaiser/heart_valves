@@ -347,7 +347,7 @@ if valve.commissural_leaflets
     center = pi/2; 
     
     N_comm = N; 
-    tension_base_comm = 0.25 * valve.tension_base; 
+    tension_base_comm = 0.3 * valve.tension_base; 
     
     alpha_comm    = 1.0 * tension_base_comm;  % circumferential 
     beta_comm     = 1.0 * tension_base_comm;  % radial
@@ -371,8 +371,8 @@ if valve.commissural_leaflets
     
     papillary_increment_left_comm = papillary_increment; 
     
-    left_papillary_comm_left  = valve.left_papillary  + 2 * papillary_increment_left_comm * l_to_r_papillary; 
-    right_papillary_comm_left = valve.left_papillary  + 1 * papillary_increment_left_comm * l_to_r_papillary; 
+    left_papillary_comm_left  = valve.left_papillary  + 7 * papillary_increment_left_comm * l_to_r_papillary; 
+    right_papillary_comm_left = valve.left_papillary  + 6 * papillary_increment_left_comm * l_to_r_papillary; 
     
     left_papillary_comm_left_diastolic  = valve.left_papillary_diastolic  + 2 * papillary_increment_left_comm * l_to_r_papillary; 
     right_papillary_comm_left_diastolic = valve.left_papillary_diastolic  + 1 * papillary_increment_left_comm * l_to_r_papillary;
@@ -410,8 +410,8 @@ if valve.commissural_leaflets
     
     papillary_increment_right_comm = papillary_increment; 
         
-    left_papillary_comm_right  = valve.right_papillary - 1 * papillary_increment_right_comm * l_to_r_papillary; 
-    right_papillary_comm_right = valve.right_papillary - 2 * papillary_increment_right_comm * l_to_r_papillary;
+    left_papillary_comm_right  = valve.right_papillary - 8 * papillary_increment_right_comm * l_to_r_papillary; 
+    right_papillary_comm_right = valve.right_papillary - 9 * papillary_increment_right_comm * l_to_r_papillary;
     
     left_papillary_comm_right_diastolic  = valve.right_papillary_diastolic - 1 * papillary_increment_right_comm * l_to_r_papillary; 
     right_papillary_comm_right_diastolic = valve.right_papillary_diastolic - 2 * papillary_increment_right_comm * l_to_r_papillary;  
