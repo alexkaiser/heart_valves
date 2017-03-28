@@ -311,8 +311,8 @@ else
     left_papillary_posterior  = valve.left_papillary  + papillary_increment_posterior * l_to_r_papillary; 
     right_papillary_posterior = valve.right_papillary - papillary_increment_posterior * l_to_r_papillary; 
     
-    left_papillary_posterior_diastolic  = valve.left_papillary_diastolic  + papillary_increment_posterior * l_to_r_papillary; 
-    right_papillary_posterior_diastolic = valve.right_papillary_diastolic - papillary_increment_posterior * l_to_r_papillary;    
+    left_papillary_posterior_diastolic  = left_papillary_posterior  + diastolic_increment;
+    right_papillary_posterior_diastolic = right_papillary_posterior + diastolic_increment;
     
     valve.posterior = initialize_leaflet_bead_slip(N,                    ...
                                     reflect_x,                           ... 
@@ -378,8 +378,8 @@ if valve.commissural_leaflets
     left_papillary_comm_left  = left_papillary_comm_left  - [x_spread_left; 0; 0]; 
     right_papillary_comm_left = right_papillary_comm_left + [x_spread_left; 0; 0]; 
     
-    left_papillary_comm_left_diastolic  = valve.left_papillary_diastolic  + 2 * papillary_increment_left_comm * l_to_r_papillary; 
-    right_papillary_comm_left_diastolic = valve.left_papillary_diastolic  + 1 * papillary_increment_left_comm * l_to_r_papillary;
+    left_papillary_comm_left_diastolic  = left_papillary_comm_left  + diastolic_increment;
+    right_papillary_comm_left_diastolic = right_papillary_comm_left + diastolic_increment;
     
     % both trees anchored to left papillary here 
     valve.comm_left = initialize_leaflet_bead_slip(N_comm,               ...
@@ -421,8 +421,8 @@ if valve.commissural_leaflets
     left_papillary_comm_right  = left_papillary_comm_right  + [x_spread_right; 0; 0]; 
     right_papillary_comm_right = right_papillary_comm_right - [x_spread_right; 0; 0];
     
-    left_papillary_comm_right_diastolic  = valve.right_papillary_diastolic - 1 * papillary_increment_right_comm * l_to_r_papillary; 
-    right_papillary_comm_right_diastolic = valve.right_papillary_diastolic - 2 * papillary_increment_right_comm * l_to_r_papillary;  
+    left_papillary_comm_right_diastolic  = left_papillary_comm_right  + diastolic_increment;
+    right_papillary_comm_right_diastolic = right_papillary_comm_right + diastolic_increment;
     
     % both trees anchored to right papillary here 
     valve.comm_right = initialize_leaflet_bead_slip(N_comm,               ...

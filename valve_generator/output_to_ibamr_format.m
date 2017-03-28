@@ -35,6 +35,18 @@ function [] = output_to_ibamr_format(valve)
     num_copies                = valve.num_copies; 
     collagen_springs_leaflet  = valve.collagen_springs_leaflet; 
     
+    if isfield(valve, 'comm_left') && isfield(valve, 'comm_right')
+        comm_leaflets = true; 
+        comm_left  = valve.comm_left; 
+        comm_right = valve.comm_right; 
+        
+        if ~valve.split_papillary
+            error('Must have split papillary locations for commissural leaflets.'); 
+        end 
+            
+    else 
+        comm_leaflets = false; 
+    end 
     
     if collagen_springs_leaflet 
         error('collagen curve springs not implemented in new units'); 
@@ -146,9 +158,21 @@ function [] = output_to_ibamr_format(valve)
         
         [params posterior] = assign_indices_vertex_target(params, posterior, assign_papillary, k_target, eta); 
         
+        if comm_leaflets
+            assign_papillary = true; 
+            [params comm_left ] = assign_indices_vertex_target(params, comm_left, assign_papillary, k_target, eta); 
+            [params comm_right] = assign_indices_vertex_target(params, comm_right, assign_papillary, k_target, eta); 
+        end 
+        
         % write springs 
         params = add_springs(params, anterior,  num_copies, ds, collagen_springs_leaflet); 
         params = add_springs(params, posterior, num_copies, ds, collagen_springs_leaflet); 
+        
+        if comm_leaflets
+            params = add_springs(params, comm_left,  num_copies, ds, collagen_springs_leaflet); 
+            params = add_springs(params, comm_right, num_copies, ds, collagen_springs_leaflet);
+        end 
+        
 
         % flat part of mesh 
         r = valve.r; 
@@ -166,6 +190,10 @@ function [] = output_to_ibamr_format(valve)
         params = place_rays(params, anterior,  ds, valve.r, L, k_rel, k_target_net, ref_frac_net, eta_net);                                       
         params = place_rays(params, posterior, ds, valve.r, L, k_rel, k_target_net, ref_frac_net, eta_net);                    
 
+        if comm_leaflets
+            params = place_rays(params, comm_left,  ds, valve.r, L, k_rel, k_target_net, ref_frac_net, eta_net);                                       
+            params = place_rays(params, comm_right, ds, valve.r, L, k_rel, k_target_net, ref_frac_net, eta_net);
+        end 
 
         % flat part of mesh with Cartesian coordinates
         % inner radius, stop mesh here 

@@ -101,7 +101,7 @@ if pass_all
     p_initial = valve_linear.posterior.p_0; 
     p_goal    = 0; 
 
-    [valve_linear.posterior pass_posterior err_posterior] = solve_valve_pressure_auto_continuation(valve_linear.posterior, valve.tol_global, valve_linear.max_it, valve_linear.max_it_continuation, p_initial, p_goal, valve_linear.max_consecutive_fails, valve_linear.max_total_fails); 
+    [valve_linear.posterior pass_posterior err_posterior] = solve_valve_pressure_auto_continuation(valve_linear.posterior, valve_linear.tol_global, valve_linear.max_it, valve_linear.max_it_continuation, p_initial, p_goal, valve_linear.max_consecutive_fails, valve_linear.max_total_fails); 
 
     if pass_anterior 
         fprintf('Global solve passed anterior, err = %e\n\n', err_posterior); 
@@ -118,7 +118,7 @@ if pass_all
         p_initial = valve_linear.comm_left.p_0;
         p_goal    = 0;
         
-        [valve_linear.comm_left pass_comm_left err_comm_left] = solve_valve_pressure_auto_continuation(valve.comm_left, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal, valve.max_consecutive_fails, valve.max_total_fails); 
+        [valve_linear.comm_left pass_comm_left err_comm_left] = solve_valve_pressure_auto_continuation(valve_linear.comm_left, valve_linear.tol_global, valve_linear.max_it, valve_linear.max_it_continuation, p_initial, p_goal, valve_linear.max_consecutive_fails, valve_linear.max_total_fails); 
 
         if pass_comm_left 
             fprintf('Global solve passed comm_left, err = %f\n\n', err_comm_left); 
@@ -129,7 +129,7 @@ if pass_all
         p_initial = valve_linear.comm_left.p_0;
         p_goal    = 0; 
 
-        [valve_linear.comm_right pass_comm_right err_comm_right] = solve_valve_pressure_auto_continuation(valve.comm_right, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal, valve.max_consecutive_fails, valve.max_total_fails); 
+        [valve_linear.comm_right pass_comm_right err_comm_right] = solve_valve_pressure_auto_continuation(valve_linear.comm_right, valve_linear.tol_global, valve_linear.max_it, valve_linear.max_it_continuation, p_initial, p_goal, valve_linear.max_consecutive_fails, valve_linear.max_total_fails); 
 
         if pass_comm_right 
             fprintf('Global solve passed comm_right, err = %f\n\n', err_comm_right); 
