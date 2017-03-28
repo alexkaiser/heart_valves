@@ -36,11 +36,11 @@ valve.left_papillary  = [ -0.972055648767080; -1.611924550017006; -2.99010096029
 valve.right_papillary = [ -1.542417595752084;  1.611924550017006; -3.611254871967348] + [0; 0; -0.0]; 
 
 
-valve.commissural_leaflets = false; 
+valve.commissural_leaflets = true; 
 
 % Places papillary attachments in linear interpolant between single point tips 
 
-if true %valve.commissural_leaflets 
+if valve.commissural_leaflets 
     split_papillary = true; 
     % vector pointing along line from left to right papillary 
     l_to_r_papillary = (valve.right_papillary - valve.left_papillary); 
@@ -131,7 +131,7 @@ valve.L = 2.5;
 
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
-if true %valve.commissural_leaflets 
+if valve.commissural_leaflets 
     valve.pressure_tension_ratio = 0.1; % 0.11 * 0.975; 
 else 
     valve.pressure_tension_ratio = 0.07; % 0.11 * 0.975; 
@@ -276,7 +276,7 @@ if valve.attached
     
 else 
     
-    if true %valve.commissural_leaflets
+    if valve.commissural_leaflets
         total_angle_posterior = 5*pi/6; 
         tension_base_posterior = 0.7 * valve.tension_base; 
         k_0_1_posterior  = 1.0 * tension_base_posterior; 
@@ -293,7 +293,7 @@ else
     
     % reflect pressure also 
     if reflect_x
-        p_0 = -p_0; 
+        p_0_posterior = -p_0; 
     end 
     
     alpha_posterior    = 1.0 * tension_base_posterior;  % circumferential 
@@ -306,11 +306,13 @@ else
     k_0_posterior   = k_0_1_posterior / N_tree; 
     k_multiplier_posterior = 2.0 * (k_root_posterior/k_0_1_posterior)^(1/log2(N_tree)); 
     
-    left_papillary_posterior  = valve.left_papillary  + 3*papillary_increment*l_to_r_papillary; 
-    right_papillary_posterior = valve.right_papillary - 3*papillary_increment*l_to_r_papillary; 
+    papillary_increment_posterior = 3*papillary_increment; 
     
-    left_papillary_posterior_diastolic  = valve.left_papillary_diastolic  + 3*papillary_increment*l_to_r_papillary; 
-    right_papillary_posterior_diastolic = valve.right_papillary_diastolic - 3*papillary_increment*l_to_r_papillary;    
+    left_papillary_posterior  = valve.left_papillary  + papillary_increment_posterior * l_to_r_papillary; 
+    right_papillary_posterior = valve.right_papillary - papillary_increment_posterior * l_to_r_papillary; 
+    
+    left_papillary_posterior_diastolic  = valve.left_papillary_diastolic  + papillary_increment_posterior * l_to_r_papillary; 
+    right_papillary_posterior_diastolic = valve.right_papillary_diastolic - papillary_increment_posterior * l_to_r_papillary;    
     
     valve.posterior = initialize_leaflet_bead_slip(N,                    ...
                                     reflect_x,                           ... 
@@ -323,7 +325,7 @@ else
                                     radial_and_circumferential,          ...  
                                     alpha_posterior,                     ... 
                                     beta_posterior,                      ... 
-                                    p_0,                                 ... 
+                                    p_0_posterior,                       ... 
                                     k_0_posterior,                       ... 
                                     k_multiplier_posterior,              ... 
                                     tree_frac,                           ... 
@@ -342,41 +344,38 @@ if valve.commissural_leaflets
     % parameters for both 
     reflect_x = false; 
     total_angle_each_commissural = 3*pi/6 + pi/12; 
+    center = pi/2; 
+    
     N_comm = N; 
-    valve.commissural_tension_base = 0.5 * valve.tension_base; 
+    tension_base_comm = 0.3 * valve.tension_base; 
     
-    % Spring constants in two directions 
+    alpha_comm    = 1.0 * tension_base_comm;  % circumferential 
+    beta_comm     = 1.0 * tension_base_comm;  % radial
     
-    alpha    = 1.0 * valve.commissural_tension_base;  % circumferential 
-    beta     = 1.0 * valve.commissural_tension_base;  % radial
+    k_0_1_comm    = 1.0 * tension_base_comm; 
 
-    % tree has half as many leaves as total number of radial fibers N
+    k_root_comm   = 0.7 * (1.889568000000001e+01 / 32) * tension_base_comm; 
+
+    
     N_tree = N_comm/2; 
-
-    % base constant for force scaling
-    k_0_1 = 1.0 * valve.commissural_tension_base; 
-
-    % force on each leaf in the chordae tree 
-    k_0   = k_0_1 / N_tree; 
-
-    % root tension 
-    k_root = 0.7 * (1.889568000000001e+01 / 32) * valve.commissural_tension_base; 
-
+    k_0_comm   = k_0_1_comm / N_tree; 
     % multiplier necessary to maintain constant root tension 
     % and constant total leaf tension 
-    k_multiplier = 2.0 * (k_root/k_0_1)^(1/log2(N_tree)); 
-    
+    k_multiplier_comm = 2.0 * (k_root_comm/k_0_1_comm)^(1/log2(N_tree)); 
+        
     
     % left parameters  
-    center_left = -pi/2 - pi/6; 
+    center_left = -center; 
     angels_left_comm = [center_left - total_angle_each_commissural/2, center_left + total_angle_each_commissural/2]; 
     ring_to_ring_left_comm = 0; 
     
-    left_papillary_comm_left  = valve.left_papillary  + 2*papillary_increment*l_to_r_papillary; 
-    right_papillary_comm_left = valve.left_papillary  + 1*papillary_increment*l_to_r_papillary; 
-        
-    left_papillary_comm_left_diastolic  = valve.left_papillary_diastolic  + 2*papillary_increment*l_to_r_papillary; 
-    right_papillary_comm_left_diastolic = valve.left_papillary_diastolic  + 1*papillary_increment*l_to_r_papillary;
+    papillary_increment_left_comm = papillary_increment; 
+    
+    left_papillary_comm_left  = valve.left_papillary  + 2*papillary_increment_left_comm*l_to_r_papillary; 
+    right_papillary_comm_left = valve.left_papillary  + 1*papillary_increment_left_comm*l_to_r_papillary; 
+    
+    left_papillary_comm_left_diastolic  = valve.left_papillary_diastolic  + 2 * papillary_increment_left_comm * l_to_r_papillary; 
+    right_papillary_comm_left_diastolic = valve.left_papillary_diastolic  + 1 * papillary_increment_left_comm * l_to_r_papillary;
     
     % both trees anchored to left papillary here 
     valve.comm_left = initialize_leaflet_bead_slip(N_comm,               ...
@@ -388,11 +387,11 @@ if valve.commissural_leaflets
                                     left_papillary_comm_left_diastolic,  ...
                                     right_papillary_comm_left_diastolic, ... 
                                     radial_and_circumferential,          ...  
-                                    alpha,                               ... 
-                                    beta,                                ... 
+                                    alpha_comm,                          ... 
+                                    beta_comm,                           ...
                                     p_0,                                 ... 
-                                    k_0,                                 ... 
-                                    k_multiplier,                        ... 
+                                    k_0_comm,                            ... 
+                                    k_multiplier_comm,                   ... 
                                     tree_frac,                           ... 
                                     leaflet_only,                        ...
                                     ring_to_ring_left_comm,              ...
@@ -405,15 +404,17 @@ if valve.commissural_leaflets
     valve.comm_left.dv = valve.anterior.du; 
     
     % right parameters 
-    center_right = pi/2 + pi/6; 
+    center_right = center; 
     angels_right_comm = [center_right - total_angle_each_commissural/2, center_right + total_angle_each_commissural/2]; 
     ring_to_ring_right_comm = 0; 
     
-    left_papillary_comm_right  = valve.right_papillary - 1*papillary_increment*l_to_r_papillary; 
-    right_papillary_comm_right = valve.right_papillary - 2*papillary_increment*l_to_r_papillary;
+    papillary_increment_right_comm = papillary_increment; 
+        
+    left_papillary_comm_right  = valve.right_papillary - 2 * papillary_increment_right_comm * l_to_r_papillary; 
+    right_papillary_comm_right = valve.right_papillary - 3 * papillary_increment_right_comm * l_to_r_papillary;
     
-    left_papillary_comm_right_diastolic  = valve.right_papillary_diastolic - 1*papillary_increment*l_to_r_papillary; 
-    right_papillary_comm_right_diastolic = valve.right_papillary_diastolic - 2*papillary_increment*l_to_r_papillary;  
+    left_papillary_comm_right_diastolic  = valve.right_papillary_diastolic - 1 * papillary_increment_right_comm * l_to_r_papillary; 
+    right_papillary_comm_right_diastolic = valve.right_papillary_diastolic - 2 * papillary_increment_right_comm * l_to_r_papillary;  
     
     % both trees anchored to right papillary here 
     valve.comm_right = initialize_leaflet_bead_slip(N_comm,               ...
@@ -425,11 +426,11 @@ if valve.commissural_leaflets
                                     left_papillary_comm_right_diastolic,  ... 
                                     right_papillary_comm_right_diastolic, ...
                                     radial_and_circumferential,           ...  
-                                    alpha,                                ... 
-                                    beta,                                 ... 
+                                    alpha_comm,                           ... 
+                                    beta_comm,                            ... 
                                     p_0,                                  ... 
-                                    k_0,                                  ... 
-                                    k_multiplier,                         ... 
+                                    k_0_comm,                             ... 
+                                    k_multiplier_comm,                    ... 
                                     tree_frac,                            ... 
                                     leaflet_only,                         ...
                                     ring_to_ring_right_comm,              ...
