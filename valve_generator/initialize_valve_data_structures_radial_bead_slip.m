@@ -347,7 +347,7 @@ if valve.commissural_leaflets
     center = pi/2; 
     
     N_comm = N; 
-    tension_base_comm = 0.3 * valve.tension_base; 
+    tension_base_comm = 0.25 * valve.tension_base; 
     
     alpha_comm    = 1.0 * tension_base_comm;  % circumferential 
     beta_comm     = 1.0 * tension_base_comm;  % radial

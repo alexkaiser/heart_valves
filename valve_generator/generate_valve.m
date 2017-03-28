@@ -94,7 +94,6 @@ fig = figure;
 fig = valve_plot(valve_linear, fig); 
 title('Relaxed configuration radial fibers, linear constitutive law'); 
 saveas(fig, strcat(valve.base_name, '_relaxed'), 'fig'); 
-close(fig); 
 
 if pass_all 
     fprintf('Final solve passed.\n'); 
