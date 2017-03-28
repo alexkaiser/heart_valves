@@ -277,7 +277,7 @@ if valve.attached
 else 
     
     if true %valve.commissural_leaflets
-        total_angle_posterior = 4*pi/6; 
+        total_angle_posterior = 5*pi/6; 
         tension_base_posterior = 0.7 * valve.tension_base; 
         k_0_1_posterior  = 1.0 * tension_base_posterior; 
         k_root_posterior = 0.95 * (1.889568000000001e+01 / 32) * tension_base_posterior; 
