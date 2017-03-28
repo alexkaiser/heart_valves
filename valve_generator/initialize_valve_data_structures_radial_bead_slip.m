@@ -370,7 +370,7 @@ if valve.commissural_leaflets
     ring_to_ring_left_comm = 0; 
     
     papillary_increment_left_comm = papillary_increment; 
-    x_spread_left = .5; 
+    x_spread_left = .3; 
     
     left_papillary_comm_left  = valve.left_papillary  + 6 * papillary_increment_left_comm * l_to_r_papillary; 
     right_papillary_comm_left = valve.left_papillary  + 6 * papillary_increment_left_comm * l_to_r_papillary; 
@@ -413,7 +413,7 @@ if valve.commissural_leaflets
     ring_to_ring_right_comm = 0; 
     
     papillary_increment_right_comm = papillary_increment; 
-    x_spread_right = .5; 
+    x_spread_right = .3; 
         
     left_papillary_comm_right  = valve.right_papillary - 9 * papillary_increment_right_comm * l_to_r_papillary; 
     right_papillary_comm_right = valve.right_papillary - 9 * papillary_increment_right_comm * l_to_r_papillary;
