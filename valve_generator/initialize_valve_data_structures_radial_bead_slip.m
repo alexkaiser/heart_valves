@@ -195,7 +195,7 @@ beta_anterior     = 1.0 * tension_base_anterior;  % radial
 
 % Places this many extra fibers from ring to ring 
 % Must be 0 <= N_ring_to_ring <= (N/2)
-ring_to_ring_anterior_range  = 0; %[1, (3*N/8)];
+ring_to_ring_anterior_range  = [(5*N/32), (3*N/8)];
 
 
 % Add energy function for zero pressure case 
@@ -370,9 +370,13 @@ if valve.commissural_leaflets
     ring_to_ring_left_comm = 0; 
     
     papillary_increment_left_comm = papillary_increment; 
+    x_spread_left = .5; 
     
-    left_papillary_comm_left  = valve.left_papillary  + 7 * papillary_increment_left_comm * l_to_r_papillary; 
+    left_papillary_comm_left  = valve.left_papillary  + 6 * papillary_increment_left_comm * l_to_r_papillary; 
     right_papillary_comm_left = valve.left_papillary  + 6 * papillary_increment_left_comm * l_to_r_papillary; 
+    
+    left_papillary_comm_left  = left_papillary_comm_left  - [x_spread_left; 0; 0]; 
+    right_papillary_comm_left = right_papillary_comm_left + [x_spread_left; 0; 0]; 
     
     left_papillary_comm_left_diastolic  = valve.left_papillary_diastolic  + 2 * papillary_increment_left_comm * l_to_r_papillary; 
     right_papillary_comm_left_diastolic = valve.left_papillary_diastolic  + 1 * papillary_increment_left_comm * l_to_r_papillary;
@@ -409,9 +413,13 @@ if valve.commissural_leaflets
     ring_to_ring_right_comm = 0; 
     
     papillary_increment_right_comm = papillary_increment; 
+    x_spread_right = .5; 
         
-    left_papillary_comm_right  = valve.right_papillary - 8 * papillary_increment_right_comm * l_to_r_papillary; 
+    left_papillary_comm_right  = valve.right_papillary - 9 * papillary_increment_right_comm * l_to_r_papillary; 
     right_papillary_comm_right = valve.right_papillary - 9 * papillary_increment_right_comm * l_to_r_papillary;
+    
+    left_papillary_comm_right  = left_papillary_comm_right  + [x_spread_right; 0; 0]; 
+    right_papillary_comm_right = right_papillary_comm_right - [x_spread_right; 0; 0];
     
     left_papillary_comm_right_diastolic  = valve.right_papillary_diastolic - 1 * papillary_increment_right_comm * l_to_r_papillary; 
     right_papillary_comm_right_diastolic = valve.right_papillary_diastolic - 2 * papillary_increment_right_comm * l_to_r_papillary;  

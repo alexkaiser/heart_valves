@@ -4,49 +4,10 @@ function [valve valve_linear pass_all] = solve_valve(valve, p_range, linear_open
 % Applies auto-continuation to pressure and updates both leaflets 
 % 
 
-p_initial = 0; 
-p_goal    = valve.anterior.p_0; 
-
-[valve.anterior pass_anterior err_anterior] = solve_valve_pressure_auto_continuation(valve.anterior, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal, valve.max_consecutive_fails, valve.max_total_fails); 
-
-if pass_anterior 
-    fprintf('Global solve passed anterior, err = %e\n\n', err_anterior); 
-else 
-    fprintf('Global solve failed anterior, err = %e\n\n', err_anterior); 
-end 
-
-
-p_initial = 0; 
-p_goal    = valve.posterior.p_0; 
-
-[valve.posterior pass_posterior err_posterior] = solve_valve_pressure_auto_continuation(valve.posterior, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal, valve.max_consecutive_fails, valve.max_total_fails); 
-
-if pass_anterior 
-    fprintf('Global solve passed anterior, err = %e\n\n', err_posterior); 
-else 
-    fprintf('Global solve failed anterior, err = %e\n\n', err_posterior); 
-end 
-
-
-pass_all = pass_anterior && pass_posterior; 
-
+pass_all = true; 
+fig = figure; 
 
 if isfield(valve, 'comm_left') && isfield(valve, 'comm_right')
-
-    p_initial = 0; 
-    p_goal    = valve.comm_left.p_0;
-
-    [valve.comm_left pass_comm_left err_comm_left] = solve_valve_pressure_auto_continuation(valve.comm_left, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal, valve.max_consecutive_fails, valve.max_total_fails); 
-
-    if pass_comm_left 
-        fprintf('Global solve passed comm_left, err = %e\n\n', err_comm_left); 
-    else 
-        fprintf('Global solve failed comm_left, err = %e\n\n', err_comm_left); 
-    end
-
-    fig = figure; 
-    surf_plot(valve.comm_left, fig); 
-    hold on
     
     p_initial = 0; 
     p_goal    = valve.comm_right.p_0; 
@@ -60,10 +21,58 @@ if isfield(valve, 'comm_left') && isfield(valve, 'comm_right')
     end
     
     surf_plot(valve.comm_right, fig); 
+    hold on
+    
+    p_initial = 0; 
+    p_goal    = valve.comm_left.p_0;
 
+    [valve.comm_left pass_comm_left err_comm_left] = solve_valve_pressure_auto_continuation(valve.comm_left, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal, valve.max_consecutive_fails, valve.max_total_fails); 
+
+    if pass_comm_left 
+        fprintf('Global solve passed comm_left, err = %e\n\n', err_comm_left); 
+    else 
+        fprintf('Global solve failed comm_left, err = %e\n\n', err_comm_left); 
+    end
+
+    surf_plot(valve.comm_left, fig); 
+    
     pass_all = pass_all && pass_comm_left && pass_comm_right; 
     
 end 
+
+
+p_initial = 0; 
+p_goal    = valve.anterior.p_0; 
+
+[valve.anterior pass_anterior err_anterior] = solve_valve_pressure_auto_continuation(valve.anterior, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal, valve.max_consecutive_fails, valve.max_total_fails); 
+
+if pass_anterior 
+    fprintf('Global solve passed anterior, err = %e\n\n', err_anterior); 
+else 
+    fprintf('Global solve failed anterior, err = %e\n\n', err_anterior); 
+end 
+
+
+surf_plot(valve.anterior, fig); 
+
+
+p_initial = 0; 
+p_goal    = valve.posterior.p_0; 
+
+[valve.posterior pass_posterior err_posterior] = solve_valve_pressure_auto_continuation(valve.posterior, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal, valve.max_consecutive_fails, valve.max_total_fails); 
+
+if pass_anterior 
+    fprintf('Global solve passed anterior, err = %e\n\n', err_posterior); 
+else 
+    fprintf('Global solve failed anterior, err = %e\n\n', err_posterior); 
+end 
+
+surf_plot(valve.posterior, fig); 
+
+pass_all = pass_all && pass_anterior && pass_posterior; 
+
+
+
 
 
 
