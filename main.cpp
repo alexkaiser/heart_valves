@@ -843,9 +843,9 @@ inline double spring_function_collagen(double R, const double* params, int lag_m
     
     // Compute the force
     if (E > full_recruitment){
-        if ((lag_mastr_idx % 1000) == 0){
+        if ((lag_mastr_idx % 5000) == 0){
             std::cout << "On index " << lag_mastr_idx << "linear part, E = " << E << "\tindices = " << lag_mastr_idx << ", " << lag_slave_idx
-            << ".\tEffective slope = " << kappa * thickness * eta_collagen
+            << ".\tEffective slope = " << kappa * eta_collagen
             << "\trest len = " << rest_len <<"\n";
         }
         return kappa * (eta_collagen*E + collagen_y_intercept);
@@ -853,7 +853,7 @@ inline double spring_function_collagen(double R, const double* params, int lag_m
     else if (E > 0.0){
         if ((lag_mastr_idx % 5000) == 0){
             std::cout << "On index " << lag_mastr_idx << ",\t strain E = " << E << ",\texponential part, force = "
-            << kappa * thickness * a * (exp(b*E) - 1) << "\tcoeff (using taylor series on E) = " << kappa * thickness * a * b
+            << kappa * a * (exp(b*E) - 1) << "\tcoeff (using taylor series on E) = " << kappa * a * b
             << "\trest len = " << rest_len <<"\n";
         }
         return kappa * a * (exp(b*E) - 1);
