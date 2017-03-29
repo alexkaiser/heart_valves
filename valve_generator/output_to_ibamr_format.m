@@ -33,7 +33,7 @@ function [] = output_to_ibamr_format(valve)
     target_multiplier         = valve.target_multiplier; 
     n_lagrangian_tracers      = valve.n_lagrangian_tracers; 
     num_copies                = valve.num_copies; 
-    collagen_springs_leaflet  = valve.collagen_springs_leaflet; 
+    collagen_constitutive     = valve.collagen_constitutive; 
     
     if isfield(valve, 'comm_left') && isfield(valve, 'comm_right')
         comm_leaflets = true; 
@@ -48,9 +48,6 @@ function [] = output_to_ibamr_format(valve)
         comm_leaflets = false; 
     end 
     
-    if collagen_springs_leaflet 
-        error('collagen curve springs not implemented in new units'); 
-    end   
 
     params.vertex = fopen(strcat(base_name, '.vertex'), 'w'); 
     params.spring = fopen(strcat(base_name, '.spring'), 'w'); 
@@ -165,12 +162,12 @@ function [] = output_to_ibamr_format(valve)
         end 
         
         % write springs 
-        params = add_springs(params, anterior,  num_copies, ds, collagen_springs_leaflet); 
-        params = add_springs(params, posterior, num_copies, ds, collagen_springs_leaflet); 
+        params = add_springs(params, anterior,  num_copies, ds, collagen_constitutive); 
+        params = add_springs(params, posterior, num_copies, ds, collagen_constitutive); 
         
         if comm_leaflets
-            params = add_springs(params, comm_left,  num_copies, ds, collagen_springs_leaflet); 
-            params = add_springs(params, comm_right, num_copies, ds, collagen_springs_leaflet);
+            params = add_springs(params, comm_left,  num_copies, ds, collagen_constitutive); 
+            params = add_springs(params, comm_right, num_copies, ds, collagen_constitutive);
         end 
         
 
@@ -259,7 +256,7 @@ function params = spring_string(params, idx, nbr, kappa, rest_len, function_idx)
     
     % index for custom spring functions 
     if exist('function_idx', 'var') 
-        fprintf(spring, '\t%d', function_idx); 
+        fprintf(params.spring, '\t%d', function_idx); 
     end 
     
     fprintf(params.spring, '\n'); 
@@ -268,7 +265,7 @@ function params = spring_string(params, idx, nbr, kappa, rest_len, function_idx)
 end 
 
 
-function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies)
+function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies, collagen_spring)
     % 
     % Add one or more springs 
     % If the rest length is more than 2 times the specificed mesh width
@@ -281,9 +278,13 @@ function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, 
         error('By convention, only place springs with the second index larger to prevent duplicates'); 
     end 
     
+    if collagen_spring
+        function_idx = 1; 
+    end 
+    
     N_springs = floor(rest_len / ds); 
 
-    max_strain = .01; 
+%    max_strain = .01; 
     
     X     = params.vertices(:,idx + 1); 
     X_nbr = params.vertices(:,nbr_idx + 1); 
@@ -298,8 +299,16 @@ function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, 
     
     % Just one spring placed here 
     if N_springs <= 1 
-        k_abs = k_rel / (rest_len * num_copies); 
-        params = spring_string(params, idx, nbr_idx, k_abs, rest_len); 
+        if collagen_spring
+            % Scaling constant here does not change with rest lengths 
+            k_col = k_rel / num_copies; 
+
+            % Finally, write the spring string 
+            params = spring_string(params, idx, nbr_idx, k_col, rest_len, function_idx); 
+        else 
+            k_abs = k_rel / (rest_len * num_copies); 
+            params = spring_string(params, idx, nbr_idx, k_abs, rest_len); 
+        end 
     else 
         
         % increment of new points 
@@ -350,11 +359,20 @@ function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, 
             % Rest length determined by strain 
             R = L / (strain + 1); 
             
-            % Absolute spring constant must be used in spring file 
-            k_abs = k_rel / (R * num_copies); 
+            if collagen_spring
+                % Scaling constant here does not change with rest lengths 
+                k_col = k_rel / num_copies; 
+
+                % Finally, write the spring string 
+                params = spring_string(params, min_idx, max_idx, k_col, R, function_idx);
             
-            % Finally, write the spring string 
-            params = spring_string(params, min_idx, max_idx, k_abs, R); 
+            else 
+                % Absolute spring constant must be used in spring file 
+                k_abs = k_rel / (R * num_copies); 
+
+                % Finally, write the spring string 
+                params = spring_string(params, min_idx, max_idx, k_abs, R);
+            end 
             
             % lower index is always previous upper index 
             idx_tmp = nbr_idx_tmp; 
@@ -524,11 +542,6 @@ function params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_
     k_free_edge_right  = leaflet.k_free_edge_right; 
     
     
-    if collagen_spring
-        error('not implemeneted'); 
-        function_idx = 1;
-    end 
-    
     if isfield(leaflet, 'chordae') && ~isempty(chordae)
         [m N_chordae] = size(leaflet.chordae.C_left); 
     else 
@@ -566,15 +579,8 @@ function params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_
 
                     k_rel = k_free_edge_left(i); 
                     
-                    if collagen_spring 
-                        % relative constant here
-                        % other parameters coded into function 
-                        kappa = k_rel * chordae.k_0; 
-                        params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
-                    else 
-                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies); 
-                    end 
-
+                    params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies, collagen_spring); 
+                    
                 end 
                 
                 % Connect to the right papillary or chordae tree 
@@ -597,15 +603,8 @@ function params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_
 
                     k_rel = k_free_edge_right(i); 
 
-                    if collagen_spring 
-                        % relative constant here
-                        % other parameters coded into function 
-                        kappa = k_rel * chordae.k_0; 
-                        params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
-                    else
-                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies);
-                    end 
-
+                    params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies, collagen_spring);
+                    
                 end 
                                 
                 
@@ -623,15 +622,8 @@ function params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_
 
                         nbr_idx = leaflet.indices_global(j_nbr,k_nbr);
 
-                        if collagen_spring
-                            kappa = alhpa * k_rel;         
-                            params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
-                        else 
-    %                         k_abs = k_rel / (rest_len * num_copies); 
-    %                         params = spring_string(params, idx, nbr_idx, k_abs, rest_len); 
+                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies, collagen_spring);
 
-                            params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies);
-                        end 
                     end 
 
                 end 
@@ -650,12 +642,8 @@ function params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_
 
                         nbr_idx = leaflet.indices_global(j_nbr,k_nbr);
 
-                        if collagen_spring
-                            kappa = beta * k_rel;         
-                            params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx); 
-                        else 
-                            params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies);
-                        end 
+                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies, collagen_spring);
+
                     end 
 
                 end 
@@ -679,13 +667,7 @@ function params = add_chordae_tree_springs(params, leaflet, num_copies, ds, coll
     chordae         = leaflet.chordae; 
 
     [m N_chordae] = size(chordae.C_left); 
-    
-    if collagen_spring
-        error('not implemeneted'); 
-        function_idx = 1;
-    end
-    
-    
+        
     for left_side = [true false];  
         
         if left_side
@@ -717,15 +699,9 @@ function params = add_chordae_tree_springs(params, leaflet, num_copies, ds, coll
             % get the neighbors coordinates, reference coordinate and spring constants
             [nbr rest_len k_rel] = get_nbr_chordae(leaflet, i, parent, left_side); 
             
-            if collagen_spring 
-                kappa = k_rel * k_val; 
-                % list nbr index first because nbr is parent and has lower index
-                params = spring_string(params, nbr_idx, idx, kappa, rest_len, function_idx);            
-            else 
-                % list nbr index first because nbr is parent and has lower index
-                params = place_spring_and_split(params, nbr_idx, idx, k_rel, rest_len, ds, num_copies);
+            % list nbr index first because nbr is parent and has lower index
+            params = place_spring_and_split(params, nbr_idx, idx, k_rel, rest_len, ds, num_copies, collagen_spring);
                 
-            end 
         end 
         
     end 

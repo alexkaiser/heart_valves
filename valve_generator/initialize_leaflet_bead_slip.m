@@ -171,3 +171,9 @@ else
     leaflet.chordae_tree = false; 
 end 
 
+% parameter structure for collagen based nonlinear constitutive 
+if valve.collagen_constitutive
+    leaflet.collagen_curve = get_collagen_curve_parameters(); 
+end 
+
+

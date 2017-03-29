@@ -124,7 +124,7 @@ for left_side = [true, false]
             tension = tension + alpha * dv * tension_decreasing(X, X_nbr, du, c_dec_tension_circumferential) ; 
         end 
 
-        [k_u(j_spr,k_spr) R_u(j_spr,k_spr)] = get_rest_len_and_spring_constant_linear(X, X_nbr, tension, strain); 
+        [k_u(j_spr,k_spr) R_u(j_spr,k_spr)] = get_rest_len_and_spring_constants(X, X_nbr, tension, strain, leaflet); 
 
         % interior neighbor is up in k, always 
         j_nbr = j;     
@@ -144,7 +144,7 @@ for left_side = [true, false]
             tension = tension + beta * du * tension_decreasing(X, X_nbr, dv, c_dec_tension_radial) ; 
         end
 
-        [k_v(j_spr,k_spr) R_v(j_spr,k_spr)] = get_rest_len_and_spring_constant_linear(X, X_nbr, tension, strain); 
+        [k_v(j_spr,k_spr) R_v(j_spr,k_spr)] = get_rest_len_and_spring_constants(X, X_nbr, tension, strain, leaflet); 
 
         % current node has a chordae connection
         if chordae_idx(j,k)
@@ -170,9 +170,9 @@ for left_side = [true, false]
             end
 
             if left_side 
-                [k_free_edge_left(i), R_free_edge_left(i)]   = get_rest_len_and_spring_constant_linear(X, X_nbr, tension, strain); 
+                [k_free_edge_left(i), R_free_edge_left(i)]   = get_rest_len_and_spring_constants(X, X_nbr, tension, strain, leaflet); 
             else 
-                [k_free_edge_right(i), R_free_edge_right(i)] = get_rest_len_and_spring_constant_linear(X, X_nbr, tension, strain); 
+                [k_free_edge_right(i), R_free_edge_right(i)] = get_rest_len_and_spring_constants(X, X_nbr, tension, strain, leaflet); 
             end 
             
         else
@@ -216,7 +216,7 @@ for j=1:j_max
                 % Take the opposing length element 
                 tension = dv * tension; 
 
-                [k_u(j_spr,k_spr) R_u(j_spr,k_spr)] = get_rest_len_and_spring_constant_linear(X, X_nbr, tension, strain); 
+                [k_u(j_spr,k_spr) R_u(j_spr,k_spr)] = get_rest_len_and_spring_constants(X, X_nbr, tension, strain, leaflet); 
                 
             end 
 
@@ -243,7 +243,7 @@ for j=1:j_max
 
                 tension = du * tension; 
 
-                [k_v(j_spr,k_spr) R_v(j_spr,k_spr)] = get_rest_len_and_spring_constant_linear(X, X_nbr, tension, strain); 
+                [k_v(j_spr,k_spr) R_v(j_spr,k_spr)] = get_rest_len_and_spring_constants(X, X_nbr, tension, strain, leaflet); 
                 
             end 
         end
@@ -279,9 +279,9 @@ for left_side = [true false];
         end
 
         if left_side
-            [k_chordae_left(i)  R_chordae_left(i) ] = get_rest_len_and_spring_constant_linear(C(:,i), nbr, tension, strain); 
+            [k_chordae_left(i)  R_chordae_left(i) ] = get_rest_len_and_spring_constants(C(:,i), nbr, tension, strain, leaflet); 
         else 
-            [k_chordae_right(i) R_chordae_right(i)] = get_rest_len_and_spring_constant_linear(C(:,i), nbr, tension, strain); 
+            [k_chordae_right(i) R_chordae_right(i)] = get_rest_len_and_spring_constants(C(:,i), nbr, tension, strain, leaflet); 
         end 
 
                   
