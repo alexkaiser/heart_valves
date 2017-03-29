@@ -372,8 +372,8 @@ if valve.commissural_leaflets
     papillary_increment_left_comm = papillary_increment; 
     x_spread_left = .3; 
     
-    left_papillary_comm_left  = valve.left_papillary  + 6 * papillary_increment_left_comm * l_to_r_papillary; 
-    right_papillary_comm_left = valve.left_papillary  + 6 * papillary_increment_left_comm * l_to_r_papillary; 
+    left_papillary_comm_left  = valve.left_papillary  + 4 * papillary_increment_left_comm * l_to_r_papillary; 
+    right_papillary_comm_left = valve.left_papillary  + 4 * papillary_increment_left_comm * l_to_r_papillary; 
     
     left_papillary_comm_left  = left_papillary_comm_left  - [x_spread_left; 0; 0]; 
     right_papillary_comm_left = right_papillary_comm_left + [x_spread_left; 0; 0]; 
@@ -415,8 +415,8 @@ if valve.commissural_leaflets
     papillary_increment_right_comm = papillary_increment; 
     x_spread_right = .3; 
         
-    left_papillary_comm_right  = valve.right_papillary - 9 * papillary_increment_right_comm * l_to_r_papillary; 
-    right_papillary_comm_right = valve.right_papillary - 9 * papillary_increment_right_comm * l_to_r_papillary;
+    left_papillary_comm_right  = valve.right_papillary - 4 * papillary_increment_right_comm * l_to_r_papillary; 
+    right_papillary_comm_right = valve.right_papillary - 4 * papillary_increment_right_comm * l_to_r_papillary;
     
     left_papillary_comm_right  = left_papillary_comm_right  + [x_spread_right; 0; 0]; 
     right_papillary_comm_right = right_papillary_comm_right - [x_spread_right; 0; 0];
