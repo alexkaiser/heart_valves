@@ -1,14 +1,15 @@
 function leaflet = initialize_leaflet_bead_slip(N,                  ... 
                                       reflect_x,                    ...  
-                                      total_angle,                  ... 
+                                      angles,                       ... 
                                       r,                            ... 
-                                      left_papillary,               ... 
-                                      right_papillary,              ... 
+                                      left_papillary,               ...
+                                      right_papillary,              ...
+                                      left_papillary_diastolic,     ...
+                                      right_papillary_diastolic,    ...
                                       radial_and_circumferential,   ...  
                                       alpha,                        ... 
                                       beta,                         ... 
-                                      p_0,                          ...
-                                      ref_frac,                     ...  
+                                      p_0,                          ...  
                                       k_0,                          ... 
                                       k_multiplier,                 ... 
                                       tree_frac,                    ...
@@ -43,7 +44,6 @@ function leaflet = initialize_leaflet_bead_slip(N,                  ...
 %                                   
                 
 leaflet.N            = N; 
-leaflet.total_angle  = total_angle; 
 leaflet.leaflet_only = leaflet_only; 
 
 leaflet.tension_base = valve.tension_base; 
@@ -88,13 +88,14 @@ else
     leaflet.energy    = @energy_bead_slip;
 end 
 
-if reflect_x 
-    leaflet.min_angle   = pi + leaflet.total_angle/2.0;
-    leaflet.max_angle   = pi - leaflet.total_angle/2.0;
-else 
-    leaflet.min_angle   = -leaflet.total_angle/2.0; 
-    leaflet.max_angle   =  leaflet.total_angle/2.0; 
+
+if length(angles) ~= 2
+    error('Must provide min and max angle'); 
 end 
+
+leaflet.min_angle = angles(1); 
+leaflet.max_angle = angles(2); 
+
 
 leaflet.du = 1/N; 
 leaflet.dv = 1/N; 
@@ -104,6 +105,9 @@ leaflet.r = r;
 
 leaflet.left_papillary  = left_papillary; 
 leaflet.right_papillary = right_papillary; 
+
+leaflet.left_papillary_diastolic  = left_papillary_diastolic; 
+leaflet.right_papillary_diastolic = right_papillary_diastolic;
 
 
 % Radial and circumferential fibers 
@@ -155,7 +159,6 @@ leaflet.X = build_initial_fibers_bead_slip(leaflet);
 leaflet.alpha    = alpha; 
 leaflet.beta     = beta; 
 leaflet.p_0      = p_0; 
-leaflet.ref_frac = ref_frac; % generic spring constants reduced by this much 
 
 % chordae data structures  
 if exist('k_0', 'var') && exist('k_multiplier', 'var') && exist('tree_frac', 'var')
@@ -167,4 +170,11 @@ if exist('k_0', 'var') && exist('k_multiplier', 'var') && exist('tree_frac', 'va
 else 
     leaflet.chordae_tree = false; 
 end 
+
+% parameter structure for collagen based nonlinear constitutive 
+if valve.collagen_constitutive
+    leaflet.collagen_constitutive = true; 
+    leaflet.collagen_curve        = get_collagen_curve_parameters(); 
+end 
+
 

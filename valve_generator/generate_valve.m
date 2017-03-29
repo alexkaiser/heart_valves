@@ -6,6 +6,7 @@
 % 
 N = 128; 
 
+
 % Show some output 
 plots = false; 
 
@@ -63,16 +64,13 @@ if iteration_movie_anterior
     valve.anterior.springs_written = false; 
 end 
 
-
-load mitral_tree_128_final_data; 
-
 % Can use a scalar pressure 
 % Or a range for continuation 
-p_range = valve.anterior.p_0 .* [0:.1:.9, .925:.025:1]; 
+p_range = valve.anterior.p_0 .* (0:1); %[0:.1:.9, .925:.025:1]; 
 % p_range = valve.posterior.p_0; 
 
 linear_open_config  = true; 
-p_range_linear      = valve.anterior.p_0 * 0.5; % .* (1:-.1:0); 
+p_range_linear      = valve.anterior.p_0 .* (1:-.2:0); 
 strain = 0.16; 
 repulsive_coeff_range = []; % [.9:(-0.1):.1]; 
 
@@ -87,16 +85,15 @@ end
 
 fig = figure; 
 fig = valve_plot(valve, fig); 
-if radial
-    title('Pressurized configuration radial fibers')
-else
-    title('Relaxed configuration diagonal fibers')
-end 
+
+title('Pressurized configuration fibers'); 
+saveas(fig, strcat(valve.base_name, '_pressurized'), 'fig'); 
+
 
 fig = figure; 
 fig = valve_plot(valve_linear, fig); 
 title('Relaxed configuration radial fibers, linear constitutive law'); 
-
+saveas(fig, strcat(valve.base_name, '_relaxed'), 'fig'); 
 
 if pass_all 
     fprintf('Final solve passed.\n'); 
@@ -106,7 +103,7 @@ end
 
 
 % Save current data 
-% save(strcat(valve.base_name, '_final_data')); 
+save(strcat(valve.base_name, '_final_data')); 
 
 % Write to simulation files 
 output_to_ibamr_format(valve_linear); 
