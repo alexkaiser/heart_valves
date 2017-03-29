@@ -173,7 +173,8 @@ end
 
 % parameter structure for collagen based nonlinear constitutive 
 if valve.collagen_constitutive
-    leaflet.collagen_curve = get_collagen_curve_parameters(); 
+    leaflet.collagen_constitutive = true; 
+    leaflet.collagen_curve        = get_collagen_curve_parameters(); 
 end 
 
 
