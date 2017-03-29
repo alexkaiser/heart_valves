@@ -111,7 +111,7 @@ inline double deriv_spring_collagen(double R, const double* params, int lag_mast
 
 #define MAX_STEP_FOR_CHANGE 1000
 
-#define MOVING_PAPILLARY
+// #define MOVING_PAPILLARY
 
 
 namespace{
@@ -828,7 +828,7 @@ inline double spring_function_collagen(double R, const double* params, int lag_m
     static const double eta_collagen         = 32.5 * MPa_TO_CGS; // Linear slope, in barye = dynes/cm^2 = g cm/(s cm^2)
     static const double collagen_x_intercept = 0.125;             // Linear collagen part intercepts x axis at this strain
     static const double collagen_y_intercept = -collagen_x_intercept * eta_collagen; // Linear collagen part intercepts y axis at this stress
-    static const double thickness            = 0.1; // cm, Thickness of leaflet tissue, for converting strains to forces
+    //static const double thickness            = 0.1; // cm, Thickness of leaflet tissue, for converting strains to forces
     
     // static const double ds, width element of the spring, also for converting strains to forces
     // included in params[0]
@@ -848,7 +848,7 @@ inline double spring_function_collagen(double R, const double* params, int lag_m
             << ".\tEffective slope = " << kappa * thickness * eta_collagen
             << "\trest len = " << rest_len <<"\n";
         }
-        return kappa * thickness * (eta_collagen*E + collagen_y_intercept);
+        return kappa * (eta_collagen*E + collagen_y_intercept);
     }
     else if (E > 0.0){
         if ((lag_mastr_idx % 5000) == 0){
@@ -856,7 +856,7 @@ inline double spring_function_collagen(double R, const double* params, int lag_m
             << kappa * thickness * a * (exp(b*E) - 1) << "\tcoeff (using taylor series on E) = " << kappa * thickness * a * b
             << "\trest len = " << rest_len <<"\n";
         }
-        return kappa * thickness * a * (exp(b*E) - 1);
+        return kappa * a * (exp(b*E) - 1);
     }
     else{
         return 0.0;
