@@ -36,7 +36,7 @@ valve.left_papillary  = [ -0.972055648767080; -1.611924550017006; -2.99010096029
 valve.right_papillary = [ -1.542417595752084;  1.611924550017006; -3.611254871967348] + [0; 0; -0.0]; 
 
 
-valve.commissural_leaflets = true; 
+valve.commissural_leaflets = false; 
 
 % Places papillary attachments in linear interpolant between single point tips 
 

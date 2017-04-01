@@ -6,13 +6,13 @@ function [X] = build_initial_fibers_bead_slip(leaflet)
 
 r                       = leaflet.r; 
 j_max                   = leaflet.j_max; 
+k_min                   = leaflet.k_min; 
 k_max                   = leaflet.k_max; 
 ring_k_idx              = leaflet.ring_k_idx; 
 
 left_papillary          = leaflet.left_papillary; 
 right_papillary         = leaflet.right_papillary; 
-free_edge_idx_left      = leaflet.free_edge_idx_left; 
-free_edge_idx_right     = leaflet.free_edge_idx_right; 
+
 
 
 X = NaN * zeros(3,j_max,k_max); 
@@ -56,27 +56,12 @@ if leaflet.radial_and_circumferential
     interpolating_surf = @(s,t) t*(s*ring_r + (1-s)*ring_l) + (1-t)*(s*right_papillary + (1-s)*left_papillary);   
     t_of_s = @(s) abs(s-1/2) + 1/2 - ds; 
     
-    % use the free edge arrays for indexing 
-    for i=1:size(free_edge_idx_left, 1)
-
-        j = free_edge_idx_left(i,1); 
-        k = free_edge_idx_left(i,2); 
-
+    for j=1:j_max 
+        k = k_min(j); 
+        
         s = (j-1)*ds; 
-        X(:,j,k) = interpolating_surf(s,t_of_s(s)); 
-
-    end
-    
-    for i=1:size(free_edge_idx_right, 1)
-
-        j = free_edge_idx_right(i,1); 
-        k = free_edge_idx_right(i,2); 
-
-        s = (j-1)*ds; 
-        X(:,j,k) = interpolating_surf(s,t_of_s(s)); 
-
-    end      
-    
+        X(:,j,k) = interpolating_surf(s,t_of_s(s));
+    end     
     
     if debug 
         figure; 
@@ -86,143 +71,27 @@ if leaflet.radial_and_circumferential
         title('free edge and reference')
     end 
     
-    % if true, takes crude guess at closed leaflet with curvature 
-    % otherwise takes a linear interpolant from the free edge to the ring 
-    pinched_interpolant = false; 
-    
-    if pinched_interpolant 
+    % linear interpolant from free edge 
+    % fill in fibers interpolating between free edge and ring 
+    for j=1:j_max 
+        k = k_min(j); 
         
-        error('not updated for mesh with possible ring to ring fibers'); 
-    
-        % one dimensional mesh in straight line from commissure to commissure 
-        
-        ring_l = X(:,1    ,k_max); 
-        ring_r = X(:,j_max,k_max);
-        
-        line_comm_to_comm = zeros(3,k_max+1); 
-        ds = 1 / (j_max - 1); 
-        for m=0:j_max
-            line_comm_to_comm(:,m+1) = (m*ds)*ring_r + (1 - m*ds)*ring_l; 
+        % number of points on this fiber 
+        num_points = ring_k_idx(j) - k - 1; 
+
+        % parameter spacing 
+        ds = 1 / (ring_k_idx(j) - k); 
+
+        X_free = X(:,j,k); 
+        X_ring = X(:,j,ring_k_idx(j)); 
+
+        for m=1:num_points
+            k_tmp = k + m; 
+            X(:,j,k_tmp) = (m*ds)*X_ring + (1 - m*ds)*X_free; 
         end 
         
-        
-        % fill in fibers interpolating between free edge and ring on each side 
-        for i=1:size(free_edge_idx_left, 1)
-
-            j = free_edge_idx_left(i,1); 
-            k = free_edge_idx_left(i,2); 
-
-            % number of points on this fiber 
-            num_points = k_max - k - 1; 
-
-            % parameter spacing 
-            ds = 1 / (k_max - k); 
-
-            X_free = X(:,j,k); 
-            X_ring = X(:,j,k_max); 
-            
-            X_line_commissure = 0.5 * (line_comm_to_comm(:,j) + X_free);
-            
-            num_points_first_half = floor(num_points/2); 
-            ds_first = 1 / (num_points_first_half + 1); 
-            
-            num_points_second_half = num_points - num_points_first_half; 
-            ds_second = 1 / (num_points_second_half + 1); 
-            
-            for m=1:num_points_first_half
-                k_tmp = k + m; 
-                X(:,j,k_tmp) = (m*ds_first)*X_line_commissure + (1 - m*ds_first)*X_free; 
-            end
-                   
-            for m=1:num_points_second_half
-                k_tmp = k + m + num_points_first_half; 
-                X(:,j,k_tmp) = (m*ds_second)*X_ring + (1 - m*ds_second)*X_line_commissure;                      
-            end
-
-        end
-
-        for i=1:size(free_edge_idx_right, 1)
-
-            j = free_edge_idx_right(i,1); 
-            k = free_edge_idx_right(i,2); 
-
-            % number of points on this fiber 
-            num_points = k_max - k - 1; 
-
-            % parameter spacing 
-            ds = 1 / (k_max - k); 
-
-            X_free = X(:,j,k); 
-            X_ring = X(:,j,k_max); 
-            
-            X_line_commissure = 0.5 * (line_comm_to_comm(:,j) + X_free);
-
-            num_points_first_half = floor(num_points/2); 
-            ds_first = 1 / (num_points_first_half + 1); 
-            
-            num_points_second_half = num_points - num_points_first_half; 
-            ds_second = 1 / (num_points_second_half + 1); 
-            
-            for m=1:num_points_first_half
-                k_tmp = k + m; 
-                X(:,j,k_tmp) = (m*ds_first)*X_line_commissure + (1 - m*ds_first)*X_free; 
-            end
-                   
-            for m=1:num_points_second_half
-                k_tmp = k + m + num_points_first_half; 
-                X(:,j,k_tmp) = (m*ds_second)*X_ring + (1 - m*ds_second)*X_line_commissure;                      
-            end
-            
-        end  
-        
-    else
-    
-        % linear interpolant from free edge 
-        
-        % fill in fibers interpolating between free edge and ring on each side 
-        for i=1:size(free_edge_idx_left, 1)
-
-            j = free_edge_idx_left(i,1); 
-            k = free_edge_idx_left(i,2); 
-
-            % number of points on this fiber 
-            num_points = ring_k_idx(j) - k - 1; 
-
-            % parameter spacing 
-            ds = 1 / (ring_k_idx(j) - k); 
-
-            X_free = X(:,j,k); 
-            X_ring = X(:,j,ring_k_idx(j)); 
-
-            for m=1:num_points
-                k_tmp = k + m; 
-                X(:,j,k_tmp) = (m*ds)*X_ring + (1 - m*ds)*X_free; 
-            end 
-
-        end
-
-        for i=1:size(free_edge_idx_right, 1)
-
-            j = free_edge_idx_right(i,1); 
-            k = free_edge_idx_right(i,2); 
-
-            % number of points on this fiber 
-            num_points = ring_k_idx(j) - k - 1; 
-
-            % parameter spacing 
-            ds = 1 / (ring_k_idx(j) - k); 
-
-            X_free = X(:,j,k); 
-            X_ring = X(:,j,ring_k_idx(j)); 
-
-            for m=1:num_points
-                k_tmp = k + m; 
-                X(:,j,k_tmp) = (m*ds)*X_ring + (1 - m*ds)*X_free; 
-            end
-
-        end 
-    
     end 
+    
     
     if debug 
         figure; 

@@ -13,12 +13,12 @@ function chordae = add_chordae(leaflet)
     tree_frac           = leaflet.tree_frac; 
     left_papillary      = leaflet.left_papillary;
     right_papillary     = leaflet.right_papillary;
-    free_edge_idx_left  = leaflet.free_edge_idx_left; 
-    free_edge_idx_right = leaflet.free_edge_idx_right; 
     X                   = leaflet.X; 
     k_multiplier        = leaflet.k_multiplier; 
     k_0                 = leaflet.k_0; 
     
+    % free edge of leaflet at minimum k 
+    k_min               = leaflet.k_min; 
     
     [n_leaves, m] = size(leaflet.free_edge_idx_left);  
 
@@ -48,11 +48,14 @@ function chordae = add_chordae(leaflet)
     C_right = zeros(3,total_len); 
         
     % initialize the left boundary conditions from the leaflet 
-    for i=1:n_leaves        
-        C_left (:, max_internal + i)  = X(:, free_edge_idx_left (i,1), free_edge_idx_left (i,2)); 
-        C_right(:, max_internal + i)  = X(:, free_edge_idx_right(i,1), free_edge_idx_right(i,2)); 
-    end 
+    for j=1:n_leaves 
+        k_left = k_min(j); 
+        C_left (:, max_internal + j)  = X(:,j,k_left);
         
+        k_right = k_min(j + n_leaves); 
+        C_right(:, max_internal + j)  = X(:, j + n_leaves, k_right); 
+    end 
+    
     for i=1:max_internal
 
         p = get_parent(C_left, i, left_papillary); 

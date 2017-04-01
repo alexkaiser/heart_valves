@@ -11,6 +11,7 @@ function leaflet = get_util_arrays_bead_slip(leaflet)
 
 
 j_max                   = leaflet.j_max; 
+k_min                   = leaflet.k_min; 
 k_max                   = leaflet.k_max; 
 ring_k_idx              = leaflet.ring_k_idx; 
 free_edge_idx_left      = leaflet.free_edge_idx_left; 
@@ -31,26 +32,16 @@ if leaflet.radial_and_circumferential
         is_bc(j,ring_k_idx(j)) = true; 
     end 
     
-    % loop from left free edge then up in k 
-    for left_side = [true, false]
-
-        if left_side
-            free_edge_idx = free_edge_idx_left; 
-        else 
-            free_edge_idx = free_edge_idx_right;  
+    for j=1:j_max 
+        
+        % minimum k idx is variable 
+        k = k_min(j);
+        
+        % keep going until hitting ring, which is always a bc 
+        while ~is_bc(j,k)
+            is_internal(j,k) = true; 
+            k = k+1; 
         end 
-
-        for i=1:size(free_edge_idx, 1)
-
-            j = free_edge_idx(i,1);
-            k = free_edge_idx(i,2);
-
-            while ~is_bc(j,k)
-                is_internal(j,k) = true; 
-                k = k+1; 
-            end 
-        end 
-
     end 
 
 else 

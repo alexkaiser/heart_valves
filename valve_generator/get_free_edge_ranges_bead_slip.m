@@ -23,6 +23,10 @@ if leaflet.radial_and_circumferential
     N = leaflet.N; 
     
     j_max = N; 
+    
+    % minimum index is variable 
+    k_min = zeros(j_max,1); 
+    
     k_max = N/2; 
         
     free_edge_idx_left  = zeros(N/2, 2); 
@@ -34,8 +38,9 @@ if leaflet.radial_and_circumferential
     % and ends at (1,N/2) 
     j = k_max;  
     for k=1:k_max
-        free_edge_idx_left(k,:) = [j; k]; 
+        free_edge_idx_left(k,:) = [j; k];
         chordae_idx_left(j,k)   = k; 
+        k_min(j) = k; 
         j = j - 1; 
     end 
 
@@ -46,6 +51,7 @@ if leaflet.radial_and_circumferential
     for k=1:k_max
         free_edge_idx_right(k,:) = [j; k]; 
         chordae_idx_right(j,k)   = k; 
+        k_min(j) = k; 
         j = j + 1; 
     end 
 
@@ -126,6 +132,7 @@ end
 
 leaflet.j_max               = j_max; 
 leaflet.k_max               = k_max; 
+leaflet.k_min               = k_min; 
 leaflet.free_edge_idx_left  = free_edge_idx_left; 
 leaflet.free_edge_idx_right = free_edge_idx_right; 
 leaflet.chordae_idx_left    = chordae_idx_left; 
