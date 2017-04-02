@@ -14,13 +14,11 @@ j_max                   = leaflet.j_max;
 k_min                   = leaflet.k_min; 
 k_max                   = leaflet.k_max; 
 ring_k_idx              = leaflet.ring_k_idx; 
-free_edge_idx_left      = leaflet.free_edge_idx_left; 
-free_edge_idx_right     = leaflet.free_edge_idx_right; 
 
-is_internal       = zeros(j_max, k_max); 
-is_bc             = zeros(j_max, k_max); 
-linear_idx_offset = zeros(j_max, k_max); 
-point_idx_with_bc = zeros(j_max, k_max); 
+is_internal             = zeros(j_max, k_max); 
+is_bc                   = zeros(j_max, k_max); 
+linear_idx_offset       = zeros(j_max, k_max); 
+point_idx_with_bc       = zeros(j_max, k_max); 
 
 
 if leaflet.radial_and_circumferential 
@@ -51,6 +49,9 @@ end
 
 % free edge on leaflet only version is a b.c. point 
 if leaflet.leaflet_only
+    
+    error('Not implemented in current version'); 
+    
     for left_side = [true, false]
         if left_side
             free_edge_idx = leaflet.free_edge_idx_left; 

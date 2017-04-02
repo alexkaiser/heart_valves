@@ -17,6 +17,10 @@ function leaflet = get_free_edge_ranges_bead_slip(leaflet)
 %                          the leaf index which is connected to X(:,j,k)
 % 
  
+if leaflet.num_trees ~= 2
+    error('not implemented')
+end 
+
 
 if leaflet.radial_and_circumferential
 
@@ -29,8 +33,11 @@ if leaflet.radial_and_circumferential
     
     k_max = N/2; 
         
-    free_edge_idx_left  = zeros(N/2, 2); 
-    free_edge_idx_right = zeros(N/2, 2); 
+    for tree_idx = 1:leaflet.num_trees
+        chordae(1).free_edge_idx  = zeros(N/2, 2); 
+        chordae(2).free_edge_idx  = zeros(N/2, 2); 
+    end 
+    
     chordae_idx_left    = zeros(N, N/2 + 1); 
     chordae_idx_right   = zeros(N, N/2 + 1); 
     
@@ -38,7 +45,7 @@ if leaflet.radial_and_circumferential
     % and ends at (1,N/2) 
     j = k_max;  
     for k=1:k_max
-        free_edge_idx_left(k,:) = [j; k];
+        chordae(1).free_edge_idx(k,:) = [j; k];
         chordae_idx_left(j,k)   = k; 
         k_min(j) = k; 
         j = j - 1; 
@@ -49,7 +56,7 @@ if leaflet.radial_and_circumferential
     % and ends at (j_max, k_max)
     j = k_max + 1; 
     for k=1:k_max
-        free_edge_idx_right(k,:) = [j; k]; 
+        chordae(2).free_edge_idx(k,:) = [j; k]; 
         chordae_idx_right(j,k)   = k; 
         k_min(j) = k; 
         j = j + 1; 
@@ -133,8 +140,7 @@ end
 leaflet.j_max               = j_max; 
 leaflet.k_max               = k_max; 
 leaflet.k_min               = k_min; 
-leaflet.free_edge_idx_left  = free_edge_idx_left; 
-leaflet.free_edge_idx_right = free_edge_idx_right; 
+leaflet.chordae             = chordae; 
 leaflet.chordae_idx_left    = chordae_idx_left; 
 leaflet.chordae_idx_right   = chordae_idx_right; 
 leaflet.ring_k_idx          = ring_k_idx; 

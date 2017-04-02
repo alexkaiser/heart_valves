@@ -1,4 +1,4 @@
-function [nbr R_nbr k_val j k] = get_nbr_chordae(leaflet, i, nbr_idx, left_side)
+function [nbr R_nbr k_val j k] = get_nbr_chordae(leaflet, i, nbr_idx, tree_idx)
 % 
 % Given a current index and nieghbor index 
 % Returns the coordinates, reference coordinates and spring constant
@@ -21,6 +21,7 @@ function [nbr R_nbr k_val j k] = get_nbr_chordae(leaflet, i, nbr_idx, left_side)
 % default empty values 
 j=[]; 
 k=[]; 
+R_nbr=[]; 
 
 X       = leaflet.X; 
 chordae = leaflet.chordae; 
@@ -28,6 +29,8 @@ chordae = leaflet.chordae;
 if isfield(leaflet, 'R_free_edge_left')  && isfield(leaflet, 'k_free_edge_left') && ... 
    isfield(leaflet, 'R_free_edge_right') && isfield(leaflet, 'k_free_edge_right') 
     
+    error('not impelemented'); 
+
     free_edge_constants_set = true; 
     
     if left_side 
@@ -43,26 +46,28 @@ else
 
 end 
 
+C      = chordae(tree_idx).C; 
+root   = chordae(tree_idx).root; 
+k_vals = chordae(tree_idx).k_vals; 
+k_0    = chordae(tree_idx).k_0; 
 
-
-if left_side 
-    C     = chordae.C_left; 
-    R_ch  = chordae.Ref_l; 
-    pap   = chordae.left_papillary; 
-    k_spr = chordae.k_l; 
-    k_0   = chordae.k_0; 
-    free_edge_idx = leaflet.free_edge_idx_left; 
+if isfield(chordae(tree_idx), 'ref')
+    R_ch  = chordae(tree_idx).ref; 
 else 
-    C     = chordae.C_right; 
-    R_ch  = chordae.Ref_r; 
-    pap   = chordae.right_papillary;
-    k_spr = chordae.k_r; 
-    k_0   = chordae.k_0; 
+    R_ch  = []; 
+end 
+
+if tree_idx == 1 
+    left_side = true; 
+else 
+    left_side = false; 
+end 
+
+if left_side  
+    free_edge_idx = leaflet.free_edge_idx_left; 
+else  
     free_edge_idx = leaflet.free_edge_idx_right; 
 end
-
-
-
 
 
 [m max_internal] = size(C); 
@@ -95,11 +100,14 @@ else
     % this occurs precisely when requesting the zero index
     if nbr_idx == 0 
         
-        nbr   = pap; 
+        nbr   = root; 
         
         % papillary muscle is always parent, so current location owns constant
-        R_nbr = R_ch(i); 
-        k_val = k_spr(i);
+        if ~isempty(R_ch)
+            R_nbr = R_ch(i); 
+        end
+        
+        k_val = k_vals(i);
         
     else
 
@@ -109,13 +117,20 @@ else
         if nbr_idx < i 
             % nbr_idx is only less if nbr is the parent 
             % parent wise owned by this index 
-            k_val = k_spr(i);                      
-            R_nbr = R_ch(i); 
+            k_val = k_vals(i);                      
+            
+            if ~isempty(R_ch)
+                R_nbr = R_ch(i); 
+            end
+            
         else 
 
             % child's parent-direction spring is at child's index 
-            k_val = k_spr(nbr_idx);     
-            R_nbr = R_ch(nbr_idx); 
+            k_val = k_vals(nbr_idx);
+            
+            if ~isempty(R_ch)
+                R_nbr = R_ch(nbr_idx); 
+            end 
         end 
     
     end 

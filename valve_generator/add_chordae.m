@@ -1,4 +1,4 @@
-function chordae = add_chordae(leaflet)
+function leaflet = add_chordae(leaflet, tree_idx)
     % 
     % Adds a chordae data structure to the current parameters 
     % 
@@ -15,12 +15,11 @@ function chordae = add_chordae(leaflet)
     right_papillary     = leaflet.right_papillary;
     X                   = leaflet.X; 
     k_multiplier        = leaflet.k_multiplier; 
-    k_0                 = leaflet.k_0; 
+    k_0                 = leaflet.k_0;
+    chordae             = leaflet.chordae; 
+    free_edge_idx       = chordae(tree_idx).free_edge_idx; 
     
-    % free edge of leaflet at minimum k 
-    k_min               = leaflet.k_min; 
-    
-    [n_leaves, m] = size(leaflet.free_edge_idx_left);  
+    [n_leaves, m] = size(free_edge_idx);  
 
     if m ~= 2
         error('free edge indices must be an N by 2 array'); 
@@ -32,10 +31,10 @@ function chordae = add_chordae(leaflet)
         error('must use a power of two'); 
     end 
     
-%     if n_tree < 2
-%         error('weird boundary errors possible on such a small tree'); 
-%     end 
-    
+    if n_tree < 2
+        warning('weird boundary errors possible on such a small tree'); 
+    end 
+
     if ~((0 < tree_frac) && (tree_frac < 1))
         error('multiplier on tree position must be between zero and one'); 
     end 
@@ -43,51 +42,54 @@ function chordae = add_chordae(leaflet)
     
     total_len = 2^(n_tree+1) - 1; 
     max_internal = 2^(n_tree) - 1;     % last node that is not a leaf 
-    
-    C_left  = zeros(3,total_len); 
-    C_right = zeros(3,total_len); 
-        
-    % initialize the left boundary conditions from the leaflet 
-    for j=1:n_leaves 
-        k_left = k_min(j); 
-        C_left (:, max_internal + j)  = X(:,j,k_left);
-        
-        k_right = k_min(j + n_leaves); 
-        C_right(:, max_internal + j)  = X(:, j + n_leaves, k_right); 
+            
+    if leaflet.num_trees ~= 2
+        error('not implemented for numbers other than 2 trees'); 
     end 
+    
+    if tree_idx == 1 
+        warning('Fix papillary placement in chordae initialize'); 
+        chordae(tree_idx).root = left_papillary; 
+    elseif tree_idx == 2
+        warning('Fix papillary placement in chordae initialize'); 
+        chordae(tree_idx).root = right_papillary; 
+    else 
+        error('not implemented'); 
+    end 
+    
+    % initialize the left boundary conditions from the leaflet     
+    chordae(tree_idx).C = zeros(3,total_len);   
+
+    % Set the free edge according to array of indicies 
+    for i=1:n_leaves 
+        j = free_edge_idx(i,1); 
+        k = free_edge_idx(i,2); 
+        chordae(tree_idx).C(:, max_internal + i)  = X(:,j,k);
+    end 
+     
     
     for i=1:max_internal
 
-        p = get_parent(C_left, i, left_papillary); 
-        
+        p = get_parent(chordae(tree_idx).C, i, chordae(tree_idx).root); 
+
         if ~is_leaf(i, max_internal)
-            l = get_left__descendant(C_left, i, max_internal); 
-            r = get_right_descendant(C_left, i, max_internal); 
-            C_left(:,i) = (tree_frac)*p + 0.5*(1-tree_frac)*l + 0.5*(1-tree_frac)*r; 
+            l = get_left__descendant(chordae(tree_idx).C, i, max_internal); 
+            r = get_right_descendant(chordae(tree_idx).C, i, max_internal); 
+            chordae(tree_idx).C(:,i) = (tree_frac)*p + 0.5*(1-tree_frac)*l + 0.5*(1-tree_frac)*r; 
         end
-        
-        p = get_parent(C_right, i, right_papillary); 
-        
-        if ~is_leaf(i, max_internal)
-            l = get_left__descendant(C_right, i, max_internal); 
-            r = get_right_descendant(C_right, i, max_internal); 
-            C_right(:,i) = (tree_frac)*p + 0.5*(1-tree_frac)*l + 0.5*(1-tree_frac)*r;  
-        end 
-        
+
     end 
+    
     
     % do not actually want the leaves (which are copied)
     % remove them 
-    C_left  = C_left (:,1:max_internal); 
-    C_right = C_right(:,1:max_internal); 
-    
-    
+    chordae(tree_idx).C = chordae(tree_idx).C(:,1:max_internal); 
+   
     % there are max_internal points on the tree 
     % leaves are not included as they are part of the leaflet 
-    [m max_internal] = size(C_left); 
+    [m max_internal] = size(chordae(tree_idx).C); 
     
-    % this parameter is the same N as in the leaflet 
-    % it is the number of (not included) leaves in the tree
+    % this parameter is the number of (not included) leaves in the tree
     NN = max_internal + 1; 
     
     % sanity check in building a balanced tree 
@@ -95,47 +97,35 @@ function chordae = add_chordae(leaflet)
     if abs(n_tree - round(n_tree)) > eps 
         error('must use a power of two'); 
     end 
-        
-    % each keeps parent wise spring constants 
-    k_l = zeros(max_internal,1); 
-    k_r = zeros(max_internal,1); 
-        
+    
+    % Set tensions 
+    
+    % Each keeps parent wise spring constants 
+    chordae(tree_idx).k_vals = zeros(max_internal,1); 
+
     % set spring constant data structures 
     num_at_level = n_leaves/2; 
     idx = max_internal; 
-    
+
     % constants connecting to the leaflet are inherited
     % first internal constant to the tree is k_multiplier times that 
     k_running = k_multiplier*k_0; 
     while num_at_level >= 1
-    
+
         for j=1:num_at_level
-            k_l(idx) = k_running; 
-            k_r(idx) = k_running; 
+            chordae(tree_idx).k_vals(idx) = k_running; 
             idx = idx - 1; 
         end 
-        
+
         k_running = k_running * k_multiplier; 
         num_at_level = num_at_level / 2; 
     end 
-    
-    % set up return structure 
-    chordae.C_left           = C_left; 
-    chordae.C_right          = C_right; 
-    chordae.left_papillary   = left_papillary;
-    chordae.right_papillary  = right_papillary;
-    
-    % reference configuration (ignoring the length multiplier) is the initial configuration 
-    % copy it 
-    chordae.Ref_l            = C_left; 
-    chordae.Ref_r            = C_right; 
-    
-    chordae.k_l              = k_l; 
-    chordae.k_r              = k_r; 
-    chordae.k_0              = k_0; 
-    chordae.k_multiplier     = k_multiplier; 
-end 
 
+    chordae(tree_idx).k_0              = k_0; 
+    chordae(tree_idx).k_multiplier     = k_multiplier;
+     
+    leaflet.chordae = chordae;
+end 
 
 
 

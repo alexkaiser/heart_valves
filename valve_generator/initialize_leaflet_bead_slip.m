@@ -51,7 +51,7 @@ leaflet.tension_base = valve.tension_base;
 leaflet.ring_to_ring_range = ring_to_ring_range; 
 
 % currently only implemented number
-leaflet.n_trees = 2; 
+leaflet.num_trees = 2; 
 
 leaflet.repulsive_potential         = valve.repulsive_potential; 
 if leaflet.repulsive_potential         
@@ -168,7 +168,11 @@ if exist('k_0', 'var') && exist('k_multiplier', 'var') && exist('tree_frac', 'va
     leaflet.k_0          = k_0; 
     leaflet.k_multiplier = k_multiplier; 
     leaflet.tree_frac    = tree_frac;
-    leaflet.chordae      = add_chordae(leaflet); 
+    
+    for tree_idx = 1:leaflet.num_trees
+        leaflet = add_chordae(leaflet, tree_idx); 
+    end 
+    
 else 
     leaflet.chordae_tree = false; 
 end 

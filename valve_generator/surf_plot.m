@@ -11,9 +11,6 @@ is_internal = leaflet.is_internal;
 is_bc       = leaflet.is_bc; 
 
 % NaN mask in the copy 
-% fill in the 3d array
-% loop through N+1 to include the ring points here 
-
 for j=1:j_max
     for k=1:k_max
         if ~(is_internal(j,k) || is_bc(j,k))
@@ -74,7 +71,9 @@ end
 
 % add chordae 
 if isfield(leaflet, 'chordae_tree') && leaflet.chordae_tree 
-    tree_plot(leaflet, fig); 
+    for tree_idx = 1:leaflet.num_trees
+        tree_plot(leaflet, tree_idx, fig); 
+    end 
 end 
 
 

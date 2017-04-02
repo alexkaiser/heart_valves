@@ -198,7 +198,7 @@ beta_anterior     = 1.0 * tension_base_anterior;  % radial
 if valve.commissural_leaflets 
     ring_to_ring_anterior_range = [(5*N/32), (3*N/8)];
 else 
-    ring_to_ring_anterior_range = [(N/8), (3*N/8)];
+    ring_to_ring_anterior_range = 0; %[(N/8), (3*N/8)];
 end 
 
 % Add energy function for zero pressure case 
@@ -290,7 +290,7 @@ else
         tension_base_posterior = valve.tension_base; 
         k_0_1_posterior  = 1.0 * tension_base_posterior; 
         k_root_posterior = 1.0 * (1.889568000000001e+01 / 32) * tension_base_posterior; 
-        ring_to_ring_posterior_range = [(3*N/16), (3*N/8)];
+        ring_to_ring_posterior_range = 0; %[(3*N/16), (3*N/8)];
     end 
     
     angles_posterior = [pi + total_angle_posterior/2, pi - total_angle_posterior/2]; 
@@ -455,6 +455,8 @@ if valve.commissural_leaflets
     valve.comm_right.dv = valve.anterior.du;
     
 end 
+
+valve_plot(valve); 
 
 disp('Done with initialize.'); 
 
