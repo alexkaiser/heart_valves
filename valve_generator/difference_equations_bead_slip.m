@@ -64,15 +64,14 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
 
 
     F_leaflet = zeros(size(X_current)); 
-
-    [m N_chordae] = size(chordae(1).C); 
-
-
-    free_edge_idx_left  = leaflet.free_edge_idx_left; 
-    free_edge_idx_right = leaflet.free_edge_idx_right;
+    
 
     for tree_idx = 1:num_trees
 
+        [m N_chordae] = size(chordae(tree_idx).C);         
+        free_edge_idx = chordae(tree_idx).free_edge_idx; 
+        C             = chordae(tree_idx).C; 
+        
         if tree_idx == 1 
             left_side = true; 
         else 
@@ -80,10 +79,8 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
         end 
         
         if left_side
-            free_edge_idx = free_edge_idx_left; 
             chordae_idx = chordae_idx_left;  
         else 
-            free_edge_idx = free_edge_idx_right; 
             chordae_idx = chordae_idx_right;
         end 
 
@@ -166,7 +163,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                 % then take the parent index of that number in chordae variables
                 idx_chordae = floor(leaf_idx/2);
 
-                X_nbr = chordae(tree_idx).C(:,idx_chordae);
+                X_nbr = C(:,idx_chordae);
                 tension = kappa; 
                 
                 if repulsive_potential
@@ -277,6 +274,8 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
     [m N_chordae] = size(chordae(1).C); 
 
     for tree_idx = 1:num_trees
+        
+        C = chordae(tree_idx).C; 
 
         if tree_idx == 1 
             left_side = true; 
@@ -298,11 +297,11 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                 tension = k_val; 
                 
                 if repulsive_potential
-                    tension = tension - k_val * c_repulsive_chordae * du^2 * power * 1/norm(nbr - chordae(tree_idx).C(:,i))^(power+1); 
+                    tension = tension - k_val * c_repulsive_chordae * du^2 * power * 1/norm(nbr - C(:,i))^(power+1); 
                 end 
                 
                 if decreasing_tension
-                    tension = tension + k_val * tension_decreasing(chordae(tree_idx).C(:,i), nbr, du, c_dec_tension_chordae) ; 
+                    tension = tension + k_val * tension_decreasing(C(:,i), nbr, du, c_dec_tension_chordae) ; 
                 end
                 
                 if tension_debug
@@ -311,7 +310,7 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                     end 
                 end 
 
-                tension_by_tangent = tension * (nbr - chordae(tree_idx).C(:,i)) / norm(nbr - chordae(tree_idx).C(:,i));  
+                tension_by_tangent = tension * (nbr - C(:,i)) / norm(nbr - C(:,i));  
 
                 if left_side
                     F_chordae_left(:,i)  = F_chordae_left(:,i)  + tension_by_tangent; 

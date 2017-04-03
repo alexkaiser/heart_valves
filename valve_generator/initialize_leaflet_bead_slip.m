@@ -162,6 +162,9 @@ leaflet.alpha    = alpha;
 leaflet.beta     = beta; 
 leaflet.p_0      = p_0; 
 
+leaflet.total_internal_leaflet    = 3*sum(leaflet.is_internal(:)); 
+leaflet.total_internal_with_trees = 3*sum(leaflet.is_internal(:)); 
+
 % chordae data structures  
 if exist('k_0', 'var') && exist('k_multiplier', 'var') && exist('tree_frac', 'var')
     leaflet.chordae_tree = true; 

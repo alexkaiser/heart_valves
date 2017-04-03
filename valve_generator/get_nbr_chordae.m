@@ -19,9 +19,9 @@ function [nbr R_nbr k_val j k] = get_nbr_chordae(leaflet, i, nbr_idx, tree_idx)
 
 
 % default empty values 
-j=[]; 
-k=[]; 
-R_nbr=[]; 
+j     = []; 
+k     = []; 
+R_nbr = []; 
 
 X       = leaflet.X; 
 chordae = leaflet.chordae; 
@@ -46,28 +46,17 @@ else
 
 end 
 
-C      = chordae(tree_idx).C; 
-root   = chordae(tree_idx).root; 
-k_vals = chordae(tree_idx).k_vals; 
-k_0    = chordae(tree_idx).k_0; 
+C             = chordae(tree_idx).C; 
+root          = chordae(tree_idx).root; 
+k_vals        = chordae(tree_idx).k_vals; 
+k_0           = chordae(tree_idx).k_0; 
+free_edge_idx = chordae(tree_idx).free_edge_idx; 
 
 if isfield(chordae(tree_idx), 'ref')
     R_ch  = chordae(tree_idx).ref; 
 else 
     R_ch  = []; 
 end 
-
-if tree_idx == 1 
-    left_side = true; 
-else 
-    left_side = false; 
-end 
-
-if left_side  
-    free_edge_idx = leaflet.free_edge_idx_left; 
-else  
-    free_edge_idx = leaflet.free_edge_idx_right; 
-end
 
 
 [m max_internal] = size(C); 

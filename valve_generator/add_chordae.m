@@ -123,7 +123,11 @@ function leaflet = add_chordae(leaflet, tree_idx)
 
     chordae(tree_idx).k_0              = k_0; 
     chordae(tree_idx).k_multiplier     = k_multiplier;
-     
+    
+    chordae(tree_idx).min_global_idx   = leaflet.total_internal_with_trees + 1; 
+    
+    leaflet.total_internal_with_trees  = leaflet.total_internal_with_trees + 3*max_internal; 
+    
     leaflet.chordae = chordae;
 end 
 

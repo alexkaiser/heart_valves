@@ -8,24 +8,22 @@ function J = build_jacobian_bead_slip(leaflet)
     % Output 
     %      J         Jacobian of difference equations 
     
-    X_current           = leaflet.X; 
-    p_0                 = leaflet.p_0; 
-    alpha               = leaflet.alpha; 
-    beta                = leaflet.beta; 
-    C_left              = leaflet.chordae.C_left; 
-    C_right             = leaflet.chordae.C_right; 
-    k_0                 = leaflet.chordae.k_0; 
-    chordae_idx_left    = leaflet.chordae_idx_left; 
-    chordae_idx_right   = leaflet.chordae_idx_right;
-    j_max               = leaflet.j_max; 
-    k_max               = leaflet.k_max; 
-    du                  = leaflet.du; 
-    dv                  = leaflet.dv; 
-    is_internal         = leaflet.is_internal; 
-    is_bc               = leaflet.is_bc; 
-    free_edge_idx_left  = leaflet.free_edge_idx_left; 
-    free_edge_idx_right = leaflet.free_edge_idx_right; 
-    linear_idx_offset   = leaflet.linear_idx_offset; 
+    X_current                 = leaflet.X; 
+    p_0                       = leaflet.p_0; 
+    alpha                     = leaflet.alpha; 
+    beta                      = leaflet.beta; 
+    chordae                   = leaflet.chordae; 
+    chordae_idx_left          = leaflet.chordae_idx_left; 
+    chordae_idx_right         = leaflet.chordae_idx_right;
+    j_max                     = leaflet.j_max; 
+    k_max                     = leaflet.k_max; 
+    du                        = leaflet.du; 
+    dv                        = leaflet.dv; 
+    is_internal               = leaflet.is_internal; 
+    is_bc                     = leaflet.is_bc; 
+    linear_idx_offset         = leaflet.linear_idx_offset; 
+    num_trees                 = leaflet.num_trees; 
+    total_internal_with_trees = leaflet.total_internal_with_trees; 
     
     % repulsive potential coefficients, if used 
     if isfield(leaflet, 'repulsive_potential') && leaflet.repulsive_potential
@@ -52,18 +50,11 @@ function J = build_jacobian_bead_slip(leaflet)
         c_dec_tension_circumferential = 0.0; 
         c_dec_tension_radial          = 0.0; 
         c_dec_tension_chordae         = 0.0; 
-    end 
-    
-    
-    [m N_chordae] = size(C_left); 
-    
-    % total internal points in triangular domain 
-    total_internal = 3*sum(is_internal(:)); 
-    total_points   = total_internal + 3*2*N_chordae; 
+    end
 
     % there are fewer than 15 nnz per row
     % if using the redundant features on sparse creation use more 
-    capacity = 10 * 15 * total_points; 
+    capacity = 10 * 15 * total_internal_with_trees; 
     
     % build with indices, then add all at once 
     nnz_placed = 0; 
@@ -77,16 +68,22 @@ function J = build_jacobian_bead_slip(leaflet)
     k_offsets = [0 0 0 1 1 1 2 2 2]';
 
     
-    for left_side = [true, false]
+    for tree_idx = 1:num_trees
+        
+        [m N_chordae] = size(chordae(tree_idx).C);         
+        free_edge_idx = chordae(tree_idx).free_edge_idx; 
+        C             = chordae(tree_idx).C; 
+        
+        if tree_idx == 1 
+            left_side = true; 
+        else 
+            left_side = false; 
+        end 
         
         if left_side
-            free_edge_idx = free_edge_idx_left; 
-            chordae_idx = chordae_idx_left; 
-            C = C_left; 
+            chordae_idx = chordae_idx_left;  
         else 
-            free_edge_idx = free_edge_idx_right; 
             chordae_idx = chordae_idx_right;
-            C = C_right; 
         end 
         
         
@@ -166,7 +163,7 @@ function J = build_jacobian_bead_slip(leaflet)
             % current node has a chordae connection
             if chordae_idx(j,k)
 
-                kappa = k_0;
+                kappa = chordae(tree_idx).k_0;
 
                 % index that free edge would have if on tree
                 % remember that leaves are only in the leaflet
@@ -193,7 +190,7 @@ function J = build_jacobian_bead_slip(leaflet)
                 place_tmp_block(range_current, range_current, J_tmp); 
                 
                 % chordae range 
-                range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side); 
+                range_nbr = chordae(tree_idx).min_global_idx + 3*(idx_chordae-1) + (0:2);
                 place_tmp_block(range_current, range_nbr, -J_tmp); 
                 
             else
@@ -350,14 +347,10 @@ function J = build_jacobian_bead_slip(leaflet)
     end
 
     
-    % chordae internal terms 
-    for left_side = [true false];  
-
-        if left_side
-            C = C_left; 
-        else 
-            C = C_right; 
-        end 
+    % chordae internal terms         
+    for tree_idx = 1:num_trees
+        
+        C = chordae(tree_idx).C; 
 
         for i=1:N_chordae
 
@@ -366,16 +359,18 @@ function J = build_jacobian_bead_slip(leaflet)
             parent = floor(i/2); 
 
             % this is the same, updating the equations for this component 
-            range_current = range_chordae(total_internal, N_chordae, i, left_side); 
+            range_current = chordae(tree_idx).min_global_idx + 3*(i-1) + (0:2);               
+            % range_chordae(total_internal_leaflet, N_chordae, i, left_side); 
 
             for nbr_idx = [left,right,parent]
 
                 % get the neighbors coordinates, reference coordinate and spring constants
-                [nbr R_nbr k_val j_nbr k_nbr] = get_nbr_chordae(leaflet, i, nbr_idx, left_side); 
+                [nbr R_nbr k_val j_nbr k_nbr] = get_nbr_chordae(leaflet, i, nbr_idx, tree_idx); 
 
                 % if the neighbor is in the chordae 
                 if isempty(j_nbr) && isempty(k_nbr) 
-                    range_nbr = range_chordae(total_internal, N_chordae, nbr_idx, left_side); 
+                    range_nbr = chordae(tree_idx).min_global_idx + 3*(nbr_idx-1) + (0:2);               
+                    % range_chordae(total_internal, N_chordae, nbr_idx, left_side); 
                 elseif is_internal(j_nbr, k_nbr)
                     % neighbor is on the leaflet 
                     range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
@@ -410,7 +405,7 @@ function J = build_jacobian_bead_slip(leaflet)
      
  
 
-    J = sparse(j_idx(1:nnz_placed), k_idx(1:nnz_placed), vals(1:nnz_placed), total_points, total_points, nnz_placed);  
+    J = sparse(j_idx(1:nnz_placed), k_idx(1:nnz_placed), vals(1:nnz_placed), total_internal_with_trees, total_internal_with_trees, nnz_placed);  
     
 %%%%%%%%%%
 %
