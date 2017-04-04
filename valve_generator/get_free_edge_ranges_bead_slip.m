@@ -38,15 +38,16 @@ if leaflet.radial_and_circumferential
         chordae(2).free_edge_idx  = zeros(N/2, 2); 
     end 
     
-    chordae_idx_left    = zeros(N, N/2 + 1); 
-    chordae_idx_right   = zeros(N, N/2 + 1); 
+    chordae_idx(N,N/2 + 1).tree_idx = 0;  
+    chordae_idx(N,N/2 + 1).leaf_idx = 0;  
     
     % Left free edge starts at (N/2,1)
     % and ends at (1,N/2) 
     j = k_max;  
     for k=1:k_max
         chordae(1).free_edge_idx(k,:) = [j; k];
-        chordae_idx_left(j,k)   = k; 
+        chordae_idx(j,k).tree_idx = 1;  
+        chordae_idx(j,k).leaf_idx = k; 
         k_min(j) = k; 
         j = j - 1; 
     end 
@@ -57,7 +58,8 @@ if leaflet.radial_and_circumferential
     j = k_max + 1; 
     for k=1:k_max
         chordae(2).free_edge_idx(k,:) = [j; k]; 
-        chordae_idx_right(j,k)   = k; 
+        chordae_idx(j,k).tree_idx = 2;  
+        chordae_idx(j,k).leaf_idx = k;
         k_min(j) = k; 
         j = j + 1; 
     end 
@@ -127,8 +129,8 @@ if isfield(leaflet, 'ring_to_ring_range') && (~isempty(leaflet.ring_to_ring_rang
     k_max = k_max + (max_ring_to_ring - min_ring_to_ring) + 2; 
     
     % resize and zero pad chordae arrays
-    chordae_idx_left (j_max,k_max) = 0; 
-    chordae_idx_right(j_max,k_max) = 0; 
+    chordae_idx(j_max,k_max).tree_idx = 0; 
+    chordae_idx(j_max,k_max).leaf_idx = 0; 
     
 else 
     % extra row gets no additional fibers but placed for ring only 
@@ -137,12 +139,27 @@ else
 end 
 
 
+% clean up empty values in tension struct 
+for j=1:j_max
+    for k=1:k_max
+        if isempty(chordae_idx(j,k).tree_idx)
+            chordae_idx(j,k).tree_idx = 0; 
+        end
+        
+        if isempty(chordae_idx(j,k).leaf_idx)
+            chordae_idx(j,k).leaf_idx = 0; 
+        end 
+    end 
+end 
+
+
+
+
 leaflet.j_max               = j_max; 
 leaflet.k_max               = k_max; 
 leaflet.k_min               = k_min; 
 leaflet.chordae             = chordae; 
-leaflet.chordae_idx_left    = chordae_idx_left; 
-leaflet.chordae_idx_right   = chordae_idx_right; 
+leaflet.chordae_idx         = chordae_idx; 
 leaflet.ring_k_idx          = ring_k_idx; 
 
 

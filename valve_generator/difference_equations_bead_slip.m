@@ -15,8 +15,7 @@ function F = difference_equations_bead_slip(leaflet)
     alpha                  = leaflet.alpha; 
     beta                   = leaflet.beta; 
     chordae                = leaflet.chordae; 
-    chordae_idx_left       = leaflet.chordae_idx_left; 
-    chordae_idx_right      = leaflet.chordae_idx_right;
+    chordae_idx            = leaflet.chordae_idx; 
     j_max                  = leaflet.j_max; 
     k_max                  = leaflet.k_max; 
     du                     = leaflet.du; 
@@ -65,23 +64,17 @@ function F = difference_equations_bead_slip(leaflet)
 
     F_leaflet = zeros(size(X_current)); 
     
-
+    
     for tree_idx = 1:num_trees
 
         [m N_chordae] = size(chordae(tree_idx).C);         
         free_edge_idx = chordae(tree_idx).free_edge_idx; 
         C             = chordae(tree_idx).C; 
-        
+
         if tree_idx == 1 
             left_side = true; 
         else 
             left_side = false; 
-        end 
-        
-        if left_side
-            chordae_idx = chordae_idx_left;  
-        else 
-            chordae_idx = chordae_idx_right;
         end 
 
         for i=1:size(free_edge_idx, 1)
@@ -152,13 +145,13 @@ function F = difference_equations_bead_slip(leaflet)
             F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
 
             % current node has a chordae connection
-            if chordae_idx(j,k)
+            if chordae_idx(j,k).tree_idx == tree_idx 
 
                 kappa = chordae(tree_idx).k_0;
 
                 % index that free edge would have if on tree
                 % remember that leaves are only in the leaflet
-                leaf_idx = chordae_idx(j,k) + N_chordae;
+                leaf_idx = chordae_idx(j,k).leaf_idx + N_chordae;
 
                 % then take the parent index of that number in chordae variables
                 idx_chordae = floor(leaf_idx/2);
@@ -196,7 +189,7 @@ function F = difference_equations_bead_slip(leaflet)
     % Internal leaflet part 
     for j=1:j_max
         for k=1:k_max
-            if is_internal(j,k) && (~chordae_idx_left(j,k)) && (~chordae_idx_right(j,k))
+            if is_internal(j,k) && (~chordae_idx(j,k).tree_idx)
 
                 X = X_current(:,j,k); 
 

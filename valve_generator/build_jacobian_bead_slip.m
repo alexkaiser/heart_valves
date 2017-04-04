@@ -13,8 +13,7 @@ function J = build_jacobian_bead_slip(leaflet)
     alpha                     = leaflet.alpha; 
     beta                      = leaflet.beta; 
     chordae                   = leaflet.chordae; 
-    chordae_idx_left          = leaflet.chordae_idx_left; 
-    chordae_idx_right         = leaflet.chordae_idx_right;
+    chordae_idx               = leaflet.chordae_idx; 
     j_max                     = leaflet.j_max; 
     k_max                     = leaflet.k_max; 
     du                        = leaflet.du; 
@@ -78,14 +77,7 @@ function J = build_jacobian_bead_slip(leaflet)
         else 
             left_side = false; 
         end 
-        
-        if left_side
-            chordae_idx = chordae_idx_left;  
-        else 
-            chordae_idx = chordae_idx_right;
-        end 
-        
-        
+                
         % free edge terms first              
         for i=1:size(free_edge_idx, 1)
             j = free_edge_idx(i,1);
@@ -160,13 +152,13 @@ function J = build_jacobian_bead_slip(leaflet)
             end
 
             % current node has a chordae connection
-            if chordae_idx(j,k)
+            if chordae_idx(j,k).tree_idx == tree_idx 
 
                 kappa = chordae(tree_idx).k_0;
 
                 % index that free edge would have if on tree
                 % remember that leaves are only in the leaflet
-                leaf_idx = chordae_idx(j,k) + N_chordae;
+                leaf_idx = chordae_idx(j,k).leaf_idx + N_chordae;
 
                 % then take the parent index of that number in chordae variables
                 idx_chordae = floor(leaf_idx/2);
@@ -209,7 +201,7 @@ function J = build_jacobian_bead_slip(leaflet)
         for k=1:k_max
 
             % Internal points, not on free edge 
-            if is_internal(j,k) && ~chordae_idx_left(j,k) && ~chordae_idx_right(j,k)
+            if is_internal(j,k) && (~chordae_idx(j,k).tree_idx)
 
                 X = X_current(:,j,k); 
 
@@ -266,7 +258,7 @@ function J = build_jacobian_bead_slip(leaflet)
 
                     if (j_nbr > 0) && (k_nbr > 0) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
 
-                        if chordae_idx_left(j,k) || chordae_idx_right(j,k)
+                        if chordae_idx(j,k).tree_idx
                             error('trying to apply slip model at chordae attachment point'); 
                         end 
 
@@ -308,7 +300,7 @@ function J = build_jacobian_bead_slip(leaflet)
 
                     if (j_nbr > 0) && (k_nbr > 0) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
 
-                        if chordae_idx_left(j,k) || chordae_idx_right(j,k)
+                        if chordae_idx(j,k).tree_idx
                             error('trying to apply slip model at chordae attachment point'); 
                         end 
 
@@ -453,7 +445,7 @@ function J = build_jacobian_bead_slip(leaflet)
         % nested function for getting neighbor 
         % nested functions have full access to current work space 
 
-        if chordae_idx_left(j_nbr,k_nbr) || chordae_idx_right(j_nbr,k_nbr)
+        if chordae_idx(j_nbr,k_nbr).tree_idx
             X_nbr = X_current(:,j_nbr,k_nbr); 
             range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
             nbr_jacobian_needed = true; 
