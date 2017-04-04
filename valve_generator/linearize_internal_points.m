@@ -1,4 +1,4 @@
-function v_linearized = linearize_internal_points(leaflet, v, v_left_chordae, v_right_chordae)
+function X_linearized = linearize_internal_points(leaflet, X, chordae)
 %
 %  Takes the internal values in X and arranges them in a linear array 
 %  
@@ -25,22 +25,24 @@ is_internal = leaflet.is_internal;
 total_internal = 3*sum(is_internal(:));
 idx = 1; 
 
-v_linearized = zeros(total_internal,1); 
+if (~exist('v', 'var')) && (~exist('v_chordae', 'var'))
+    X       = leaflet.X; 
+    chordae = leaflet.chordae; 
+end 
+
+X_linearized = zeros(total_internal,1); 
 
 % here k is required to be the outer loop 
 for k=1:k_max
     for j=1:j_max
         if leaflet.is_internal(j,k)
-            v_linearized(idx + (0:2)) = v(:,j,k); 
+            X_linearized(idx + (0:2)) = X(:,j,k); 
             idx = idx + 3; 
         end 
     end 
 end
 
-if exist('v_left_chordae', 'var') && exist('v_right_chordae', 'var')
-    if isfield(leaflet, 'leaflet_only') && leaflet.leaflet_only
-        % do nothing
-    else 
-        v_linearized = [v_linearized; v_left_chordae(:); v_right_chordae(:)]; 
-    end 
+for tree_idx = 1:leaflet.num_trees
+    X_linearized = [X_linearized; chordae(tree_idx).C(:)]; 
 end 
+

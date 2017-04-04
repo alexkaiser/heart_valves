@@ -32,7 +32,7 @@ use_energy = false;
 if use_energy
     energy   = leaflet.energy; 
 end 
-diff_eqns = @(leaflet) diff_eqns_and_linearize(leaflet, leaflet.diff_eqns); 
+diff_eqns = leaflet.diff_eqns; %@(leaflet) diff_eqns_and_linearize(leaflet, leaflet.diff_eqns); 
 jacobian  = leaflet.jacobian; 
 
 
@@ -122,7 +122,7 @@ while err > tol
            
     
     F_linearized = diff_eqns(leaflet); 
-    X_linearized_prev = linearize_internal_points(leaflet, leaflet.X, leaflet.chordae.C_left, leaflet.chordae.C_right); 
+    X_linearized_prev = linearize_internal_points(leaflet); 
     
     
     err_prev = err; 

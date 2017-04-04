@@ -1,4 +1,4 @@
-function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_slip(leaflet)
+function F = difference_equations_bead_slip(leaflet)
     % 
     % Evaluation of the global difference equations at j,k
     % Requires reference configuration R 
@@ -10,19 +10,20 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
     %     F        Values of all difference equation, 3 by triangular array 
     % 
 
-    X_current          = leaflet.X; 
-    p_0                = leaflet.p_0; 
-    alpha              = leaflet.alpha; 
-    beta               = leaflet.beta; 
-    chordae            = leaflet.chordae; 
-    chordae_idx_left   = leaflet.chordae_idx_left; 
-    chordae_idx_right  = leaflet.chordae_idx_right;
-    j_max              = leaflet.j_max; 
-    k_max              = leaflet.k_max; 
-    du                 = leaflet.du; 
-    dv                 = leaflet.dv; 
-    is_internal        = leaflet.is_internal; 
-    num_trees          = leaflet.num_trees; 
+    X_current              = leaflet.X; 
+    p_0                    = leaflet.p_0; 
+    alpha                  = leaflet.alpha; 
+    beta                   = leaflet.beta; 
+    chordae                = leaflet.chordae; 
+    chordae_idx_left       = leaflet.chordae_idx_left; 
+    chordae_idx_right      = leaflet.chordae_idx_right;
+    j_max                  = leaflet.j_max; 
+    k_max                  = leaflet.k_max; 
+    du                     = leaflet.du; 
+    dv                     = leaflet.dv; 
+    is_internal            = leaflet.is_internal; 
+    total_internal_leaflet = leaflet.total_internal_leaflet; 
+    num_trees              = leaflet.num_trees; 
     
     if num_trees ~= 2
         error('not implemented'); 
@@ -268,20 +269,10 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
     
 
     % chordae internal terms 
-    F_chordae_left  = zeros(size(chordae(1).C)); 
-    F_chordae_right = zeros(size(chordae(2).C)); 
-
-    [m N_chordae] = size(chordae(1).C); 
-
     for tree_idx = 1:num_trees
         
         C = chordae(tree_idx).C; 
-
-        if tree_idx == 1 
-            left_side = true; 
-        else 
-            left_side = false; 
-        end   
+        F_chordae(tree_idx).vals = zeros(size(C));  
 
         for i=1:N_chordae
 
@@ -306,23 +297,35 @@ function [F_leaflet F_chordae_left F_chordae_right] = difference_equations_bead_
                 
                 if tension_debug
                     if tension < 0 
-                        fprintf('tension = %f, (i, nbr_idx, left) = (%d, %d, %d) chordae\n', tension, i, nbr_idx, left_side); 
+                        fprintf('tension = %f, (i, nbr_idx, tree_idx) = (%d, %d, %d) chordae\n', tension, i, nbr_idx, tree_idx); 
                     end 
                 end 
 
                 tension_by_tangent = tension * (nbr - C(:,i)) / norm(nbr - C(:,i));  
 
-                if left_side
-                    F_chordae_left(:,i)  = F_chordae_left(:,i)  + tension_by_tangent; 
-                else 
-                    F_chordae_right(:,i) = F_chordae_right(:,i) + tension_by_tangent; 
-                end 
+                F_chordae(tree_idx).vals(:,i) = F_chordae(tree_idx).vals(:,i) + tension_by_tangent; 
 
             end 
-
         end 
     end 
 
+    F = zeros(total_internal_leaflet, 1); 
+    
+    % k is required to be the outer loop 
+    idx = 1; 
+    for k=1:k_max
+        for j=1:j_max
+            if leaflet.is_internal(j,k)
+                F(idx + (0:2)) = F_leaflet(:,j,k); 
+                idx = idx + 3; 
+            end 
+        end 
+    end
+
+    for tree_idx = 1:num_trees
+        F = [F; F_chordae(tree_idx).vals(:)]; 
+    end 
+    
 end 
 
 

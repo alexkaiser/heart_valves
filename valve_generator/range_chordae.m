@@ -1,4 +1,4 @@
-function range = range_chordae(total_internal, N_chordae, idx_chordae, left)
+function range = range_chordae(chordae, idx_chordae, tree_idx)
 % 
 % Returns the range of indices corresponding to 
 % 
@@ -13,18 +13,27 @@ function range = range_chordae(total_internal, N_chordae, idx_chordae, left)
 %     range             Length three array of global indices 
 % 
  
-if left
-    range = total_internal + 3*(idx_chordae-1) + (1:3);  
-else
-    range = total_internal + 3*N_chordae + 3*(idx_chordae-1) + (1:3);  
-end 
-
-% if the index requested is zero, then it is a papillary muscle 
-% which is a b.c. 
 if idx_chordae == 0
-    range = []; 
+    range = [];
+else 
+    range = chordae(tree_idx).min_global_idx + 3*(idx_chordae-1) + (0:2);
 end 
 
+
+
+
+% if left
+%     range = total_internal + 3*(idx_chordae-1) + (1:3);  
+% else
+%     range = total_internal + 3*N_chordae + 3*(idx_chordae-1) + (1:3);  
+% end 
+% 
+% % if the index requested is zero, then it is a papillary muscle 
+% % which is a b.c. 
+% if idx_chordae == 0
+%     range = []; 
+% end 
+% 
 
 
 
