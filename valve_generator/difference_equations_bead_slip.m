@@ -197,7 +197,7 @@ function F = difference_equations_bead_slip(leaflet)
 
                 % pressure term first  
                 if p_0 ~= 0
-                    F_tmp = F_tmp + (p_0 / (4*du*du)) * cross(X_current(:,j+1,k) - X_current(:,j-1,k), X_current(:,j,k+1) - X_current(:,j,k-1));                     
+                    F_tmp = F_tmp + (p_0 / 4) * cross(X_current(:,j+1,k) - X_current(:,j-1,k), X_current(:,j,k+1) - X_current(:,j,k-1));                     
                 end 
 
                 % u type fibers 
@@ -222,7 +222,7 @@ function F = difference_equations_bead_slip(leaflet)
                         end 
                     end 
                     
-                    F_tmp = F_tmp + tension/du * (X_nbr-X)/norm(X_nbr-X); 
+                    F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
 
                 end 
 
@@ -249,7 +249,7 @@ function F = difference_equations_bead_slip(leaflet)
                     end 
                     
                     
-                    F_tmp = F_tmp + tension/du * (X_nbr-X)/norm(X_nbr-X); 
+                    F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
 
                 end 
 

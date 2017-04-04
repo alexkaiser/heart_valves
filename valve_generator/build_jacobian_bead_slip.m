@@ -215,7 +215,7 @@ function J = build_jacobian_bead_slip(leaflet)
                     j_nbr = j+1; 
                     k_nbr = k; 
                     
-                    J_pressure = -(p_0/(4*du*du)) * cross_matrix(X_current(:,j,k+1) - X_current(:,j,k-1)) ; 
+                    J_pressure = -(p_0/4) * cross_matrix(X_current(:,j,k+1) - X_current(:,j,k-1)) ; 
 
                     if is_internal(j_nbr,k_nbr)
                         range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
@@ -224,7 +224,7 @@ function J = build_jacobian_bead_slip(leaflet)
                     
                     j_nbr = j-1; 
                     k_nbr = k; 
-                    J_pressure =  (p_0/(4*du*du)) * cross_matrix(X_current(:,j,k+1) - X_current(:,j,k-1)) ; 
+                    J_pressure =  (p_0/4) * cross_matrix(X_current(:,j,k+1) - X_current(:,j,k-1)) ; 
                     
                     if is_internal(j_nbr,k_nbr)
                         range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
@@ -233,7 +233,7 @@ function J = build_jacobian_bead_slip(leaflet)
                     
                     j_nbr = j; 
                     k_nbr = k+1; 
-                    J_pressure =  (p_0/(4*du*du)) * cross_matrix(X_current(:,j+1,k) - X_current(:,j-1,k)) ; 
+                    J_pressure =  (p_0/4) * cross_matrix(X_current(:,j+1,k) - X_current(:,j-1,k)) ; 
 
                     if is_internal(j_nbr,k_nbr)
                         range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
@@ -242,7 +242,7 @@ function J = build_jacobian_bead_slip(leaflet)
                     
                     j_nbr = j; 
                     k_nbr = k-1; 
-                    J_pressure = -(p_0/(4*du*du)) * cross_matrix(X_current(:,j+1,k) - X_current(:,j-1,k)) ; 
+                    J_pressure = -(p_0/4) * cross_matrix(X_current(:,j+1,k) - X_current(:,j-1,k)) ; 
 
                     if is_internal(j_nbr,k_nbr)
                         range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
@@ -267,14 +267,14 @@ function J = build_jacobian_bead_slip(leaflet)
 
                         % There is a 1/du term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
-                        J_tmp = alpha/du * tangent_jacobian(X, X_nbr); 
+                        J_tmp = du * alpha * tangent_jacobian(X, X_nbr); 
                         
                         if repulsive_potential
-                            J_tmp = J_tmp + alpha/du * c_repulsive_circumferential * du^2 * replusive_jacobian(X,X_nbr,power); 
+                            J_tmp = J_tmp + du * alpha * c_repulsive_circumferential * du^2 * replusive_jacobian(X,X_nbr,power); 
                         end 
                         
                         if decreasing_tension
-                            J_tmp = J_tmp + alpha/du * dec_tension_jacobian(X,X_nbr,du,c_dec_tension_circumferential); 
+                            J_tmp = J_tmp + du * alpha * dec_tension_jacobian(X,X_nbr,du,c_dec_tension_circumferential); 
                         end 
 
                         % current term is always added in 
@@ -309,14 +309,14 @@ function J = build_jacobian_bead_slip(leaflet)
 
                         % There is a 1/du term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
-                        J_tmp = beta/du * tangent_jacobian(X, X_nbr); 
+                        J_tmp = du * beta * tangent_jacobian(X, X_nbr); 
                         
                         if repulsive_potential
-                            J_tmp = J_tmp + beta/du * c_repulsive_radial * du^2 * replusive_jacobian(X,X_nbr,power); 
+                            J_tmp = J_tmp + du * beta * c_repulsive_radial * du^2 * replusive_jacobian(X,X_nbr,power); 
                         end
                         
                         if decreasing_tension
-                            J_tmp = J_tmp + beta/du * dec_tension_jacobian(X,X_nbr,du,c_dec_tension_radial); 
+                            J_tmp = J_tmp + du * beta * dec_tension_jacobian(X,X_nbr,du,c_dec_tension_radial); 
                         end
                         
                         % current term is always added in 
