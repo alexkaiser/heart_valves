@@ -98,10 +98,7 @@ end
 leaflet.min_angle = angles(1); 
 leaflet.max_angle = angles(2); 
 
-
 leaflet.du = 1/N; 
-leaflet.dv = 1/N; 
-
 
 leaflet.r = r; 
 

@@ -20,7 +20,6 @@ function F = difference_equations_bead_slip(leaflet)
     j_max                  = leaflet.j_max; 
     k_max                  = leaflet.k_max; 
     du                     = leaflet.du; 
-    dv                     = leaflet.dv; 
     is_internal            = leaflet.is_internal; 
     total_internal_leaflet = leaflet.total_internal_leaflet; 
     num_trees              = leaflet.num_trees; 
@@ -107,16 +106,16 @@ function F = difference_equations_bead_slip(leaflet)
             % Anterior circumferential 
             X_nbr = X_current(:,j_nbr,k_nbr); 
             
-            % Multiply tension by dv to get a force,
+            % Multiply tension by du to get a force,
             % rather than a force density, here 
-            tension = alpha * dv; 
+            tension = alpha * du; 
             
             if repulsive_potential
-                tension = tension - alpha * dv * c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
+                tension = tension - alpha * du * c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
             end 
             
             if decreasing_tension
-                tension = tension + alpha * dv * tension_decreasing(X, X_nbr, du, c_dec_tension_circumferential) ; 
+                tension = tension + alpha * du * tension_decreasing(X, X_nbr, du, c_dec_tension_circumferential) ; 
             end 
                 
             if tension_debug
@@ -136,11 +135,11 @@ function F = difference_equations_bead_slip(leaflet)
             tension = beta * du; 
             
             if repulsive_potential
-                tension = tension - beta * du * c_repulsive_radial * dv^2 * power * 1/norm(X_nbr-X)^(power+1); 
+                tension = tension - beta * du * c_repulsive_radial * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
             end 
             
             if decreasing_tension
-                tension = tension + beta * du * tension_decreasing(X, X_nbr, dv, c_dec_tension_radial) ; 
+                tension = tension + beta * du * tension_decreasing(X, X_nbr, du, c_dec_tension_radial) ; 
             end
             
             if tension_debug
@@ -205,7 +204,7 @@ function F = difference_equations_bead_slip(leaflet)
 
                 % pressure term first  
                 if p_0 ~= 0
-                    F_tmp = F_tmp + (p_0 / (4*du*dv)) * cross(X_current(:,j+1,k) - X_current(:,j-1,k), X_current(:,j,k+1) - X_current(:,j,k-1));                     
+                    F_tmp = F_tmp + (p_0 / (4*du*du)) * cross(X_current(:,j+1,k) - X_current(:,j-1,k), X_current(:,j,k+1) - X_current(:,j,k-1));                     
                 end 
 
                 % u type fibers 
@@ -243,11 +242,11 @@ function F = difference_equations_bead_slip(leaflet)
                     tension = beta; 
                     
                     if repulsive_potential
-                        tension = tension - beta * c_repulsive_radial * dv^2 * power * 1/norm(X_nbr-X)^(power+1); 
+                        tension = tension - beta * c_repulsive_radial * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
                     end 
                     
                     if decreasing_tension
-                        tension = tension + beta * tension_decreasing(X, X_nbr, dv, c_dec_tension_radial) ; 
+                        tension = tension + beta * tension_decreasing(X, X_nbr, du, c_dec_tension_radial) ; 
                     end
                     
                     if tension_debug
@@ -257,7 +256,7 @@ function F = difference_equations_bead_slip(leaflet)
                     end 
                     
                     
-                    F_tmp = F_tmp + tension/dv * (X_nbr-X)/norm(X_nbr-X); 
+                    F_tmp = F_tmp + tension/du * (X_nbr-X)/norm(X_nbr-X); 
 
                 end 
 
