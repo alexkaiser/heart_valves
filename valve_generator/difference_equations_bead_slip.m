@@ -20,6 +20,7 @@ function F = difference_equations_bead_slip(leaflet)
     k_max                  = leaflet.k_max; 
     du                     = leaflet.du; 
     is_internal            = leaflet.is_internal; 
+    is_bc                  = leaflet.is_bc; 
     total_internal_leaflet = leaflet.total_internal_leaflet; 
     num_trees              = leaflet.num_trees; 
     
@@ -65,194 +66,235 @@ function F = difference_equations_bead_slip(leaflet)
     F_leaflet = zeros(size(X_current)); 
     
     
-    for tree_idx = 1:num_trees
-
-        [m N_chordae] = size(chordae(tree_idx).C);         
-        free_edge_idx = chordae(tree_idx).free_edge_idx; 
-        C             = chordae(tree_idx).C; 
-
-        if tree_idx == 1 
-            left_side = true; 
-        else 
-            left_side = false; 
-        end 
-
-        for i=1:size(free_edge_idx, 1)
-
-            F_tmp = zeros(3,1);
-
-            % left free edge has spring connections up and right on both leaflets
-            j = free_edge_idx(i,1);
-            k = free_edge_idx(i,2);
-
-            X = X_current(:,j,k); 
-
-            % interior neighbor is right in j on left side, 
-            % left in j on right side 
-            if left_side
-                j_nbr = j + 1;
-            else 
-                j_nbr = j - 1;
-            end 
-            k_nbr = k;
-
-            % Anterior circumferential 
-            X_nbr = X_current(:,j_nbr,k_nbr); 
-            
-            % Multiply tension by du to get a force,
-            % rather than a force density, here 
-            tension = alpha * du; 
-            
-            if repulsive_potential
-                tension = tension - alpha * du * c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
-            end 
-            
-            if decreasing_tension
-                tension = tension + alpha * du * tension_decreasing(X, X_nbr, du, c_dec_tension_circumferential) ; 
-            end 
-                
-            if tension_debug
-                if tension < 0 
-                    fprintf('tension = %f, free edge point %d, left = %d, radial\n', tension, i, left_side); 
-                end 
-            end 
-            
-            F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
-
-            % interior neighbor is up in k, always 
-            j_nbr = j;     
-            k_nbr = k+1; 
-
-            % Anterior radial
-            X_nbr = X_current(:,j_nbr,k_nbr); 
-            tension = beta * du; 
-            
-            if repulsive_potential
-                tension = tension - beta * du * c_repulsive_radial * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
-            end 
-            
-            if decreasing_tension
-                tension = tension + beta * du * tension_decreasing(X, X_nbr, du, c_dec_tension_radial) ; 
-            end
-            
-            if tension_debug
-                if tension < 0 
-                    fprintf('tension = %f, free edge point %d, left = %d, circumferential\n', tension, i, left_side); 
-                end 
-            end 
-            
-            
-            F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
-
-            % current node has a chordae connection
-            if chordae_idx(j,k).tree_idx == tree_idx 
-
-                kappa = chordae(tree_idx).k_0;
-
-                % index that free edge would have if on tree
-                % remember that leaves are only in the leaflet
-                leaf_idx = chordae_idx(j,k).leaf_idx + N_chordae;
-
-                % then take the parent index of that number in chordae variables
-                idx_chordae = floor(leaf_idx/2);
-
-                X_nbr = C(:,idx_chordae);
-                tension = kappa; 
-                
-                if repulsive_potential
-                    tension = tension - kappa * c_repulsive_chordae * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
-                end 
-                
-                if decreasing_tension
-                    tension = tension + kappa * tension_decreasing(X, X_nbr, du, c_dec_tension_chordae) ; 
-                end
-                
-                if tension_debug
-                    if tension < 0 
-                        fprintf('tension = %f, free edge point %d, left = %d, chordae\n', tension, i, left_side); 
-                    end 
-                end 
-                
-                F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
-
-            else
-                error('free edge point required to have chordae connection'); 
-            end
-
-            F_leaflet(:,j,k) = F_tmp; 
-
-        end 
-
-    end 
+%     for tree_idx = 1:num_trees
+% 
+%         [m N_chordae] = size(chordae(tree_idx).C);         
+%         free_edge_idx = chordae(tree_idx).free_edge_idx; 
+%         C             = chordae(tree_idx).C; 
+% 
+%         if tree_idx == 1 
+%             left_side = true; 
+%         else 
+%             left_side = false; 
+%         end 
+% 
+%         for i=1:size(free_edge_idx, 1)
+% 
+%             F_tmp = zeros(3,1);
+% 
+%             % left free edge has spring connections up and right on both leaflets
+%             j = free_edge_idx(i,1);
+%             k = free_edge_idx(i,2);
+% 
+%             X = X_current(:,j,k); 
+% 
+%             % interior neighbor is right in j on left side, 
+%             % left in j on right side 
+%             if left_side
+%                 j_nbr = j + 1;
+%             else 
+%                 j_nbr = j - 1;
+%             end 
+%             k_nbr = k;
+% 
+%             % Anterior circumferential 
+%             X_nbr = X_current(:,j_nbr,k_nbr); 
+%             
+%             % Multiply tension by du to get a force,
+%             % rather than a force density, here 
+%             tension = alpha * du; 
+%             
+%             if repulsive_potential
+%                 tension = tension - alpha * du * c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
+%             end 
+%             
+%             if decreasing_tension
+%                 tension = tension + alpha * du * tension_decreasing(X, X_nbr, du, c_dec_tension_circumferential) ; 
+%             end 
+%                 
+%             if tension_debug
+%                 if tension < 0 
+%                     fprintf('tension = %f, free edge point %d, left = %d, radial\n', tension, i, left_side); 
+%                 end 
+%             end 
+%             
+%             F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
+% 
+%             % interior neighbor is up in k, always 
+%             j_nbr = j;     
+%             k_nbr = k+1; 
+% 
+%             % Anterior radial
+%             X_nbr = X_current(:,j_nbr,k_nbr); 
+%             tension = beta * du; 
+%             
+%             if repulsive_potential
+%                 tension = tension - beta * du * c_repulsive_radial * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
+%             end 
+%             
+%             if decreasing_tension
+%                 tension = tension + beta * du * tension_decreasing(X, X_nbr, du, c_dec_tension_radial) ; 
+%             end
+%             
+%             if tension_debug
+%                 if tension < 0 
+%                     fprintf('tension = %f, free edge point %d, left = %d, circumferential\n', tension, i, left_side); 
+%                 end 
+%             end 
+%             
+%             
+%             F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
+% 
+%             % current node has a chordae connection
+%             if chordae_idx(j,k).tree_idx == tree_idx 
+% 
+%                 kappa = chordae(tree_idx).k_0;
+% 
+%                 % index that free edge would have if on tree
+%                 % remember that leaves are only in the leaflet
+%                 leaf_idx = chordae_idx(j,k).leaf_idx + N_chordae;
+% 
+%                 % then take the parent index of that number in chordae variables
+%                 idx_chordae = floor(leaf_idx/2);
+% 
+%                 X_nbr = C(:,idx_chordae);
+%                 tension = kappa; 
+%                 
+%                 if repulsive_potential
+%                     tension = tension - kappa * c_repulsive_chordae * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
+%                 end 
+%                 
+%                 if decreasing_tension
+%                     tension = tension + kappa * tension_decreasing(X, X_nbr, du, c_dec_tension_chordae) ; 
+%                 end
+%                 
+%                 if tension_debug
+%                     if tension < 0 
+%                         fprintf('tension = %f, free edge point %d, left = %d, chordae\n', tension, i, left_side); 
+%                     end 
+%                 end 
+%                 
+%                 F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
+% 
+%             else
+%                 error('free edge point required to have chordae connection'); 
+%             end
+% 
+%             F_leaflet(:,j,k) = F_tmp; 
+% 
+%         end 
+% 
+%     end 
 
 
     % Internal leaflet part 
     for j=1:j_max
         for k=1:k_max
-            if is_internal(j,k) && (~chordae_idx(j,k).tree_idx)
+            if is_internal(j,k) 
 
                 X = X_current(:,j,k); 
 
                 F_tmp = zeros(3,1);
 
                 % pressure term first  
-                if p_0 ~= 0
+                if (~is_bc(j,k)) && (~chordae_idx(j,k).tree_idx) && (p_0 ~= 0)
                     F_tmp = F_tmp + (p_0 / 4) * cross(X_current(:,j+1,k) - X_current(:,j-1,k), X_current(:,j,k+1) - X_current(:,j,k-1));                     
                 end 
 
                 % u type fibers 
                 for j_nbr = [j-1,j+1]
-
+                    
                     k_nbr = k; 
-                    X_nbr = X_current(:,j_nbr,k_nbr); 
                     
-                    tension = alpha; 
-                    
-                    if repulsive_potential
-                        tension = tension - alpha * c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
-                    end 
-                                
-                    if decreasing_tension
-                        tension = tension + alpha * tension_decreasing(X, X_nbr, du, c_dec_tension_circumferential) ; 
-                    end 
-                    
-                    if tension_debug
-                        if tension < 0 
-                            fprintf('tension = %f, (j,k) = (%d, %d) radial\n', tension, j, k); 
-                        end 
-                    end 
-                    
-                    F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
+                    if (j_nbr > 0) && (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
 
+                        X_nbr = X_current(:,j_nbr,k_nbr); 
+
+                        tension = alpha; 
+
+                        if repulsive_potential
+                            tension = tension - alpha * c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
+                        end 
+
+                        if decreasing_tension
+                            tension = tension + alpha * tension_decreasing(X, X_nbr, du, c_dec_tension_circumferential) ; 
+                        end 
+
+                        if tension_debug
+                            if tension < 0 
+                                fprintf('tension = %f, (j,k) = (%d, %d) radial\n', tension, j, k); 
+                            end 
+                        end 
+
+                        F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
+                    
+                    end 
                 end 
 
                 % v type fibers 
                 for k_nbr = [k-1,k+1]
 
                     j_nbr = j; 
-                    X_nbr = X_current(:,j_nbr,k_nbr); 
                     
-                    tension = beta; 
+                    if (j_nbr > 0) && (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
                     
-                    if repulsive_potential
-                        tension = tension - beta * c_repulsive_radial * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
-                    end 
-                    
-                    if decreasing_tension
-                        tension = tension + beta * tension_decreasing(X, X_nbr, du, c_dec_tension_radial) ; 
-                    end
-                    
-                    if tension_debug
-                        if tension < 0 
-                            fprintf('tension = %f, (j,k) = (%d, %d) circumferential\n', tension, j, k); 
+                        X_nbr = X_current(:,j_nbr,k_nbr); 
+
+                        tension = beta; 
+
+                        if repulsive_potential
+                            tension = tension - beta * c_repulsive_radial * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
                         end 
+
+                        if decreasing_tension
+                            tension = tension + beta * tension_decreasing(X, X_nbr, du, c_dec_tension_radial) ; 
+                        end
+
+                        if tension_debug
+                            if tension < 0 
+                                fprintf('tension = %f, (j,k) = (%d, %d) circumferential\n', tension, j, k); 
+                            end 
+                        end 
+
+                        F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
+                    
                     end 
-                    
-                    
-                    F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
 
                 end 
 
+                
+                % current node has a chordae connection
+                if chordae_idx(j,k).tree_idx
+                    
+                    tree_idx = chordae_idx(j,k).tree_idx; 
+
+                    [m N_chordae] = size(chordae(tree_idx).C);
+                    
+                    kappa = chordae(tree_idx).k_0;
+
+                    % index that free edge would have if on tree
+                    % remember that leaves are only in the leaflet
+                    leaf_idx = chordae_idx(j,k).leaf_idx + N_chordae;
+
+                    % then take the parent index of that number in chordae variables
+                    idx_chordae = floor(leaf_idx/2);
+
+                    X_nbr = chordae(tree_idx).C(:,idx_chordae);
+                    tension = kappa; 
+
+                    if repulsive_potential
+                        tension = tension - kappa * c_repulsive_chordae * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
+                    end 
+
+                    if decreasing_tension
+                        tension = tension + kappa * tension_decreasing(X, X_nbr, du, c_dec_tension_chordae) ; 
+                    end
+
+                    F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
+
+                end 
+                
+                
                 F_leaflet(:,j,k) = F_tmp;
 
             end
@@ -264,6 +306,7 @@ function F = difference_equations_bead_slip(leaflet)
     for tree_idx = 1:num_trees
         
         C = chordae(tree_idx).C; 
+        [m N_chordae] = size(C);         
         F_chordae(tree_idx).vals = zeros(size(C));  
 
         for i=1:N_chordae
