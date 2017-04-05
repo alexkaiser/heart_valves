@@ -11,8 +11,7 @@ function leaflet = add_chordae(leaflet, tree_idx)
 
     % unpack relevant parameters 
     tree_frac           = leaflet.tree_frac; 
-    left_papillary      = leaflet.left_papillary;
-    right_papillary     = leaflet.right_papillary;
+    papillary           = leaflet.papillary;
     X                   = leaflet.X; 
     k_multiplier        = leaflet.k_multiplier; 
     k_0                 = leaflet.k_0;
@@ -46,16 +45,9 @@ function leaflet = add_chordae(leaflet, tree_idx)
     if leaflet.num_trees ~= 2
         error('not implemented for numbers other than 2 trees'); 
     end 
-    
-    if tree_idx == 1 
-        warning('Fix papillary placement in chordae initialize'); 
-        chordae(tree_idx).root = left_papillary; 
-    elseif tree_idx == 2
-        warning('Fix papillary placement in chordae initialize'); 
-        chordae(tree_idx).root = right_papillary; 
-    else 
-        error('not implemented'); 
-    end 
+   
+    % root pulled from the papillary arrays 
+    chordae(tree_idx).root = papillary(:,tree_idx); 
     
     % initialize the left boundary conditions from the leaflet     
     chordae(tree_idx).C = zeros(3,total_len);   

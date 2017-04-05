@@ -23,6 +23,7 @@ function J = build_jacobian_bead_slip(leaflet)
     num_trees                 = leaflet.num_trees; 
     total_internal_with_trees = leaflet.total_internal_with_trees; 
     
+    
     % repulsive potential coefficients, if used 
     if isfield(leaflet, 'repulsive_potential') && leaflet.repulsive_potential
         repulsive_potential         = true; 
@@ -65,143 +66,14 @@ function J = build_jacobian_bead_slip(leaflet)
     j_offsets = [0 1 2 0 1 2 0 1 2]'; 
     k_offsets = [0 0 0 1 1 1 2 2 2]';
 
-    
-    for tree_idx = 1:num_trees
-        
-        [m N_chordae] = size(chordae(tree_idx).C);         
-        free_edge_idx = chordae(tree_idx).free_edge_idx; 
-        C             = chordae(tree_idx).C; 
-        
-        if tree_idx == 1 
-            left_side = true; 
-        else 
-            left_side = false; 
-        end 
-                
-        % free edge terms first              
-        for i=1:size(free_edge_idx, 1)
-            j = free_edge_idx(i,1);
-            k = free_edge_idx(i,2);
-
-            range_current = linear_idx_offset(j,k) + (1:3); 
-
-            X = X_current(:,j,k); 
-
-            % interior neighbor is right in j on left side, 
-            % left in j on right side 
-            if left_side
-                j_nbr = j + 1;
-            else 
-                j_nbr = j - 1;
-            end 
-            k_nbr = k;
-
-            % Anterior circumferential 
-            X_nbr = X_current(:,j_nbr,k_nbr); 
-            
-            J_tmp = alpha * du * tangent_jacobian(X, X_nbr); 
-            
-            if repulsive_potential
-                J_tmp = J_tmp + alpha * du * du^2 * c_repulsive_circumferential * replusive_jacobian(X,X_nbr,power); 
-            end 
-            
-            if decreasing_tension
-                J_tmp = J_tmp + alpha * du * dec_tension_jacobian(X,X_nbr,du,c_dec_tension_circumferential); 
-            end 
-            
-            % current term is always added in 
-            % this gets no sign 
-            % this is always at the current,current block in the matrix 
-            place_tmp_block(range_current, range_current, J_tmp); 
-            
-            % If the neighbor is an internal point, it also gets a Jacobian contribution 
-            % This takes a sign
-            if is_internal(j_nbr,k_nbr)
-                range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
-                place_tmp_block(range_current, range_nbr, -J_tmp); 
-            end 
-
-            % interior neighbor is up in k, always  
-            j_nbr = j;     
-            k_nbr = k+1; 
-
-            % Anterior radial
-            X_nbr = X_current(:,j_nbr,k_nbr); 
-
-            J_tmp = beta * du * tangent_jacobian(X, X_nbr); 
-            
-            if repulsive_potential
-                J_tmp = J_tmp + beta * du * du^2 * c_repulsive_radial * replusive_jacobian(X,X_nbr,power); 
-            end 
-            
-            if decreasing_tension
-                J_tmp = J_tmp + beta * du * dec_tension_jacobian(X,X_nbr,du,c_dec_tension_radial); 
-            end
-
-            % current term is always added in 
-            % this gets no sign 
-            % this is always at the current,current block in the matrix 
-            place_tmp_block(range_current, range_current, J_tmp); 
-
-            
-            % If the neighbor is an internal point, it also gets a Jacobian contribution 
-            % This takes a sign
-            if is_internal(j_nbr,k_nbr)
-                range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
-                place_tmp_block(range_current, range_nbr, -J_tmp); 
-            end
-
-            % current node has a chordae connection
-            if chordae_idx(j,k).tree_idx == tree_idx 
-
-                kappa = chordae(tree_idx).k_0;
-
-                % index that free edge would have if on tree
-                % remember that leaves are only in the leaflet
-                leaf_idx = chordae_idx(j,k).leaf_idx + N_chordae;
-
-                % then take the parent index of that number in chordae variables
-                idx_chordae = floor(leaf_idx/2);
-
-                X_nbr = C(:,idx_chordae);
-
-                J_tmp = kappa * tangent_jacobian(X, X_nbr); 
-                
-                if repulsive_potential
-                    J_tmp = J_tmp + kappa * c_repulsive_chordae * du^2 * replusive_jacobian(X,X_nbr,power); 
-                end 
-                
-                if decreasing_tension
-                    J_tmp = J_tmp + kappa * dec_tension_jacobian(X,X_nbr,du,c_dec_tension_chordae); 
-                end
-
-                % current term is always added in 
-                % this gets no sign 
-                % this is always at the current,current block in the matrix 
-                place_tmp_block(range_current, range_current, J_tmp); 
-                
-                % chordae range 
-                range_nbr = range_chordae(chordae, idx_chordae, tree_idx); 
-                place_tmp_block(range_current, range_nbr, -J_tmp); 
-                
-            else
-                error('free edge point required to have chordae connection'); 
-            end
-
-        end
-    
-    end 
-    
-
-
 
     % Internal anterior leaflet 
     % Zero indices always ignored 
     for j=1:j_max
         for k=1:k_max
 
-            % Internal points, not on free edge 
-            if is_internal(j,k) && (~chordae_idx(j,k).tree_idx)
+            % Internal points
+            if is_internal(j,k) 
 
                 X = X_current(:,j,k); 
 
@@ -210,7 +82,7 @@ function J = build_jacobian_bead_slip(leaflet)
 
                 % pressure portion 
                 % always four neighbors
-                if p_0 ~= 0.0
+                if (~is_bc(j,k)) && (~chordae_idx(j,k).tree_idx) && (p_0 ~= 0)
                     
                     j_nbr = j+1; 
                     k_nbr = k; 
@@ -256,11 +128,7 @@ function J = build_jacobian_bead_slip(leaflet)
 
                     k_nbr = k; 
 
-                    if (j_nbr > 0) && (k_nbr > 0) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
-
-                        if chordae_idx(j,k).tree_idx
-                            error('trying to apply slip model at chordae attachment point'); 
-                        end 
+                    if (j_nbr > 0) && (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
 
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
@@ -298,11 +166,7 @@ function J = build_jacobian_bead_slip(leaflet)
 
                     j_nbr = j; 
 
-                    if (j_nbr > 0) && (k_nbr > 0) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
-
-                        if chordae_idx(j,k).tree_idx
-                            error('trying to apply slip model at chordae attachment point'); 
-                        end 
+                    if (j_nbr > 0) && (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
 
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
@@ -333,6 +197,49 @@ function J = build_jacobian_bead_slip(leaflet)
                         
                     end 
                 end
+                
+                % current node has a chordae connection
+                if chordae_idx(j,k).tree_idx
+                    
+                    tree_idx = chordae_idx(j,k).tree_idx; 
+                    
+                    C = chordae(tree_idx).C; 
+                    
+                    [m N_chordae] = size(chordae(tree_idx).C);
+
+                    kappa = chordae(tree_idx).k_0;
+
+                    % index that free edge would have if on tree
+                    % remember that leaves are only in the leaflet
+                    leaf_idx = chordae_idx(j,k).leaf_idx + N_chordae;
+
+                    % then take the parent index of that number in chordae variables
+                    idx_chordae = floor(leaf_idx/2);
+
+                    X_nbr = C(:,idx_chordae);
+
+                    J_tmp = kappa * tangent_jacobian(X, X_nbr); 
+
+                    if repulsive_potential
+                        J_tmp = J_tmp + kappa * c_repulsive_chordae * du^2 * replusive_jacobian(X,X_nbr,power); 
+                    end 
+
+                    if decreasing_tension
+                        J_tmp = J_tmp + kappa * dec_tension_jacobian(X,X_nbr,du,c_dec_tension_chordae); 
+                    end
+
+                    % current term is always added in 
+                    % this gets no sign 
+                    % this is always at the current,current block in the matrix 
+                    place_tmp_block(range_current, range_current, J_tmp); 
+
+                    % chordae range 
+                    range_nbr = range_chordae(chordae, idx_chordae, tree_idx); 
+                    place_tmp_block(range_current, range_nbr, -J_tmp); 
+
+                end 
+                
+                
             end
         end
     end
@@ -342,6 +249,7 @@ function J = build_jacobian_bead_slip(leaflet)
     for tree_idx = 1:num_trees
         
         C = chordae(tree_idx).C; 
+        [m N_chordae] = size(C);
 
         for i=1:N_chordae
 

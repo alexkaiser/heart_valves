@@ -25,7 +25,7 @@ epsilon_vals = 10.^(-1:-1:-8);
 
 errors = zeros(size(epsilon_vals)); 
 
-leaflet = set_rest_lengths_and_constants_linear(valve.anterior, strain); 
+leaflet = set_rest_lengths_and_constants(valve.anterior, strain); 
 
 % eval the difference eqns on the perturbation 
 [F_anterior F_chordae_left F_chordae_right] = leaflet.diff_eqns(leaflet); 

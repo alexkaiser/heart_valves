@@ -1,4 +1,4 @@
-function leaflet_linear = set_rest_lengths_and_constants_linear(leaflet, strain)
+function leaflet_linear = set_rest_lengths_and_constants(leaflet, strain)
 % 
 % Assignes spring constants and rest lengths such that the current 
 % valve configuration has uniform strain as specified here 
@@ -7,21 +7,20 @@ function leaflet_linear = set_rest_lengths_and_constants_linear(leaflet, strain)
 % 
 
 
+error('update for new data structures, not implemented currently')
+
 X_current           = leaflet.X; 
 alpha               = leaflet.alpha; 
 beta                = leaflet.beta; 
-C_left              = leaflet.chordae.C_left; 
-C_right             = leaflet.chordae.C_right; 
+chordae             = leaflet.chordae; 
+chordae_idx         = leaflet.chordae_idx; 
 k_0                 = leaflet.chordae.k_0; 
 chordae_idx_left    = leaflet.chordae_idx_left; 
 chordae_idx_right   = leaflet.chordae_idx_right;
 j_max               = leaflet.j_max; 
 k_max               = leaflet.k_max; 
 du                  = leaflet.du; 
-dv                  = leaflet.dv; 
 is_internal         = leaflet.is_internal; 
-free_edge_idx_left  = leaflet.free_edge_idx_left; 
-free_edge_idx_right = leaflet.free_edge_idx_right;
 
 [m N_chordae] = size(C_left); 
 
@@ -112,16 +111,16 @@ for left_side = [true, false]
         % Anterior circumferential 
         X_nbr = X_current(:,j_nbr,k_nbr); 
 
-        % Multiply tension by dv to get a force,
+        % Multiply tension by du to get a force,
         % rather than a force density, here 
-        tension = alpha * dv; 
+        tension = alpha * du; 
 
         if repulsive_potential
-            tension = tension - alpha * dv * c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
+            tension = tension - alpha * du * c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
         end 
 
         if decreasing_tension
-            tension = tension + alpha * dv * tension_decreasing(X, X_nbr, du, c_dec_tension_circumferential) ; 
+            tension = tension + alpha * du * tension_decreasing(X, X_nbr, du, c_dec_tension_circumferential) ; 
         end 
 
         [k_u(j_spr,k_spr) R_u(j_spr,k_spr)] = get_rest_len_and_spring_constants(X, X_nbr, tension, strain, leaflet); 
@@ -137,11 +136,11 @@ for left_side = [true, false]
         tension = beta * du; 
 
         if repulsive_potential
-            tension = tension - beta * du * c_repulsive_radial * dv^2 * power * 1/norm(X_nbr-X)^(power+1); 
+            tension = tension - beta * du * c_repulsive_radial * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
         end 
 
         if decreasing_tension
-            tension = tension + beta * du * tension_decreasing(X, X_nbr, dv, c_dec_tension_radial) ; 
+            tension = tension + beta * du * tension_decreasing(X, X_nbr, du, c_dec_tension_radial) ; 
         end
 
         [k_v(j_spr,k_spr) R_v(j_spr,k_spr)] = get_rest_len_and_spring_constants(X, X_nbr, tension, strain, leaflet); 
@@ -214,7 +213,7 @@ for j=1:j_max
                 % Here tension is a force per unit length 
                 % So we must multiply by a legnth element to get force 
                 % Take the opposing length element 
-                tension = dv * tension; 
+                tension = du * tension; 
 
                 [k_u(j_spr,k_spr) R_u(j_spr,k_spr)] = get_rest_len_and_spring_constants(X, X_nbr, tension, strain, leaflet); 
                 
@@ -234,11 +233,11 @@ for j=1:j_max
                 tension = beta; 
 
                 if repulsive_potential
-                    tension = tension - beta * c_repulsive_radial * dv^2 * power * 1/norm(X_nbr-X)^(power+1); 
+                    tension = tension - beta * c_repulsive_radial * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
                 end 
 
                 if decreasing_tension
-                    tension = tension + beta * tension_decreasing(X, X_nbr, dv, c_dec_tension_radial) ; 
+                    tension = tension + beta * tension_decreasing(X, X_nbr, du, c_dec_tension_radial) ; 
                 end
 
                 tension = du * tension; 
