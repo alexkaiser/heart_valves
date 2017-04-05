@@ -25,9 +25,13 @@ is_internal = leaflet.is_internal;
 total_internal = 3*sum(is_internal(:));
 idx = 1; 
 
-if (~exist('v', 'var')) && (~exist('v_chordae', 'var'))
+if (~exist('X', 'var')) && (~exist('X_chordae', 'var'))
     X       = leaflet.X; 
     chordae = leaflet.chordae; 
+end 
+
+if nargin == 2
+    error('Must pass X and chordae or use current leaflet values'); 
 end 
 
 X_linearized = zeros(total_internal,1); 

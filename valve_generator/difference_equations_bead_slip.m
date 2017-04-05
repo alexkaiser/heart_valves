@@ -307,7 +307,7 @@ function F = difference_equations_bead_slip(leaflet)
         
         C = chordae(tree_idx).C; 
         [m N_chordae] = size(C);         
-        F_chordae(tree_idx).vals = zeros(size(C));  
+        F_chordae(tree_idx).C = zeros(size(C));  
 
         for i=1:N_chordae
 
@@ -338,28 +338,13 @@ function F = difference_equations_bead_slip(leaflet)
 
                 tension_by_tangent = tension * (nbr - C(:,i)) / norm(nbr - C(:,i));  
 
-                F_chordae(tree_idx).vals(:,i) = F_chordae(tree_idx).vals(:,i) + tension_by_tangent; 
+                F_chordae(tree_idx).C(:,i) = F_chordae(tree_idx).C(:,i) + tension_by_tangent; 
 
             end 
         end 
     end 
 
-    F = zeros(total_internal_leaflet, 1); 
-    
-    % k is required to be the outer loop 
-    idx = 1; 
-    for k=1:k_max
-        for j=1:j_max
-            if leaflet.is_internal(j,k)
-                F(idx + (0:2)) = F_leaflet(:,j,k); 
-                idx = idx + 3; 
-            end 
-        end 
-    end
-
-    for tree_idx = 1:num_trees
-        F = [F; F_chordae(tree_idx).vals(:)]; 
-    end 
+    F = linearize_internal_points(leaflet, F_leaflet, F_chordae); 
     
 end 
 
