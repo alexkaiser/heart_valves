@@ -17,10 +17,8 @@ function leaflet = get_free_edge_ranges_bead_slip(leaflet)
 %                          the leaf index which is connected to X(:,j,k)
 % 
  
-if leaflet.num_trees ~= 2
-    error('not implemented')
-end 
-
+num_trees              = leaflet.num_trees; 
+n_leaves_and_direction = leaflet.n_leaves_and_direction; 
 
 if leaflet.radial_and_circumferential
 
@@ -33,36 +31,68 @@ if leaflet.radial_and_circumferential
     
     k_max = N/2; 
         
-    for tree_idx = 1:leaflet.num_trees
-        chordae(1).free_edge_idx  = zeros(N/2, 2); 
-        chordae(2).free_edge_idx  = zeros(N/2, 2); 
+    for tree_idx = 1:num_trees
+        chordae(tree_idx).free_edge_idx  = zeros(N/2, 2); 
     end 
     
     chordae_idx(N,N/2 + 1).tree_idx = 0;  
     chordae_idx(N,N/2 + 1).leaf_idx = 0;  
     
-    % Left free edge starts at (N/2,1)
-    % and ends at (1,N/2) 
-    j = k_max;  
-    for k=1:k_max
-        chordae(1).free_edge_idx(k,:) = [j; k];
-        chordae_idx(j,k).tree_idx = 1;  
-        chordae_idx(j,k).leaf_idx = k; 
-        k_min(j) = k; 
-        j = j - 1; 
+    % left commissure always starts, by convention at 1,k_max
+    j = 1; 
+    k = k_max; 
+    
+    for tree_idx = 1:num_trees 
+        
+        n_leaves  =  abs(n_leaves_and_direction(tree_idx)); 
+        direction = sign(n_leaves_and_direction(tree_idx)); 
+        
+        chordae(tree_idx).free_edge_idx = zeros(n_leaves,2); 
+        
+        for leaf_idx=1:n_leaves
+        
+            chordae(tree_idx).free_edge_idx(leaf_idx,:) = [j; k];
+            chordae_idx(j,k).tree_idx = tree_idx;  
+            chordae_idx(j,k).leaf_idx = leaf_idx;
+            
+            k_min(j) = k; 
+            
+            % Incremented in direction of sign
+            % Except on final iteration 
+            if leaf_idx < n_leaves
+                k = k + direction; 
+            end 
+            
+            % Horizonal index always increases 
+            j = j + 1; 
+            
+        end 
+        
     end 
-
-    % Right free edge starts N/2 + 1 
-    % to the right of left free edge corner 
-    % and ends at (j_max, k_max)
-    j = k_max + 1; 
-    for k=1:k_max
-        chordae(2).free_edge_idx(k,:) = [j; k]; 
-        chordae_idx(j,k).tree_idx = 2;  
-        chordae_idx(j,k).leaf_idx = k;
-        k_min(j) = k; 
-        j = j + 1; 
-    end 
+    
+    
+%     % Left free edge starts at (N/2,1)
+%     % and ends at (1,N/2) 
+%     j = k_max;  
+%     for k=1:k_max
+%         chordae(1).free_edge_idx(k,:) = [j; k];
+%         chordae_idx(j,k).tree_idx = 1;  
+%         chordae_idx(j,k).leaf_idx = k; 
+%         k_min(j) = k; 
+%         j = j - 1; 
+%     end 
+% 
+%     % Right free edge starts N/2 + 1 
+%     % to the right of left free edge corner 
+%     % and ends at (j_max, k_max)
+%     j = k_max + 1; 
+%     for k=1:k_max
+%         chordae(2).free_edge_idx(k,:) = [j; k]; 
+%         chordae_idx(j,k).tree_idx = 2;  
+%         chordae_idx(j,k).leaf_idx = k;
+%         k_min(j) = k; 
+%         j = j + 1; 
+%     end 
 
 else 
     error('diagional not implemented for bead slip'); 
@@ -149,6 +179,16 @@ for j=1:j_max
         if isempty(chordae_idx(j,k).leaf_idx)
             chordae_idx(j,k).leaf_idx = 0; 
         end 
+    end 
+end 
+
+tree_idx_tmp = zeros(j_max, k_max); 
+leaf_idx_tmp = zeros(j_max, k_max); 
+
+for j=1:j_max
+    for k=1:k_max
+        tree_idx_tmp(j,k) = chordae_idx(j,k).tree_idx; 
+        leaf_idx_tmp(j,k) = chordae_idx(j,k).leaf_idx; 
     end 
 end 
 

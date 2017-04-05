@@ -12,8 +12,8 @@ ring_k_idx              = leaflet.ring_k_idx;
 papillary               = leaflet.papillary; 
 
 
-% first and last point are in appropriate general vicinity 
-n_papillary = size(papillary,2); 
+% first and last point are in appropriate general vicinity to build initial guess 
+n_papillary             = size(papillary,2); 
 left_papillary          = papillary(:,1); 
 right_papillary         = papillary(:,n_papillary); 
 
