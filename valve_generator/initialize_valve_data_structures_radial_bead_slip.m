@@ -291,7 +291,7 @@ alpha_posterior    = 1.0 * tension_base_posterior;  % circumferential
 beta_posterior     = 1.0 * tension_base_posterior;  % radial
 
 
-n_trees_posterior = 4; 
+n_trees_posterior = 8; 
 
 k_root_posterior = k_root_posterior / n_trees_posterior; 
 
@@ -310,11 +310,13 @@ n_points = n_trees_posterior/2;
 right_papillary_range = 1:(n_trees_posterior/2); 
 left_papillary_range  = right_papillary_range + (n_trees_posterior/2); 
 
-papillary_posterior(:,right_papillary_range) = get_papillary_coords(valve.right_papillary_center, valve.papillary_radius, n_points,  3*pi/4,  5*pi/4); 
-papillary_posterior(:,left_papillary_range)  = get_papillary_coords(valve.left_papillary_center,  valve.papillary_radius, n_points, -3*pi/4, -5*pi/4);
+papillary_posterior(:,right_papillary_range) = get_papillary_coords(valve.right_papillary_center, valve.papillary_radius, n_points,    pi/4,  5*pi/4); 
+papillary_posterior(:,left_papillary_range)  = get_papillary_coords(valve.left_papillary_center,  valve.papillary_radius, n_points, -5*pi/4,   -pi/4);
 
+% this arrangement is very touchy 
+% N * [-1, 1, -1, 1, -1, 1] .* [1/8, 1/8, 1/4, 1/4, 1/8, 1/8]; 
 
-n_leaves_and_direction_posterior = [-N/n_trees_posterior, -N/n_trees_posterior, N/n_trees_posterior, N/n_trees_posterior]; 
+n_leaves_and_direction_posterior = N/8 * [-1, 1, -1, -1, 1, 1, 1, 1]; 
 
 left_papillary_posterior_diastolic  = valve.left_papillary_diastolic; 
 right_papillary_posterior_diastolic = valve.right_papillary_diastolic;
