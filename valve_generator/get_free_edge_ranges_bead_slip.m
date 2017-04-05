@@ -182,17 +182,15 @@ for j=1:j_max
     end 
 end 
 
-tree_idx_tmp = zeros(j_max, k_max); 
-leaf_idx_tmp = zeros(j_max, k_max); 
-
-for j=1:j_max
-    for k=1:k_max
-        tree_idx_tmp(j,k) = chordae_idx(j,k).tree_idx; 
-        leaf_idx_tmp(j,k) = chordae_idx(j,k).leaf_idx; 
-    end 
-end 
-
-
+% tree_idx_tmp = zeros(j_max, k_max); 
+% leaf_idx_tmp = zeros(j_max, k_max); 
+% 
+% for j=1:j_max
+%     for k=1:k_max
+%         tree_idx_tmp(j,k) = chordae_idx(j,k).tree_idx; 
+%         leaf_idx_tmp(j,k) = chordae_idx(j,k).leaf_idx; 
+%     end 
+% end 
 
 
 leaflet.j_max               = j_max; 

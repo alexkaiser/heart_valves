@@ -45,7 +45,7 @@ l_to_r_papillary = (valve.right_papillary - valve.left_papillary);
 l_to_r_papillary = l_to_r_papillary / norm(l_to_r_papillary);
 
 
-valve.papillary_radius = 0; 
+valve.papillary_radius = 0.25; 
  
 valve.left_papillary_center  = valve.left_papillary  + valve.papillary_radius * l_to_r_papillary; 
 valve.right_papillary_center = valve.right_papillary - valve.papillary_radius * l_to_r_papillary; 
@@ -280,7 +280,7 @@ valve.anterior = initialize_leaflet_bead_slip(N,                        ...
 total_angle_posterior = 7*pi/6; 
 tension_base_posterior = valve.tension_base; 
 k_0_1_posterior  = 1.0 * tension_base_posterior; 
-k_root_posterior = 1.0 * (1.889568000000001e+01 / 32) * tension_base_posterior; 
+k_root_posterior = 2.0 * (1.889568000000001e+01 / 32) * tension_base_posterior; 
 ring_to_ring_posterior_range = 0; %[(3*N/16), (3*N/8)];
      
     
@@ -291,15 +291,30 @@ alpha_posterior    = 1.0 * tension_base_posterior;  % circumferential
 beta_posterior     = 1.0 * tension_base_posterior;  % radial
 
 
-N_tree = N/2; 
+n_trees_posterior = 4; 
+
+k_root_posterior = k_root_posterior / n_trees_posterior; 
+
+N_tree = N/n_trees_posterior; 
 
 k_0_posterior   = k_0_1_posterior / N_tree; 
 k_multiplier_posterior = 2.0 * (k_root_posterior/k_0_1_posterior)^(1/log2(N_tree)); 
 
 
-papillary_posterior(:,1) = get_papillary_coords(valve.right_papillary_center, valve.papillary_radius, n_points,  5*pi/4,  5*pi/4); 
-papillary_posterior(:,2) = get_papillary_coords(valve.left_papillary_center,  valve.papillary_radius, n_points, -5*pi/4, -5*pi/4);
 
+
+papillary_posterior = zeros(3,n_trees_posterior); 
+
+n_points = n_trees_posterior/2; 
+
+right_papillary_range = 1:(n_trees_posterior/2); 
+left_papillary_range  = right_papillary_range + (n_trees_posterior/2); 
+
+papillary_posterior(:,right_papillary_range) = get_papillary_coords(valve.right_papillary_center, valve.papillary_radius, n_points,  3*pi/4,  5*pi/4); 
+papillary_posterior(:,left_papillary_range)  = get_papillary_coords(valve.left_papillary_center,  valve.papillary_radius, n_points, -3*pi/4, -5*pi/4);
+
+
+n_leaves_and_direction_posterior = [-N/n_trees_posterior, -N/n_trees_posterior, N/n_trees_posterior, N/n_trees_posterior]; 
 
 left_papillary_posterior_diastolic  = valve.left_papillary_diastolic; 
 right_papillary_posterior_diastolic = valve.right_papillary_diastolic;
@@ -310,7 +325,7 @@ valve.posterior = initialize_leaflet_bead_slip(N,                    ...
                                 angles_posterior,                    ...    
                                 valve.r,                             ... 
                                 papillary_posterior,                 ... 
-                                n_leaves_and_direction,              ...
+                                n_leaves_and_direction_posterior,    ...
                                 left_papillary_posterior_diastolic,  ...
                                 right_papillary_posterior_diastolic, ...
                                 radial_and_circumferential,          ...  

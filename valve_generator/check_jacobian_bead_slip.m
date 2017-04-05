@@ -23,7 +23,7 @@ epsilon_vals = 10.^(-1:-1:-8);
 
 errors = zeros(size(epsilon_vals)); 
 
-leaflet = valve.anterior; 
+leaflet = valve.posterior; 
 
 % eval the difference eqns on the perturbation 
 F  = difference_equations_bead_slip(leaflet); 

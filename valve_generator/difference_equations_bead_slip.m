@@ -23,9 +23,6 @@ function F = difference_equations_bead_slip(leaflet)
     is_bc                  = leaflet.is_bc; 
     num_trees              = leaflet.num_trees; 
     
-    if num_trees ~= 2
-        error('not implemented'); 
-    end 
     
     % repulsive potential coefficients, if used 
     if isfield(leaflet, 'repulsive_potential') && leaflet.repulsive_potential

@@ -41,10 +41,6 @@ function leaflet = add_chordae(leaflet, tree_idx)
     
     total_len = 2^(n_tree+1) - 1; 
     max_internal = 2^(n_tree) - 1;     % last node that is not a leaf 
-            
-    if leaflet.num_trees ~= 2
-        error('not implemented for numbers other than 2 trees'); 
-    end 
    
     % root pulled from the papillary arrays 
     chordae(tree_idx).root = papillary(:,tree_idx); 

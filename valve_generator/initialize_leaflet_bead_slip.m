@@ -50,8 +50,8 @@ leaflet.tension_base = valve.tension_base;
 
 leaflet.ring_to_ring_range = ring_to_ring_range; 
 
-% currently only implemented number
-leaflet.num_trees = 2; 
+leaflet.num_trees = size(papillary, 2); 
+
 
 leaflet.repulsive_potential         = valve.repulsive_potential; 
 if leaflet.repulsive_potential         
