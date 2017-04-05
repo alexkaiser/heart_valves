@@ -245,8 +245,8 @@ papillary_anterior = zeros(3,n_trees_anterior);
 
 n_points = 1; 
 
-papillary_anterior(:,1) = get_papillary_coords(valve.left_papillary_center,  valve.papillary_radius, n_points,  pi/4,  pi/4); 
-papillary_anterior(:,2) = get_papillary_coords(valve.right_papillary_center, valve.papillary_radius, n_points, -pi/4, -pi/4); 
+papillary_anterior(:,1) = get_papillary_coords(valve.left_papillary_center,  valve.papillary_radius, n_points, -pi/4, -pi/4); 
+papillary_anterior(:,2) = get_papillary_coords(valve.right_papillary_center, valve.papillary_radius, n_points,  pi/4,  pi/4); 
 
 left_papillary_anterior_diastolic  = valve.left_papillary_diastolic; 
 right_papillary_anterior_diastolic = valve.right_papillary_diastolic;
@@ -294,8 +294,8 @@ k_0_posterior   = k_0_1_posterior / N_tree;
 k_multiplier_posterior = 2.0 * (k_root_posterior/k_0_1_posterior)^(1/log2(N_tree)); 
 
 
-papillary_posterior(:,1) = get_papillary_coords(valve.right_papillary_center, valve.papillary_radius, n_points,  pi/4,  pi/4); 
-papillary_posterior(:,2) = get_papillary_coords(valve.left_papillary_center,  valve.papillary_radius, n_points, -pi/4, -pi/4);
+papillary_posterior(:,1) = get_papillary_coords(valve.right_papillary_center, valve.papillary_radius, n_points,  3*pi/4,  3*pi/4); 
+papillary_posterior(:,2) = get_papillary_coords(valve.left_papillary_center,  valve.papillary_radius, n_points, -3*pi/4, -3*pi/4);
 
 
 left_papillary_posterior_diastolic  = valve.left_papillary_diastolic; 
