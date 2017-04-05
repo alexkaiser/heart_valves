@@ -313,10 +313,11 @@ left_papillary_range  = right_papillary_range + (n_trees_posterior/2);
 papillary_posterior(:,right_papillary_range) = get_papillary_coords(valve.right_papillary_center, valve.papillary_radius, n_points,    pi/4,  5*pi/4); 
 papillary_posterior(:,left_papillary_range)  = get_papillary_coords(valve.left_papillary_center,  valve.papillary_radius, n_points, -5*pi/4,   -pi/4);
 
-% this arrangement is very touchy 
+% this arrangement is very touchy, doesn't converge  
 % N * [-1, 1, -1, 1, -1, 1] .* [1/8, 1/8, 1/4, 1/4, 1/8, 1/8]; 
 
-n_leaves_and_direction_posterior = N/8 * [-1, 1, -1, -1, 1, 1, 1, 1]; 
+% this type works sometimes... 
+n_leaves_and_direction_posterior = N/n_trees_posterior * [-1, -1, -1, -1, 1, 1, 1, 1]; 
 
 left_papillary_posterior_diastolic  = valve.left_papillary_diastolic; 
 right_papillary_posterior_diastolic = valve.right_papillary_diastolic;
