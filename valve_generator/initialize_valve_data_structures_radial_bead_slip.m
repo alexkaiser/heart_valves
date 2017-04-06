@@ -130,7 +130,7 @@ valve.L = 2.5;
 
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
-valve.pressure_tension_ratio = 0.07; % 0.11 * 0.975; 
+valve.pressure_tension_ratio = 0.15; % 0.11 * 0.975; 
 
 % original spring constants were for N = 32 debug width
 % spring constants get multiplied by 32/N, so they are halfed if N==64
@@ -213,7 +213,7 @@ N_tree = N/n_trees_anterior ;
 % this is an arbitrary constant determined by guess and check 
 
 % good basic value = 1.8 * 0.5 * (alpha + beta) = 1.8 * tension_base
-k_0_1_anterior = 2.0 * tension_base_anterior / n_trees_anterior; 
+k_0_1_anterior = 0.8 * 2.0 * tension_base_anterior / n_trees_anterior; 
 
 % force on each leaf in the chordae tree 
 k_0_anterior   = k_0_1_anterior / N_tree; 
