@@ -224,7 +224,7 @@ k_0_anterior   = k_0_1_anterior / N_tree;
 
 % adjust accordingly
 % note that 1.889568000000001e+01 / 32 = 0.5905
-k_root_anterior = 1.0 * (1.889568000000001e+01 / 32) * tension_base_anterior; 
+k_root_anterior = 0.9 * (1.889568000000001e+01 / 32) * tension_base_anterior; 
 
 % multiplier necessary to maintain constant root tension 
 % and constant total leaf tension 
@@ -279,8 +279,8 @@ valve.anterior = initialize_leaflet_bead_slip(N,                        ...
     
 total_angle_posterior = 7*pi/6; 
 tension_base_posterior = valve.tension_base; 
-k_0_1_posterior  = 1.0 * tension_base_posterior; 
-k_root_posterior = 2.0 * (1.889568000000001e+01 / 32) * tension_base_posterior; 
+k_0_1_posterior  = 0.2 * tension_base_posterior; 
+k_root_posterior = 0.8 * 2.0 * (1.889568000000001e+01 / 32) * tension_base_posterior; 
 ring_to_ring_posterior_range = 0; %[(3*N/16), (3*N/8)];
      
     
@@ -316,8 +316,11 @@ papillary_posterior(:,left_papillary_range)  = get_papillary_coords(valve.left_p
 % this arrangement is very touchy, doesn't converge  
 % N * [-1, 1, -1, 1, -1, 1] .* [1/8, 1/8, 1/4, 1/4, 1/8, 1/8]; 
 
-% this type works sometimes... 
+% this is generally pretty good 
 n_leaves_and_direction_posterior = N/n_trees_posterior * [-1, -1, -1, -1, 1, 1, 1, 1]; 
+
+
+% n_leaves_and_direction_posterior = N * [1/8, 1/8, 1/4, 1/4, 1/8, 1/8] .* [-1, -1, -1, 1, 1, 1]; 
 
 left_papillary_posterior_diastolic  = valve.left_papillary_diastolic; 
 right_papillary_posterior_diastolic = valve.right_papillary_diastolic;

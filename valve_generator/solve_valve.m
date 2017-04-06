@@ -53,7 +53,7 @@ else
 end 
 
 surf_plot(valve.posterior, fig); 
-
+pause(0.01); 
 
 
 p_initial = 0; 
