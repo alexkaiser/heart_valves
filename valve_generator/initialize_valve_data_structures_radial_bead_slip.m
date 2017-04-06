@@ -201,8 +201,11 @@ end
 
 % Chordae parameters 
 
+n_trees_anterior = 4; 
+
+
 % tree has half as many leaves as total number of radial fibers N
-N_tree = N/2; 
+N_tree = N/n_trees_anterior ; 
 
 % base constant for force scaling
 % this is the total force, in current units, 
@@ -210,7 +213,7 @@ N_tree = N/2;
 % this is an arbitrary constant determined by guess and check 
 
 % good basic value = 1.8 * 0.5 * (alpha + beta) = 1.8 * tension_base
-k_0_1_anterior = 1.0 * tension_base_anterior; 
+k_0_1_anterior = 2.0 * tension_base_anterior / n_trees_anterior; 
 
 % force on each leaf in the chordae tree 
 k_0_anterior   = k_0_1_anterior / N_tree; 
@@ -224,7 +227,7 @@ k_0_anterior   = k_0_1_anterior / N_tree;
 
 % adjust accordingly
 % note that 1.889568000000001e+01 / 32 = 0.5905
-k_root_anterior = 0.9 * (1.889568000000001e+01 / 32) * tension_base_anterior; 
+k_root_anterior = 0.9 * 2.0 * (1.889568000000001e+01 / 32) * tension_base_anterior / n_trees_anterior; 
 
 % multiplier necessary to maintain constant root tension 
 % and constant total leaf tension 
@@ -233,22 +236,18 @@ k_multiplier_anterior = 2.0 * (k_root_anterior/k_0_1_anterior)^(1/log2(N_tree));
 % controls initial guess tree vertex placement 
 tree_frac = 0.5;
 
-% double tree strength in attached version 
-if attached 
-    k_0_anterior = k_0_anterior * 2.0; 
-end 
-
-
-n_trees_anterior = 2; 
 
 papillary_anterior = zeros(3,n_trees_anterior); 
 
-n_points = 1; 
+n_points = n_trees_anterior/2; 
 
-papillary_anterior(:,1) = get_papillary_coords(valve.left_papillary_center,  valve.papillary_radius, n_points,  pi/4,  pi/4); 
-papillary_anterior(:,2) = get_papillary_coords(valve.right_papillary_center, valve.papillary_radius, n_points, -pi/4, -pi/4); 
+right_papillary_range = 1:(n_trees_anterior/2); 
+left_papillary_range  = right_papillary_range + (n_trees_anterior/2);
 
-n_leaves_and_direction = [-N/2, N/2]; 
+papillary_anterior(:,right_papillary_range) = get_papillary_coords(valve.left_papillary_center,  valve.papillary_radius, n_points,  0*pi/4,    pi/4); 
+papillary_anterior(:,left_papillary_range)  = get_papillary_coords(valve.right_papillary_center, valve.papillary_radius, n_points,   -pi/4, -0*pi/4); 
+
+n_leaves_and_direction_anterior = N/n_trees_anterior * [-1, -1, 1, 1]; 
 
 left_papillary_anterior_diastolic  = valve.left_papillary_diastolic; 
 right_papillary_anterior_diastolic = valve.right_papillary_diastolic;
@@ -259,7 +258,7 @@ valve.anterior = initialize_leaflet_bead_slip(N,                        ...
                                     angles_anterior,                    ...    
                                     valve.r,                            ... 
                                     papillary_anterior,                 ... 
-                                    n_leaves_and_direction,             ...
+                                    n_leaves_and_direction_anterior,    ...
                                     left_papillary_anterior_diastolic,  ... 
                                     right_papillary_anterior_diastolic, ... 
                                     radial_and_circumferential,         ...  
