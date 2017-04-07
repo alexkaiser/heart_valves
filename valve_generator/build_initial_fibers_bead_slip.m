@@ -28,7 +28,11 @@ if leaflet.radial_and_circumferential
     if n_rings_periodic > 0 
         
         % periodic, initial points on cylinder
-        mesh = linspace(leaflet.min_angle, leaflet.max_angle, j_max); 
+        % completes circle, so first and final point are equal 
+        mesh = linspace(leaflet.min_angle, leaflet.max_angle, j_max + 1);
+        
+        % clip the redundant point
+        mesh = mesh(1:j_max); 
         
         for j=1:j_max
             X(:,j,ring_k_idx(j)) = [r*cos(mesh(j)); r*sin(mesh(j)); 0.0]; 
