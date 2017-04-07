@@ -223,7 +223,7 @@ k_0_1_anterior = k_0_1_anterior * [1 1 1 1];
 % note that 1.889568000000001e+01 / 32 = 0.5905
 k_root_anterior = 0.9 * 2.0 * (1.889568000000001e+01 / 32) * tension_base_anterior / n_trees_anterior; 
 
-k_root_anterior = k_root_anterior * [1.03 1 1 1.03]; 
+k_root_anterior = k_root_anterior * [1 1 1 1]; 
 
 % controls initial guess tree vertex placement 
 tree_frac = 0.5;
@@ -287,10 +287,6 @@ n_trees_posterior = 8;
 k_root_posterior = k_root_posterior / n_trees_posterior; 
 
 N_tree = N/n_trees_posterior; 
-
-k_0_posterior   = k_0_1_posterior / N_tree; 
-k_multiplier_posterior = 2.0 * (k_root_posterior/k_0_1_posterior)^(1/log2(N_tree)); 
-
 
 
 
