@@ -10,8 +10,8 @@ function leaflet = initialize_leaflet_bead_slip(N,                  ...
                                       alpha,                        ... 
                                       beta,                         ... 
                                       p_0,                          ...  
-                                      k_0,                          ... 
-                                      k_multiplier,                 ... 
+                                      k_0_1,                        ... 
+                                      k_root,                       ... 
                                       tree_frac,                    ...
                                       leaflet_only,                 ...
                                       ring_to_ring_range,           ...
@@ -150,20 +150,18 @@ leaflet.total_internal_leaflet    = 3*sum(leaflet.is_internal(:));
 % Updated as trees are added 
 leaflet.total_internal_with_trees = 3*sum(leaflet.is_internal(:)); 
 
-% chordae data structures  
-if exist('k_0', 'var') && exist('k_multiplier', 'var') && exist('tree_frac', 'var')
-    leaflet.chordae_tree = true; 
-    leaflet.k_0          = k_0; 
-    leaflet.k_multiplier = k_multiplier; 
-    leaflet.tree_frac    = tree_frac;
-    
-    for tree_idx = 1:leaflet.num_trees
-        leaflet = add_chordae(leaflet, tree_idx); 
-    end 
-    
-else 
-    leaflet.chordae_tree = false; 
+
+
+leaflet.chordae_tree = true; 
+leaflet.k_0_1        = k_0_1; 
+leaflet.k_root       = k_root; 
+leaflet.tree_frac    = tree_frac;
+
+for tree_idx = 1:leaflet.num_trees
+    leaflet = add_chordae(leaflet, tree_idx); 
 end 
+    
+
 
 % parameter structure for collagen based nonlinear constitutive 
 if valve.collagen_constitutive

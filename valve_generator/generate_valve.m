@@ -4,7 +4,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 128; 
+N = 32; 
 
 
 % Show some output 
@@ -89,11 +89,12 @@ fig = valve_plot(valve, fig);
 title('Pressurized configuration fibers'); 
 saveas(fig, strcat(valve.base_name, '_pressurized'), 'fig'); 
 
-
-fig = figure; 
-fig = valve_plot(valve_linear, fig); 
-title('Relaxed configuration radial fibers, linear constitutive law'); 
-saveas(fig, strcat(valve.base_name, '_relaxed'), 'fig'); 
+if ~isempty(valve_linear)
+    fig = figure; 
+    fig = valve_plot(valve_linear, fig); 
+    title('Relaxed configuration radial fibers, linear constitutive law'); 
+    saveas(fig, strcat(valve.base_name, '_relaxed'), 'fig'); 
+end 
 
 if pass_all 
     fprintf('Final solve passed.\n'); 
@@ -106,8 +107,9 @@ end
 save(strcat(valve.base_name, '_final_data')); 
 
 % Write to simulation files 
-output_to_ibamr_format(valve_linear); 
-
+if ~isempty(valve_linear)
+    output_to_ibamr_format(valve_linear); 
+end 
 
 
 

@@ -13,13 +13,25 @@ function leaflet = add_chordae(leaflet, tree_idx)
     tree_frac           = leaflet.tree_frac; 
     papillary           = leaflet.papillary;
     X                   = leaflet.X; 
-    k_multiplier        = leaflet.k_multiplier; 
-    k_0                 = leaflet.k_0;
+    k_root              = leaflet.k_root; 
+    k_0_1               = leaflet.k_0_1;
     chordae             = leaflet.chordae; 
     free_edge_idx       = chordae(tree_idx).free_edge_idx; 
     
     [n_leaves, m] = size(free_edge_idx);  
 
+    
+    if (length(k_0_1) == 1) && (length(k_root) == 1)
+        k_0_1_tmp   = k_0_1; 
+        k_root_tmp  = k_root; 
+    elseif (length(k_0_1) == leaflet.num_trees) && (length(k_root) == leaflet.num_trees)
+        k_0_1_tmp   = k_0_1(tree_idx); 
+        k_root_tmp  = k_root(tree_idx); 
+    else
+        error('Must supply ')
+    end 
+    
+    
     if m ~= 2
         error('free edge indices must be an N by 2 array'); 
     end 
@@ -38,6 +50,15 @@ function leaflet = add_chordae(leaflet, tree_idx)
         error('multiplier on tree position must be between zero and one'); 
     end 
 
+    % Derived constants 
+    
+    % leaf force is total leaf force over number of leaves 
+    k_0 = k_0_1_tmp / n_leaves; 
+    
+    % scaling formula on k_multiplier 
+    % to achieve desired k_root 
+    k_multiplier = 2.0 * (k_root_tmp/k_0_1_tmp)^(1/log2(n_leaves)); 
+    
     
     total_len = 2^(n_tree+1) - 1; 
     max_internal = 2^(n_tree) - 1;     % last node that is not a leaf 
@@ -109,6 +130,13 @@ function leaflet = add_chordae(leaflet, tree_idx)
         num_at_level = num_at_level / 2; 
     end 
 
+    % check that we actually got the desired root 
+    tol = 1e-10; 
+    if abs(chordae(tree_idx).k_vals(1) - k_root) > tol 
+        error('Scaling incorrect at tree root, constants inconsistent'); 
+    end 
+    
+    
     chordae(tree_idx).k_0              = k_0; 
     chordae(tree_idx).k_multiplier     = k_multiplier;
     
