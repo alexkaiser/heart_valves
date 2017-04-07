@@ -16,6 +16,7 @@ function leaflet = initialize_leaflet_bead_slip(N,                  ...
                                       tree_frac,                    ...
                                       leaflet_only,                 ...
                                       ring_to_ring_range,           ...
+                                      n_rings_periodic,             ... 
                                       valve)
 %
 % Builds leaflet data structures 
@@ -52,6 +53,8 @@ leaflet.tension_base = valve.tension_base;
 leaflet.ring_to_ring_range = ring_to_ring_range; 
 
 leaflet.num_trees = size(papillary, 2); 
+
+leaflet.n_rings_periodic = n_rings_periodic; 
 
 
 leaflet.repulsive_potential         = valve.repulsive_potential; 

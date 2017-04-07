@@ -17,9 +17,10 @@ function leaflet = get_free_edge_ranges_bead_slip(leaflet)
 %                          the leaf index which is connected to X(:,j,k)
 % 
  
-num_trees      = leaflet.num_trees; 
-n_leaves       = leaflet.n_leaves; 
-tree_direction = leaflet.tree_direction; 
+num_trees        = leaflet.num_trees; 
+n_leaves         = leaflet.n_leaves; 
+tree_direction   = leaflet.tree_direction; 
+n_rings_periodic = leaflet.n_rings_periodic; 
 
 if leaflet.radial_and_circumferential
 
@@ -102,6 +103,10 @@ end
 
 if isfield(leaflet, 'ring_to_ring_range') && (~isempty(leaflet.ring_to_ring_range)) && (max(leaflet.ring_to_ring_range) > 0) 
     
+    if n_rings_periodic ~= 0
+        error('ring to ring and periodic loops not implemented at same time'); 
+    end 
+    
     if length(leaflet.ring_to_ring_range) == 1  
         min_ring_to_ring = 1; 
         max_ring_to_ring = leaflet.ring_to_ring_range; 
@@ -113,7 +118,6 @@ if isfield(leaflet, 'ring_to_ring_range') && (~isempty(leaflet.ring_to_ring_rang
     end 
     
     % number of fibers placed 
-    % N_ring_to_ring = 
     
     if max_ring_to_ring > (N/2 - 1)
         error('Not enough ring points to add that many ring to ring fibers'); 
@@ -164,8 +168,13 @@ if isfield(leaflet, 'ring_to_ring_range') && (~isempty(leaflet.ring_to_ring_rang
     
 else 
     % extra row gets no additional fibers but placed for ring only 
-    k_max = k_max + 1; 
+    k_max = k_max + 1 + n_rings_periodic; 
     ring_k_idx = k_max * ones(j_max,1); 
+    
+    % resize and zero pad chordae arrays
+    chordae_idx(j_max,k_max).tree_idx = 0; 
+    chordae_idx(j_max,k_max).leaf_idx = 0;
+    
 end 
 
 
@@ -181,16 +190,6 @@ for j=1:j_max
         end 
     end 
 end 
-
-% tree_idx_tmp = zeros(j_max, k_max); 
-% leaf_idx_tmp = zeros(j_max, k_max); 
-% 
-% for j=1:j_max
-%     for k=1:k_max
-%         tree_idx_tmp(j,k) = chordae_idx(j,k).tree_idx; 
-%         leaf_idx_tmp(j,k) = chordae_idx(j,k).leaf_idx; 
-%     end 
-% end 
 
 
 leaflet.j_max               = j_max; 
