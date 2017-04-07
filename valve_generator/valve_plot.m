@@ -6,17 +6,24 @@ if ~exist('fig', 'var')
     fig = figure; 
 end 
 
-fig = surf_plot(valve.anterior, fig); 
-hold on; 
 
-fig = surf_plot(valve.posterior, fig); 
+if isfield(valve, 'leaflet')
+    
+    fig = surf_plot(valve.leaflet, fig); 
 
-if isfield(valve, 'comm_left')
-    fig = surf_plot(valve.comm_left, fig); 
+else 
+
+    fig = surf_plot(valve.anterior, fig); 
+    hold on; 
+
+    fig = surf_plot(valve.posterior, fig); 
+
+    if isfield(valve, 'comm_left')
+        fig = surf_plot(valve.comm_left, fig); 
+    end 
+
+    if isfield(valve, 'comm_right')
+        fig = surf_plot(valve.comm_right, fig); 
+    end 
+
 end 
-
-if isfield(valve, 'comm_right')
-    fig = surf_plot(valve.comm_right, fig); 
-end 
-
-
