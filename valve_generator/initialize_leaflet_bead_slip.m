@@ -3,7 +3,8 @@ function leaflet = initialize_leaflet_bead_slip(N,                  ...
                                       angles,                       ... 
                                       r,                            ... 
                                       papillary,                    ...
-                                      n_leaves_and_direction,       ...
+                                      n_leaves,                     ...
+                                      tree_direction,               ...
                                       left_papillary_diastolic,     ...
                                       right_papillary_diastolic,    ...
                                       radial_and_circumferential,   ...  
@@ -106,17 +107,29 @@ if size(papillary, 2) ~= leaflet.num_trees
     error('Must have as many papillary coordinates as trees'); 
 end 
 
-if length(n_leaves_and_direction) ~= leaflet.num_trees
+if length(n_leaves) ~= leaflet.num_trees
     error('Must have a size for every tree'); 
 end 
 
-if sum(abs(n_leaves_and_direction)) ~= N
+if length(tree_direction) ~= leaflet.num_trees
+    error('Must have a size for every tree'); 
+end 
+
+if sum(n_leaves) ~= N
     error('Must have a free edge connection for all points on the tree'); 
 end 
 
-leaflet.n_leaves_and_direction    = n_leaves_and_direction; 
+if sum(tree_direction .* n_leaves) ~= 0
+    error('Total leaflet must return to same vertical index from which it started'); 
+end 
+    
+
+
+leaflet.n_leaves                  = n_leaves;
+leaflet.tree_direction            = tree_direction; 
 leaflet.papillary                 = papillary; 
 
+% FIX ME
 leaflet.left_papillary_diastolic  = left_papillary_diastolic; 
 leaflet.right_papillary_diastolic = right_papillary_diastolic;
 

@@ -17,8 +17,9 @@ function leaflet = get_free_edge_ranges_bead_slip(leaflet)
 %                          the leaf index which is connected to X(:,j,k)
 % 
  
-num_trees              = leaflet.num_trees; 
-n_leaves_and_direction = leaflet.n_leaves_and_direction; 
+num_trees      = leaflet.num_trees; 
+n_leaves       = leaflet.n_leaves; 
+tree_direction = leaflet.tree_direction; 
 
 if leaflet.radial_and_circumferential
 
@@ -44,12 +45,11 @@ if leaflet.radial_and_circumferential
     
     for tree_idx = 1:num_trees 
         
-        n_leaves  =  abs(n_leaves_and_direction(tree_idx)); 
-        direction = sign(n_leaves_and_direction(tree_idx)); 
+        n_leaves_tmp  = n_leaves(tree_idx); 
         
-        chordae(tree_idx).free_edge_idx = zeros(n_leaves,2); 
+        chordae(tree_idx).free_edge_idx = zeros(n_leaves_tmp,2); 
         
-        for leaf_idx=1:n_leaves
+        for leaf_idx=1:n_leaves_tmp
         
             chordae(tree_idx).free_edge_idx(leaf_idx,:) = [j; k];
             chordae_idx(j,k).tree_idx = tree_idx;  
@@ -59,8 +59,8 @@ if leaflet.radial_and_circumferential
             
             % Incremented in direction of sign
             % Except on final iteration 
-            if leaf_idx < n_leaves
-                k = k + direction; 
+            if leaf_idx < n_leaves_tmp
+                k = k + tree_direction(tree_idx); 
             end 
             
             % Horizonal index always increases 
