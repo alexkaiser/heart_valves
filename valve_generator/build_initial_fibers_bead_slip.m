@@ -25,7 +25,7 @@ debug = false;
 
 if leaflet.radial_and_circumferential
     
-    if n_rings_periodic > 0 
+    if true % n_rings_periodic > 0 
         
         % periodic, initial points on cylinder
         % completes circle, so first and final point are equal 
@@ -39,7 +39,8 @@ if leaflet.radial_and_circumferential
         end 
         
         % very rough physical mesh spacing
-        ds = norm(X(:,1,ring_k_idx(1)) - X(:,2,ring_k_idx(2))); 
+        % should be unimportant since this is just for an initial guess 
+        ds = 0.5 * norm(X(:,1,ring_k_idx(1)) - X(:,2,ring_k_idx(2))); 
         
         for j=1:j_max 
             

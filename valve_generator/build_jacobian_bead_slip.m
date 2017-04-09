@@ -91,7 +91,12 @@ function J = build_jacobian_bead_slip(leaflet)
                 % always four neighbors
                 if (~is_bc(j,k)) && (~chordae_idx(j,k).tree_idx) && (p_0 ~= 0)
                     
-                    j_nbr = j+1; 
+                    % periodic reduction of nbr indices 
+                    j_plus__1 = get_j_nbr(j+1, k, periodic_j, j_max); 
+                    j_minus_1 = get_j_nbr(j-1, k, periodic_j, j_max);
+                    
+                    
+                    j_nbr = j_plus__1; 
                     k_nbr = k; 
                     
                     J_pressure = -(p_0/4) * cross_matrix(X_current(:,j,k+1) - X_current(:,j,k-1)) ; 
@@ -101,7 +106,7 @@ function J = build_jacobian_bead_slip(leaflet)
                         place_tmp_block(range_current, range_nbr, J_pressure); 
                     end 
                     
-                    j_nbr = j-1; 
+                    j_nbr = j_minus_1; 
                     k_nbr = k; 
                     J_pressure =  (p_0/4) * cross_matrix(X_current(:,j,k+1) - X_current(:,j,k-1)) ; 
                     
@@ -112,7 +117,7 @@ function J = build_jacobian_bead_slip(leaflet)
                     
                     j_nbr = j; 
                     k_nbr = k+1; 
-                    J_pressure =  (p_0/4) * cross_matrix(X_current(:,j+1,k) - X_current(:,j-1,k)) ; 
+                    J_pressure =  (p_0/4) * cross_matrix(X_current(:,j_plus__1,k) - X_current(:,j_minus_1,k)) ; 
 
                     if is_internal(j_nbr,k_nbr)
                         range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
@@ -121,7 +126,7 @@ function J = build_jacobian_bead_slip(leaflet)
                     
                     j_nbr = j; 
                     k_nbr = k-1; 
-                    J_pressure = -(p_0/4) * cross_matrix(X_current(:,j+1,k) - X_current(:,j-1,k)) ; 
+                    J_pressure = -(p_0/4) * cross_matrix(X_current(:,j_plus__1,k) - X_current(:,j_minus_1,k)) ; 
 
                     if is_internal(j_nbr,k_nbr)
                         range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
@@ -133,16 +138,7 @@ function J = build_jacobian_bead_slip(leaflet)
 
                 for j_nbr_unreduced = [j-1,j+1]
                     
-                    j_nbr = j_nbr_unreduced; 
-                    
-                    % may have periodic connection in j 
-                    if periodic_j(k)
-                        if j_nbr == (j_max + 1)
-                            j_nbr = 1; 
-                        elseif j_nbr == 0
-                            j_nbr = j_max; 
-                        end    
-                    end 
+                    j_nbr = get_j_nbr(j_nbr_unreduced, k, periodic_j, j_max); 
 
                     k_nbr = k; 
 

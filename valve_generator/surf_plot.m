@@ -28,6 +28,16 @@ if ~exist('fig', 'var')
     fig = figure; 
 end 
 
+if isfield(leaflet, 'periodic_j')
+    periodic_j = leaflet.periodic_j; 
+    j_max = j_max + 1; 
+    
+    % periodic copy for plotting purposes
+    X_copy(:,j_max,:) = X_copy(:,1,:); 
+end 
+    
+
+
 x_component = squeeze(X_copy(1,:,:)); 
 y_component = squeeze(X_copy(2,:,:)); 
 z_component = squeeze(X_copy(3,:,:)); 

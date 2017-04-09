@@ -115,7 +115,7 @@ MMHG_TO_CGS      = 1333.22368;
 valve.p_physical = 110 * MMHG_TO_CGS; 
 
 % Pressure on each leaflet is constant, negative since normal is outward facing 
-p_0 = 0; -valve.p_physical; 
+p_0 = -valve.p_physical; 
 
 % scaling for target points 
 valve.target_multiplier = 40/128; 
@@ -172,12 +172,12 @@ alpha    = 1.0 * valve.tension_base;  % circumferential
 beta     = 1.0 * valve.tension_base;  % radial
 
 % Leaf tensions are all modified 
-valve.leaf_tension_base = valve.tension_base; 
+valve.leaf_tension_base = 0.5 * valve.tension_base; 
 
 % Base total root tension 
-% This value, 0.5905, works well on each tree when using separate solves and two leaflets 
+% The value 0.5905 works well on each tree when using separate solves and two leaflets 
 % Controls constant tension at the root of the tree 
-valve.root_tension_base = 2 * 0.5905 * valve.tension_base; 
+valve.root_tension_base = 0.5905 * valve.tension_base; 
 
 
 
@@ -203,14 +203,14 @@ N_anterior = N/2;
 
 n_trees_anterior = 4; 
 
-k_0_1_anterior = 0.8 * 2.0 * valve.leaf_tension_base / n_trees_anterior; 
+k_0_1_anterior = 0.8 * valve.leaf_tension_base / n_trees_anterior; 
 
 % vector version 
 k_0_1_anterior = k_0_1_anterior * [1; 1; 1; 1]; 
 
 
 
-k_root_anterior = 0.9 * 2.0 * (1.889568000000001e+01 / 32) * tension_base_anterior / n_trees_anterior; 
+k_root_anterior = 0.9 * valve.root_tension_base / n_trees_anterior; 
 
 k_root_anterior = k_root_anterior * [1; 1; 1; 1]; 
 
@@ -247,13 +247,11 @@ k_0_1_posterior  = 0.2 * valve.leaf_tension_base;
 k_0_1_posterior  = k_0_1_posterior * ones(n_trees_posterior,1); 
 
 
-k_root_posterior = 0.8 * valve.root_tension_base; 
+k_root_posterior = 0.8 * valve.root_tension_base / n_trees_posterior; 
 
 k_root_posterior = k_root_posterior * ones(n_trees_posterior,1); 
-     
 
 
-k_root_posterior = k_root_posterior / n_trees_posterior; 
 
 papillary_posterior = zeros(3,n_trees_posterior); 
 
@@ -267,7 +265,7 @@ papillary_posterior(:,left_papillary_range)  = get_papillary_coords(valve.left_p
 
 % this is generally pretty good 
 n_leaves_posterior = N_posterior/n_trees_posterior * ones(n_trees_posterior, 1); 
-tree_direction_posterior = [-1; -1; -1; -1; 1; 1; 1; 1]; 
+tree_direction_posterior = [-1; 1; -1; -1; 1; 1; -1; 1]; 
 
 
 

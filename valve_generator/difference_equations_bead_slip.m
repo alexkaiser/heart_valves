@@ -79,23 +79,18 @@ function F = difference_equations_bead_slip(leaflet)
 
                 % pressure term first  
                 if (~is_bc(j,k)) && (~chordae_idx(j,k).tree_idx) && (p_0 ~= 0)
-                    F_tmp = F_tmp + (p_0 / 4) * cross(X_current(:,j+1,k) - X_current(:,j-1,k), X_current(:,j,k+1) - X_current(:,j,k-1));                     
+                    
+                    j_plus__1 = get_j_nbr(j+1, k, periodic_j, j_max); 
+                    j_minus_1 = get_j_nbr(j-1, k, periodic_j, j_max); 
+                    
+                    F_tmp = F_tmp + (p_0 / 4) * cross(X_current(:,j_plus__1,k) - X_current(:,j_minus_1,k), X_current(:,j,k+1) - X_current(:,j,k-1));                     
                 end 
 
                 % u type fibers 
                 for j_nbr_unreduced = [j-1,j+1]
                     
-                    j_nbr = j_nbr_unreduced; 
-                    
-                    % may have periodic connection in j 
-                    if periodic_j(k)
-                        if j_nbr == (j_max + 1)
-                            j_nbr = 1; 
-                        elseif j_nbr == 0
-                            j_nbr = j_max; 
-                        end    
-                    end 
-                    
+                    % j_nbr may need periodic reduction 
+                    j_nbr = get_j_nbr(j_nbr_unreduced, k, periodic_j, j_max); 
                     
                     k_nbr = k; 
                     
