@@ -150,8 +150,8 @@ radial_and_circumferential = true;
 % 8.3326e-04 is a good number here
 valve.tol_global = 1e-3;
 
-
-
+% places this many periodic rings above 
+n_rings_periodic = 0; %max(1,N/8); 
 
 
 
@@ -285,7 +285,7 @@ k_root             = [k_root_anterior; k_root_posterior];
 ring_to_ring_range = 0; 
 
 
-n_rings_periodic = max(1,N/8); 
+
 
 
 valve.leaflet = initialize_leaflet_bead_slip(N,                      ...
