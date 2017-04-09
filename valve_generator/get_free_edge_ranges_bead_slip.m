@@ -31,6 +31,7 @@ if leaflet.radial_and_circumferential
     % minimum index is variable 
     k_min = zeros(j_max,1); 
     
+    % max possible k
     k_max = N/2; 
         
     for tree_idx = 1:num_trees
@@ -70,30 +71,6 @@ if leaflet.radial_and_circumferential
         end 
         
     end 
-    
-    
-%     % Left free edge starts at (N/2,1)
-%     % and ends at (1,N/2) 
-%     j = k_max;  
-%     for k=1:k_max
-%         chordae(1).free_edge_idx(k,:) = [j; k];
-%         chordae_idx(j,k).tree_idx = 1;  
-%         chordae_idx(j,k).leaf_idx = k; 
-%         k_min(j) = k; 
-%         j = j - 1; 
-%     end 
-% 
-%     % Right free edge starts N/2 + 1 
-%     % to the right of left free edge corner 
-%     % and ends at (j_max, k_max)
-%     j = k_max + 1; 
-%     for k=1:k_max
-%         chordae(2).free_edge_idx(k,:) = [j; k]; 
-%         chordae_idx(j,k).tree_idx = 2;  
-%         chordae_idx(j,k).leaf_idx = k;
-%         k_min(j) = k; 
-%         j = j + 1; 
-%     end 
 
 else 
     error('diagional not implemented for bead slip'); 
@@ -168,12 +145,21 @@ if isfield(leaflet, 'ring_to_ring_range') && (~isempty(leaflet.ring_to_ring_rang
     
 else 
     % extra row gets no additional fibers but placed for ring only 
+    
+    k_max_internal = k_max; 
+    
     k_max = k_max + 1 + n_rings_periodic; 
     ring_k_idx = k_max * ones(j_max,1); 
     
     % resize and zero pad chordae arrays
     chordae_idx(j_max,k_max).tree_idx = 0; 
     chordae_idx(j_max,k_max).leaf_idx = 0;
+    
+    periodic_j = zeros(k_max, 1); 
+    
+    for k=(k_max_internal + 1):k_max
+        periodic_j(k) = 1; 
+    end 
     
 end 
 
@@ -195,6 +181,7 @@ end
 leaflet.j_max               = j_max; 
 leaflet.k_max               = k_max; 
 leaflet.k_min               = k_min; 
+leaflet.periodic_j          = periodic_j; 
 leaflet.chordae             = chordae; 
 leaflet.chordae_idx         = chordae_idx; 
 leaflet.ring_k_idx          = ring_k_idx; 

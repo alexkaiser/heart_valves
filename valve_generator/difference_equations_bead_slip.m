@@ -58,7 +58,14 @@ function F = difference_equations_bead_slip(leaflet)
         tension_debug = false; 
     end 
 
-
+    if isfield(leaflet, 'periodic_j')
+        periodic_j = leaflet.periodic_j; 
+    else
+        periodic_j = zeros(k_max,1); 
+    end 
+    
+    
+    
     F_leaflet = zeros(size(X_current)); 
     
     % Internal leaflet part 
@@ -76,7 +83,19 @@ function F = difference_equations_bead_slip(leaflet)
                 end 
 
                 % u type fibers 
-                for j_nbr = [j-1,j+1]
+                for j_nbr_unreduced = [j-1,j+1]
+                    
+                    j_nbr = j_nbr_unreduced; 
+                    
+                    % may have periodic connection in j 
+                    if periodic_j(k)
+                        if j_nbr == (j_max + 1)
+                            j_nbr = 1; 
+                        elseif j_nbr == 0
+                            j_nbr = j_max; 
+                        end    
+                    end 
+                    
                     
                     k_nbr = k; 
                     

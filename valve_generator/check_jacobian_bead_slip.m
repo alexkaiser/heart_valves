@@ -7,7 +7,7 @@
 % reset stream for consistent results 
 
 
-N = 8; 
+N = 32; 
 
 % Initialize structures  
 attached = false; 
@@ -23,7 +23,7 @@ epsilon_vals = 10.^(-1:-1:-8);
 
 errors = zeros(size(epsilon_vals)); 
 
-leaflet = valve.posterior; 
+leaflet = valve.leaflet; 
 
 % eval the difference eqns on the perturbation 
 F  = difference_equations_bead_slip(leaflet); 

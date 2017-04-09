@@ -51,6 +51,13 @@ function J = build_jacobian_bead_slip(leaflet)
         c_dec_tension_chordae         = 0.0; 
     end
 
+    if isfield(leaflet, 'periodic_j')
+        periodic_j = leaflet.periodic_j; 
+    else
+        periodic_j = zeros(k_max,1); 
+    end 
+    
+    
     % there are fewer than 15 nnz per row
     % if using the redundant features on sparse creation use more 
     capacity = 10 * 15 * total_internal_with_trees; 
@@ -124,7 +131,18 @@ function J = build_jacobian_bead_slip(leaflet)
                 end 
 
 
-                for j_nbr = [j-1,j+1]
+                for j_nbr_unreduced = [j-1,j+1]
+                    
+                    j_nbr = j_nbr_unreduced; 
+                    
+                    % may have periodic connection in j 
+                    if periodic_j(k)
+                        if j_nbr == (j_max + 1)
+                            j_nbr = 1; 
+                        elseif j_nbr == 0
+                            j_nbr = j_max; 
+                        end    
+                    end 
 
                     k_nbr = k; 
 

@@ -99,26 +99,9 @@ else
 end 
 
 
-
-% function pointers 
-if attached 
-    valve.diff_eqns = @difference_equations_bead_slip_attached; 
-    valve.jacobian  = @build_jacobian_bead_slip_attached; 
-    
-    if leaflet_only
-        error('leaflet_only not implemented for attached')
-    end 
+valve.diff_eqns = @difference_equations_bead_slip; 
+valve.jacobian  = @build_jacobian_bead_slip;
         
-else 
-    if leaflet_only
-        valve.diff_eqns = @difference_equations_bead_slip_leaflet_only; 
-        valve.jacobian  = @build_jacobian_bead_slip_leaflet_only;
-    else 
-        valve.diff_eqns = @difference_equations_bead_slip; 
-        valve.jacobian  = @build_jacobian_bead_slip;
-        
-    end 
-end 
 
 % general solve parameters
 
@@ -128,17 +111,11 @@ valve.base_name = sprintf('mitral_tree_%d', N);
 % box width 
 valve.L = 2.5; 
 
-% pressure / tension coefficient ratio
-% this tension coefficient is the maximum tension that a fiber can support
-valve.pressure_tension_ratio = 0.15; % 0.11 * 0.975; 
-
-% original spring constants were for N = 32 debug width
-% spring constants get multiplied by 32/N, so they are halfed if N==64
-% use this refintement number accordingly 
-valve.refinement = N/32.0; 
-
-MMHG_TO_CGS = 1333.22368;
+MMHG_TO_CGS      = 1333.22368;
 valve.p_physical = 110 * MMHG_TO_CGS; 
+
+% Pressure on each leaflet is constant, negative since normal is outward facing 
+p_0 = 0; -valve.p_physical; 
 
 % scaling for target points 
 valve.target_multiplier = 40/128; 
@@ -160,63 +137,79 @@ valve.num_copies = 1;
 % Spring constants are different here 
 valve.collagen_constitutive = true; 
 
-
-% anterior leaflet data structure 
+% no reflections in this version 
 reflect_x = false; 
-total_angle_anterior = 5*pi/6; 
-angles_anterior = [-total_angle_anterior/2, total_angle_anterior/2]; 
 
 % Radial and circumferential fibers 
 % Or diagonally oriented fibers 
+% Always true in this version 
 radial_and_circumferential = true; 
-
-% base constant for tensions 
-valve.tension_base = valve.p_physical / valve.pressure_tension_ratio; 
 
 % physical units create a scalar multiple of the old 
 % this multiple is large number, so we want to scale the old tolerance accordingly 
 % 8.3326e-04 is a good number here
-valve.tol_global = 1e-3; 
-
-% pressure on each leaflet is constant, and always a physical pressure 
-p_0 = -valve.p_physical; 
+valve.tol_global = 1e-3;
 
 
-% Spring constants in two directions 
+
+
+
+
+
+% Base constants, individual pieces are tuned relative to these values
+
+% pressure / tension coefficient ratio
+% this tension coefficient is the maximum tension that a fiber can support
+valve.pressure_tension_ratio = 0.15; % 0.11 * 0.975; 
+
+
+% base constant for tensions, derived quantity 
+valve.tension_base = valve.p_physical / valve.pressure_tension_ratio; 
+
+
+% Tension coefficients in two directions 
+alpha    = 1.0 * valve.tension_base;  % circumferential 
+beta     = 1.0 * valve.tension_base;  % radial
+
+% Leaf tensions are all modified 
+valve.leaf_tension_base = valve.tension_base; 
+
+% Base total root tension 
+% This value, 0.5905, works well on each tree when using separate solves and two leaflets 
+% Controls constant tension at the root of the tree 
+valve.root_tension_base = 2 * 0.5905 * valve.tension_base; 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+% Anterior leaflet parameters 
+total_angle_anterior = 5*pi/6; 
+angles_anterior = [-total_angle_anterior/2, total_angle_anterior/2]; 
+
 tension_base_anterior = valve.tension_base; 
-alpha    = 1.0 * tension_base_anterior;  % circumferential 
-beta     = 1.0 * tension_base_anterior;  % radial
 
-
-% Places this many extra fibers from ring to ring 
-% Must be 0 <= N_ring_to_ring <= (N/2)
-ring_to_ring_anterior_range = 0; %[(N/8), (3*N/8)];
-
-
-% Add energy function for zero pressure case 
-if (p_0 == 0.0) && (~leaflet_only)
-    valve.energy = @energy_bead_slip; 
-end 
-
-
-% Chordae parameters 
+N_anterior = N/2; 
 
 n_trees_anterior = 4; 
 
-% total force in leaves of each tree 
-% good basic value = 1.8 * 0.5 * (alpha + beta) = 1.8 * tension_base
-k_0_1_anterior = 0.8 * 2.0 * tension_base_anterior / n_trees_anterior; 
+k_0_1_anterior = 0.8 * 2.0 * valve.leaf_tension_base / n_trees_anterior; 
 
-% try turning up outside values 
+% vector version 
 k_0_1_anterior = k_0_1_anterior * [1; 1; 1; 1]; 
 
-% constant tension at the root of the tree 
-% this is determined by hand tuning k_multiplier at coarse resolution 
-% then taking the k_root 
-% base good value, old program units  
-% k_root = 1.889568000000001e+01 / 32; 
-% adjust accordingly
-% note that 1.889568000000001e+01 / 32 = 0.5905
+
+
 k_root_anterior = 0.9 * 2.0 * (1.889568000000001e+01 / 32) * tension_base_anterior / n_trees_anterior; 
 
 k_root_anterior = k_root_anterior * [1; 1; 1; 1]; 
@@ -235,26 +228,30 @@ left_papillary_range  = right_papillary_range + (n_trees_anterior/2);
 papillary_anterior(:,right_papillary_range) = get_papillary_coords(valve.left_papillary_center,  valve.papillary_radius, n_points,  0*pi/4,    pi/4); 
 papillary_anterior(:,left_papillary_range)  = get_papillary_coords(valve.right_papillary_center, valve.papillary_radius, n_points,   -pi/4, -0*pi/4); 
 
-n_leaves_anterior  = N/n_trees_anterior * ones(n_trees_anterior, 1); 
+n_leaves_anterior  = N_anterior/n_trees_anterior * ones(n_trees_anterior, 1); 
 tree_direction_anterior = [-1; -1; 1; 1];
 
-left_papillary_anterior_diastolic  = valve.left_papillary_diastolic; 
-right_papillary_anterior_diastolic = valve.right_papillary_diastolic;
+
 
 
 
 
 total_angle_posterior = 7*pi/6; 
-tension_base_posterior = valve.tension_base; 
+angles_posterior = [pi - total_angle_posterior/2, pi + total_angle_posterior/2]; 
+
+N_posterior = N/2; 
 
 n_trees_posterior = 8; 
 
-k_0_1_posterior  = 0.2 * tension_base_posterior; 
+k_0_1_posterior  = 0.2 * valve.leaf_tension_base; 
 k_0_1_posterior  = k_0_1_posterior * ones(n_trees_posterior,1); 
-k_root_posterior = 0.8 * 2.0 * (1.889568000000001e+01 / 32) * tension_base_posterior; 
+
+
+k_root_posterior = 0.8 * valve.root_tension_base; 
+
 k_root_posterior = k_root_posterior * ones(n_trees_posterior,1); 
      
-angles_posterior = [pi - total_angle_posterior/2, pi + total_angle_posterior/2]; 
+
 
 k_root_posterior = k_root_posterior / n_trees_posterior; 
 
@@ -269,12 +266,12 @@ papillary_posterior(:,right_papillary_range) = get_papillary_coords(valve.right_
 papillary_posterior(:,left_papillary_range)  = get_papillary_coords(valve.left_papillary_center,  valve.papillary_radius, n_points, -5*pi/4,   -pi/4);
 
 % this is generally pretty good 
-n_leaves_posterior = N/n_trees_posterior * ones(n_trees_posterior, 1); 
+n_leaves_posterior = N_posterior/n_trees_posterior * ones(n_trees_posterior, 1); 
 tree_direction_posterior = [-1; -1; -1; -1; 1; 1; 1; 1]; 
 
 
-% n_leaves_and_direction_posterior = N * [1/8, 1/8, 1/4, 1/4, 1/8, 1/8] .* [-1, -1, -1, 1, 1, 1]; 
 
+% fix this 
 left_papillary_posterior_diastolic  = valve.left_papillary_diastolic; 
 right_papillary_posterior_diastolic = valve.right_papillary_diastolic;
 
@@ -289,10 +286,8 @@ k_0_1              = [k_0_1_anterior; k_0_1_posterior];
 k_root             = [k_root_anterior; k_root_posterior]; 
 ring_to_ring_range = 0; 
 
-% Have N points from "anterior" and N from "posterior"
-N = 2 * valve.N; 
 
-n_rings_periodic = min(1,N/8); 
+n_rings_periodic = max(1,N/8); 
 
 
 valve.leaflet = initialize_leaflet_bead_slip(N,                      ...
