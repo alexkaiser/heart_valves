@@ -177,7 +177,7 @@ valve.leaf_tension_base = 0.5 * valve.tension_base;
 % Base total root tension 
 % The value 0.5905 works well on each tree when using separate solves and two leaflets 
 % Controls constant tension at the root of the tree 
-valve.root_tension_base = 0.5905 * valve.tension_base; 
+valve.root_tension_base = 0.6 * valve.tension_base; 
 
 
 
@@ -210,7 +210,7 @@ k_0_1_anterior = k_0_1_anterior * [1; 1; 1; 1];
 
 
 
-k_root_anterior = 0.9 * valve.root_tension_base / n_trees_anterior; 
+k_root_anterior = 1.0 * valve.root_tension_base / n_trees_anterior; 
 
 k_root_anterior = k_root_anterior * [1; 1; 1; 1]; 
 

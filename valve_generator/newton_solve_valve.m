@@ -39,7 +39,7 @@ jacobian  = leaflet.jacobian;
 % Checks for a monotonic decrease if true 
 % and decreases step length adaptively if not 
 back_tracking = true; 
-max_back_tracking_it = 12; 
+max_back_tracking_it = 20; 
 if back_tracking 
     if use_energy
         use_energy = true; 

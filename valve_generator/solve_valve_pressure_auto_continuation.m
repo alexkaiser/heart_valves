@@ -8,6 +8,7 @@ function [leaflet pass err] = solve_valve_pressure_auto_continuation(leaflet, to
 
 leaflet.p_0 = p_initial; 
 
+plots = true; 
 
 [leaflet_current pass err] = newton_solve_valve(leaflet, tol, max_it_init, max_consecutive_fails, max_total_fails);  
 
@@ -20,10 +21,12 @@ end
 
 fprintf('Applying adaptive continuation on pressure.\n\n'); 
 
-fig = figure; 
-surf_plot(leaflet_current, fig); 
-title('Initial converged valve'); 
-pause(0.01); 
+if plots
+    fig = figure; 
+    surf_plot(leaflet_current, fig); 
+    title('Initial converged valve'); 
+    pause(0.1); 
+end 
 
 % copy the last correct parameters 
 leaflet_okay = leaflet_current; 
@@ -71,7 +74,7 @@ while true
         else 
             
             fprintf('Solve failed due to max iterations.\n')
-            p_increment = p_increment / 2;  
+            p_increment = p_increment / 4;  
             p_current   = p_last_passed + p_increment; 
         end 
         
@@ -81,7 +84,7 @@ while true
         err = lasterror; 
         disp(err.message); 
         fprintf('Solve failed due to line search errors.\n')
-        p_increment = p_increment / 2;  
+        p_increment = p_increment / 4;  
         p_current   = p_last_passed + p_increment; 
 
     end 
