@@ -20,6 +20,11 @@ end
 
 fprintf('Applying adaptive continuation on pressure.\n\n'); 
 
+fig = figure; 
+surf_plot(leaflet_current, fig); 
+title('Initial converged valve'); 
+pause(0.01); 
+
 % copy the last correct parameters 
 leaflet_okay = leaflet_current; 
 

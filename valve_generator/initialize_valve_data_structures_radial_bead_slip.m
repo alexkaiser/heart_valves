@@ -151,7 +151,7 @@ radial_and_circumferential = true;
 valve.tol_global = 1e-3;
 
 % places this many periodic rings above 
-n_rings_periodic = 0; %max(1,N/8); 
+n_rings_periodic = 1; %max(1,N/32); 
 
 
 

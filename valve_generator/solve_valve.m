@@ -5,7 +5,7 @@ function [valve valve_linear pass_all] = solve_valve(valve, strain)
 % 
 
 pass_all = true; 
-fig = figure; 
+
 
 
 if isfield(valve, 'leaflet')
@@ -20,12 +20,14 @@ if isfield(valve, 'leaflet')
     else 
         fprintf('Global solve failed, err = %e\n\n', err_leaflet); 
     end 
-
+    
+    fig = figure; 
     surf_plot(valve.leaflet, fig); 
     pause(0.01);
     
 else 
 
+    fig = figure; 
 
     if isfield(valve, 'comm_left') && isfield(valve, 'comm_right')
 
