@@ -7,23 +7,12 @@ if ~exist('fig', 'var')
 end 
 
 
-if isfield(valve, 'leaflet')
+for i=1:length(valve.leaflets)
     
-    fig = surf_plot(valve.leaflet, fig); 
-
-else 
-
-    fig = surf_plot(valve.anterior, fig); 
-    hold on; 
-
-    fig = surf_plot(valve.posterior, fig); 
-
-    if isfield(valve, 'comm_left')
-        fig = surf_plot(valve.comm_left, fig); 
-    end 
-
-    if isfield(valve, 'comm_right')
-        fig = surf_plot(valve.comm_right, fig); 
-    end 
-
+    fig = surf_plot(valve.leaflets(i), fig); 
+    axis equal
+    hold on 
+    
 end 
+
+hold off 

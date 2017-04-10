@@ -1,4 +1,5 @@
-function leaflet = initialize_leaflet_bead_slip(N,                  ... 
+function leaflet = initialize_leaflet_bead_slip(name,               ...
+                                      N,                            ... 
                                       reflect_x,                    ...  
                                       angles,                       ... 
                                       r,                            ... 
@@ -44,17 +45,15 @@ function leaflet = initialize_leaflet_bead_slip(N,                  ...
 % 
 %     leaflet                       Fully initialized leaflet data structure 
 %                                   
-                
-leaflet.N            = N; 
-leaflet.leaflet_only = leaflet_only; 
-
-leaflet.tension_base = valve.tension_base; 
-
+  
+leaflet.name               = name; 
+leaflet.N                  = N; 
+leaflet.leaflet_only       = leaflet_only; 
+leaflet.tension_base       = valve.tension_base; 
 leaflet.ring_to_ring_range = ring_to_ring_range; 
 
-leaflet.num_trees = size(papillary, 2); 
-
-leaflet.n_rings_periodic = n_rings_periodic; 
+leaflet.num_trees          = size(papillary, 2); 
+leaflet.n_rings_periodic   = n_rings_periodic; 
 
 
 leaflet.repulsive_potential         = valve.repulsive_potential; 

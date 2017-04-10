@@ -150,7 +150,7 @@ radial_and_circumferential = true;
 % 8.3326e-04 is a good number here
 valve.tol_global = 1e-3;
 
-
+name = 'leaflet'; 
 
 
 
@@ -159,7 +159,7 @@ valve.tol_global = 1e-3;
 
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
-valve.pressure_tension_ratio = 0.1; % 0.11 * 0.975; 
+valve.pressure_tension_ratio = 0.08; % 0.11 * 0.975; 
 
 
 % base constant for tensions, derived quantity 
@@ -180,7 +180,7 @@ valve.root_tension_base = 0.6 * valve.tension_base;
 
 
 % places this many periodic rings above 
-n_rings_periodic = max(1,N/16); 
+n_rings_periodic = max(1,N/64); 
 
 
 
@@ -246,7 +246,7 @@ k_0_1_posterior  = k_0_1_posterior * ones(n_trees_posterior,1);
 
 k_root_posterior = 0.8 * valve.root_tension_base / n_trees_posterior; 
 
-k_root_posterior = k_root_posterior * ones(n_trees_posterior,1); 
+k_root_posterior = k_root_posterior * [1; 1; 1.2; 1.2; 1.2; 1.2; 1; 1]; 
 
 
 
@@ -285,7 +285,8 @@ ring_to_ring_range = 0;
 
 
 
-valve.leaflet = initialize_leaflet_bead_slip(N,                      ...
+leaflet = initialize_leaflet_bead_slip(name,                   ... 
+                                N,                                   ...
                                 reflect_x,                           ... 
                                 angles,                              ...    
                                 valve.r,                             ... 
@@ -306,9 +307,8 @@ valve.leaflet = initialize_leaflet_bead_slip(N,                      ...
                                 n_rings_periodic,                    ...
                                 valve);  
 
+valve.leaflets(1) = leaflet; 
     
-    
-
 valve_plot(valve); 
 
 disp('Done with initialize.'); 
