@@ -34,8 +34,19 @@ if leaflet.radial_and_circumferential
         % clip the redundant point
         mesh = mesh(1:j_max); 
         
+        dip_anterior_systole = true; 
+        if dip_anterior_systole 
+            r_dip = 0.57; 
+        
+            % take mod 2*pi then center on zero
+            x_coord_extra = @(t) ((mod(t,2*pi) < pi/2) || ((mod(t,2*pi) > 3*pi/2))) .* (-r_dip * cos(t).^2); 
+        else 
+            x_coord_extra = @(t) 0 .* t; 
+        end     
+        
+        
         for j=1:j_max
-            X(:,j,ring_k_idx(j)) = [r*cos(mesh(j)); r*sin(mesh(j)); 0.0]; 
+            X(:,j,ring_k_idx(j)) = [r*(cos(mesh(j)) + x_coord_extra(mesh(j))); r*sin(mesh(j)); 0.0]; 
         end 
         
         % very rough physical mesh spacing
