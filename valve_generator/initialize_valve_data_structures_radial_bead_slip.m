@@ -92,7 +92,7 @@ if decreasing_tension
     dec_tension_coeff_base = dec_tension_coeff_32 * 32^2; 
     
     valve.c_dec_tension_circumferential = 1.0 * dec_tension_coeff_base; 
-    valve.c_dec_tension_radial          = 2.0 * dec_tension_coeff_base; 
+    valve.c_dec_tension_radial          = 1.0 * dec_tension_coeff_base; 
     valve.c_dec_tension_chordae         = 1.0 * dec_tension_coeff_base; 
 else 
     valve.dec_tension  = 0.0; 
@@ -180,7 +180,7 @@ valve.root_tension_base = 0.6 * valve.tension_base;
 
 
 % places this many periodic rings above 
-n_rings_periodic = max(1,N/64); 
+n_rings_periodic = max(1,N/32); 
 
 
 

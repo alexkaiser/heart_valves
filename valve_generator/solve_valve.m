@@ -14,19 +14,19 @@ for i=1:length(valve.leaflets)
     p_initial = 0; 
     p_goal    = leaflet.p_0; 
 
-    [valve.leaflets(i) pass_leaflet err_leaflet] = solve_valve_pressure_auto_continuation(leaflet, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal, valve.max_consecutive_fails, valve.max_total_fails); 
+    [valve.leaflets(i) pass err] = solve_valve_pressure_auto_continuation(leaflet, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal, valve.max_consecutive_fails, valve.max_total_fails); 
 
-    if pass_leaflet 
-        fprintf('Global solve passed, err = %e\n\n', err_leaflet); 
+    if pass
+        fprintf('Global solve passed, err = %e\n\n', err); 
     else 
-        fprintf('Global solve failed, err = %e\n\n', err_leaflet); 
+        fprintf('Global solve failed, err = %e\n\n', err); 
     end 
     
     fig = figure; 
     surf_plot(valve.leaflets(i), fig); 
     pause(0.01);
     
-    pass_all = pass_all && pass_leaflet; 
+    pass_all = pass_all && pass; 
     
 end 
 
