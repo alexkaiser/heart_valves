@@ -97,9 +97,11 @@ else
 
     pass_all = pass_all && pass_anterior && pass_posterior; 
 
-    valve_linear = []; 
+    
 
 end 
+
+valve_linear = []; 
 
 return; 
 

@@ -159,7 +159,7 @@ valve.tol_global = 1e-3;
 
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
-valve.pressure_tension_ratio = 0.075; % 0.11 * 0.975; 
+valve.pressure_tension_ratio = 0.1; % 0.11 * 0.975; 
 
 
 % base constant for tensions, derived quantity 
@@ -190,10 +190,6 @@ n_rings_periodic = max(1,N/16);
 
 
 
-
-
-
-
 % Anterior leaflet parameters 
 total_angle_anterior = 5*pi/6; 
 angles_anterior = [-total_angle_anterior/2, total_angle_anterior/2]; 
@@ -204,16 +200,16 @@ N_anterior = N/2;
 
 n_trees_anterior = 4; 
 
-k_0_1_anterior = 1.2 * valve.leaf_tension_base / n_trees_anterior; 
+k_0_1_anterior = 1.0 * valve.leaf_tension_base / n_trees_anterior; 
 
 % vector version 
-k_0_1_anterior = k_0_1_anterior * [1; 1; 1; 1]; 
+k_0_1_anterior = k_0_1_anterior * [1.2; 1; 1; 1.2]; 
 
 
 
-k_root_anterior = 0.9 * valve.root_tension_base / n_trees_anterior; 
+k_root_anterior = 0.7 * valve.root_tension_base / n_trees_anterior; 
 
-k_root_anterior = k_root_anterior * [1; 1; 1; 1]; 
+k_root_anterior = k_root_anterior * [1.2; 1; 1; 1.2]; 
 
 % controls initial guess tree vertex placement 
 tree_frac = 0.5;
