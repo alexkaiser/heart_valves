@@ -159,7 +159,7 @@ name = 'leaflet';
 
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
-valve.pressure_tension_ratio = 0.08; % 0.11 * 0.975; 
+valve.pressure_tension_ratio = 0.09; % 0.11 * 0.975; 
 
 
 % base constant for tensions, derived quantity 
