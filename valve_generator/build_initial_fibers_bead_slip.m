@@ -36,7 +36,7 @@ if leaflet.radial_and_circumferential
         
         dip_anterior_systole = true; 
         if dip_anterior_systole 
-            r_dip = 0.57; 
+            r_dip = 0.75; 
         
             % take mod 2*pi then center on zero
             x_coord_extra = @(t) ((mod(t,2*pi) < pi/2) || ((mod(t,2*pi) > 3*pi/2))) .* (-r_dip * cos(t).^2); 
