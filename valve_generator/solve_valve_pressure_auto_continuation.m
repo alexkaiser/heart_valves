@@ -25,7 +25,7 @@ if plots
     fig = figure; 
     surf_plot(leaflet_current, fig); 
     title('Initial converged valve'); 
-    pause(0.1); 
+    pause; 
 end 
 
 % copy the last correct parameters 
@@ -54,6 +54,13 @@ while true
         if pass
         
             fprintf('Solve passed.\n\n', p_current); 
+            
+            if plots
+                fig = figure; 
+                surf_plot(leaflet_current, fig); 
+                title(sprintf('Valve at p = %f', p_current)); 
+                pause; 
+            end
 
             if p_current == p_goal
                 break

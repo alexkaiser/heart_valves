@@ -17,7 +17,7 @@ valve.max_it_continuation   = 2000;
 
 % Parameters for quick exit on line search 
 valve.max_consecutive_fails = 5;  
-valve.max_total_fails       = 40; 
+valve.max_total_fails       = 10; 
 
 if exist('attached', 'var') 
     valve.attached = attached; 
@@ -150,8 +150,7 @@ radial_and_circumferential = true;
 % 8.3326e-04 is a good number here
 valve.tol_global = 1e-3;
 
-% places this many periodic rings above 
-n_rings_periodic = 1; %max(1,N/32); 
+
 
 
 
@@ -160,7 +159,7 @@ n_rings_periodic = 1; %max(1,N/32);
 
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
-valve.pressure_tension_ratio = 0.15; % 0.11 * 0.975; 
+valve.pressure_tension_ratio = 0.075; % 0.11 * 0.975; 
 
 
 % base constant for tensions, derived quantity 
@@ -180,6 +179,8 @@ valve.leaf_tension_base = 0.5 * valve.tension_base;
 valve.root_tension_base = 0.6 * valve.tension_base; 
 
 
+% places this many periodic rings above 
+n_rings_periodic = max(1,N/64); 
 
 
 
@@ -203,14 +204,14 @@ N_anterior = N/2;
 
 n_trees_anterior = 4; 
 
-k_0_1_anterior = 0.8 * valve.leaf_tension_base / n_trees_anterior; 
+k_0_1_anterior = 1.2 * valve.leaf_tension_base / n_trees_anterior; 
 
 % vector version 
 k_0_1_anterior = k_0_1_anterior * [1; 1; 1; 1]; 
 
 
 
-k_root_anterior = 1.0 * valve.root_tension_base / n_trees_anterior; 
+k_root_anterior = 0.9 * valve.root_tension_base / n_trees_anterior; 
 
 k_root_anterior = k_root_anterior * [1; 1; 1; 1]; 
 
