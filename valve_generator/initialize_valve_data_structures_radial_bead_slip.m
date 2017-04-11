@@ -26,14 +26,16 @@ else
 end 
 
 % Valve skeleton parameters 
-valve.r = 1.606587877768772; 
 
 % original, supposedly diastolic but we have been using as systolic 
+% valve.r = 1.606587877768772; 
 % valve.left_papillary  = [ -0.972055648767080; -1.611924550017006; -2.990100960298683]; 
 % valve.right_papillary = [ -1.542417595752084;  1.611924550017006; -3.611254871967348]; 
 
-valve.left_papillary  = [ -0.972055648767080; -1.611924550017006; -2.990100960298683] + [0; 0; -0.0];
-valve.right_papillary = [ -1.542417595752084;  1.611924550017006; -3.611254871967348] + [0; 0; -0.0]; 
+valve.r = 2.188524100000000; 
+
+valve.left_papillary  = [-2.307266247008847; -1.497270564906998; -2.639154662183959];
+valve.right_papillary = [-2.058291813251097;  1.497270564906999; -2.712241962241507]; 
 
 
 % Places papillary attachments in linear interpolant between single point tips 
@@ -159,7 +161,7 @@ name = 'leaflet';
 
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
-valve.pressure_tension_ratio = 0.09; % 0.11 * 0.975; 
+valve.pressure_tension_ratio = 0.07; % 0.11 * 0.975; 
 
 
 % base constant for tensions, derived quantity 
