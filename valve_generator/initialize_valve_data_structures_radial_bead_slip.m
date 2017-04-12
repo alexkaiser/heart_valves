@@ -32,32 +32,30 @@ end
 % valve.left_papillary  = [ -0.972055648767080; -1.611924550017006; -2.990100960298683]; 
 % valve.right_papillary = [ -1.542417595752084;  1.611924550017006; -3.611254871967348]; 
 
-valve.r = 2.188524100000000; 
-
-valve.left_papillary  = [-2.307266247008847; -1.497270564906998; -2.639154662183959];
-valve.right_papillary = [-2.058291813251097;  1.497270564906999; -2.712241962241507]; 
-
-
-% Places papillary attachments in linear interpolant between single point tips 
-
-split_papillary = true; 
-
-% vector pointing along line from left to right papillary 
-l_to_r_papillary = (valve.right_papillary - valve.left_papillary); 
-l_to_r_papillary = l_to_r_papillary / norm(l_to_r_papillary);
-
-
-valve.papillary_radius = 0.25; 
- 
-valve.left_papillary_center  = valve.left_papillary  + valve.papillary_radius * l_to_r_papillary; 
-valve.right_papillary_center = valve.right_papillary - valve.papillary_radius * l_to_r_papillary; 
+% valve.r = 2.188524100000000; 
+% 
+% valve.left_papillary  = [-2.307266247008847; -1.497270564906998; -2.639154662183959];
+% valve.right_papillary = [-2.058291813251097;  1.497270564906999; -2.712241962241507]; 
+% 
+% 
+% % Places papillary attachments in linear interpolant between single point tips 
+% % vector pointing along line from left to right papillary 
+% l_to_r_papillary = (valve.right_papillary - valve.left_papillary); 
+% l_to_r_papillary = l_to_r_papillary / norm(l_to_r_papillary);
+% 
+% 
+% valve.papillary_radius = 0.25; 
+%  
+% valve.left_papillary_center  = valve.left_papillary  + valve.papillary_radius * l_to_r_papillary; 
+% valve.right_papillary_center = valve.right_papillary - valve.papillary_radius * l_to_r_papillary; 
 
 
 diastolic_increment = [0; 0; 0.0]; 
-valve.left_papillary_diastolic  = valve.left_papillary  + diastolic_increment; 
-valve.right_papillary_diastolic = valve.right_papillary + diastolic_increment; 
+valve.left_papillary_diastolic  = []; 
+valve.right_papillary_diastolic = []; 
 
 
+split_papillary = true; 
 valve.split_papillary = split_papillary; 
 valve.radial_and_circumferential = true; 
 valve.bead_slip = true; 
@@ -155,6 +153,11 @@ valve.tol_global = 1e-3;
 name = 'leaflet'; 
 
 
+valve.skeleton = valve_points_ct_systole(); 
+valve.r        = valve.skeleton.r; 
+
+left_papillary_idx  = 1; 
+right_papillary_idx = 2; 
 
 
 % Base constants, individual pieces are tuned relative to these values
@@ -183,8 +186,6 @@ valve.root_tension_base = 0.6 * valve.tension_base;
 
 % places this many periodic rings above 
 n_rings_periodic = max(1,N/32); 
-
-
 
 
 
@@ -224,8 +225,8 @@ n_points = n_trees_anterior/2;
 right_papillary_range = 1:(n_trees_anterior/2); 
 left_papillary_range  = right_papillary_range + (n_trees_anterior/2);
 
-papillary_anterior(:,right_papillary_range) = get_papillary_coords(valve.left_papillary_center,  valve.papillary_radius, n_points,  0*pi/4,    pi/4); 
-papillary_anterior(:,left_papillary_range)  = get_papillary_coords(valve.right_papillary_center, valve.papillary_radius, n_points,   -pi/4, -0*pi/4); 
+papillary_anterior(:,right_papillary_range) = get_papillary_coords(valve, left_papillary_idx, n_points,  0*pi/4,    pi/4); 
+papillary_anterior(:,left_papillary_range)  = get_papillary_coords(valve, right_papillary_idx, n_points,   -pi/4, -0*pi/4); 
 
 n_leaves_anterior  = N_anterior/n_trees_anterior * ones(n_trees_anterior, 1); 
 tree_direction_anterior = [-1; -1; 1; 1];
@@ -259,8 +260,8 @@ n_points = n_trees_posterior/2;
 right_papillary_range = 1:(n_trees_posterior/2); 
 left_papillary_range  = right_papillary_range + (n_trees_posterior/2); 
 
-papillary_posterior(:,right_papillary_range) = get_papillary_coords(valve.right_papillary_center, valve.papillary_radius, n_points,    pi/4,  5*pi/4); 
-papillary_posterior(:,left_papillary_range)  = get_papillary_coords(valve.left_papillary_center,  valve.papillary_radius, n_points, -5*pi/4,   -pi/4);
+papillary_posterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points,    pi/4,  5*pi/4); 
+papillary_posterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points, -5*pi/4,   -pi/4);
 
 % this is generally pretty good 
 n_leaves_posterior = N_posterior/n_trees_posterior * ones(n_trees_posterior, 1); 

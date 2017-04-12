@@ -30,10 +30,14 @@ end
 
 if isfield(leaflet, 'periodic_j')
     periodic_j = leaflet.periodic_j; 
-    j_max = j_max + 1; 
     
-    % periodic copy for plotting purposes
-    X_copy(:,j_max,:) = X_copy(:,1,:); 
+    if any(periodic_j)
+    
+        j_max = j_max + 1; 
+    
+        % periodic copy for plotting purposes
+        X_copy(:,j_max,:) = X_copy(:,1,:); 
+    end 
 end 
     
 
