@@ -17,10 +17,14 @@ function leaflet = get_free_edge_ranges_bead_slip(leaflet)
 %                          the leaf index which is connected to X(:,j,k)
 % 
  
-num_trees        = leaflet.num_trees; 
-n_leaves         = leaflet.n_leaves; 
-tree_direction   = leaflet.tree_direction; 
-n_rings_periodic = leaflet.n_rings_periodic; 
+num_trees         = leaflet.num_trees; 
+n_leaves          = leaflet.n_leaves; 
+leaflet_direction = leaflet.leaflet_direction; 
+N_per_direction   = leaflet.N_per_direction; 
+leaflet_N_start   = leaflet.leaflet_N_start; 
+
+n_rings_periodic  = leaflet.n_rings_periodic; 
+
 
 if leaflet.radial_and_circumferential
 
@@ -33,6 +37,33 @@ if leaflet.radial_and_circumferential
     
     % max possible k
     k_max = N/2; 
+    
+    k = k_max + leaflet_N_start + 1; 
+    
+    j = 1; 
+    
+    % follow up/down direction of to variable minimum boundary of leaflet mesh 
+    for i = 1:length(N_per_direction)
+        
+        N_tmp     = N_per_direction(i); 
+        direction = leaflet_direction(i); 
+        
+        for tmp = 1:N_tmp
+        
+            k_min(j) = k; 
+        
+            % j always incremented 
+            j = j+1; 
+            
+            % Do not increment last k 
+            if tmp < N_tmp
+                k = k + direction; 
+            end        
+        
+        end 
+        
+    end 
+    
         
     for tree_idx = 1:num_trees
         chordae(tree_idx).free_edge_idx  = zeros(N/2, 2); 
@@ -41,9 +72,7 @@ if leaflet.radial_and_circumferential
     chordae_idx(N,N/2 + 1).tree_idx = 0;  
     chordae_idx(N,N/2 + 1).leaf_idx = 0;  
     
-    % left commissure always starts, by convention at 1,k_max
     j = 1; 
-    k = k_max; 
     
     for tree_idx = 1:num_trees 
         
@@ -52,18 +81,21 @@ if leaflet.radial_and_circumferential
         chordae(tree_idx).free_edge_idx = zeros(n_leaves_tmp,2); 
         
         for leaf_idx=1:n_leaves_tmp
+            
+            k = k_min(j); 
         
             chordae(tree_idx).free_edge_idx(leaf_idx,:) = [j; k];
             chordae_idx(j,k).tree_idx = tree_idx;  
             chordae_idx(j,k).leaf_idx = leaf_idx;
-            
-            k_min(j) = k; 
-            
-            % Incremented in direction of sign
-            % Except on final iteration 
-            if leaf_idx < n_leaves_tmp
-                k = k + tree_direction(tree_idx); 
-            end 
+
+%             
+%             k_min(j) = k; 
+%             
+%             % Incremented in direction of sign
+%             % Except on final iteration 
+%             if leaf_idx < n_leaves_tmp
+%                 k = k + leaflet_direction(tree_idx); 
+%             end 
             
             % Horizonal index always increases 
             j = j + 1; 
@@ -157,7 +189,8 @@ else
     
     periodic_j = zeros(k_max, 1); 
     
-    for k=(k_max_internal + 1):k_max
+    % minimum point up to bc at idx 1 gets periodic connection 
+    for k=k_min(1):k_max
         periodic_j(k) = 1; 
     end 
     

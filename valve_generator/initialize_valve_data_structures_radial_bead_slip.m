@@ -159,6 +159,9 @@ valve.r        = valve.skeleton.r;
 left_papillary_idx  = 1; 
 right_papillary_idx = 2; 
 
+valve.dip_anterior_systole = true; 
+valve.r_dip = 0.75; 
+
 
 % Base constants, individual pieces are tuned relative to these values
 
@@ -185,11 +188,41 @@ valve.root_tension_base = 0.6 * valve.tension_base;
 
 
 % places this many periodic rings above 
-n_rings_periodic = max(1,N/32); 
+n_rings_periodic = 0; %max(1,N/32); 
 
 
 
+% Leaflet mesh has irregular bottom edge 
+% 
 
+% Commissural leaflets centered at -pi/2, pi/2
+N_comm      = N/8; 
+
+% Half of each commissural leaflet takes away from the Anterior leaflets half 
+N_anterior  = N/2 - N_comm; 
+
+% Posterior takes whatever is left 
+N_posterior = N - 2*N_comm - N_anterior; 
+
+N_per_direction   = (1/2) * [N_comm, N_anterior, N_anterior, N_comm, N_comm, N_posterior, N_posterior, N_comm]; 
+
+% First position is the midpoint of the left commissural leaflet
+% Leaflet moves up from there to the commissure 
+leaflet_direction = 1; 
+
+% Anterior goes down then up 
+leaflet_direction = [leaflet_direction, -1, 1]; 
+
+% Right commissural goes down then up 
+leaflet_direction = [leaflet_direction, -1, 1]; 
+
+% Posterior goes down then up 
+leaflet_direction = [leaflet_direction, -1, 1]; 
+
+% Finally, left commissural leaflet goes down to meet initial point 
+leaflet_direction = [leaflet_direction, -1]; 
+
+leaflet_N_start = -N_comm/2; 
 
 
 
@@ -229,7 +262,7 @@ papillary_anterior(:,right_papillary_range) = get_papillary_coords(valve, left_p
 papillary_anterior(:,left_papillary_range)  = get_papillary_coords(valve, right_papillary_idx, n_points,   -pi/4, -0*pi/4); 
 
 n_leaves_anterior  = N_anterior/n_trees_anterior * ones(n_trees_anterior, 1); 
-tree_direction_anterior = [-1; -1; 1; 1];
+% leaflet_direction_anterior = [-1; -1; 1; 1];
 
 
 
@@ -265,7 +298,7 @@ papillary_posterior(:,left_papillary_range)  = get_papillary_coords(valve, left_
 
 % this is generally pretty good 
 n_leaves_posterior = N_posterior/n_trees_posterior * ones(n_trees_posterior, 1); 
-tree_direction_posterior = [-1; 1; -1; -1; 1; 1; -1; 1]; 
+% leaflet_direction_posterior = [-1; 1; -1; -1; 1; 1; -1; 1]; 
 
 
 
@@ -279,7 +312,6 @@ right_papillary_posterior_diastolic = valve.right_papillary_diastolic;
 angles             = [-pi/2; 2*pi - pi/2]; 
 papillary          = [papillary_anterior, papillary_posterior]; 
 n_leaves           = [n_leaves_anterior; n_leaves_posterior];
-tree_direction     = [tree_direction_anterior; tree_direction_posterior]; 
 k_0_1              = [k_0_1_anterior; k_0_1_posterior]; 
 k_root             = [k_root_anterior; k_root_posterior]; 
 ring_to_ring_range = 0; 
@@ -288,14 +320,15 @@ ring_to_ring_range = 0;
 
 
 
-leaflet = initialize_leaflet_bead_slip(name,                   ... 
+leaflet = initialize_leaflet_bead_slip(name,                         ... 
                                 N,                                   ...
                                 reflect_x,                           ... 
-                                angles,                              ...    
-                                valve.r,                             ... 
+                                angles,                              ...
                                 papillary,                           ... 
                                 n_leaves,                            ...
-                                tree_direction,                      ...
+                                leaflet_direction,                   ...
+                                leaflet_N_start,                     ...
+                                N_per_direction,                     ...
                                 left_papillary_posterior_diastolic,  ...
                                 right_papillary_posterior_diastolic, ...
                                 radial_and_circumferential,          ...  

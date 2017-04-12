@@ -1,4 +1,4 @@
-function [X] = build_initial_fibers_bead_slip(leaflet)
+function [X] = build_initial_fibers_bead_slip(leaflet, valve)
 %
 % Builds initial fibers for current layout 
 % 
@@ -9,13 +9,6 @@ j_max                   = leaflet.j_max;
 k_min                   = leaflet.k_min; 
 k_max                   = leaflet.k_max; 
 ring_k_idx              = leaflet.ring_k_idx; 
-papillary               = leaflet.papillary; 
-
-
-% first and last point are in appropriate general vicinity to build initial guess 
-n_papillary             = size(papillary,2); 
-left_papillary          = papillary(:,1); 
-right_papillary         = papillary(:,n_papillary); 
 
 n_rings_periodic        = leaflet.n_rings_periodic; 
 
@@ -34,9 +27,9 @@ if leaflet.radial_and_circumferential
         % clip the redundant point
         mesh = mesh(1:j_max); 
         
-        dip_anterior_systole = true; 
-        if dip_anterior_systole 
-            r_dip = 0.75; 
+        
+        if isfield(valve, 'dip_anterior_systole') && valve.dip_anterior_systole 
+            r_dip = valve.r_dip; 
         
             % take mod 2*pi then center on zero
             x_coord_extra = @(t) ((mod(t,2*pi) < pi/2) || ((mod(t,2*pi) > 3*pi/2))) .* (-r_dip * cos(t).^2); 
@@ -68,7 +61,13 @@ if leaflet.radial_and_circumferential
         end         
         
     else 
-    
+        
+        % first and last point are in appropriate general vicinity to build initial guess 
+        papillary               = leaflet.papillary; 
+        n_papillary             = size(papillary,2);    
+        left_papillary          = papillary(:,1);
+        right_papillary         = papillary(:,n_papillary); 
+        
         % set the valve ring
 
         % previous version

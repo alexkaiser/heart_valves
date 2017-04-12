@@ -2,10 +2,11 @@ function leaflet = initialize_leaflet_bead_slip(name,               ...
                                       N,                            ... 
                                       reflect_x,                    ...  
                                       angles,                       ... 
-                                      r,                            ... 
                                       papillary,                    ...
                                       n_leaves,                     ...
-                                      tree_direction,               ...
+                                      leaflet_direction,            ...
+                                      leaflet_N_start,              ...
+                                      N_per_direction,              ...
                                       left_papillary_diastolic,     ...
                                       right_papillary_diastolic,    ...
                                       radial_and_circumferential,   ...  
@@ -103,7 +104,7 @@ leaflet.max_angle = angles(2);
 
 leaflet.du = 1/N; 
 
-leaflet.r = r; 
+leaflet.r = valve.r; 
 
 if size(papillary, 2) ~= leaflet.num_trees
     error('Must have as many papillary coordinates as trees'); 
@@ -113,22 +114,24 @@ if length(n_leaves) ~= leaflet.num_trees
     error('Must have a size for every tree'); 
 end 
 
-if length(tree_direction) ~= leaflet.num_trees
+if length(n_leaves) ~= leaflet.num_trees
     error('Must have a size for every tree'); 
 end 
 
-if sum(n_leaves) ~= N
-    error('Must have a free edge connection for all points on the tree'); 
-end 
+% if sum(leaflet_N_start) ~= N
+%     error('Must have a free edge connection for all points on the tree'); 
+% end 
 
-if sum(tree_direction .* n_leaves) ~= 0
-    error('Total leaflet must return to same vertical index from which it started'); 
-end 
+% if sum(leaflet_direction .* leaflet_N_start) ~= 0
+%     error('Total leaflet must return to same vertical index from which it started'); 
+% end 
     
 
 
 leaflet.n_leaves                  = n_leaves;
-leaflet.tree_direction            = tree_direction; 
+leaflet.leaflet_direction         = leaflet_direction; 
+leaflet.leaflet_N_start           = leaflet_N_start; 
+leaflet.N_per_direction           = N_per_direction; 
 leaflet.papillary                 = papillary; 
 
 % FIX ME
@@ -150,7 +153,7 @@ leaflet = get_free_edge_ranges_bead_slip(leaflet);
 leaflet = get_util_arrays_bead_slip(leaflet); 
 
 % layout on 
-leaflet.X = build_initial_fibers_bead_slip(leaflet); 
+leaflet.X = build_initial_fibers_bead_slip(leaflet, valve); 
 
 
 % Spring constants in two directions 

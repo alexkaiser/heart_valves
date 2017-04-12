@@ -48,7 +48,7 @@ while true
     
     leaflet_okay.p_0 = p_current; 
     
-    try
+    %try
         [leaflet_current pass err] = newton_solve_valve(leaflet_okay, tol, max_it_continuation, max_consecutive_fails, max_total_fails);  
     
         if pass
@@ -86,15 +86,15 @@ while true
         end 
         
         
-    catch 
-        fprintf('\n\n'); 
-        err = lasterror; 
-        disp(err.message); 
-        fprintf('Solve failed due to line search errors.\n')
-        p_increment = p_increment / 4;  
-        p_current   = p_last_passed + p_increment; 
-
-    end 
+%     catch 
+%         fprintf('\n\n'); 
+%         err = lasterror; 
+%         disp(err.message); 
+%         fprintf('Solve failed due to line search errors.\n')
+%         p_increment = p_increment / 4;  
+%         p_current   = p_last_passed + p_increment; 
+% 
+%     end 
 end 
     
 
