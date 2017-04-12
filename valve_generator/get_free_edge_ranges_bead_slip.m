@@ -38,7 +38,7 @@ if leaflet.radial_and_circumferential
     % max possible k
     k_max = N/2; 
     
-    k = k_max + leaflet_N_start + 1; 
+    k = k_max + leaflet_N_start; 
     
     j = 1; 
     

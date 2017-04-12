@@ -199,16 +199,17 @@ n_rings_periodic = 0; %max(1,N/32);
 N_comm      = N/8; 
 
 % Half of each commissural leaflet takes away from the Anterior leaflets half 
-N_anterior  = N/2 - N_comm; 
+N_anterior  = N/2; 
 
 % Posterior takes whatever is left 
 N_posterior = N - 2*N_comm - N_anterior; 
 
-N_per_direction   = (1/2) * [N_comm, N_anterior, N_anterior, N_comm, N_comm, N_posterior, N_posterior, N_comm]; 
+N_per_direction   = (1/2) * [N_anterior, N_anterior, N_comm, N_comm, N_posterior, N_posterior, N_comm, N_comm]; 
 
 % First position is the midpoint of the left commissural leaflet
 % Leaflet moves up from there to the commissure 
-leaflet_direction = 1; 
+% leaflet_direction = 1; 
+leaflet_direction = []; 
 
 % Anterior goes down then up 
 leaflet_direction = [leaflet_direction, -1, 1]; 
@@ -220,9 +221,10 @@ leaflet_direction = [leaflet_direction, -1, 1];
 leaflet_direction = [leaflet_direction, -1, 1]; 
 
 % Finally, left commissural leaflet goes down to meet initial point 
-leaflet_direction = [leaflet_direction, -1]; 
+leaflet_direction = [leaflet_direction, -1, 1]; 
 
-leaflet_N_start = -N_comm/2; 
+% offset from N/2 in initial placement 
+leaflet_N_start = 0; %-N_comm/2 + 1; 
 
 
 
