@@ -91,7 +91,7 @@ if decreasing_tension
     
     dec_tension_coeff_base = dec_tension_coeff_32 * 32^2; 
     
-    valve.c_dec_tension_circumferential = 2.0 * dec_tension_coeff_base; 
+    valve.c_dec_tension_circumferential = 1.0 * dec_tension_coeff_base; 
     valve.c_dec_tension_radial          = 2.0 * dec_tension_coeff_base; 
     valve.c_dec_tension_chordae         = 1.0 * dec_tension_coeff_base; 
 else 
@@ -160,7 +160,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 valve.dip_anterior_systole = true; 
-valve.r_dip = 1.0; 
+valve.r_dip = 0.75; 
 
 
 % Base constants, individual pieces are tuned relative to these values
@@ -257,7 +257,7 @@ else
     leaflet_direction = [leaflet_direction, -1*up_and_down_comm]; 
 
     % offset from N/2 in initial placement 
-    leaflet_N_start = -N_comm/2 + 1; 
+    leaflet_N_start = (-N_comm/2 + 1) * up_and_down_comm; 
     
 end 
 
