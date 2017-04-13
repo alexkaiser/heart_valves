@@ -160,7 +160,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 valve.dip_anterior_systole = true; 
-valve.r_dip = 0.75; 
+valve.r_dip = 1.0; 
 
 
 % Base constants, individual pieces are tuned relative to these values
