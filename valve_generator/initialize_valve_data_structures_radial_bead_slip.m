@@ -161,6 +161,7 @@ right_papillary_idx = 2;
 
 valve.dip_anterior_systole = true; 
 valve.r_dip = 0.75; 
+valve.total_angle_dip = pi; 
 
 
 % Base constants, individual pieces are tuned relative to these values
@@ -190,7 +191,7 @@ valve.root_tension_base = 0.6 * valve.tension_base;
 % places this many periodic rings above 
 n_rings_periodic = max(1,N/32); 
 
-wide_anterior = false; 
+wide_anterior = true; 
 if wide_anterior
     % Leaflet mesh has irregular bottom edge 
     % 
@@ -384,6 +385,7 @@ leaflet = initialize_leaflet_bead_slip(name,                         ...
 valve.leaflets(1) = leaflet; 
     
 valve_plot(valve); 
+pause(.1); 
 
 disp('Done with initialize.'); 
 

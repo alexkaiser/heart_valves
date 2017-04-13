@@ -29,10 +29,16 @@ if leaflet.radial_and_circumferential
         
         
         if isfield(valve, 'dip_anterior_systole') && valve.dip_anterior_systole 
-            r_dip = valve.r_dip; 
+            % r_dip = valve.r_dip; 
+            angle_total = valve.total_angle_dip; 
+            % angle_half  = angle_total; 
         
             % take mod 2*pi then center on zero
-            x_coord_extra = @(t) ((mod(t,2*pi) < pi/2) || ((mod(t,2*pi) > 3*pi/2))) .* (-r_dip * cos(t).^2); 
+            x_coord_extra = @(t) cos_bump(t, valve.total_angle_dip, valve.r_dip); 
+            
+            %((mod(t,2*pi) <= angle_half) || ...
+            %                     ((mod(t,2*pi) >= (2*pi - angle_half)))) .* ...
+            %                     (-r_dip * cos(t * 2/pi * angle_total).^2); 
         else 
             x_coord_extra = @(t) 0 .* t; 
         end     
