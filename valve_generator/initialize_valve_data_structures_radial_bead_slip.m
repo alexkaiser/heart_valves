@@ -91,7 +91,7 @@ if decreasing_tension
     
     dec_tension_coeff_base = dec_tension_coeff_32 * 32^2; 
     
-    valve.c_dec_tension_circumferential = 1.0 * dec_tension_coeff_base; 
+    valve.c_dec_tension_circumferential = 2.0 * dec_tension_coeff_base; 
     valve.c_dec_tension_radial          = 2.0 * dec_tension_coeff_base; 
     valve.c_dec_tension_chordae         = 1.0 * dec_tension_coeff_base; 
 else 
@@ -188,43 +188,74 @@ valve.root_tension_base = 0.6 * valve.tension_base;
 
 
 % places this many periodic rings above 
-n_rings_periodic = 0; %max(1,N/32); 
+n_rings_periodic = max(1,N/32); 
 
+wide_anterior = true; 
+if wide_anterior
+    % Leaflet mesh has irregular bottom edge 
+    % 
 
+    % Commissural leaflets centered at -pi/2, pi/2
+    N_comm      = N/8; 
 
-% Leaflet mesh has irregular bottom edge 
-% 
+    % Half of each commissural leaflet takes away from the Anterior leaflets half 
+    N_anterior  = N/2; 
 
-% Commissural leaflets centered at -pi/2, pi/2
-N_comm      = N/8; 
+    % Posterior takes whatever is left 
+    N_posterior = N - 2*N_comm - N_anterior; 
 
-% Half of each commissural leaflet takes away from the Anterior leaflets half 
-N_anterior  = N/2; 
+    N_per_direction   = (1/2) * [N_anterior, N_anterior, N_comm, N_comm, N_posterior, N_posterior, N_comm, N_comm]; 
 
-% Posterior takes whatever is left 
-N_posterior = N - 2*N_comm - N_anterior; 
+    % Anterior goes down then up 
+    leaflet_direction = [-1, 1]; 
 
-N_per_direction   = (1/2) * [N_anterior, N_anterior, N_comm, N_comm, N_posterior, N_posterior, N_comm, N_comm]; 
+    % Right commissural goes down then up 
+    leaflet_direction = [leaflet_direction, -1, 1]; 
 
-% First position is the midpoint of the left commissural leaflet
-% Leaflet moves up from there to the commissure 
-% leaflet_direction = 1; 
-leaflet_direction = []; 
+    % Posterior goes down then up 
+    leaflet_direction = [leaflet_direction, -1, 1]; 
 
-% Anterior goes down then up 
-leaflet_direction = [leaflet_direction, -1, 1]; 
+    % Finally, left commissural leaflet goes down to meet initial point 
+    leaflet_direction = [leaflet_direction, -1, 1]; 
 
-% Right commissural goes down then up 
-leaflet_direction = [leaflet_direction, -1, 1]; 
+    % offset from N/2 in initial placement 
+    leaflet_N_start = 0; %-N_comm/2 + 1; 
 
-% Posterior goes down then up 
-leaflet_direction = [leaflet_direction, -1, 1]; 
+else
+    
+    
+    % Commissural leaflets centered at -pi/2, pi/2
+    N_comm      = N/8; 
 
-% Finally, left commissural leaflet goes down to meet initial point 
-leaflet_direction = [leaflet_direction, -1, 1]; 
+    % Half of each commissural leaflet takes away from the Anterior leaflets half 
+    N_anterior  = N/2 - N_comm; 
 
-% offset from N/2 in initial placement 
-leaflet_N_start = 0; %-N_comm/2 + 1; 
+    % Posterior takes whatever is left 
+    N_posterior = N - 2*N_comm - N_anterior; 
+
+    N_per_direction   = (1/2) * [N_comm, N_anterior, N_anterior, N_comm, N_comm, N_posterior, N_posterior, N_comm]; 
+
+    % First position is the midpoint of the left commissural leaflet
+    % Leaflet moves up from there to the commissure 
+    leaflet_direction = 1; 
+
+    % Anterior goes down then up 
+    leaflet_direction = [leaflet_direction, -1, 1]; 
+
+    % Right commissural goes down then up 
+    leaflet_direction = [leaflet_direction, -1, 1]; 
+
+    % Posterior goes down then up 
+    leaflet_direction = [leaflet_direction, -1, 1]; 
+
+    % Finally, left commissural leaflet goes down to meet initial point 
+    leaflet_direction = [leaflet_direction, -1]; 
+
+    % offset from N/2 in initial placement 
+    leaflet_N_start = -N_comm/2 + 1; 
+    
+end 
+
 
 
 
@@ -257,11 +288,11 @@ papillary_anterior = zeros(3,n_trees_anterior);
 
 n_points = n_trees_anterior/2; 
 
-right_papillary_range = 1:(n_trees_anterior/2); 
-left_papillary_range  = right_papillary_range + (n_trees_anterior/2);
+left_papillary_range = 1:(n_trees_anterior/2); 
+right_papillary_range  = left_papillary_range + (n_trees_anterior/2);
 
-papillary_anterior(:,right_papillary_range) = get_papillary_coords(valve, left_papillary_idx, n_points,  0*pi/4,    pi/4); 
-papillary_anterior(:,left_papillary_range)  = get_papillary_coords(valve, right_papillary_idx, n_points,   -pi/4, -0*pi/4); 
+papillary_anterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points,  0*pi/4,    pi/4); 
+papillary_anterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points,   -pi/4, -0*pi/4); 
 
 n_leaves_anterior  = N_anterior/n_trees_anterior * ones(n_trees_anterior, 1); 
 % leaflet_direction_anterior = [-1; -1; 1; 1];
