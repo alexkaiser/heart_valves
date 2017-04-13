@@ -190,7 +190,7 @@ valve.root_tension_base = 0.6 * valve.tension_base;
 % places this many periodic rings above 
 n_rings_periodic = max(1,N/32); 
 
-wide_anterior = true; 
+wide_anterior = false; 
 if wide_anterior
     % Leaflet mesh has irregular bottom edge 
     % 
@@ -237,19 +237,24 @@ else
 
     % First position is the midpoint of the left commissural leaflet
     % Leaflet moves up from there to the commissure 
-    leaflet_direction = 1; 
+    
+    % if true, commissural free points change height in mesh 
+    % if false commissural points are flat 
+    up_and_down_comm = 0;
+    
+    leaflet_direction = 1 * up_and_down_comm; 
 
     % Anterior goes down then up 
     leaflet_direction = [leaflet_direction, -1, 1]; 
 
     % Right commissural goes down then up 
-    leaflet_direction = [leaflet_direction, -1, 1]; 
+    leaflet_direction = [leaflet_direction, -1*up_and_down_comm, 1*up_and_down_comm]; 
 
     % Posterior goes down then up 
     leaflet_direction = [leaflet_direction, -1, 1]; 
 
     % Finally, left commissural leaflet goes down to meet initial point 
-    leaflet_direction = [leaflet_direction, -1]; 
+    leaflet_direction = [leaflet_direction, -1*up_and_down_comm]; 
 
     % offset from N/2 in initial placement 
     leaflet_N_start = -N_comm/2 + 1; 
