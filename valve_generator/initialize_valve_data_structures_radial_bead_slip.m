@@ -135,7 +135,7 @@ valve.num_copies = 1;
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
-valve.collagen_constitutive = true; 
+valve.collagen_constitutive = false; 
 
 % no reflections in this version 
 reflect_x = false; 
