@@ -1,8 +1,16 @@
+function skeleton = valve_points_ct_diastole(output)
+
+
 % 
 % Takes a center, radius and papillary coords 
 % Moves center to origin 
 % Takes papillary tips in rigid manner
 % 
+
+if ~exist('output', 'var')
+    output = false; 
+end 
+
 
 radius = 0.1 * 16.065878777687722; 
 
@@ -78,6 +86,24 @@ xlabel('x')
 ylabel('y')
 zlabel('z')
 
+
+
+
+skeleton.r                   = radius; 
+
+tip_radius = .25; 
+
+skeleton.papillary(1).name   = 'left'; 
+skeleton.papillary(1).center = papillary_left;
+skeleton.papillary(1).radius = left_radius;
+skeleton.papillary(1).normal = left_normal;
+
+skeleton.l_to_r_papillary    = l_to_r_papillary; 
+
+skeleton.papillary(2).name   = 'right'; 
+skeleton.papillary(2).center = papillary_right;
+skeleton.papillary(2).radius = right_radius;
+skeleton.papillary(2).normal = right_normal;
 
 
 
