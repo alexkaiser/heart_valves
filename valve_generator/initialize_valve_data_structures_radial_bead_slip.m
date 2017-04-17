@@ -321,12 +321,12 @@ if wide_anterior
 
 
         % Leaf tensions are all modified 
-        valve.leaf_tension_base = valve.tension_base; 
+        valve.leaf_tension_base = 0.25 * valve.tension_base; 
 
         % Base total root tension 
         % The value 0.5905 works well on each tree when using separate solves and two leaflets 
         % Controls constant tension at the root of the tree 
-        valve.root_tension_base = 0.5905 * valve.tension_base; 
+        valve.root_tension_base = 0.25 * 0.5905 * valve.tension_base; 
 
 
         n_trees_anterior = 4; 
@@ -336,7 +336,7 @@ if wide_anterior
         % vector version 
         k_0_1_anterior  = k_0_1_anterior * [1; 1; 1; 1]; 
         k_root_anterior = 0.9 * 2.0 * valve.root_tension_base / n_trees_anterior; 
-        k_root_anterior = k_root_anterior * [1.03; 1; 1; 1.03]; 
+        k_root_anterior = k_root_anterior * [1; 1; 1; 1]; 
 
 
         papillary_anterior = zeros(3,n_trees_anterior); 
@@ -357,7 +357,7 @@ if wide_anterior
 
         k_0_1_posterior  = 0.2 * valve.leaf_tension_base; 
         k_0_1_posterior  = k_0_1_posterior * ones(n_trees_posterior,1); 
-        k_root_posterior = 0.8 * 2.0 * valve.root_tension_base; 
+        k_root_posterior = 0.8 * 2.0 * valve.root_tension_base / n_trees_posterior; 
         k_root_posterior = k_root_posterior * [1; 1; 1; 1; 1; 1; 1; 1]; 
 
         papillary_posterior = zeros(3,n_trees_posterior); 
