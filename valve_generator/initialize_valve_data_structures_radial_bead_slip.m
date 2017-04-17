@@ -162,14 +162,20 @@ ring_to_ring_range = 0;
 % always starts from -pi/2
 angles = [-pi/2; 2*pi - pi/2]; 
 
+sytole_skeleton = false; 
+if sytole_skeleton 
+    valve.skeleton = valve_points_ct_systole(); 
+else 
+    valve.skeleton = valve_points_ct_diastole(); 
+end 
 
-valve.skeleton = valve_points_ct_systole(); 
+
 valve.r        = valve.skeleton.r; 
 
 left_papillary_idx  = 1; 
 right_papillary_idx = 2; 
 
-valve.dip_anterior_systole = true; 
+valve.dip_anterior_systole = false; 
 valve.r_dip = 0.75; 
 valve.total_angle_dip = pi; 
 
@@ -193,7 +199,7 @@ beta     = 1.0 * valve.tension_base;  % radial
 % places this many periodic rings above 
 n_rings_periodic = max(1,N/32); 
 
-wide_anterior = false; 
+wide_anterior = true; 
 if wide_anterior
     % Leaflet mesh has irregular bottom edge 
     % 

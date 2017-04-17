@@ -69,41 +69,57 @@ R = rotation_matrix_z(-theta + pi);
 papillary_left  = R*papillary_left; 
 papillary_right = R*papillary_right; 
 
-radius 
-papillary_left
-papillary_right
+
+if output 
+
+    radius 
+    papillary_left
+    papillary_right
 
 
-th = 0:.1:2*pi; 
-figure; 
-plot3(radius*cos(th), radius*sin(th), zeros(size(th))); 
-hold on 
-plot3(papillary_left(1), papillary_left(2), papillary_left(3), '*'); 
-plot3(papillary_right(1), papillary_right(2), papillary_right(3), 'o'); 
-legend('ring', 'left', 'right'); 
-title('mitral skeleton geometry'); 
-xlabel('x')
-ylabel('y')
-zlabel('z')
+    th = 0:.1:2*pi; 
+    figure; 
+    plot3(radius*cos(th), radius*sin(th), zeros(size(th))); 
+    hold on 
+    plot3(papillary_left(1), papillary_left(2), papillary_left(3), '*'); 
+    plot3(papillary_right(1), papillary_right(2), papillary_right(3), 'o'); 
+    legend('ring', 'left', 'right'); 
+    title('mitral skeleton geometry'); 
+    xlabel('x')
+    ylabel('y')
+    zlabel('z')
+
+end 
+
+l_to_r_papillary = (papillary_right - papillary_left); 
+l_to_r_papillary = l_to_r_papillary / norm(l_to_r_papillary);
+
+
+papillary_radius = 0.25; 
+
+left_papillary_center  = papillary_left  + papillary_radius * l_to_r_papillary; 
+right_papillary_center = papillary_right - papillary_radius * l_to_r_papillary; 
 
 
 
+% always horizontal here 
+normal = [0; 0; 1]; 
 
 skeleton.r                   = radius; 
 
 tip_radius = .25; 
 
 skeleton.papillary(1).name   = 'left'; 
-skeleton.papillary(1).center = papillary_left;
-skeleton.papillary(1).radius = left_radius;
-skeleton.papillary(1).normal = left_normal;
+skeleton.papillary(1).center = left_papillary_center;
+skeleton.papillary(1).radius = papillary_radius;
+skeleton.papillary(1).normal = normal;
 
 skeleton.l_to_r_papillary    = l_to_r_papillary; 
 
 skeleton.papillary(2).name   = 'right'; 
-skeleton.papillary(2).center = papillary_right;
-skeleton.papillary(2).radius = right_radius;
-skeleton.papillary(2).normal = right_normal;
+skeleton.papillary(2).center = right_papillary_center;
+skeleton.papillary(2).radius = papillary_radius;
+skeleton.papillary(2).normal = normal;
 
 
 
