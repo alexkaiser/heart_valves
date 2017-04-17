@@ -23,6 +23,12 @@ function F = difference_equations_bead_slip(leaflet)
     is_bc                  = leaflet.is_bc; 
     num_trees              = leaflet.num_trees; 
     
+    if isfield(leaflet, 'periodic_j')
+        periodic_j = leaflet.periodic_j; 
+    else
+        periodic_j = zeros(k_max,1); 
+    end 
+    
     
     % repulsive potential coefficients, if used 
     if isfield(leaflet, 'repulsive_potential') && leaflet.repulsive_potential
@@ -57,13 +63,6 @@ function F = difference_equations_bead_slip(leaflet)
     else 
         tension_debug = false; 
     end 
-
-    if isfield(leaflet, 'periodic_j')
-        periodic_j = leaflet.periodic_j; 
-    else
-        periodic_j = zeros(k_max,1); 
-    end 
-    
     
     
     F_leaflet = zeros(size(X_current)); 

@@ -1,4 +1,4 @@
-function [valve valve_linear pass_all] = solve_valve(valve, strain)
+function [valve valve_with_reference pass_all] = solve_valve(valve, strain)
 % 
 % Refines valve data structure to equilibrium 
 % Applies auto-continuation to pressure and updates both leaflets 
@@ -30,8 +30,19 @@ for i=1:length(valve.leaflets)
     
 end 
 
+valve_with_reference = valve; 
 
-valve_linear = []; 
+% kill off the old structure 
+valve_with_reference = rmfield(valve_with_reference, 'leaflets'); 
+
+for i=1:length(valve.leaflets)
+        
+    valve_with_reference.leaflets(i) = set_rest_lengths_and_constants(valve.leaflets(i), strain); 
+
+end 
+
+
+
 
 return;
 

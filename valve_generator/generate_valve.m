@@ -4,7 +4,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 256; 
+N = 32; 
 
 
 % Show some output 
@@ -74,7 +74,7 @@ if radial && bead_slip && attached
 else 
 %     valve = solve_valve(valve, p_range, repulsive_coeff_range); 
 
-    [valve valve_linear pass_all] = solve_valve(valve, strain); 
+    [valve valve_with_reference pass_all] = solve_valve(valve, strain); 
 end 
 
 fig = figure; 
@@ -83,10 +83,10 @@ fig = valve_plot(valve, fig);
 title('Pressurized configuration fibers'); 
 saveas(fig, strcat(valve.base_name, '_pressurized'), 'fig'); 
 
-if ~isempty(valve_linear)
+if ~isempty(valve_with_reference)
     fig = figure; 
-    fig = valve_plot(valve_linear, fig); 
-    title('Relaxed configuration radial fibers, linear constitutive law'); 
+    fig = valve_plot(valve_with_reference, fig); 
+    title('Relaxed configuration radial fibers, reference config based constitutive law'); 
     saveas(fig, strcat(valve.base_name, '_relaxed'), 'fig'); 
 end 
 
@@ -101,9 +101,9 @@ end
 save(strcat(valve.base_name, '_final_data')); 
 
 % Write to simulation files 
-if ~isempty(valve_linear)
-    output_to_ibamr_format(valve_linear); 
-end 
+% if ~isempty(valve_linear)
+%     output_to_ibamr_format(valve_linear); 
+% end 
 
 
 

@@ -26,20 +26,13 @@ R_nbr = [];
 X       = leaflet.X; 
 chordae = leaflet.chordae; 
 
-if isfield(leaflet, 'R_free_edge_left')  && isfield(leaflet, 'k_free_edge_left') && ... 
-   isfield(leaflet, 'R_free_edge_right') && isfield(leaflet, 'k_free_edge_right') 
+if isfield(chordae(tree_idx), 'R_free_edge')  && isfield(chordae(tree_idx), 'k_free_edge')
     
-    error('not impelemented'); 
-
     free_edge_constants_set = true; 
     
-    if left_side 
-        R_free_edge = leaflet.R_free_edge_left;
-        k_free_edge = leaflet.k_free_edge_left;
-    else 
-        R_free_edge = leaflet.R_free_edge_right;
-        k_free_edge = leaflet.k_free_edge_right;
-    end 
+    R_free_edge = chordae(tree_idx).R_free_edge;
+    k_free_edge = chordae(tree_idx).k_free_edge;
+    
 else
     
     free_edge_constants_set = false;
@@ -52,8 +45,8 @@ k_vals        = chordae(tree_idx).k_vals;
 k_0           = chordae(tree_idx).k_0; 
 free_edge_idx = chordae(tree_idx).free_edge_idx; 
 
-if isfield(chordae(tree_idx), 'ref')
-    R_ch  = chordae(tree_idx).ref; 
+if isfield(chordae(tree_idx), 'R_ch')
+    R_ch  = chordae(tree_idx).R_ch; 
 else 
     R_ch  = []; 
 end 
