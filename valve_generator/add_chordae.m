@@ -28,7 +28,7 @@ function leaflet = add_chordae(leaflet, tree_idx)
         k_0_1_tmp   = k_0_1(tree_idx); 
         k_root_tmp  = k_root(tree_idx); 
     else
-        error('Must supply ')
+        error('Must supply values for all or values for exactly one')
     end 
     
     
@@ -131,8 +131,8 @@ function leaflet = add_chordae(leaflet, tree_idx)
     end 
 
     % check that we actually got the desired root 
-    tol = 1e-10; 
-    if abs(chordae(tree_idx).k_vals(1) - k_root) > tol 
+    tol = 1e-8; 
+    if abs(chordae(tree_idx).k_vals(1) - k_root_tmp) > tol 
         error('Scaling incorrect at tree root, constants inconsistent'); 
     end 
     
