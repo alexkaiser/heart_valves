@@ -37,8 +37,14 @@ chordae_with_reference = chordae;
 for tree_idx = 1:num_trees 
     [m N_chordae] = size(chordae_with_reference(tree_idx).C);
     
-    chordae_with_reference(tree_idx).k_val = zeros(N_chordae,1); 
-    chordae_with_reference(tree_idx).R_ch  = zeros(N_chordae,1); 
+    % zero spring constants 
+    chordae_with_reference(tree_idx).k_vals = zeros(N_chordae,1); 
+    
+    % allocate rest lengths 
+    chordae_with_reference(tree_idx).R_ch   = zeros(N_chordae,1); 
+    
+    % set parameters that should never be used to empty 
+    chordae_with_reference(tree_idx).k_0 = []; 
     
     n_leaves = size(chordae_with_reference(tree_idx).free_edge_idx, 1); 
     
@@ -213,7 +219,8 @@ for tree_idx = 1:num_trees
 
     for i=1:N_chordae
 
-        % only need to go parent wise here 
+        % only go parent wise here
+        % child owns parent wise spring constants 
         parent = floor(i/2); 
 
         nbr_idx = parent;  
@@ -231,7 +238,7 @@ for tree_idx = 1:num_trees
             tension = tension + k_val * tension_decreasing(C(:,i), nbr, du, c_dec_tension_chordae) ; 
         end
 
-        [chordae_with_reference(tree_idx).k_val(i), ...
+        [chordae_with_reference(tree_idx).k_vals(i), ...
          chordae_with_reference(tree_idx).R_ch(i)]  ... 
              = get_rest_len_and_spring_constants(C(:,i), nbr, tension, strain, leaflet); 
    
