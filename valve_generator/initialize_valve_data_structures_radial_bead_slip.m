@@ -91,9 +91,9 @@ if decreasing_tension
     
     dec_tension_coeff_base = dec_tension_coeff_32 * 32^2; 
     
-    valve.c_dec_tension_circumferential = 1.0 * dec_tension_coeff_base; 
-    valve.c_dec_tension_radial          = 1.0 * dec_tension_coeff_base; 
-    valve.c_dec_tension_chordae         = 1.0 * dec_tension_coeff_base; 
+    valve.c_dec_tension_circumferential = 2.0 * dec_tension_coeff_base; 
+    valve.c_dec_tension_radial          = 2.0 * dec_tension_coeff_base; 
+    valve.c_dec_tension_chordae         = 2.0 * dec_tension_coeff_base; 
 else 
     valve.dec_tension  = 0.0; 
 end 
@@ -321,12 +321,12 @@ if wide_anterior
 
 
         % Leaf tensions are all modified 
-        valve.leaf_tension_base = 0.25 * valve.tension_base; 
+        valve.leaf_tension_base = 0.5 * valve.tension_base; 
 
         % Base total root tension 
         % The value 0.5905 works well on each tree when using separate solves and two leaflets 
         % Controls constant tension at the root of the tree 
-        valve.root_tension_base = 0.25 * 0.5905 * valve.tension_base; 
+        valve.root_tension_base = 0.5 * 0.5905 * valve.tension_base; 
 
 
         n_trees_anterior = 4; 
