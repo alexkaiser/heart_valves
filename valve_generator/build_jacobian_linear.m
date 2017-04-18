@@ -8,40 +8,33 @@ function J = build_jacobian_linear(leaflet)
     % Output 
     %      J         Jacobian of difference equations 
     
-    X_current           = leaflet.X; 
-    p_0                 = leaflet.p_0;  
-    C_left              = leaflet.chordae.C_left; 
-    C_right             = leaflet.chordae.C_right; 
-    chordae_idx_left    = leaflet.chordae_idx_left; 
-    chordae_idx_right   = leaflet.chordae_idx_right;
-    j_max               = leaflet.j_max; 
-    k_max               = leaflet.k_max;  
-    is_internal         = leaflet.is_internal; 
-    is_bc               = leaflet.is_bc; 
-    free_edge_idx_left  = leaflet.free_edge_idx_left; 
-    free_edge_idx_right = leaflet.free_edge_idx_right; 
-    linear_idx_offset   = leaflet.linear_idx_offset; 
-    
-    R_u = leaflet.R_u;
-    k_u = leaflet.k_u;
-    R_v = leaflet.R_v;
-    k_v = leaflet.k_v;
+    X_current                 = leaflet.X; 
+    p_0                       = leaflet.p_0;  
+    chordae                   = leaflet.chordae; 
+    chordae_idx               = leaflet.chordae_idx; 
+    j_max                     = leaflet.j_max; 
+    k_max                     = leaflet.k_max;  
+    is_internal               = leaflet.is_internal; 
+    is_bc                     = leaflet.is_bc; 
+    linear_idx_offset         = leaflet.linear_idx_offset; 
+    num_trees                 = leaflet.num_trees; 
+    total_internal_with_trees = leaflet.total_internal_with_trees;  
+    R_u                       = leaflet.R_u;
+    k_u                       = leaflet.k_u;
+    R_v                       = leaflet.R_v;
+    k_v                       = leaflet.k_v;
 
-    R_free_edge_left   = leaflet.R_free_edge_left;
-    k_free_edge_left   = leaflet.k_free_edge_left;
-    R_free_edge_right  = leaflet.R_free_edge_right;
-    k_free_edge_right  = leaflet.k_free_edge_right;
     
+    if isfield(leaflet, 'periodic_j')
+        periodic_j = leaflet.periodic_j; 
+    else
+        periodic_j = zeros(k_max,1); 
+    end
     
-    [m N_chordae] = size(C_left); 
-    
-    % total internal points in triangular domain 
-    total_internal = 3*sum(is_internal(:)); 
-    total_points   = total_internal + 3*2*N_chordae; 
 
     % there are fewer than 15 nnz per row
     % if using the redundant features on sparse creation use more 
-    capacity = 10 * 15 * total_points; 
+    capacity = 10 * 15 * total_internal_with_trees; 
     
     % build with indices, then add all at once 
     nnz_placed = 0; 
@@ -55,117 +48,34 @@ function J = build_jacobian_linear(leaflet)
     k_offsets = [0 0 0 1 1 1 2 2 2]';
 
     
-    for left_side = [true, false]
-        
-        if left_side
-            free_edge_idx = free_edge_idx_left; 
-            chordae_idx = chordae_idx_left; 
-            C = C_left; 
-            k_free_edge = k_free_edge_left; 
-            R_free_edge = R_free_edge_left;
-        else 
-            free_edge_idx = free_edge_idx_right; 
-            chordae_idx = chordae_idx_right;
-            C = C_right; 
-            k_free_edge = k_free_edge_right; 
-            R_free_edge = R_free_edge_right; 
-        end 
-        
-        
-        % free edge terms first              
-        for i=1:size(free_edge_idx, 1)
-            j = free_edge_idx(i,1);
-            k = free_edge_idx(i,2);
 
-            range_current = linear_idx_offset(j,k) + (1:3); 
 
-            X = X_current(:,j,k); 
-
-            % interior neighbor is right in j on left side, 
-            % left in j on right side 
-            if left_side
-                j_nbr = j + 1;
-            else 
-                j_nbr = j - 1;
-            end 
-            k_nbr = k;
-
-            % spring and rest length indices are always at the minimum value  
-            j_spr = min(j, j_nbr);
-            k_spr = min(k, k_nbr);
-            
-            % Anterior circumferential 
-            X_nbr = X_current(:,j_nbr,k_nbr); 
-            
-            J_tmp = tension_linear_tangent_jacobian(X,X_nbr,R_u(j_spr,k_spr),k_u(j_spr,k_spr)); 
-            
-            % current term is always added in 
-            % this gets no sign 
-            % this is always at the current,current block in the matrix 
-            place_tmp_block(range_current, range_current, J_tmp); 
-            
-            % If the neighbor is an internal point, it also gets a Jacobian contribution 
-            % This takes a sign
-            if is_internal(j_nbr,k_nbr)
-                range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
-                place_tmp_block(range_current, range_nbr, -J_tmp); 
-            end 
-
-            % interior neighbor is up in k, always  
-            j_nbr = j;     
-            k_nbr = k+1; 
-            j_spr = min(j, j_nbr);
-            k_spr = min(k, k_nbr);
-            
-            % Anterior radial
-            X_nbr = X_current(:,j_nbr,k_nbr); 
-
-            J_tmp = tension_linear_tangent_jacobian(X,X_nbr,R_v(j_spr,k_spr),k_v(j_spr,k_spr));
-
-            % current term is always added in 
-            % this gets no sign 
-            % this is always at the current,current block in the matrix 
-            place_tmp_block(range_current, range_current, J_tmp); 
-
-            
-            % If the neighbor is an internal point, it also gets a Jacobian contribution 
-            % This takes a sign
-            if is_internal(j_nbr,k_nbr)
-                range_nbr  = linear_idx_offset(j_nbr,k_nbr) + (1:3);
-                place_tmp_block(range_current, range_nbr, -J_tmp); 
-            end
-
-            % current node has a chordae connection
-            if chordae_idx(j,k)
-
-                % index that free edge would have if on tree
-                % remember that leaves are only in the leaflet
-                leaf_idx = chordae_idx(j,k) + N_chordae;
-
-                % then take the parent index of that number in chordae variables
-                idx_chordae = floor(leaf_idx/2);
-
-                X_nbr = C(:,idx_chordae);
-
-                J_tmp = tension_linear_tangent_jacobian(X,X_nbr,R_free_edge(i),k_free_edge(i));
-
-                % current term is always added in 
-                % this gets no sign 
-                % this is always at the current,current block in the matrix 
-                place_tmp_block(range_current, range_current, J_tmp); 
-                
-                % chordae range 
-                range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side); 
-                place_tmp_block(range_current, range_nbr, -J_tmp); 
-                
-            else
-                error('free edge point required to have chordae connection'); 
-            end
-
-        end
-    
-    end 
-    
+%             % current node has a chordae connection
+%             if chordae_idx(j,k)
+% 
+%                 % index that free edge would have if on tree
+%                 % remember that leaves are only in the leaflet
+%                 leaf_idx = chordae_idx(j,k) + N_chordae;
+% 
+%                 % then take the parent index of that number in chordae variables
+%                 idx_chordae = floor(leaf_idx/2);
+% 
+%                 X_nbr = C(:,idx_chordae);
+% 
+%                 J_tmp = tension_linear_tangent_jacobian(X,X_nbr,R_free_edge(i),k_free_edge(i));
+% 
+%                 % current term is always added in 
+%                 % this gets no sign 
+%                 % this is always at the current,current block in the matrix 
+%                 place_tmp_block(range_current, range_current, J_tmp); 
+%                 
+%                 % chordae range 
+%                 range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side); 
+%                 place_tmp_block(range_current, range_nbr, -J_tmp); 
+%                 
+%             else
+%                 error('free edge point required to have chordae connection'); 
+%             end
 
 
 
@@ -174,8 +84,8 @@ function J = build_jacobian_linear(leaflet)
     for j=1:j_max
         for k=1:k_max
 
-            % Internal points, not on free edge 
-            if is_internal(j,k) && ~chordae_idx_left(j,k) && ~chordae_idx_right(j,k)
+            % Internal points
+            if is_internal(j,k)
 
                 X = X_current(:,j,k); 
 
@@ -184,9 +94,14 @@ function J = build_jacobian_linear(leaflet)
 
                 % pressure portion 
                 % always four neighbors
-                if p_0 ~= 0.0
+                if (~is_bc(j,k)) && (~chordae_idx(j,k).tree_idx) && (p_0 ~= 0)
                     
-                    j_nbr = j+1; 
+                    % periodic reduction of nbr indices 
+                    j_plus__1 = get_j_nbr(j+1, k, periodic_j, j_max); 
+                    j_minus_1 = get_j_nbr(j-1, k, periodic_j, j_max);
+                    
+                    
+                    j_nbr = j_plus__1; 
                     k_nbr = k; 
                     
                     J_pressure = -(p_0/4) * cross_matrix(X_current(:,j,k+1) - X_current(:,j,k-1)) ; 
@@ -196,7 +111,7 @@ function J = build_jacobian_linear(leaflet)
                         place_tmp_block(range_current, range_nbr, J_pressure); 
                     end 
                     
-                    j_nbr = j-1; 
+                    j_nbr = j_minus_1; 
                     k_nbr = k; 
                     J_pressure =  (p_0/4) * cross_matrix(X_current(:,j,k+1) - X_current(:,j,k-1)) ; 
                     
@@ -207,7 +122,7 @@ function J = build_jacobian_linear(leaflet)
                     
                     j_nbr = j; 
                     k_nbr = k+1; 
-                    J_pressure =  (p_0/4) * cross_matrix(X_current(:,j+1,k) - X_current(:,j-1,k)) ; 
+                    J_pressure =  (p_0/4) * cross_matrix(X_current(:,j_plus__1,k) - X_current(:,j_minus_1,k)) ; 
 
                     if is_internal(j_nbr,k_nbr)
                         range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
@@ -216,7 +131,7 @@ function J = build_jacobian_linear(leaflet)
                     
                     j_nbr = j; 
                     k_nbr = k-1; 
-                    J_pressure = -(p_0/4) * cross_matrix(X_current(:,j+1,k) - X_current(:,j-1,k)) ; 
+                    J_pressure = -(p_0/4) * cross_matrix(X_current(:,j_plus__1,k) - X_current(:,j_minus_1,k)) ; 
 
                     if is_internal(j_nbr,k_nbr)
                         range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
@@ -226,18 +141,21 @@ function J = build_jacobian_linear(leaflet)
                 end 
 
 
-                for j_nbr = [j-1,j+1]
+                for j_nbr_unreduced = [j-1,j+1]
+                    
+                    % j_spr gets periodic reduction if off the minimum side 
+                    % meaning it is zero 
+                    j_spr = min(j, j_nbr_unreduced); 
+                    if j_spr == 0 
+                        j_spr = j_max; 
+                    end 
+                    
+                    j_nbr = get_j_nbr(j_nbr_unreduced, k, periodic_j, j_max); 
 
                     k_nbr = k; 
+                    k_spr = min(k, k_nbr);
 
-                    if (j_nbr > 0) && (k_nbr > 0) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
-
-                        if chordae_idx_left(j,k) || chordae_idx_right(j,k)
-                            error('trying to apply slip model at chordae attachment point'); 
-                        end 
-
-                        j_spr = min(j, j_nbr); 
-                        k_spr = min(k, k_nbr);
+                    if (j_nbr > 0) && (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
                         
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
@@ -264,15 +182,11 @@ function J = build_jacobian_linear(leaflet)
                 for k_nbr = [k-1,k+1]
 
                     j_nbr = j; 
+                    
+                    j_spr = min(j, j_nbr); 
+                    k_spr = min(k, k_nbr);
 
-                    if (j_nbr > 0) && (k_nbr > 0) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
-
-                        if chordae_idx_left(j,k) || chordae_idx_right(j,k)
-                            error('trying to apply slip model at chordae attachment point'); 
-                        end 
-
-                        j_spr = min(j, j_nbr); 
-                        k_spr = min(k, k_nbr);
+                    if (j_nbr > 0) && (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
                         
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
@@ -293,19 +207,51 @@ function J = build_jacobian_linear(leaflet)
                         
                     end 
                 end
+                
+                % current node has a chordae connection
+                if chordae_idx(j,k).tree_idx
+                    
+                    tree_idx = chordae_idx(j,k).tree_idx; 
+                    
+                    C = chordae(tree_idx).C; 
+                    
+                    [m N_chordae] = size(chordae(tree_idx).C);
+                    
+                    % index in current free edge array 
+                    i = chordae_idx(j,k).leaf_idx;
+
+                    % index that free edge would have if on tree
+                    % remember that leaves are only in the leaflet
+                    leaf_idx = chordae_idx(j,k).leaf_idx + N_chordae;
+
+                    % then take the parent index of that number in chordae variables
+                    idx_chordae = floor(leaf_idx/2);
+
+                    X_nbr = C(:,idx_chordae);
+
+                    J_tmp = tension_linear_tangent_jacobian(X,X_nbr,chordae(tree_idx).R_free_edge(i),chordae(tree_idx).k_free_edge(i));
+
+                    % current term is always added in 
+                    % this gets no sign 
+                    % this is always at the current,current block in the matrix 
+                    place_tmp_block(range_current, range_current, J_tmp); 
+
+                    % chordae range 
+                    range_nbr = range_chordae(chordae, idx_chordae, tree_idx); 
+                    place_tmp_block(range_current, range_nbr, -J_tmp); 
+                    
+                end 
+                    
             end
         end
     end
 
     
     % chordae internal terms 
-    for left_side = [true false];  
-
-        if left_side
-            C = C_left; 
-        else 
-            C = C_right; 
-        end 
+    for tree_idx = 1:num_trees
+        
+        C = chordae(tree_idx).C; 
+        [m N_chordae] = size(C);
 
         for i=1:N_chordae
 
@@ -314,16 +260,16 @@ function J = build_jacobian_linear(leaflet)
             parent = floor(i/2); 
 
             % this is the same, updating the equations for this component 
-            range_current = range_chordae(total_internal, N_chordae, i, left_side); 
+            range_current = range_chordae(chordae, i, tree_idx); 
 
             for nbr_idx = [left,right,parent]
 
                 % get the neighbors coordinates, reference coordinate and spring constants
-                [nbr R_nbr k_val j_nbr k_nbr] = get_nbr_chordae(leaflet, i, nbr_idx, left_side); 
+                [nbr R_nbr k_val j_nbr k_nbr] = get_nbr_chordae(leaflet, i, nbr_idx, tree_idx); 
 
                 % if the neighbor is in the chordae 
                 if isempty(j_nbr) && isempty(k_nbr) 
-                    range_nbr = range_chordae(total_internal, N_chordae, nbr_idx, left_side); 
+                    range_nbr = range_chordae(chordae, nbr_idx, tree_idx); 
                 elseif is_internal(j_nbr, k_nbr)
                     % neighbor is on the leaflet 
                     range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);

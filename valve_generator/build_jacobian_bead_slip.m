@@ -273,8 +273,6 @@ function J = build_jacobian_bead_slip(leaflet)
 
             % this is the same, updating the equations for this component 
             range_current = range_chordae(chordae, i, tree_idx); 
-            % chordae(tree_idx).min_global_idx + 3*(i-1) + (0:2);               
-            % range_chordae(total_internal_leaflet, N_chordae, i, left_side); 
 
             for nbr_idx = [left,right,parent]
 
@@ -284,8 +282,6 @@ function J = build_jacobian_bead_slip(leaflet)
                 % if the neighbor is in the chordae 
                 if isempty(j_nbr) && isempty(k_nbr) 
                     range_nbr = range_chordae(chordae, nbr_idx, tree_idx); 
-                    
-                    % range_chordae(total_internal, N_chordae, nbr_idx, left_side); 
                 elseif is_internal(j_nbr, k_nbr)
                     % neighbor is on the leaflet 
                     range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);

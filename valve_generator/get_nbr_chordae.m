@@ -28,15 +28,11 @@ chordae = leaflet.chordae;
 
 if isfield(chordae(tree_idx), 'R_free_edge')  && isfield(chordae(tree_idx), 'k_free_edge')
     
-    free_edge_constants_set = true; 
-    
+    free_edge_constants_set = true;
     R_free_edge = chordae(tree_idx).R_free_edge;
     k_free_edge = chordae(tree_idx).k_free_edge;
-    
 else
-    
     free_edge_constants_set = false;
-
 end 
 
 C             = chordae(tree_idx).C; 
