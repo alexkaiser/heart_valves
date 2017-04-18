@@ -295,7 +295,7 @@ function J = build_jacobian_linear(leaflet)
     end 
      
 
-    J = sparse(j_idx(1:nnz_placed), k_idx(1:nnz_placed), vals(1:nnz_placed), total_points, total_points, nnz_placed);  
+    J = sparse(j_idx(1:nnz_placed), k_idx(1:nnz_placed), vals(1:nnz_placed), total_internal_with_trees, total_internal_with_trees, nnz_placed);  
     
 %%%%%%%%%%
 %
@@ -342,7 +342,7 @@ function J = build_jacobian_linear(leaflet)
         % nested function for getting neighbor 
         % nested functions have full access to current work space 
 
-        if chordae_idx_left(j_nbr,k_nbr) || chordae_idx_right(j_nbr,k_nbr)
+        if chordae_idx(j_nbr,k_nbr).tree_idx
             X_nbr = X_current(:,j_nbr,k_nbr); 
             range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
             nbr_jacobian_needed = true; 
