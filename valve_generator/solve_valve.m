@@ -41,9 +41,24 @@ for i=1:length(valve.leaflets)
         
     valve_with_reference.leaflets(i) = set_rest_lengths_and_constants(valve.leaflets(i), strain); 
     
-    F = norm(difference_equations_linear(valve_with_reference.leaflets(i))); 
+    leaflet = valve_with_reference.leaflets(i); 
+    
+    p_initial = leaflet.p_0; 
+    p_goal    = 0;
 
-    fprintf('Err on linear with no adjustment = %e\n', norm(F(:))); 
+    [valve_with_reference.leaflets(i) pass err] = solve_valve_pressure_auto_continuation(leaflet, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal, valve.max_consecutive_fails, valve.max_total_fails); 
+
+    if pass
+        fprintf('Global solve passed, err = %e\n\n', err); 
+    else 
+        fprintf('Global solve failed, err = %e\n\n', err); 
+    end 
+    
+    fig = figure; 
+    surf_plot(valve.leaflets(i), fig); 
+    pause(0.01);
+    
+    pass_all = pass_all && pass; 
     
 end 
 
