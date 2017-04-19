@@ -532,8 +532,8 @@ leaflet = initialize_leaflet_bead_slip(name,                         ...
 
 valve.leaflets(1) = leaflet; 
     
-valve_plot(valve); 
-pause(.1); 
+% valve_plot(valve); 
+% pause(.1); 
 
 disp('Done with initialize.'); 
 

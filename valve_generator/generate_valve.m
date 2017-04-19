@@ -4,7 +4,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 128; 
+N = 256; 
 
 
 % Show some output 
@@ -101,9 +101,9 @@ end
 save(strcat(valve.base_name, '_final_data')); 
 
 % Write to simulation files 
-% if ~isempty(valve_linear)
-%     output_to_ibamr_format(valve_linear); 
-% end 
+if ~isempty(valve_with_reference)
+    output_to_ibamr_format(valve_with_reference); 
+end 
 
 
 

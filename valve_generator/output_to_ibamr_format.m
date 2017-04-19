@@ -26,28 +26,16 @@ function [] = output_to_ibamr_format(valve)
     N                         = valve.N; 
     base_name                 = valve.base_name; 
     L                         = valve.L; 
-    posterior                 = valve.posterior; 
-    anterior                  = valve.anterior; 
     tension_base              = valve.tension_base; 
-    du                        = valve.anterior.du; 
     target_multiplier         = valve.target_multiplier; 
     n_lagrangian_tracers      = valve.n_lagrangian_tracers; 
     num_copies                = valve.num_copies; 
     collagen_constitutive     = valve.collagen_constitutive; 
+
     
-    if isfield(valve, 'comm_left') && isfield(valve, 'comm_right')
-        comm_leaflets = true; 
-        comm_left  = valve.comm_left; 
-        comm_right = valve.comm_right; 
-        
-        if ~valve.split_papillary
-            error('Must have split papillary locations for commissural leaflets.'); 
-        end 
-            
-    else 
-        comm_leaflets = false; 
-    end 
-    
+    if ~valve.split_papillary
+        error('Must have split papillary locations in current implementation.'); 
+    end
 
     params.vertex = fopen(strcat(base_name, '.vertex'), 'w'); 
     params.spring = fopen(strcat(base_name, '.spring'), 'w'); 
@@ -56,7 +44,7 @@ function [] = output_to_ibamr_format(valve)
     
     % just make this ridiculously big for now 
     % would be better to implement some resizing but that will also clutter things up 
-    params.vertices_capacity = 1000 * N^2; 
+    params.vertices_capacity = 100 * N^2; 
     params.vertices = zeros(3,params.vertices_capacity); 
 
     % keep one global index through the whole thing 
@@ -75,6 +63,7 @@ function [] = output_to_ibamr_format(valve)
 
     % Spring constant base for targets and 
     % Approximate force is tension_base multiplied by a length element 
+    du = 1/N; 
     k_rel = tension_base * du / num_copies; 
         
     % base rate for target spring constants
@@ -105,17 +94,9 @@ function [] = output_to_ibamr_format(valve)
     % m_effective_papillary = 1.0 * pi * filter_params_posterior.r^2; 
     eta_papillary         = 0.0; %sqrt(k_target/2 * m_effective_papillary); 
     
-    % Approximate mesh spacing 
+    % Approximate Lagrangian mesh spacing 
     % L = 2.5 = radius (of square) in sup norm, half total length of domain 
     ds = 2*L / N;
-    
-    
-    if isfield(posterior, 'reflect_x') && posterior.reflect_x
-        error('reflection not implemented in linear post slip model'); 
-    end 
-    if isfield(anterior, 'reflect_x') && anterior.reflect_x
-        error('Something strange, should not be reflecting on anterior leaflet')
-    end 
     
     
     % copies, if needed, will be placed this far down 
@@ -123,53 +104,38 @@ function [] = output_to_ibamr_format(valve)
         z_offset_vals = -linspace(0, ds, num_copies); 
     else 
         z_offset_vals = 0; 
-    end 
+    end  
     
-    % check for consistency in chordae , all data structures must match 
-    if ~(    all(posterior.left_papillary   == posterior.chordae.left_papillary)   ...
-          && all(posterior.right_papillary  == posterior.chordae.right_papillary))
-        error('Posterior chordae are inconsistent'); 
-    end 
         
-    if ~(    all(anterior.left_papillary   == anterior.chordae.left_papillary)   ...
-          && all(anterior.right_papillary  == anterior.chordae.right_papillary))
-        error('Anterior chordae are inconsistent'); 
-    end 
-    
     
     % ugh this is terrible fix it it makes my head hurt by I'm tired 
     global z_offset
     
     
     for z_offset = z_offset_vals
-       
-        assign_papillary = true; 
-         
-        [params anterior] = assign_indices_vertex_target(params, anterior, assign_papillary, k_target, eta); 
         
-        if ~valve.split_papillary
-            assign_papillary = false; 
-            posterior.left_papillary_idx  = anterior.left_papillary_idx; 
-            posterior.right_papillary_idx = anterior.right_papillary_idx; 
+        for i=1:length(valve.leaflets)
+            j_max = valve.leaflets(i).j_max; 
+            k_max = valve.leaflets(i).k_max; 
+            valve.leaflets(i).indices_global = nan * zeros(j_max, k_max);  
+        
+            % allocate chordae indexing arrays here 
+            % to stop dissimilar struct assignment error 
+            for tree_idx = 1:valve.leaflets(i).num_trees
+                C = valve.leaflets(i).chordae(tree_idx).C; 
+                [m N_chordae] = size(C);
+                valve.leaflets(i).chordae(tree_idx).idx_root = nan;                 
+                valve.leaflets(i).chordae(tree_idx).indices_global = nan * zeros(N_chordae, 1);
+            end 
         end 
         
-        [params posterior] = assign_indices_vertex_target(params, posterior, assign_papillary, k_target, eta); 
-        
-        if comm_leaflets
-            assign_papillary = true; 
-            [params comm_left ] = assign_indices_vertex_target(params, comm_left, assign_papillary, k_target, eta); 
-            [params comm_right] = assign_indices_vertex_target(params, comm_right, assign_papillary, k_target, eta); 
+        for i=1:length(valve.leaflets)
+            [params valve.leaflets(i)] = assign_indices_vertex_target(params, valve.leaflets(i), k_target, eta); 
         end 
         
-        % write springs 
-        params = add_springs(params, anterior,  num_copies, ds, collagen_constitutive); 
-        params = add_springs(params, posterior, num_copies, ds, collagen_constitutive); 
-        
-        if comm_leaflets
-            params = add_springs(params, comm_left,  num_copies, ds, collagen_constitutive); 
-            params = add_springs(params, comm_right, num_copies, ds, collagen_constitutive);
+        for i=1:length(valve.leaflets)
+            params = add_springs(params, valve.leaflets(i),  num_copies, ds, collagen_constitutive); 
         end 
-        
 
         % flat part of mesh 
         r = valve.r; 
@@ -184,12 +150,8 @@ function [] = output_to_ibamr_format(valve)
         params = place_net(params, r, h, L, N_ring, radial_fibers, k_rel, k_target_net, ref_frac_net, eta_net); 
         
         % approximate geodesic continutations of fibers 
-        params = place_rays(params, anterior,  ds, valve.r, L, k_rel, k_target_net, ref_frac_net, eta_net);                                       
-        params = place_rays(params, posterior, ds, valve.r, L, k_rel, k_target_net, ref_frac_net, eta_net);                    
-
-        if comm_leaflets
-            params = place_rays(params, comm_left,  ds, valve.r, L, k_rel, k_target_net, ref_frac_net, eta_net);                                       
-            params = place_rays(params, comm_right, ds, valve.r, L, k_rel, k_target_net, ref_frac_net, eta_net);
+        for i=1:length(valve.leaflets)
+            params = place_rays(params, valve.leaflets(i),  ds, valve.r, L, k_rel, k_target_net, ref_frac_net, eta_net);
         end 
 
         % flat part of mesh with Cartesian coordinates
@@ -415,7 +377,7 @@ function [] = prepend_line_with_int(file_name, val)
 end 
 
 
-function [params leaflet] = assign_indices_vertex_target(params, leaflet, assign_papillary, k_target, eta)
+function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_target, eta)
     % 
     % Assigns global indices to the leaflet and chordae 
     % Includes all boundary condition points and internal 
@@ -431,41 +393,11 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, assign
     k_max             = leaflet.k_max; 
     is_internal       = leaflet.is_internal;
     is_bc             = leaflet.is_bc; 
-    chordae           = leaflet.chordae;
+    num_trees         = leaflet.num_trees; 
+    chordae           = leaflet.chordae; 
 
     % Keep track of vector index in 1d array 
-    leaflet.indices_global = nan * zeros(j_max, k_max); 
-    
-    if isfield(leaflet, 'chordae') && ~isempty(chordae)
-        [m N_chordae] = size(leaflet.chordae.C_left); 
-    else 
-        error('Leaflet without chordae not implemented'); 
-    end 
-    
-    leaflet.chordae.indices_global_left  = nan * zeros(N_chordae, 1); 
-    leaflet.chordae.indices_global_right = nan * zeros(N_chordae, 1); 
-    
-    % assign indices and vertex coordinates for the papillary tips
-    if assign_papillary
-            
-        params.vertices(:,params.global_idx + 1) = leaflet.left_papillary; 
-        leaflet.left_papillary_idx               = params.global_idx; 
-        params                                   = target_string(params, params.global_idx, k_target, eta);     
-        params.global_idx                        = params.global_idx + 1; 
-
-        params.vertices(:,params.global_idx + 1) = leaflet.right_papillary; 
-        leaflet.right_papillary_idx              = params.global_idx; 
-        params                                   = target_string(params, params.global_idx, k_target, eta);     
-        params.global_idx                        = params.global_idx + 1;   
-                
-    else 
-        % If they are not already written 
-        % their indices must aleady be assignedd 
-        if (~isfield(leaflet, 'left_papillary_idx')) || (~isfield(leaflet, 'right_papillary_idx'))
-            error('must have papillary indices assigned before call, or assign them here'); 
-        end 
-    end 
-    
+   
 
     for k=1:k_max
         for j=1:j_max
@@ -490,20 +422,31 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, assign
         end 
     end
     
-    for left_side = [true false];  
+    
+    % chordae internal terms 
+    for tree_idx = 1:num_trees
+        
+        C = chordae(tree_idx).C; 
+        [m N_chordae] = size(C);         
 
+        % always place root index first 
+        params.vertices(:,params.global_idx + 1) = leaflet.chordae(tree_idx).root; 
+        leaflet.chordae(tree_idx).idx_root = params.global_idx;                 
+        params.global_idx = params.global_idx + 1;
+        
+        % root is always a boundary condition 
+        if exist('eta', 'var')
+            params = target_string(params, params.global_idx, k_target, eta);     
+        else
+            params = target_string(params, params.global_idx, k_target);     
+        end 
+        
         for i=1:N_chordae
-
-            if left_side 
-                params.vertices(:,params.global_idx + 1) = chordae.C_left(:,i); 
-                leaflet.chordae.indices_global_left(i)   = params.global_idx; 
-            else 
-                params.vertices(:,params.global_idx + 1) = chordae.C_right(:,i); 
-                leaflet.chordae.indices_global_right(i)  = params.global_idx;                 
-            end 
-            
+            params.vertices(:,params.global_idx + 1) = C(:,i); 
+            leaflet.chordae(tree_idx).indices_global(i) = params.global_idx;                 
             params.global_idx = params.global_idx + 1;
-        end
+        end 
+        
     end 
 
 end 
@@ -528,24 +471,18 @@ function params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_
     is_internal       = leaflet.is_internal;
     is_bc             = leaflet.is_bc; 
     chordae           = leaflet.chordae;
-    chordae_idx_left  = leaflet.chordae_idx_left; 
-    chordae_idx_right = leaflet.chordae_idx_right; 
+    chordae_idx       = leaflet.chordae_idx; 
 
-    R_u = leaflet.R_u;
-    k_u = leaflet.k_u;
-    R_v = leaflet.R_v;
-    k_v = leaflet.k_v;
+    R_u               = leaflet.R_u;
+    k_u               = leaflet.k_u;
+    R_v               = leaflet.R_v;
+    k_v               = leaflet.k_v;
 
-    R_free_edge_left   = leaflet.R_free_edge_left;
-    k_free_edge_left   = leaflet.k_free_edge_left;
-    R_free_edge_right  = leaflet.R_free_edge_right;
-    k_free_edge_right  = leaflet.k_free_edge_right; 
     
-    
-    if isfield(leaflet, 'chordae') && ~isempty(chordae)
-        [m N_chordae] = size(leaflet.chordae.C_left); 
-    else 
-        error('Leaflet without chordae not implemented'); 
+    if isfield(leaflet, 'periodic_j')
+        periodic_j = leaflet.periodic_j; 
+    else
+        periodic_j = zeros(k_max,1); 
     end 
     
     
@@ -555,61 +492,39 @@ function params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_
             % every internal and boundary point may have springs connected to it 
             if is_internal(j,k) || is_bc(j,k)
                 
-                % global index of current opint 
+                % global index of current point 
                 idx = leaflet.indices_global(j,k); 
                 
-                % Connect to the left papillary or chordae tree 
-                if chordae_idx_left(j,k)
+                % current node has a chordae connection
+                if chordae_idx(j,k).tree_idx
                     
-                    % current node has a chordae connection
+                    tree_idx = chordae_idx(j,k).tree_idx; 
                     
-                    % chordae_idx tells what free edge index to use 
-                    i = chordae_idx_left(j,k); 
+                    [m N_chordae] = size(chordae(tree_idx).C);
+
+                    % index in current free edge array 
+                    i = chordae_idx(j,k).leaf_idx;
                     
                     % index that free edge would have if on tree
-                    % remember that leaves are only in the leaflet 
-                    leaf_idx = chordae_idx_left(j,k) + N_chordae; 
+                    % remember that leaves are only in the leaflet
+                    leaf_idx = chordae_idx(j,k).leaf_idx + N_chordae;
 
-                    % then take the parent index of that number in chordae variables 
+                    % then take the parent index of that number in chordae variables
                     idx_chordae = floor(leaf_idx/2);  
                     
-                    nbr_idx = chordae.indices_global_left(idx_chordae); 
+                    nbr_idx = chordae(tree_idx).indices_global(idx_chordae); 
 
-                    rest_len = R_free_edge_left(i); 
+                    rest_len = chordae(tree_idx).R_free_edge(i); 
 
-                    k_rel = k_free_edge_left(i); 
+                    k_rel = chordae(tree_idx).k_free_edge(i); 
                     
                     params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies, collagen_spring); 
                     
                 end 
-                
-                % Connect to the right papillary or chordae tree 
-                if chordae_idx_right(j,k)
-                    
-                    % current node has a chordae connection
-                    
-                    i = chordae_idx_right(j,k); 
-                    
-                    % index that free edge would have if on tree
-                    % remember that leaves are only in the leaflet 
-                    leaf_idx = chordae_idx_right(j,k) + N_chordae; 
-
-                    % then take the parent index of that number in chordae variables 
-                    idx_chordae = floor(leaf_idx/2);  
-
-                    nbr_idx = chordae.indices_global_right(idx_chordae); 
-                        
-                    rest_len = R_free_edge_right(i); 
-
-                    k_rel = k_free_edge_right(i); 
-
-                    params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies, collagen_spring);
-                    
-                end 
                                 
-                
                 % springs in leaflet, only go in up direction 
-                j_nbr = j + 1; 
+                j_nbr_unreduced = j + 1; 
+                j_nbr = get_j_nbr(j_nbr_unreduced, k, periodic_j, j_max); 
                 k_nbr = k; 
                 if (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr, k_nbr))
                     
@@ -621,8 +536,15 @@ function params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_
                         k_rel    = k_u(j,k); 
 
                         nbr_idx = leaflet.indices_global(j_nbr,k_nbr);
-
-                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies, collagen_spring);
+                        
+                        
+                        if j_nbr_unreduced ~= j_nbr 
+                            % periodic wrapping requires oppositite order 
+                            params = place_spring_and_split(params, nbr_idx, idx, k_rel, rest_len, ds, num_copies, collagen_spring);
+                        else 
+                           % standard order 
+                            params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies, collagen_spring);
+                        end 
 
                     end 
 
@@ -656,25 +578,20 @@ end
 
 
 function params = add_chordae_tree_springs(params, leaflet, num_copies, ds, collagen_spring)
-
+    % 
     % Adds chordae tree to IBAMR format files 
-    % No targets here, so files and and count not included 
-                        
-    if ~isfield(leaflet, 'chordae') || isempty(leaflet.chordae)
-        error('cannot place chordae with empty array'); 
-    end 
+    % 
     
-    chordae         = leaflet.chordae; 
-
-    [m N_chordae] = size(chordae.C_left); 
+    num_trees = leaflet.num_trees; 
+    chordae   = leaflet.chordae; 
         
-    for left_side = [true false];  
+    % chordae internal terms 
+    for tree_idx = 1:num_trees
         
-        if left_side
-            indices_global = chordae.indices_global_left; 
-        else 
-            indices_global = chordae.indices_global_right; 
-        end 
+        C = chordae(tree_idx).C; 
+        [m N_chordae] = size(C);   
+        
+        indices_global = chordae(tree_idx).indices_global; 
         
         for i=1:N_chordae
 
@@ -684,20 +601,13 @@ function params = add_chordae_tree_springs(params, leaflet, num_copies, ds, coll
             parent = floor(i/2); 
             
             if parent == 0
-                
-                % zero index means papillary muscles
-                if left_side 
-                    nbr_idx = leaflet.left_papillary_idx; 
-                else 
-                    nbr_idx = leaflet.right_papillary_idx; 
-                end
-                
+                nbr_idx = chordae(tree_idx).idx_root; 
             else
                 nbr_idx = indices_global(parent); 
             end 
             
             % get the neighbors coordinates, reference coordinate and spring constants
-            [nbr rest_len k_rel] = get_nbr_chordae(leaflet, i, parent, left_side); 
+            [nbr rest_len k_rel] = get_nbr_chordae(leaflet, i, parent, tree_idx); 
             
             % list nbr index first because nbr is parent and has lower index
             params = place_spring_and_split(params, nbr_idx, idx, k_rel, rest_len, ds, num_copies, collagen_spring);
