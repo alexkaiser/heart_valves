@@ -4,7 +4,8 @@ MU  = 0.04                            // viscosity
 RHO = 1.0
 
 L = 2.5   // box sizing 
-N = 256
+N = 256    // lagrangian mesh parameter, number of points on circumference of ring  
+N_FLUID = N/4 // fluid mesh width 
 
 
 // grid spacing parameters
@@ -24,7 +25,7 @@ CONVECTIVE_OP_TYPE  = "PPM"               // convective differencing discretizat
 CONVECTIVE_FORM     = "ADVECTIVE"         // how to compute the convective terms
 NORMALIZE_PRESSURE  = FALSE               // whether to explicitly force the pressure to have mean zero
 CFL_MAX             = 0.3                 // maximum CFL number
-DT                  = 3.0e-6              // maximum timestep size
+DT                  = 1.0e-5              // maximum timestep size
 ERROR_ON_DT_CHANGE  = TRUE               // whether to emit an error message if the time step size changes
 VORTICITY_TAGGING   = TRUE                // whether to tag cells for refinement based on vorticity thresholds
 TAG_BUFFER          = 2                   // size of tag buffer used by grid generation algorithm
@@ -258,9 +259,9 @@ Main {
 }
 
 CartesianGeometry {
-domain_boxes = [ (0,0,0),(N/2 - 1,N/2 - 1, N/2 + N/4 - 1) ]
-x_lo =  -L, -L,  2.0 - 3*L 
-x_up =   L,  L,  2.0
+domain_boxes = [ (0,0,0),(N_FLUID - 1,N_FLUID - 1, 2*N_FLUID - 1) ]
+x_lo =  -L, -L,  3.0 - 4*L 
+x_up =   L,  L,  3.0
    periodic_dimension = 0,0,1
 }
 

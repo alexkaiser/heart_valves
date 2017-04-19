@@ -4,7 +4,8 @@ MU  = 0.04                            // viscosity
 RHO = 1.0
 
 L = 2.5   // box sizing 
-N = 128
+N = 128       // lagrangian mesh parameter, number of points on circumference of ring  
+N_FLUID = N/4 // fluid mesh width 
 
 
 // grid spacing parameters
@@ -257,9 +258,9 @@ Main {
 }
 
 CartesianGeometry {
-domain_boxes = [ (0,0,0),(N/2 - 1,N/2 - 1, N/2 + N/4 - 1) ]
-x_lo =  -L, -L,  2.0 - 3*L 
-x_up =   L,  L,  2.0
+domain_boxes = [ (0,0,0),(N_FLUID - 1,N_FLUID - 1, 2*N_FLUID - 1) ]
+x_lo =  -L, -L,  3.0 - 4*L 
+x_up =   L,  L,  3.0
    periodic_dimension = 0,0,1
 }
 
