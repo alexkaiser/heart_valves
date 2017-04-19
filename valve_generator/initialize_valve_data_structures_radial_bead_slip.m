@@ -150,6 +150,7 @@ radial_and_circumferential = true;
 % 8.3326e-04 is a good number here
 valve.tol_global = 1e-3;
 
+
 % controls initial guess tree vertex placement 
 tree_frac = 0.5;
 
@@ -172,11 +173,18 @@ end
 
 valve.r        = valve.skeleton.r; 
 
+
+% Approximate Lagrangian mesh spacing at ring 
+% Used for later splitting of springs 
+% If any spring is placed at more than double this length an extra vertex is placed
+valve.ds = 2*pi*valve.r / N; 
+
+
 left_papillary_idx  = 1; 
 right_papillary_idx = 2; 
 
 valve.dip_anterior_systole = false; 
-valve.r_dip = 0.75; 
+valve.r_dip = 0.5; 
 valve.total_angle_dip = pi; 
 
 

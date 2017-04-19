@@ -94,9 +94,8 @@ function [] = output_to_ibamr_format(valve)
     % m_effective_papillary = 1.0 * pi * filter_params_posterior.r^2; 
     eta_papillary         = 0.0; %sqrt(k_target/2 * m_effective_papillary); 
     
-    % Approximate Lagrangian mesh spacing 
-    % L = 2.5 = radius (of square) in sup norm, half total length of domain 
-    ds = 2*L / N;
+    % Lagrangian mesh spacing 
+    ds = valve.ds;
     
     
     % copies, if needed, will be placed this far down 
@@ -139,19 +138,18 @@ function [] = output_to_ibamr_format(valve)
 
         % flat part of mesh 
         r = valve.r; 
-        N_ring = 2 * N;
+        N_ring = N;
         h = 0.0; % ring always set at zero 
         ref_frac_net = 1.0; 
 
         % no radial fibers, instead geodesics from the leaflet 
         radial_fibers = false; 
 
-        % turn the polar net off for now      
         params = place_net(params, r, h, L, N_ring, radial_fibers, k_rel, k_target_net, ref_frac_net, eta_net); 
         
         % approximate geodesic continutations of fibers 
         for i=1:length(valve.leaflets)
-            params = place_rays(params, valve.leaflets(i),  ds, valve.r, L, k_rel, k_target_net, ref_frac_net, eta_net);
+            params = place_rays(params, valve.leaflets(i), ds, valve.r, L, k_rel, k_target_net, ref_frac_net, eta_net);
         end 
 
         % flat part of mesh with Cartesian coordinates
@@ -244,14 +242,18 @@ function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, 
         function_idx = 1; 
     end 
     
-    N_springs = floor(rest_len / ds); 
 
 %    max_strain = .01; 
     
     X     = params.vertices(:,idx + 1); 
     X_nbr = params.vertices(:,nbr_idx + 1); 
+    L     = norm(X_nbr - X); 
     
-    strain = (norm(X_nbr - X) - rest_len) / rest_len; 
+    % Can use either rest length or current length to determine number of springs 
+    % N_springs = floor(rest_len / ds); 
+    N_springs = floor(L / ds); 
+    
+    strain = (L - rest_len) / rest_len; 
     
     fprintf('strain = %e, idx = %d, nbr = %d\n', strain, idx, nbr_idx)
     
@@ -432,7 +434,6 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_targ
         % always place root index first 
         params.vertices(:,params.global_idx + 1) = leaflet.chordae(tree_idx).root; 
         leaflet.chordae(tree_idx).idx_root = params.global_idx;                 
-        params.global_idx = params.global_idx + 1;
         
         % root is always a boundary condition 
         if exist('eta', 'var')
@@ -440,6 +441,8 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_targ
         else
             params = target_string(params, params.global_idx, k_target);     
         end 
+        
+        params.global_idx = params.global_idx + 1;
         
         for i=1:N_chordae
             params.vertices(:,params.global_idx + 1) = C(:,i); 
@@ -729,33 +732,36 @@ function params = place_net(params, r, h, L, N, radial_fibers, k_rel, k_target, 
                 end 
 
                 % check up directions for springs 
-                if (j+1) < N
-                    if ~isnan(indices_global(j+1,k))
-                        rest_len = ref_frac * norm(points(:,j,k) - points(:,j+1,k)); 
+                if j < N
+                    j_nbr = j+1; 
+                    if ~isnan(indices_global(j_nbr,k))
+                        rest_len = ref_frac * norm(points(:,j,k) - points(:,j_nbr,k)); 
                         k_abs = k_rel / rest_len;
-                        nbr_idx = indices_global(j+1,k); 
+                        nbr_idx = indices_global(j_nbr,k); 
                         params = spring_string(params, idx, nbr_idx, k_abs, rest_len); 
                     end 
                 end 
                 
                 % don't forget the periodic direction in j
-                if (j+1) == N
+                if j == N
+                   j_nbr = 1; 
                    % need to make sure that the 1,k point is also not a NaN  
-                   if ~isnan(indices_global(1,k)) 
-                       rest_len = ref_frac * norm(points(:,j,k) - points(:,1,k)); 
+                   if ~isnan(indices_global(j_nbr,k)) 
+                       rest_len = ref_frac * norm(points(:,j,k) - points(:,j_nbr,k)); 
                        k_abs = k_rel / rest_len;
-                       nbr_idx = indices_global(1,k); 
+                       nbr_idx = indices_global(j_nbr,k); 
                        params = spring_string(params, nbr_idx, idx, k_abs, rest_len); 
                    end 
                 end 
                 
                 % check up directions for springs 
                 if radial_fibers
-                    if (k+1) < M
-                        if ~isnan(indices_global(j,k+1))
-                            rest_len = ref_frac * norm(points(:,j,k) - points(:,j,k+1)); 
+                    k_nbr = k + 1; 
+                    if k_nbr < M
+                        if ~isnan(indices_global(j,k_nbr))
+                            rest_len = ref_frac * norm(points(:,j,k) - points(:,j,k_nbr)); 
                             k_abs = k_rel / rest_len; 
-                            nbr_idx = indices_global(j,k+1); 
+                            nbr_idx = indices_global(j,k_nbr); 
                             params = spring_string(params, idx, nbr_idx, k_abs, rest_len); 
                         end 
                     end 
