@@ -735,8 +735,8 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDa
     // so positive pressure drives forward flow
 
     // quick return at beginning so that things do not move in discontinuous manner
-    //if (current_time < 0.1)
-    //    return;
+    if (current_time < 0.1)
+        return; 
 
 
     const static double LEFT_PAPILLARY[3]  = {-0.972055648767080, -1.611924550017006, -2.990100960298683 + 1.0};
@@ -758,8 +758,7 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDa
     nodes.insert(nodes.end(), ghost_nodes.begin(), ghost_nodes.end());
 
     // index without periodicity in Fourier series
-    double t_adjusted = current_time + 0.635;
-    unsigned int k = (unsigned int) floor(t_adjusted / (fourier_body_force->dt));
+    unsigned int k = (unsigned int) floor(current_time / (fourier_body_force->dt));
     
     // take periodic reduction                         
     unsigned int idx = k % (fourier_body_force->N_times);
