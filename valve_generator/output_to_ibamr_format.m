@@ -649,7 +649,8 @@ function params = place_net(params, r, h, L, N, radial_fibers, k_rel, k_target, 
     % 
 
     % mesh spacing on the valve ring 
-    ds = 2*pi / N; 
+    ds = 2*pi*r / N; 
+    dtheta = 2*pi / N; 
 
     % maximum number of points in radial direction 
     % this gets a sqrt(2) because we are placing the net in a square 
@@ -674,7 +675,7 @@ function params = place_net(params, r, h, L, N, radial_fibers, k_rel, k_target, 
     for k=1:M
         for j=1:N
             
-            theta = (j-1) * ds; 
+            theta = (j-1) * dtheta; 
             coords_horiz = [rad*cos(theta); rad*sin(theta)]; 
             
             % if one norm is less than L, then the point is within the domain  
