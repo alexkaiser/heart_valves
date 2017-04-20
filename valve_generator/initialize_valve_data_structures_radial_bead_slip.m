@@ -192,7 +192,7 @@ valve.total_angle_dip = pi;
 
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
-valve.pressure_tension_ratio = 0.065; % 0.11 * 0.975; 
+valve.pressure_tension_ratio = 0.07; % 0.11 * 0.975; 
 
 
 % base constant for tensions, derived quantity 
