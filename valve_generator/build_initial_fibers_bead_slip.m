@@ -45,6 +45,11 @@ if leaflet.radial_and_circumferential
         mesh_posterior  = linspace(max_anterior, min_anterior_wrapped, N_posterior + 2);
         mesh_posterior  = mesh_posterior(2:(N_posterior+1)); 
         
+        % try putting the meshes closer together  
+%         small = 1e-10; 
+%         mesh_posterior  = linspace(max_anterior + small, min_anterior_wrapped - small, N_posterior);
+        
+
         mesh = [mesh_anterior mesh_posterior]; 
         
         if isfield(valve, 'dip_anterior_systole') && valve.dip_anterior_systole 

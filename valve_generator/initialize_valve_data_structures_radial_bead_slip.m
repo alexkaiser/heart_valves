@@ -205,7 +205,7 @@ beta     = 1.0 * valve.tension_base;  % radial
 
 
 % places this many periodic rings above 
-n_rings_periodic = 0; %max(1,N/32); 
+n_rings_periodic = max(1,N/32); 
 
 wide_anterior = true; 
 if wide_anterior
@@ -313,7 +313,7 @@ if wide_anterior
         % No explicit commissural leaflet here 
         N_anterior = N/2; 
         
-        total_angle_anterior = 3*pi/6; 
+        total_angle_anterior = 5*pi/6; 
 
         % Posterior takes whatever is left 
         N_posterior = N - N_anterior; 
