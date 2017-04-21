@@ -95,7 +95,9 @@ l_to_r_papillary = (papillary_right - papillary_left);
 l_to_r_papillary = l_to_r_papillary / norm(l_to_r_papillary);
 
 
-papillary_radius = 0.25; 
+papillary_radius = 0; %0.25; 
+
+warning('Diastolic papillary radius set to zero here.'); 
 
 left_papillary_center  = papillary_left  + papillary_radius * l_to_r_papillary; 
 right_papillary_center = papillary_right - papillary_radius * l_to_r_papillary; 

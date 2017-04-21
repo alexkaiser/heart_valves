@@ -205,194 +205,193 @@ beta     = 1.0 * valve.tension_base;  % radial
 
 
 % places this many periodic rings above 
-n_rings_periodic = max(1,N/32); 
+n_rings_periodic = 0; %max(1,N/32); 
 
-wide_anterior = true; 
-if wide_anterior
 
-    explicit_commissural_leaflet = false; 
-    if explicit_commissural_leaflet
+parameter_values = 4; 
+
+
+if parameter_values == 1; 
+
+    % explicit commissural leaflets here 
+
+    % Leaflet mesh has irregular bottom edge 
+    % 
+
+    % Commissural leaflets centered at -pi/2, pi/2
+    N_comm      = 0; % N/8; 
+
+    % Half of each commissural leaflet takes away from the Anterior leaflets half 
+    N_anterior  = N/2; 
+
+    % Posterior takes whatever is left 
+    N_posterior = N - 2*N_comm - N_anterior; 
+
+    N_per_direction   = (1/2) * [N_anterior, N_anterior, N_comm, N_comm, N_posterior, N_posterior, N_comm, N_comm]; 
+
+    % Anterior goes down then up 
+    leaflet_direction = [-1, 1]; 
+
+    % Right commissural goes down then up 
+    leaflet_direction = [leaflet_direction, -1, 1]; 
+
+    % Posterior goes down then up 
+    leaflet_direction = [leaflet_direction, -1, 1]; 
+
+    % Finally, left commissural leaflet goes down to meet initial point 
+    leaflet_direction = [leaflet_direction, -1, 1]; 
+
+    % offset from N/2 in initial placement 
+    leaflet_N_start = 0; %-N_comm/2 + 1; 
+
+    % Anterior leaflet parameters 
+    N_anterior = N/2; 
+
+    % Leaf tensions are all modified 
+    valve.leaf_tension_base = 0.5 * valve.tension_base; 
+
+    % Base total root tension 
+    % The value 0.5905 works well on each tree when using separate solves and two leaflets 
+    % Controls constant tension at the root of the tree 
+    valve.root_tension_base = 0.6 * valve.tension_base; 
+
+
+    n_trees_anterior = 4; 
+
+    k_0_1_anterior = 1.0 * valve.leaf_tension_base / n_trees_anterior; 
+
+    % vector version 
+    k_0_1_anterior = k_0_1_anterior * [1.2; 1; 1; 1.2]; 
+    k_root_anterior = 0.7 * valve.root_tension_base / n_trees_anterior; 
+    k_root_anterior = k_root_anterior * [1.2; 1; 1; 1.2]; 
+
+
+    papillary_anterior = zeros(3,n_trees_anterior); 
+
+    n_points = n_trees_anterior/2; 
+
+    left_papillary_range = 1:(n_trees_anterior/2); 
+    right_papillary_range  = left_papillary_range + (n_trees_anterior/2);
+
+    papillary_anterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points,  0*pi/4,    pi/4); 
+    papillary_anterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points,   -pi/4, -0*pi/4); 
+
+    n_leaves_anterior  = N_anterior/n_trees_anterior * ones(n_trees_anterior, 1); 
+    % leaflet_direction_anterior = [-1; -1; 1; 1];
+
+
+    N_posterior = N/2; 
+
+    n_trees_posterior = 8; 
+
+    k_0_1_posterior  = 0.2 * valve.leaf_tension_base; 
+    k_0_1_posterior  = k_0_1_posterior * ones(n_trees_posterior,1); 
+    k_root_posterior = 0.8 * valve.root_tension_base / n_trees_posterior; 
+    k_root_posterior = k_root_posterior * [1; 1; 1.2; 1.2; 1.2; 1.2; 1; 1]; 
+
+    papillary_posterior = zeros(3,n_trees_posterior); 
+
+    n_points = n_trees_posterior/2; 
+
+    right_papillary_range = 1:(n_trees_posterior/2); 
+    left_papillary_range  = right_papillary_range + (n_trees_posterior/2); 
+
+    papillary_posterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points,    pi/4,  5*pi/4); 
+    papillary_posterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points, -5*pi/4,   -pi/4);
+
+    % this is generally pretty good 
+    n_leaves_posterior = N_posterior/n_trees_posterior * ones(n_trees_posterior, 1); 
+    % leaflet_direction_posterior = [-1; 1; -1; -1; 1; 1; -1; 1]; 
+
+    % concatenate all relevant arrays
+    n_leaves           = [n_leaves_anterior; n_leaves_posterior];
+    papillary          = [papillary_anterior, papillary_posterior]; 
+    k_0_1              = [k_0_1_anterior; k_0_1_posterior]; 
+    k_root             = [k_root_anterior; k_root_posterior]; 
+
+elseif parameter_values == 1  
         
-        % Leaflet mesh has irregular bottom edge 
-        % 
+    % No explicit commissural leaflet here 
+    N_anterior = N/2; 
 
-        % Commissural leaflets centered at -pi/2, pi/2
-        N_comm      = 0; % N/8; 
+    total_angle_anterior = 5*pi/6; 
 
-        % Half of each commissural leaflet takes away from the Anterior leaflets half 
-        N_anterior  = N/2; 
+    % Posterior takes whatever is left 
+    N_posterior = N - N_anterior; 
 
-        % Posterior takes whatever is left 
-        N_posterior = N - 2*N_comm - N_anterior; 
+    N_per_direction   = [N_anterior/2, N_anterior/2, N_posterior/2, N_posterior/2]; 
 
-        N_per_direction   = (1/2) * [N_anterior, N_anterior, N_comm, N_comm, N_posterior, N_posterior, N_comm, N_comm]; 
+    % Anterior goes down then up 
+    leaflet_direction = [-1, 1]; 
 
-        % Anterior goes down then up 
-        leaflet_direction = [-1, 1]; 
+    % Posterior goes down then up 
+    leaflet_direction = [leaflet_direction, -1, 1]; 
 
-        % Right commissural goes down then up 
-        leaflet_direction = [leaflet_direction, -1, 1]; 
-
-        % Posterior goes down then up 
-        leaflet_direction = [leaflet_direction, -1, 1]; 
-
-        % Finally, left commissural leaflet goes down to meet initial point 
-        leaflet_direction = [leaflet_direction, -1, 1]; 
-
-        % offset from N/2 in initial placement 
-        leaflet_N_start = 0; %-N_comm/2 + 1; 
-
-        % Anterior leaflet parameters 
-        N_anterior = N/2; 
+    % No offset, starting at commissure 
+    leaflet_N_start = 0; 
 
 
-        % Leaf tensions are all modified 
-        valve.leaf_tension_base = 0.5 * valve.tension_base; 
+    % Leaf tensions are all modified 
+    valve.leaf_tension_base = 0.5 * valve.tension_base; 
 
-        % Base total root tension 
-        % The value 0.5905 works well on each tree when using separate solves and two leaflets 
-        % Controls constant tension at the root of the tree 
-        valve.root_tension_base = 0.6 * valve.tension_base; 
-
-
-        n_trees_anterior = 4; 
-
-        k_0_1_anterior = 1.0 * valve.leaf_tension_base / n_trees_anterior; 
-
-        % vector version 
-        k_0_1_anterior = k_0_1_anterior * [1.2; 1; 1; 1.2]; 
-        k_root_anterior = 0.7 * valve.root_tension_base / n_trees_anterior; 
-        k_root_anterior = k_root_anterior * [1.2; 1; 1; 1.2]; 
+    % Base total root tension 
+    % The value 0.5905 works well on each tree when using separate solves and two leaflets 
+    % Controls constant tension at the root of the tree 
+    valve.root_tension_base = 0.5 * 0.5905 * valve.tension_base; 
 
 
-        papillary_anterior = zeros(3,n_trees_anterior); 
+    n_trees_anterior = 4; 
 
-        n_points = n_trees_anterior/2; 
+    k_0_1_anterior = 0.8 * 2.0 * valve.leaf_tension_base / n_trees_anterior; 
 
-        left_papillary_range = 1:(n_trees_anterior/2); 
-        right_papillary_range  = left_papillary_range + (n_trees_anterior/2);
-
-        papillary_anterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points,  0*pi/4,    pi/4); 
-        papillary_anterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points,   -pi/4, -0*pi/4); 
-
-        n_leaves_anterior  = N_anterior/n_trees_anterior * ones(n_trees_anterior, 1); 
-        % leaflet_direction_anterior = [-1; -1; 1; 1];
+    % vector version 
+    k_0_1_anterior  = k_0_1_anterior * [1; 1; 1; 1]; 
+    k_root_anterior = 0.9 * 2.0 * valve.root_tension_base / n_trees_anterior; 
+    k_root_anterior = k_root_anterior * [1; 1; 1; 1]; 
 
 
-        N_posterior = N/2; 
+    papillary_anterior = zeros(3,n_trees_anterior); 
 
-        n_trees_posterior = 8; 
+    n_points = n_trees_anterior/2; 
 
-        k_0_1_posterior  = 0.2 * valve.leaf_tension_base; 
-        k_0_1_posterior  = k_0_1_posterior * ones(n_trees_posterior,1); 
-        k_root_posterior = 0.8 * valve.root_tension_base / n_trees_posterior; 
-        k_root_posterior = k_root_posterior * [1; 1; 1.2; 1.2; 1.2; 1.2; 1; 1]; 
+    left_papillary_range = 1:(n_trees_anterior/2); 
+    right_papillary_range  = left_papillary_range + (n_trees_anterior/2);
 
-        papillary_posterior = zeros(3,n_trees_posterior); 
+    papillary_anterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points,  0*pi/4,    pi/4); 
+    papillary_anterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points,   -pi/4, -0*pi/4); 
 
-        n_points = n_trees_posterior/2; 
+    n_leaves_anterior  = N_anterior/n_trees_anterior * ones(n_trees_anterior, 1); 
 
-        right_papillary_range = 1:(n_trees_posterior/2); 
-        left_papillary_range  = right_papillary_range + (n_trees_posterior/2); 
+    n_trees_posterior = 8; 
 
-        papillary_posterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points,    pi/4,  5*pi/4); 
-        papillary_posterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points, -5*pi/4,   -pi/4);
+    k_0_1_posterior  = 0.2 * valve.leaf_tension_base; 
+    k_0_1_posterior  = k_0_1_posterior * ones(n_trees_posterior,1); 
+    k_root_posterior = 0.8 * 2.0 * valve.root_tension_base / n_trees_posterior; 
+    k_root_posterior = k_root_posterior * [1; 1; 1; 1; 1; 1; 1; 1]; 
 
-        % this is generally pretty good 
-        n_leaves_posterior = N_posterior/n_trees_posterior * ones(n_trees_posterior, 1); 
-        % leaflet_direction_posterior = [-1; 1; -1; -1; 1; 1; -1; 1]; 
+    papillary_posterior = zeros(3,n_trees_posterior); 
 
-        % concatenate all relevant arrays
-        n_leaves           = [n_leaves_anterior; n_leaves_posterior];
-        papillary          = [papillary_anterior, papillary_posterior]; 
-        k_0_1              = [k_0_1_anterior; k_0_1_posterior]; 
-        k_root             = [k_root_anterior; k_root_posterior]; 
-    
-    else 
-        
-        % No explicit commissural leaflet here 
-        N_anterior = N/2; 
-        
-        total_angle_anterior = 5*pi/6; 
+    n_points = n_trees_posterior/2; 
 
-        % Posterior takes whatever is left 
-        N_posterior = N - N_anterior; 
+    right_papillary_range = 1:(n_trees_posterior/2); 
+    left_papillary_range  = right_papillary_range + (n_trees_posterior/2); 
 
-        N_per_direction   = [N_anterior/2, N_anterior/2, N_posterior/2, N_posterior/2]; 
+    papillary_posterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points,    pi/4,  5*pi/4); 
+    papillary_posterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points, -5*pi/4,   -pi/4);
 
-        % Anterior goes down then up 
-        leaflet_direction = [-1, 1]; 
-
-        % Posterior goes down then up 
-        leaflet_direction = [leaflet_direction, -1, 1]; 
-
-        % No offset, starting at commissure 
-        leaflet_N_start = 0; 
+    % this is generally pretty good 
+    n_leaves_posterior = N_posterior/n_trees_posterior * ones(n_trees_posterior, 1); 
 
 
-        % Leaf tensions are all modified 
-        valve.leaf_tension_base = 0.5 * valve.tension_base; 
-
-        % Base total root tension 
-        % The value 0.5905 works well on each tree when using separate solves and two leaflets 
-        % Controls constant tension at the root of the tree 
-        valve.root_tension_base = 0.5 * 0.5905 * valve.tension_base; 
+    % concatenate all relevant arrays
+    n_leaves           = [n_leaves_anterior; n_leaves_posterior];
+    papillary          = [papillary_anterior, papillary_posterior]; 
+    k_0_1              = [k_0_1_anterior; k_0_1_posterior]; 
+    k_root             = [k_root_anterior; k_root_posterior]; 
 
 
-        n_trees_anterior = 4; 
 
-        k_0_1_anterior = 0.8 * 2.0 * valve.leaf_tension_base / n_trees_anterior; 
-
-        % vector version 
-        k_0_1_anterior  = k_0_1_anterior * [1; 1; 1; 1]; 
-        k_root_anterior = 0.9 * 2.0 * valve.root_tension_base / n_trees_anterior; 
-        k_root_anterior = k_root_anterior * [1; 1; 1; 1]; 
-
-
-        papillary_anterior = zeros(3,n_trees_anterior); 
-
-        n_points = n_trees_anterior/2; 
-
-        left_papillary_range = 1:(n_trees_anterior/2); 
-        right_papillary_range  = left_papillary_range + (n_trees_anterior/2);
-
-        papillary_anterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points,  0*pi/4,    pi/4); 
-        papillary_anterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points,   -pi/4, -0*pi/4); 
-
-        n_leaves_anterior  = N_anterior/n_trees_anterior * ones(n_trees_anterior, 1); 
-        
-
-
-        n_trees_posterior = 8; 
-
-        k_0_1_posterior  = 0.2 * valve.leaf_tension_base; 
-        k_0_1_posterior  = k_0_1_posterior * ones(n_trees_posterior,1); 
-        k_root_posterior = 0.8 * 2.0 * valve.root_tension_base / n_trees_posterior; 
-        k_root_posterior = k_root_posterior * [1; 1; 1; 1; 1; 1; 1; 1]; 
-
-        papillary_posterior = zeros(3,n_trees_posterior); 
-
-        n_points = n_trees_posterior/2; 
-
-        right_papillary_range = 1:(n_trees_posterior/2); 
-        left_papillary_range  = right_papillary_range + (n_trees_posterior/2); 
-
-        papillary_posterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points,    pi/4,  5*pi/4); 
-        papillary_posterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points, -5*pi/4,   -pi/4);
-
-        % this is generally pretty good 
-        n_leaves_posterior = N_posterior/n_trees_posterior * ones(n_trees_posterior, 1); 
-        
-
-        % concatenate all relevant arrays
-        n_leaves           = [n_leaves_anterior; n_leaves_posterior];
-        papillary          = [papillary_anterior, papillary_posterior]; 
-        k_0_1              = [k_0_1_anterior; k_0_1_posterior]; 
-        k_root             = [k_root_anterior; k_root_posterior]; 
-    
-    end 
-
-else
+elseif parameter_values == 3 
     
     
     % Commissural leaflets centered at -pi/2, pi/2
@@ -514,6 +513,87 @@ else
     
     k_0_1  = [k_0_1_comm;  k_0_1_anterior;  k_0_1_comm;  k_0_1_comm;  k_0_1_posterior;  k_0_1_comm ]; 
     k_root = [k_root_comm; k_root_anterior; k_root_comm; k_root_comm; k_root_posterior; k_root_comm]; 
+    
+    
+elseif parameter_values == 4 
+    
+    % No explicit commissural leaflet here 
+    N_anterior = N/2; 
+
+    total_angle_anterior = 5*pi/6; 
+
+    % Posterior takes whatever is left 
+    N_posterior = N - N_anterior; 
+
+    N_per_direction   = [N_anterior/2, N_anterior/2, N_posterior/2, N_posterior/2]; 
+
+    % Anterior goes down then up 
+    leaflet_direction = [-1, 1]; 
+
+    % Posterior goes down then up 
+    leaflet_direction = [leaflet_direction, -1, 1]; 
+
+    % No offset, starting at commissure 
+    leaflet_N_start = 0; 
+
+
+    % Leaf tensions are all modified 
+    valve.leaf_tension_base = .9 * valve.tension_base; 
+
+    % Base total root tension 
+    % The value 0.5905 works well on each tree when using separate solves and two leaflets 
+    % Controls constant tension at the root of the tree 
+    valve.root_tension_base = .9 * 0.5905 * valve.tension_base; 
+
+
+    n_trees_anterior = 2; 
+
+    k_0_1_anterior = valve.leaf_tension_base / n_trees_anterior; 
+
+    % vector version 
+    k_0_1_anterior  = k_0_1_anterior * [1; 1]; 
+    k_root_anterior = valve.root_tension_base / n_trees_anterior; 
+    k_root_anterior = k_root_anterior * [1; 1]; 
+
+
+    papillary_anterior = zeros(3,n_trees_anterior); 
+
+    n_points = n_trees_anterior/2; 
+
+    left_papillary_range = 1:(n_trees_anterior/2); 
+    right_papillary_range  = left_papillary_range + (n_trees_anterior/2);
+
+    papillary_anterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points,  0*pi/4,    pi/4); 
+    papillary_anterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points,   -pi/4, -0*pi/4); 
+
+    n_leaves_anterior  = N_anterior/n_trees_anterior * ones(n_trees_anterior, 1); 
+
+    n_trees_posterior = 2; 
+
+    k_0_1_posterior  = valve.leaf_tension_base / n_trees_posterior; 
+    k_0_1_posterior  = k_0_1_posterior * [1; 1]; 
+    k_root_posterior = valve.root_tension_base / n_trees_posterior; 
+    k_root_posterior = k_root_posterior * [1; 1]; 
+
+    papillary_posterior = zeros(3,n_trees_posterior); 
+
+    n_points = n_trees_posterior/2; 
+
+    right_papillary_range = 1:(n_trees_posterior/2); 
+    left_papillary_range  = right_papillary_range + (n_trees_posterior/2); 
+
+    papillary_posterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points,    pi/4,  5*pi/4); 
+    papillary_posterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points, -5*pi/4,   -pi/4);
+
+    % this is generally pretty good 
+    n_leaves_posterior = N_posterior/n_trees_posterior * ones(n_trees_posterior, 1); 
+
+
+    % concatenate all relevant arrays
+    n_leaves           = [n_leaves_anterior; n_leaves_posterior];
+    papillary          = [papillary_anterior, papillary_posterior]; 
+    k_0_1              = [k_0_1_anterior; k_0_1_posterior]; 
+    k_root             = [k_root_anterior; k_root_posterior];  
     
     
 end 
