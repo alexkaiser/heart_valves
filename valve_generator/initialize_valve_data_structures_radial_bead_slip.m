@@ -160,8 +160,8 @@ name = 'leaflet';
 % ring to ring fibers, always zero for now 
 ring_to_ring_range = 0; 
 
-% always starts from -pi/2
-angles = [-pi/2; 2*pi - pi/2]; 
+
+
 
 sytole_skeleton = false; 
 if sytole_skeleton 
@@ -205,7 +205,7 @@ beta     = 1.0 * valve.tension_base;  % radial
 
 
 % places this many periodic rings above 
-n_rings_periodic = max(1,N/32); 
+n_rings_periodic = 0; %max(1,N/32); 
 
 wide_anterior = true; 
 if wide_anterior
@@ -312,6 +312,8 @@ if wide_anterior
         
         % No explicit commissural leaflet here 
         N_anterior = N/2; 
+        
+        total_angle_anterior = 3*pi/6; 
 
         % Posterior takes whatever is left 
         N_posterior = N - N_anterior; 
@@ -520,7 +522,7 @@ end
 leaflet = initialize_leaflet_bead_slip(name,                         ... 
                                 N,                                   ...
                                 reflect_x,                           ... 
-                                angles,                              ...
+                                total_angle_anterior,                ...
                                 papillary,                           ... 
                                 n_leaves,                            ...
                                 leaflet_direction,                   ...

@@ -20,25 +20,35 @@ if leaflet.radial_and_circumferential
     
     if true % n_rings_periodic > 0 
         
-        % periodic, initial points on cylinder
-        % completes circle, so first and final point are equal 
-        mesh = linspace(leaflet.min_angle, leaflet.max_angle, j_max + 1);
+%         % periodic, initial points on cylinder
+%         % completes circle, so first and final point are equal 
+%         mesh = linspace(leaflet.min_angle, leaflet.max_angle, j_max + 1);
+%         
+%         % clip the redundant point
+%         mesh = mesh(1:j_max); 
         
-        % clip the redundant point
-        mesh = mesh(1:j_max); 
         
+        % each leaflet gets the same number of points
+        % and they are placed according to their total angles 
+        N_anterior  = j_max/2; 
+        N_posterior = j_max/2; 
+        
+        % centered around zero 
+        min_anterior = -leaflet.total_angle_anterior/2; 
+        max_anterior =  leaflet.total_angle_anterior/2; 
+        
+        % mesh anterior inclusive of ends 
+        mesh_anterior   = linspace(min_anterior, max_anterior, N_anterior); 
+        
+        % mesh posterior includes two anterior points
+        min_anterior_wrapped = min_anterior + 2*pi; 
+        mesh_posterior  = linspace(max_anterior, min_anterior_wrapped, N_posterior + 2);
+        mesh_posterior  = mesh_posterior(2:(N_posterior+1)); 
+        
+        mesh = [mesh_anterior mesh_posterior]; 
         
         if isfield(valve, 'dip_anterior_systole') && valve.dip_anterior_systole 
-            % r_dip = valve.r_dip; 
-            angle_total = valve.total_angle_dip; 
-            % angle_half  = angle_total; 
-        
-            % take mod 2*pi then center on zero
             x_coord_extra = @(t) cos_bump(t, valve.total_angle_dip, valve.r_dip); 
-            
-            %((mod(t,2*pi) <= angle_half) || ...
-            %                     ((mod(t,2*pi) >= (2*pi - angle_half)))) .* ...
-            %                     (-r_dip * cos(t * 2/pi * angle_total).^2); 
         else 
             x_coord_extra = @(t) 0 .* t; 
         end     
