@@ -205,7 +205,7 @@ beta     = 1.0 * valve.tension_base;  % radial
 
 
 % places this many periodic rings above 
-n_rings_periodic = max(1,N/32); 
+n_rings_periodic = max(1,N/64); 
 
 
 parameter_values = 4; 
