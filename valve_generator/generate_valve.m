@@ -66,7 +66,7 @@ end
 
 
 % Constant strain in reference config 
-strain = 0.08; 
+strain = 0.04; 
 
 
 if radial && bead_slip && attached
