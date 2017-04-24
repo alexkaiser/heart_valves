@@ -155,6 +155,14 @@ l_to_r_papillary = papillary_right - papillary_left;
 l_to_r_papillary = l_to_r_papillary / norm(l_to_r_papillary);
 
 
+zero_radius = true; 
+if zero_radius
+    left_radius = 0; 
+    right_radius = 0; 
+end 
+
+
+
 
 skeleton.r                   = radius; 
 

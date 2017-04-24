@@ -163,7 +163,7 @@ ring_to_ring_range = 0;
 
 
 
-sytole_skeleton = false; 
+sytole_skeleton = true; 
 if sytole_skeleton 
     valve.skeleton = valve_points_ct_systole(); 
 else 
@@ -192,7 +192,7 @@ valve.total_angle_dip = pi;
 
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
-valve.pressure_tension_ratio = 0.07; % 0.11 * 0.975; 
+valve.pressure_tension_ratio = 0.035; % 0.11 * 0.975; 
 
 
 % base constant for tensions, derived quantity 
