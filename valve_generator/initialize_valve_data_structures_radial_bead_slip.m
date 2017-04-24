@@ -16,8 +16,8 @@ valve.max_it                = 4000;
 valve.max_it_continuation   = 2000; 
 
 % Parameters for quick exit on line search 
-valve.max_consecutive_fails = 5;  
-valve.max_total_fails       = 40; 
+valve.max_consecutive_fails = 1;  
+valve.max_total_fails       = 1; 
 
 if exist('attached', 'var') 
     valve.attached = attached; 
@@ -205,7 +205,7 @@ beta     = 1.0 * valve.tension_base;  % radial
 
 
 % places this many periodic rings above 
-n_rings_periodic = max(1,N/64); 
+n_rings_periodic = max(1,N/128); 
 
 
 parameter_values = 4; 
