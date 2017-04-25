@@ -137,6 +137,9 @@ valve.num_copies = 1;
 % Spring constants are different here 
 valve.collagen_constitutive = false; 
 
+% Constant strain of pressurized configuration 
+valve.strain = .16; 
+
 % no reflections in this version 
 reflect_x = false; 
 

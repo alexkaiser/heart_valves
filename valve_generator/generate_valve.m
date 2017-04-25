@@ -65,16 +65,13 @@ if iteration_movie_anterior
 end 
 
 
-% Constant strain in reference config 
-strain = 0.04; 
-
 
 if radial && bead_slip && attached
     valve = newton_solve_valve_attached(valve, valve.tol_global, valve.max_it); 
 else 
 %     valve = solve_valve(valve, p_range, repulsive_coeff_range); 
 
-    [valve valve_with_reference pass_all] = solve_valve(valve, strain); 
+    [valve valve_with_reference pass_all] = solve_valve(valve); 
 end 
 
 fig = figure; 
