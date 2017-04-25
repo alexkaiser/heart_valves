@@ -195,7 +195,7 @@ valve.total_angle_dip = pi;
 
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
-valve.pressure_tension_ratio = 0.0825; % 0.11 * 0.975; 
+valve.pressure_tension_ratio = 0.08; % 0.11 * 0.975; 
 
 
 % base constant for tensions, derived quantity 
@@ -208,7 +208,7 @@ beta     = 1.0 * valve.tension_base;  % radial
 
 
 % places this many periodic rings above 
-n_rings_periodic = 0; %åmax(1,N/32); 
+n_rings_periodic = max(1,N/64); 
 
 
 parameter_values = 4; 
