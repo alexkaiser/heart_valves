@@ -188,7 +188,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 valve.dip_anterior_systole = true; 
-valve.r_dip = 0.5; 
+valve.r_dip = 0.75; 
 valve.total_angle_dip = pi; 
 
 
