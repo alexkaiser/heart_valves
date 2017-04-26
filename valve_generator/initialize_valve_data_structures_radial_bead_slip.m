@@ -108,9 +108,6 @@ valve.jacobian  = @build_jacobian_bead_slip;
 % name 
 valve.base_name = sprintf('mitral_tree_%d', N); 
 
-% box width 
-valve.L = 2.5; 
-
 MMHG_TO_CGS      = 1333.22368;
 valve.p_physical = 110 * MMHG_TO_CGS; 
 
@@ -166,10 +163,14 @@ ring_to_ring_range = 0;
 
 
 
-sytole_skeleton = false; 
+sytole_skeleton = true; 
 if sytole_skeleton 
+    % box width 
+    valve.L = 3.0; 
     valve.skeleton = valve_points_ct_systole(); 
-else 
+else
+    % box width 
+    valve.L = 2.5; 
     valve.skeleton = valve_points_ct_diastole(); 
 end 
 
@@ -186,7 +187,7 @@ valve.ds = 2*pi*valve.r / N;
 left_papillary_idx  = 1; 
 right_papillary_idx = 2; 
 
-valve.dip_anterior_systole = false; 
+valve.dip_anterior_systole = true; 
 valve.r_dip = 0.5; 
 valve.total_angle_dip = pi; 
 
@@ -195,7 +196,7 @@ valve.total_angle_dip = pi;
 
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
-valve.pressure_tension_ratio = 0.08; % 0.11 * 0.975; 
+valve.pressure_tension_ratio = 0.05; % 0.11 * 0.975; 
 
 
 % base constant for tensions, derived quantity 

@@ -138,25 +138,31 @@ function [] = output_to_ibamr_format(valve)
 
         % flat part of mesh 
         r = valve.r; 
-        N_ring = N;
         h = 0.0; % ring always set at zero 
-        ref_frac_net = 1.0; 
+        ref_frac_net = 1.0;
 
-        % no radial fibers, instead geodesics from the leaflet 
-        radial_fibers = false; 
-
-        params = place_net(params, r, h, L, N_ring, radial_fibers, k_rel, k_target_net, ref_frac_net, eta_net); 
+        for i=1:length(valve.leaflets)
+            if length(valve.leaflets) ~= 1 
+                error('Only one leaflet version currently supported'); 
+            end 
+            params = place_net(params, valve.leaflets(i), ds, r, L, k_rel, k_target_net, ref_frac_net, eta_net); 
+        end 
         
         % approximate geodesic continutations of fibers 
         for i=1:length(valve.leaflets)
-            params = place_rays(params, valve.leaflets(i), ds, valve.r, L, k_rel, k_target_net, ref_frac_net, eta_net);
+            params = place_rays(params, valve.leaflets(i), ds, L, k_rel, k_target_net, ref_frac_net, eta_net);
         end 
 
         % flat part of mesh with Cartesian coordinates
         % inner radius, stop mesh here 
-        r_cartesian = r + 4*ds; 
-        params = place_cartesian_net(params, r_cartesian, h, L, ds, k_rel, k_target_net, ref_frac_net, eta_net); 
- 
+        r_extra = 4*ds; 
+        for i=1:length(valve.leaflets)
+            if length(valve.leaflets) ~= 1 
+                error('Only one leaflet version currently supported'); 
+            end 
+        params = place_cartesian_net(params, valve.leaflets(i), r_extra, L, ds, k_rel, k_target_net, ref_frac_net, eta_net); 
+        end 
+        
     end 
                                             
     if n_lagrangian_tracers > 0
@@ -622,7 +628,7 @@ function params = add_chordae_tree_springs(params, leaflet, num_copies, ds, coll
 end 
                         
                         
-function params = place_net(params, r, h, L, N, radial_fibers, k_rel, k_target, ref_frac, eta)
+function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac, eta)
     % 
     % Places a polar coordinate mesh in a box 
     % Starts with N points evenly spaced at radius R
@@ -648,39 +654,35 @@ function params = place_net(params, r, h, L, N, radial_fibers, k_rel, k_target, 
     %     total_targets 
     % 
 
-    % mesh spacing on the valve ring 
-    ds = 2*pi*r / N; 
-    dtheta = 2*pi / N; 
-
-    % maximum number of points in radial direction 
-    % this gets a sqrt(2) because we are placing the net in a square 
-    if radial_fibers
-        % place rings to edge 
-        M = floor(sqrt(2) * L / ds); 
-    else 
-        % only include those full rings which fit in the domain 
-        M = floor( (L-r) / ds); 
-    end 
+    X     = leaflet.X; 
+    j_max = leaflet.j_max; 
+    k_max = leaflet.k_max; 
+   
+    
+    % only include those full rings which fit in the domain 
+    % always place at least one, which is the ring itself 
+    k_max_rings = max(1, floor( (L-r) / ds)); 
         
-    points = zeros(3,N,M);
+    points = zeros(3,j_max,k_max_rings);
 
     % just keep a list of valid indices, mark NAN if out of physical bounds 
-    indices_global = zeros(N,M); 
+    indices_global = zeros(j_max,k_max_rings); 
     
     instrument_idx = 0; 
     
-    rad = r; 
-    
     % compute vertex positions and add to array 
-    for k=1:M
-        for j=1:N
+    for k=1:k_max_rings
+        for j=1:j_max
             
-            theta = (j-1) * dtheta; 
-            coords_horiz = [rad*cos(theta); rad*sin(theta)]; 
+            % valve ring points from leaflet 
+            ring_pt = X(1:2,j,k_max); 
+            increment  = ds * ring_pt / norm(ring_pt); 
+            
+            coords_horiz = ring_pt + (k-1)*increment; 
             
             % if one norm is less than L, then the point is within the domain  
             if norm(coords_horiz, inf) < L 
-                points(:,j,k) = [coords_horiz; h]; 
+                points(:,j,k) = [coords_horiz; 0]; 
                 indices_global(j,k) = params.global_idx; 
                 params.vertices(:,params.global_idx + 1) = points(:,j,k); 
                 
@@ -700,21 +702,19 @@ function params = place_net(params, r, h, L, N, radial_fibers, k_rel, k_target, 
             
         end 
         
-        rad = rad + ds; 
     end 
 
     
     % write the instrument file header here 
     fprintf(params.inst, '1   # num meters in file\n'); 
     fprintf(params.inst, 'meter_0   # name\n'); 
-    fprintf(params.inst, '%d  # number of meter points\n', N); 
-    
+    fprintf(params.inst, '%d  # number of meter points\n', j_max); 
     
     % below the first possible point 
     idx = -1; 
     
-    for k=1:M
-        for j=1:N
+    for k=1:k_max_rings
+        for j=1:j_max
             
             % just ignore the nan 
             if ~isnan(indices_global(j,k))
@@ -733,7 +733,7 @@ function params = place_net(params, r, h, L, N, radial_fibers, k_rel, k_target, 
                 end 
 
                 % check up directions for springs 
-                if j < N
+                if j < j_max
                     j_nbr = j+1; 
                     if ~isnan(indices_global(j_nbr,k))
                         rest_len = ref_frac * norm(points(:,j,k) - points(:,j_nbr,k)); 
@@ -744,7 +744,7 @@ function params = place_net(params, r, h, L, N, radial_fibers, k_rel, k_target, 
                 end 
                 
                 % don't forget the periodic direction in j
-                if j == N
+                if j == j_max
                    j_nbr = 1; 
                    % need to make sure that the 1,k point is also not a NaN  
                    if ~isnan(indices_global(j_nbr,k)) 
@@ -755,21 +755,6 @@ function params = place_net(params, r, h, L, N, radial_fibers, k_rel, k_target, 
                    end 
                 end 
                 
-                % check up directions for springs 
-                if radial_fibers
-                    k_nbr = k + 1; 
-                    if k_nbr < M
-                        if ~isnan(indices_global(j,k_nbr))
-                            rest_len = ref_frac * norm(points(:,j,k) - points(:,j,k_nbr)); 
-                            k_abs = k_rel / rest_len; 
-                            nbr_idx = indices_global(j,k_nbr); 
-                            params = spring_string(params, idx, nbr_idx, k_abs, rest_len); 
-                        end 
-                    end 
-                end 
-                
-                % no periodic direction in radial direction (k)
-                
             end 
            
         end 
@@ -778,7 +763,7 @@ function params = place_net(params, r, h, L, N, radial_fibers, k_rel, k_target, 
 end 
 
 
-function params = place_rays(params, leaflet, ds, r, L, k_rel, k_target, ref_frac, eta)
+function params = place_rays(params, leaflet, ds, L, k_rel, k_target, ref_frac, eta)
     % 
     % Places rays of fibers emenating from the leaflet 
     % Angle of rays makes them (roughly) geodesics 
@@ -812,6 +797,11 @@ function params = place_rays(params, leaflet, ds, r, L, k_rel, k_target, ref_fra
     is_internal = leaflet.is_internal; 
     h           = 0.0;        % always place at origin 
     
+    if isfield(leaflet, 'periodic_j')
+        periodic_j = leaflet.periodic_j; 
+    else
+        periodic_j = zeros(k_max,1); 
+    end 
     
     if ~isfield(leaflet, 'indices_global')
         error('Must place leaflets before placing rays'); 
@@ -845,7 +835,15 @@ function params = place_rays(params, leaflet, ds, r, L, k_rel, k_target, ref_fra
                 for x = neighbors 
 
                     % find the initial reflected point 
-                    val = get_geodesic_continued_point(x, pt_ring, r, h); 
+                    
+                    % adjacent ring points determine local normal and tangent 
+                    j_plus__1 = get_j_nbr(j+1, k, periodic_j, j_max); 
+                    j_minus_1 = get_j_nbr(j-1, k, periodic_j, j_max);
+                    
+                    ring_nbr_plus  = X(:, j_plus__1, k); 
+                    ring_nbr_minus = X(:, j_minus_1, k); 
+                    
+                    val = get_geodesic_continued_point(x, pt_ring, ring_nbr_minus, ring_nbr_plus); 
 
                     % each point moves by this much from the initial point 
                     increment = val - x; 
@@ -896,7 +894,7 @@ function params = place_rays(params, leaflet, ds, r, L, k_rel, k_target, ref_fra
 end 
 
 
-function [val] = get_geodesic_continued_point(x, pt_ring, r, h)
+function [val] = get_geodesic_continued_point(x, pt_ring, ring_nbr_minus, ring_nbr_plus)
     %
     % Takes a point inside the the valve ring
     % Returns a point which allows a geodesic continuation 
@@ -911,25 +909,34 @@ function [val] = get_geodesic_continued_point(x, pt_ring, r, h)
 
     tol = 1e5 * eps; 
     
-    if abs(pt_ring(3) - h) > tol 
-        error('Initial ring point is not at the right height'); 
+    if abs(pt_ring(3)) > eps 
+        error('Initial ring point is not near z=0 plane'); 
     end 
     
-    if abs(norm(pt_ring(1:2)) - r) > tol 
-        error('Initial ring point is not at the correct radius'); 
+    if abs(ring_nbr_plus(3)) > eps
+        error('Initial ring point is not near z=0 plane'); 
     end 
     
+    if abs(ring_nbr_minus(3)) > eps 
+        error('Initial ring point is not near z=0 plane'); 
+    end 
     
-    % angle needed to send the ring point to the x axis 
-    theta = atan2(pt_ring(2), pt_ring(1)); 
+    % local tangent implies local normal 
+    tangent = ring_nbr_plus(1:2) - ring_nbr_minus(1:2); 
+    normal  = [tangent(2); -tangent(1)]; 
+    normal  = normal / norm(normal); 
     
-    % rotate the point of inter
-    val = rotation_matrix_z(-theta) * x; 
-    
-    % ring point to origin, val to near origin to be reflected 
-    val = val - [r; 0; h]; 
+    % translate ring point to origin (implicitly)
+    % and x somewhere near the origin 
+    val = x - pt_ring; 
 
+    % rotate system around z such that normal now points in x axis direction 
+    theta = atan2(normal(2), normal(1)); 
+    
+    val = rotation_matrix_z(-theta) * val; 
+    
     % rotate val into the z = 0 plane, inside the transformed ring 
+    % this is not inverted as it gets the image of the geodesic point before reflection 
     phi = atan2(val(3), val(1)); 
     val = rotation_matrix_y( -(phi - pi)) * val;
     
@@ -940,18 +947,9 @@ function [val] = get_geodesic_continued_point(x, pt_ring, r, h)
     % reflect, this would be the geodesic point if the system was flat 
     val = -val; 
     
-    % send back to original coordinates 
-    % val = rotation_matrix_y(phi - pi) * val;
-    val = val + [r; 0; h]; 
+    % undo rigid rotations and translations 
     val = rotation_matrix_z(theta) * val; 
-    
-    if abs(val(3) - h) > tol 
-        error('rotated value is not near plane'); 
-    end 
-    
-    if norm(val(1:2)) <= r 
-        error('rotated value must be out of the valve ring'); 
-    end 
+    val = val + pt_ring; 
     
 end 
 
@@ -960,7 +958,7 @@ end
 
 
 
-function params = place_cartesian_net(params, r, h, L, ds, k_rel, k_target, ref_frac, eta)
+function params = place_cartesian_net(params, leaflet, r_extra, L, ds, k_rel, k_target, ref_frac, eta)
     % 
     % Places a cartesian coordinate mesh in a box 
     % This is to avoid issues with the polar mesh at the edge 
@@ -984,8 +982,25 @@ function params = place_cartesian_net(params, r, h, L, ds, k_rel, k_target, ref_
     N = ceil(2*L / ds);  
     points = zeros(3,N,N);
 
+    % compute the valve ring, adding r_extra to each point 
+    X     = leaflet.X; 
+    j_max = leaflet.j_max; 
+    k_max = leaflet.k_max; 
+   
+    ring_expanded = zeros(2,j_max); 
+    
+    for j=1:j_max
+        % valve ring points from leaflet 
+        ring_pt    = X(1:2,j,k_max); 
+        increment  = r_extra * ring_pt / norm(ring_pt); 
+
+        ring_expanded(:,j) = ring_pt + increment; 
+    end 
+    
+    
     % just keep a list of valid indices, mark NAN if out of physical bounds 
     indices_global = zeros(N,N);     
+    
     
     % This loop should be one indexed, 
     % because we want to start not at the edge but ds in 
@@ -995,9 +1010,9 @@ function params = place_cartesian_net(params, r, h, L, ds, k_rel, k_target, ref_
             coords_horiz = [ (j-1)*ds - L + ds/2; (k-1)*ds - L + ds/2]; 
             
             % if one norm is less than L, then the point is within the domain  
-            if (norm(coords_horiz, inf) < L) && (norm(coords_horiz,2) > r) 
+            if (norm(coords_horiz, inf) < L) && point_out_of_polygon(ring_expanded, coords_horiz)
                 
-                points(:,j,k) = [coords_horiz; h]; 
+                points(:,j,k) = [coords_horiz; 0]; 
                 indices_global(j,k) = params.global_idx; 
                 params.vertices(:,params.global_idx + 1) = points(:,j,k);
 
@@ -1064,6 +1079,54 @@ function params = place_cartesian_net(params, r, h, L, ds, k_rel, k_target, ref_
 
 end 
 
+
+function outside = point_out_of_polygon(vert, test)
+%
+% Recklessly translated from 
+% 
+% https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html
+%
+% Original code: 
+% 
+% int pnpoly(int nvert, float *vertx, float *verty, float testx, float testy)
+% {
+%   int i, j, c = 0;
+%   for (i = 0, j = nvert-1; i < nvert; j = i++) {
+%     if ( ((verty[i]>testy) != (verty[j]>testy)) &&
+% 	 (testx < (vertx[j]-vertx[i]) * (testy-verty[i]) / (verty[j]-verty[i]) + vertx[i]) )
+%        c = !c;
+%   }
+%   return c;
+% }
+
+    inside = false; 
+    
+    if size(vert,1) ~= 2
+        error('Must pass two d vector of vertices to test');         
+    end 
+    
+    nvert = size(vert,2); 
+    
+    i = 1; 
+    j = nvert; 
+    
+    while i <= nvert 
+        
+        check_1 = ((vert(2,i) > test(2)) ~= (vert(2,j) > test(2))); 
+        tmp     = (vert(1,j) - vert(1,i)) * (test(2)-vert(2,i)) / (vert(2,j) - vert(2,i)) + vert(1,i); 
+        check_2 = (test(1) < tmp); 
+        
+        if check_1 && check_2
+            inside = ~inside; 
+        end 
+        
+        j = i; 
+        i = i+1; 
+    end 
+    
+    outside = ~inside; 
+
+end 
 
 
 function [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_lagrangian_tracers, L, double_z)
