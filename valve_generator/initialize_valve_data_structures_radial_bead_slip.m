@@ -205,10 +205,10 @@ valve.tension_base = valve.p_physical / valve.pressure_tension_ratio;
 % beta     = 1.0 * valve.tension_base;  % radial
 
 tension_coeffs.alpha_anterior  = 1.0 * valve.tension_base;  % circumferential 
-tension_coeffs.beta_anterior   = 1.1 * valve.tension_base;  % radial
-tension_coeffs.alpha_posterior = 1.2 * valve.tension_base;  % circumferential 
-tension_coeffs.beta_posterior  = 1.3 * valve.tension_base;  % radial
-tension_coeffs.alpha_hoops     = 1.4 * valve.tension_base;  % circumferential hoops 
+tension_coeffs.beta_anterior   = 1.0 * valve.tension_base;  % radial
+tension_coeffs.alpha_posterior = 1.0 * valve.tension_base;  % circumferential 
+tension_coeffs.beta_posterior  = 1.0 * valve.tension_base;  % radial
+tension_coeffs.alpha_hoops     = 1.0 * valve.tension_base;  % circumferential hoops 
 
 
 % places this many periodic rings above 

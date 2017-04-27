@@ -115,14 +115,16 @@ for j=1:j_max
                                 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                    tension = alpha; 
+                    alpha_tmp = alpha(j_spr,k_spr); 
+                    
+                    tension = alpha_tmp; 
 
                     if repulsive_potential
-                        tension = tension - alpha * c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
+                        tension = tension - alpha_tmp * c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
                     end 
 
                     if decreasing_tension
-                        tension = tension + alpha * tension_decreasing(X, X_nbr, du, c_dec_tension_circumferential) ; 
+                        tension = tension + alpha_tmp * tension_decreasing(X, X_nbr, du, c_dec_tension_circumferential) ; 
                     end 
 
                     % Here tension is a force per unit length 
@@ -150,14 +152,16 @@ for j=1:j_max
                 
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                    tension = beta; 
+                    beta_tmp = beta(j_spr,k_spr); 
+                    
+                    tension = beta_tmp; 
 
                     if repulsive_potential
-                        tension = tension - beta * c_repulsive_radial * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
+                        tension = tension - beta_tmp * c_repulsive_radial * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
                     end 
 
                     if decreasing_tension
-                        tension = tension + beta * tension_decreasing(X, X_nbr, du, c_dec_tension_radial) ; 
+                        tension = tension + beta_tmp * tension_decreasing(X, X_nbr, du, c_dec_tension_radial) ; 
                     end
 
                     tension = du * tension; 
