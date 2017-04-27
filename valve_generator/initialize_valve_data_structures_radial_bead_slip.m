@@ -212,7 +212,7 @@ tension_coeffs.alpha_hoops     = 1.0 * valve.tension_base;  % circumferential ho
 
 
 % places this many periodic rings above 
-n_rings_periodic = 3; %max(1,N/64); 
+n_rings_periodic = max(1,N/64); 
 
 
     
