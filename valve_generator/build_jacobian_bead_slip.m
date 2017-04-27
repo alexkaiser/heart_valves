@@ -138,25 +138,36 @@ function J = build_jacobian_bead_slip(leaflet)
 
                 for j_nbr_unreduced = [j-1,j+1]
                     
+                    % j_spr gets periodic reduction if off the minimum side 
+                    % meaning it is zero 
+                    j_spr = min(j, j_nbr_unreduced); 
+                    if j_spr == 0 
+                        j_spr = j_max; 
+                    end 
+                    
                     j_nbr = get_j_nbr(j_nbr_unreduced, k, periodic_j, j_max); 
 
                     k_nbr = k; 
+                    
+                    k_spr = min(k, k_nbr);
 
                     if (j_nbr > 0) && (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
 
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
 
+                        alpha_tmp = alpha(j_spr,k_spr); 
+                        
                         % There is a 1/du term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
-                        J_tmp = du * alpha * tangent_jacobian(X, X_nbr); 
+                        J_tmp = du * alpha_tmp * tangent_jacobian(X, X_nbr); 
                         
                         if repulsive_potential
-                            J_tmp = J_tmp + du * alpha * c_repulsive_circumferential * du^2 * replusive_jacobian(X,X_nbr,power); 
+                            J_tmp = J_tmp + du * alpha_tmp * c_repulsive_circumferential * du^2 * replusive_jacobian(X,X_nbr,power); 
                         end 
                         
                         if decreasing_tension
-                            J_tmp = J_tmp + du * alpha * dec_tension_jacobian(X,X_nbr,du,c_dec_tension_circumferential); 
+                            J_tmp = J_tmp + du * alpha_tmp * dec_tension_jacobian(X,X_nbr,du,c_dec_tension_circumferential); 
                         end 
 
                         % current term is always added in 
@@ -179,22 +190,27 @@ function J = build_jacobian_bead_slip(leaflet)
                 for k_nbr = [k-1,k+1]
 
                     j_nbr = j; 
+                    
+                    j_spr = min(j, j_nbr); 
+                    k_spr = min(k, k_nbr);
 
                     if (j_nbr > 0) && (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
 
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
+                        
+                        beta_tmp = beta(j_spr,k_spr); 
 
                         % There is a 1/du term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
-                        J_tmp = du * beta * tangent_jacobian(X, X_nbr); 
+                        J_tmp = du * beta_tmp * tangent_jacobian(X, X_nbr); 
                         
                         if repulsive_potential
-                            J_tmp = J_tmp + du * beta * c_repulsive_radial * du^2 * replusive_jacobian(X,X_nbr,power); 
+                            J_tmp = J_tmp + du * beta_tmp * c_repulsive_radial * du^2 * replusive_jacobian(X,X_nbr,power); 
                         end
                         
                         if decreasing_tension
-                            J_tmp = J_tmp + du * beta * dec_tension_jacobian(X,X_nbr,du,c_dec_tension_radial); 
+                            J_tmp = J_tmp + du * beta_tmp * dec_tension_jacobian(X,X_nbr,du,c_dec_tension_radial); 
                         end
                         
                         % current term is always added in 

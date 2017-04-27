@@ -88,23 +88,34 @@ function F = difference_equations_bead_slip(leaflet)
                 % u type fibers 
                 for j_nbr_unreduced = [j-1,j+1]
                     
+                    % j_spr gets periodic reduction if off the minimum side 
+                    % meaning it is zero 
+                    j_spr = min(j, j_nbr_unreduced); 
+                    if j_spr == 0 
+                        j_spr = j_max; 
+                    end 
+                    
                     % j_nbr may need periodic reduction 
                     j_nbr = get_j_nbr(j_nbr_unreduced, k, periodic_j, j_max); 
                     
                     k_nbr = k; 
                     
+                    k_spr = min(k, k_nbr);
+                    
                     if (j_nbr > 0) && (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
 
                         X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                        tension = alpha; 
+                        alpha_tmp = alpha(j_spr,k_spr); 
+                        
+                        tension = alpha_tmp; 
 
                         if repulsive_potential
-                            tension = tension - alpha * c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
+                            tension = tension - alpha_tmp * c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
                         end 
 
                         if decreasing_tension
-                            tension = tension + alpha * tension_decreasing(X, X_nbr, du, c_dec_tension_circumferential) ; 
+                            tension = tension + alpha_tmp * tension_decreasing(X, X_nbr, du, c_dec_tension_circumferential) ; 
                         end 
 
                         if tension_debug
@@ -123,18 +134,23 @@ function F = difference_equations_bead_slip(leaflet)
 
                     j_nbr = j; 
                     
+                    j_spr = min(j, j_nbr); 
+                    k_spr = min(k, k_nbr);
+                    
                     if (j_nbr > 0) && (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
                     
                         X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                        tension = beta; 
+                        beta_tmp = beta(j_spr,k_spr); 
+                        
+                        tension = beta_tmp; 
 
                         if repulsive_potential
-                            tension = tension - beta * c_repulsive_radial * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
+                            tension = tension - beta_tmp * c_repulsive_radial * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
                         end 
 
                         if decreasing_tension
-                            tension = tension + beta * tension_decreasing(X, X_nbr, du, c_dec_tension_radial) ; 
+                            tension = tension + beta_tmp * tension_decreasing(X, X_nbr, du, c_dec_tension_radial) ; 
                         end
 
                         if tension_debug

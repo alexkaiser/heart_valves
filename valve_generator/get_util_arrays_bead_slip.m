@@ -14,11 +14,21 @@ j_max                   = leaflet.j_max;
 k_min                   = leaflet.k_min; 
 k_max                   = leaflet.k_max; 
 ring_k_idx              = leaflet.ring_k_idx; 
+n_rings_periodic        = leaflet.n_rings_periodic; 
+
+alpha_anterior          = leaflet.tension_coeffs.alpha_anterior;  % circumferential 
+beta_anterior           = leaflet.tension_coeffs.beta_anterior;  % radial
+alpha_posterior         = leaflet.tension_coeffs.alpha_posterior;  % circumferential 
+beta_posterior          = leaflet.tension_coeffs.beta_posterior;  % radial
+alpha_hoops             = leaflet.tension_coeffs.alpha_hoops; 
 
 is_internal             = zeros(j_max, k_max); 
 is_bc                   = zeros(j_max, k_max); 
 linear_idx_offset       = zeros(j_max, k_max); 
 point_idx_with_bc       = zeros(j_max, k_max); 
+
+alpha                   = zeros(j_max, k_max); 
+beta                    = zeros(j_max, k_max);
 
 
 if leaflet.radial_and_circumferential 
@@ -68,7 +78,7 @@ if leaflet.leaflet_only
     end 
 end 
 
-
+% Indices for Jacobian building 
 count = 0; 
 for k=1:k_max
     for j=1:j_max
@@ -79,6 +89,7 @@ for k=1:k_max
     end 
 end
 
+% Indices for spring attachments 
 count = 0;
 for k=1:k_max
     for j=1:j_max
@@ -90,8 +101,78 @@ for k=1:k_max
 end
 
 
+% always half split for now 
+N_anterior  = j_max/2; 
+
+% radial anterior 
+for j=1:N_anterior    
+    for k=k_min(j):(k_max-1)
+        beta(j,k) = beta_anterior; 
+    end
+end 
+
+% radial posterior 
+for j=(N_anterior+1):j_max     
+    for k=k_min(j):(k_max-1)
+        beta(j,k) = beta_posterior; 
+    end
+end 
+
+% circumferential hoops 
+k_min_hoop = k_max - n_rings_periodic;
+for j=1:j_max 
+    for k=k_min_hoop:(k_max-1)
+        alpha(j,k) = alpha_hoops; 
+    end 
+end 
+
+% radial anterior 
+% here need to ensure that neighbors are in bounds 
+% also do not place a leaflet to leaflet circumferential spring
+% only hoops connect leaflets 
+for j=1:(N_anterior-1)
+    
+    % start at minimum, stop below hoop points 
+    for k=k_min(j):(k_min_hoop-1)
+        
+        % spring is always owned by minimum neighbor 
+        % j direction springs here 
+        j_nbr = j + 1; 
+        k_nbr = k; 
+        
+        if is_internal(j_nbr, k_nbr)
+            alpha(j,k) = alpha_anterior; 
+        end 
+        
+    end 
+    
+end 
+
+% radial posterior 
+for j=(N_anterior+1):(j_max-1) 
+    
+    % start at minimum, stop below hoop points 
+    for k=k_min(j):(k_min_hoop-1)
+        
+        % spring is always owned by minimum neighbor 
+        % j direction springs here 
+        j_nbr = j + 1; 
+        k_nbr = k; 
+        
+        if is_internal(j_nbr, k_nbr)
+            alpha(j,k) = alpha_posterior; 
+        end 
+        
+    end 
+    
+end 
+
+
+
 leaflet.is_internal       = is_internal;
 leaflet.is_bc             = is_bc;
 leaflet.linear_idx_offset = linear_idx_offset;
 leaflet.point_idx_with_bc = point_idx_with_bc;
+leaflet.alpha             = alpha; 
+leaflet.beta              = beta; 
 

@@ -109,7 +109,6 @@ for j=1:j_max
                 
                 k_nbr = k; 
 
-
                 k_spr = min(k, k_nbr);
                 
                 if (j_nbr > 0) && (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))

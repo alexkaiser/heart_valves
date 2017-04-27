@@ -86,16 +86,7 @@ if leaflet.radial_and_circumferential
         
             chordae(tree_idx).free_edge_idx(leaf_idx,:) = [j; k];
             chordae_idx(j,k).tree_idx = tree_idx;  
-            chordae_idx(j,k).leaf_idx = leaf_idx;
-
-%             
-%             k_min(j) = k; 
-%             
-%             % Incremented in direction of sign
-%             % Except on final iteration 
-%             if leaf_idx < n_leaves_tmp
-%                 k = k + leaflet_direction(tree_idx); 
-%             end 
+            chordae_idx(j,k).leaf_idx = leaf_idx; 
             
             % Horizonal index always increases 
             j = j + 1; 
@@ -111,6 +102,8 @@ end
 
 
 if isfield(leaflet, 'ring_to_ring_range') && (~isempty(leaflet.ring_to_ring_range)) && (max(leaflet.ring_to_ring_range) > 0) 
+    
+    error('ditch this feature'); 
     
     if n_rings_periodic ~= 0
         error('ring to ring and periodic loops not implemented at same time'); 
@@ -190,7 +183,18 @@ else
     periodic_j = zeros(k_max, 1); 
     
     % minimum point up to bc at idx 1 gets periodic connection 
-    for k=k_min(1):k_max
+    % can set or ignore the commissure point that is part of the leaflet here 
+    
+    leaflet.comm_point_attached = false; 
+    
+    if leaflet.comm_point_attached 
+        error('This messes with lots of other assumptions. Not implemented for now.'); 
+        k_start_periodic = k_min(1); 
+    else 
+        k_start_periodic = k_min(1) + 1;
+    end 
+    
+    for k=k_start_periodic:k_max
         periodic_j(k) = 1; 
     end 
     
