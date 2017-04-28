@@ -58,22 +58,13 @@ function F = difference_equations_linear(leaflet)
                 end 
 
                 % u type fibers 
-                for j_nbr_unreduced = [j-1,j+1]
+                for j_nbr_tmp = [j-1,j+1]
                     
-                    % j_spr gets periodic reduction if off the minimum side 
-                    % meaning it is zero 
-                    j_spr = min(j, j_nbr_unreduced); 
-                    if j_spr == 0 
-                        j_spr = j_max; 
-                    end 
+                    k_nbr_tmp = k; 
                     
-                    j_nbr = get_j_nbr(j_nbr_unreduced, k, periodic_j, j_max); 
-
-                    k_nbr = k; 
-                    k_spr = min(k, k_nbr);
+                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
                     
-                    if (j_nbr > 0) && (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
-                    
+                    if valid
                         X_nbr = X_current(:,j_nbr,k_nbr); 
 
                         tension = tension_linear(X,X_nbr,R_u(j_spr,k_spr),k_u(j_spr,k_spr)); 
@@ -84,16 +75,13 @@ function F = difference_equations_linear(leaflet)
                 end 
 
                 % v type fibers 
-                for k_nbr = [k-1,k+1]
+                for k_nbr_tmp = [k-1,k+1]
+
+                    j_nbr_tmp = j; 
                     
-                    j_nbr = j; 
+                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
                     
-                    
-                    j_spr = min(j, j_nbr); 
-                    k_spr = min(k, k_nbr);
-                    
-                    if (j_nbr > 0) && (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
-                        
+                    if valid
                         X_nbr = X_current(:,j_nbr,k_nbr); 
                         tension = tension_linear(X,X_nbr,R_v(j_spr,k_spr),k_v(j_spr,k_spr)); 
                         F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 

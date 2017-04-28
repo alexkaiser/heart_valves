@@ -248,6 +248,10 @@ function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, 
         function_idx = 1; 
     end 
     
+    if k_rel == 0 
+        warning(sprintf('Zero strength spring on idx,nbr = %d,%d, not placed.', idx, nbr_idx)); 
+        return; 
+    end 
 
 %    max_strain = .01; 
     
@@ -532,22 +536,22 @@ function params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_
                 end 
                                 
                 % springs in leaflet, only go in up direction 
-                j_nbr_unreduced = j + 1; 
-                j_nbr = get_j_nbr(j_nbr_unreduced, k, periodic_j, j_max); 
-                k_nbr = k; 
-                if (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr, k_nbr))
+                j_nbr_tmp = j + 1; 
+                k_nbr_tmp = k; 
+                [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                if valid 
                     
                     % no bc to bc springs 
                     if ~(is_bc(j, k) && is_bc(j_nbr, k_nbr))
                     
-                        % since always moving in up direction, j_spr = j, k_spr = k
-                        rest_len = R_u(j,k); 
-                        k_rel    = k_u(j,k); 
+                        
+                        rest_len = R_u(j_spr, k_spr); 
+                        k_rel    = k_u(j_spr, k_spr); 
 
                         nbr_idx = leaflet.indices_global(j_nbr,k_nbr);
                         
                         
-                        if j_nbr_unreduced ~= j_nbr 
+                        if j_nbr_tmp ~= j_nbr 
                             % periodic wrapping requires oppositite order 
                             params = place_spring_and_split(params, nbr_idx, idx, k_rel, rest_len, ds, num_copies, collagen_spring);
                         else 
@@ -560,16 +564,16 @@ function params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_
                 end 
                 
                 % springs in leaflet, only go in up direction 
-                j_nbr = j; 
-                k_nbr = k + 1; 
-                if (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr, k_nbr))
+                j_nbr_tmp = j; 
+                k_nbr_tmp = k + 1; 
+                [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                if valid 
                     
                     % no bc to bc springs 
                     if ~(is_bc(j, k) && is_bc(j_nbr, k_nbr))
                     
-                        % since always moving in up direction, j_spr = j, k_spr = k
-                        rest_len = R_v(j,k); 
-                        k_rel    = k_v(j,k); 
+                        rest_len = R_u(j_spr, k_spr); 
+                        k_rel    = k_u(j_spr, k_spr); 
 
                         nbr_idx = leaflet.indices_global(j_nbr,k_nbr);
 

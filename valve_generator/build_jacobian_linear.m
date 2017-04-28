@@ -47,38 +47,8 @@ function J = build_jacobian_linear(leaflet)
     j_offsets = [0 1 2 0 1 2 0 1 2]'; 
     k_offsets = [0 0 0 1 1 1 2 2 2]';
 
+
     
-
-
-%             % current node has a chordae connection
-%             if chordae_idx(j,k)
-% 
-%                 % index that free edge would have if on tree
-%                 % remember that leaves are only in the leaflet
-%                 leaf_idx = chordae_idx(j,k) + N_chordae;
-% 
-%                 % then take the parent index of that number in chordae variables
-%                 idx_chordae = floor(leaf_idx/2);
-% 
-%                 X_nbr = C(:,idx_chordae);
-% 
-%                 J_tmp = tension_linear_tangent_jacobian(X,X_nbr,R_free_edge(i),k_free_edge(i));
-% 
-%                 % current term is always added in 
-%                 % this gets no sign 
-%                 % this is always at the current,current block in the matrix 
-%                 place_tmp_block(range_current, range_current, J_tmp); 
-%                 
-%                 % chordae range 
-%                 range_nbr = range_chordae(total_internal, N_chordae, idx_chordae, left_side); 
-%                 place_tmp_block(range_current, range_nbr, -J_tmp); 
-%                 
-%             else
-%                 error('free edge point required to have chordae connection'); 
-%             end
-
-
-
     % Internal anterior leaflet 
     % Zero indices always ignored 
     for j=1:j_max
@@ -141,21 +111,14 @@ function J = build_jacobian_linear(leaflet)
                 end 
 
 
-                for j_nbr_unreduced = [j-1,j+1]
+                % u type fibers 
+                for j_nbr_tmp = [j-1,j+1]
                     
-                    % j_spr gets periodic reduction if off the minimum side 
-                    % meaning it is zero 
-                    j_spr = min(j, j_nbr_unreduced); 
-                    if j_spr == 0 
-                        j_spr = j_max; 
-                    end 
+                    k_nbr_tmp = k; 
                     
-                    j_nbr = get_j_nbr(j_nbr_unreduced, k, periodic_j, j_max); 
-
-                    k_nbr = k; 
-                    k_spr = min(k, k_nbr);
-
-                    if (j_nbr > 0) && (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
+                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    
+                    if valid
                         
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
@@ -178,15 +141,14 @@ function J = build_jacobian_linear(leaflet)
                 end
 
                 
-                % v tension terms 
-                for k_nbr = [k-1,k+1]
+                % v type fibers 
+                for k_nbr_tmp = [k-1,k+1]
 
-                    j_nbr = j; 
+                    j_nbr_tmp = j; 
                     
-                    j_spr = min(j, j_nbr); 
-                    k_spr = min(k, k_nbr);
-
-                    if (j_nbr > 0) && (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
+                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    
+                    if valid
                         
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 

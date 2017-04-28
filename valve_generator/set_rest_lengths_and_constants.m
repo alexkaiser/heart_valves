@@ -94,25 +94,13 @@ for j=1:j_max
             X = X_current(:,j,k); 
 
             % u type fibers 
-            % set constants in up direction only here 
-            for j_nbr_unreduced = [j-1,j+1] 
-                
-                % j_spr gets periodic reduction if off the minimum side 
-                % meaning it is zero 
-                j_spr = min(j, j_nbr_unreduced); 
-                if j_spr == 0 
-                    j_spr = j_max; 
-                end 
-                
-                % j_nbr may need periodic reduction 
-                j_nbr = get_j_nbr(j_nbr_unreduced, k, periodic_j, j_max);
-                
-                k_nbr = k; 
+            for j_nbr_tmp = [j-1,j+1]
 
-                k_spr = min(k, k_nbr);
-                
-                if (j_nbr > 0) && (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
-                                
+                k_nbr_tmp = k; 
+
+                [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+
+                if valid               
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
                     alpha_tmp = alpha(j_spr,k_spr); 
@@ -140,16 +128,13 @@ for j=1:j_max
 
 
             % v type fibers 
-            for k_nbr = [k-1,k+1] 
-                
-                % no possible periodicity in j 
-                j_nbr = j; 
-                
-                j_spr = min(j, j_nbr); 
-                k_spr = min(k, k_nbr);
+            for k_nbr_tmp = [k-1,k+1]
 
-                if (j_nbr > 0) && (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
-                
+                j_nbr_tmp = j; 
+
+                [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+
+                if valid
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
                     beta_tmp = beta(j_spr,k_spr); 

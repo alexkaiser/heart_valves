@@ -136,22 +136,13 @@ function J = build_jacobian_bead_slip(leaflet)
                 end 
 
 
-                for j_nbr_unreduced = [j-1,j+1]
+                for j_nbr_tmp = [j-1,j+1]
                     
-                    % j_spr gets periodic reduction if off the minimum side 
-                    % meaning it is zero 
-                    j_spr = min(j, j_nbr_unreduced); 
-                    if j_spr == 0 
-                        j_spr = j_max; 
-                    end 
+                    k_nbr_tmp = k; 
                     
-                    j_nbr = get_j_nbr(j_nbr_unreduced, k, periodic_j, j_max); 
+                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
 
-                    k_nbr = k; 
-                    
-                    k_spr = min(k, k_nbr);
-
-                    if (j_nbr > 0) && (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
+                    if valid
 
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
@@ -186,16 +177,14 @@ function J = build_jacobian_bead_slip(leaflet)
                 end
 
                 
-                % v tension terms 
-                for k_nbr = [k-1,k+1]
+                % v type fibers 
+                for k_nbr_tmp = [k-1,k+1]
 
-                    j_nbr = j; 
+                    j_nbr_tmp = j; 
                     
-                    j_spr = min(j, j_nbr); 
-                    k_spr = min(k, k_nbr);
-
-                    if (j_nbr > 0) && (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
-
+                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    
+                    if valid
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
                         
