@@ -1,4 +1,4 @@
-function F = difference_equations_linear(leaflet)
+function F = difference_equations_with_reference(leaflet)
     % 
     % Evaluation of the global difference equations at j,k
     % Uses linear constitutive laws 
@@ -26,8 +26,6 @@ function F = difference_equations_linear(leaflet)
     k_v                = leaflet.k_v;
     
     
-    
-    
     if isfield(leaflet, 'periodic_j')
         periodic_j = leaflet.periodic_j; 
     else
@@ -35,8 +33,6 @@ function F = difference_equations_linear(leaflet)
     end 
     
     F_leaflet = zeros(size(X_current)); 
-
-
 
     % Internal leaflet part 
     for j=1:j_max
@@ -67,7 +63,7 @@ function F = difference_equations_linear(leaflet)
                     if valid
                         X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                        tension = tension_linear(X,X_nbr,R_u(j_spr,k_spr),k_u(j_spr,k_spr)); 
+                        tension = tension_with_reference(X, X_nbr, R_u(j_spr,k_spr), k_u(j_spr,k_spr), leaflet); 
                         F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
                     
                     end 
@@ -83,7 +79,8 @@ function F = difference_equations_linear(leaflet)
                     
                     if valid
                         X_nbr = X_current(:,j_nbr,k_nbr); 
-                        tension = tension_linear(X,X_nbr,R_v(j_spr,k_spr),k_v(j_spr,k_spr)); 
+                        
+                        tension = tension_with_reference(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet); 
                         F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
                     
                     end 
@@ -108,7 +105,7 @@ function F = difference_equations_linear(leaflet)
 
                     X_nbr = chordae(tree_idx).C(:,idx_chordae);
                     
-                    tension = tension_linear(X,X_nbr,chordae(tree_idx).R_free_edge(i),chordae(tree_idx).k_free_edge(i));
+                    tension = tension_with_reference(X, X_nbr, chordae(tree_idx).R_free_edge(i), chordae(tree_idx).k_free_edge(i), leaflet);
 
                     F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
 
@@ -141,7 +138,7 @@ function F = difference_equations_linear(leaflet)
                 % routine handles unpacking and pulling correct constants 
                 [nbr R_nbr k_val] = get_nbr_chordae(leaflet, i, nbr_idx, tree_idx); 
                 
-                tension = tension_linear(C(:,i),nbr,R_nbr,k_val); 
+                tension = tension_with_reference(C(:,i), nbr, R_nbr, k_val, leaflet); 
                 
                 tension_by_tangent = tension * (nbr - C(:,i)) / norm(nbr - C(:,i));  
 

@@ -16,14 +16,7 @@ j_max                  = leaflet.j_max;
 k_max                  = leaflet.k_max; 
 du                     = leaflet.du; 
 is_internal            = leaflet.is_internal; 
-is_bc                  = leaflet.is_bc; 
 num_trees              = leaflet.num_trees; 
-
-if isfield(leaflet, 'periodic_j')
-    periodic_j = leaflet.periodic_j; 
-else
-    periodic_j = zeros(k_max,1); 
-end 
 
 
 R_u = zeros(j_max, k_max); 
@@ -244,8 +237,8 @@ leaflet_with_reference.k_v = k_v;
 
 leaflet_with_reference.chordae = chordae_with_reference; 
 
-leaflet_with_reference.diff_eqns = @difference_equations_linear; 
-leaflet_with_reference.jacobian  = @build_jacobian_linear; 
+leaflet_with_reference.diff_eqns = @difference_equations_with_reference; 
+leaflet_with_reference.jacobian  = @build_jacobian_with_reference;
 
 leaflet_with_reference.ref_frac = 1.0; 
 

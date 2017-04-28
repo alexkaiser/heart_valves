@@ -544,7 +544,6 @@ function params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_
                     % no bc to bc springs 
                     if ~(is_bc(j, k) && is_bc(j_nbr, k_nbr))
                     
-                        
                         rest_len = R_u(j_spr, k_spr); 
                         k_rel    = k_u(j_spr, k_spr); 
 

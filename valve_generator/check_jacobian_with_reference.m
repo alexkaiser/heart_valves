@@ -7,7 +7,7 @@
 % reset stream for consistent results 
 
 
-N = 64; 
+N = 32; 
 
 % Initialize structures  
 attached = false; 
@@ -28,10 +28,10 @@ errors = zeros(size(epsilon_vals));
 leaflet = set_rest_lengths_and_constants(valve.leaflets(1), strain); 
 
 % eval the difference eqns on the perturbation 
-F  = difference_equations_linear(leaflet); 
+F  = leaflet.diff_eqns(leaflet); 
 
 % jacobian does not change 
-J = build_jacobian_linear(leaflet); 
+J = leaflet.jacobian(leaflet); 
 
 fig = figure; 
 spy(J, 'k'); 
@@ -77,7 +77,7 @@ for i = 1:length(epsilon_vals)
     end 
     
     % eval the difference eqns on the perturbation 
-    F_perturbed = difference_equations_linear(leaflet_perturbation); 
+    F_perturbed = leaflet.diff_eqns(leaflet_perturbation); 
 
     errors(i) = norm(F_perturbed - F - ep*J*Z_linearized, 2); 
     
@@ -120,7 +120,7 @@ for k=1:k_max
                 end
 
                 % eval the difference eqns on the perturbation 
-                F_perturbed = difference_equations_linear(leaflet_perturbation); 
+                F_perturbed = leaflet.diff_eqns(leaflet_perturbation); 
 
                 diffs = F_perturbed - F - ep*J*Z_linearized; 
 
@@ -170,7 +170,7 @@ for tree_idx = 1:leaflet.num_trees
             end
             
             % eval the difference eqns on the perturbation
-            F_perturbed = difference_equations_linear(leaflet_perturbation); 
+            F_perturbed = leaflet.diff_eqns(leaflet_perturbation); 
 
             diffs = F_perturbed - F - ep*J*Z_linearized; 
 

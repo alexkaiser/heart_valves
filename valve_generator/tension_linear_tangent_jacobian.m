@@ -1,4 +1,4 @@
-function J_tension = tension_linear_tangent_jacobian(X_current,X_nbr,R,k_spr,ref_frac)
+function J_tension = tension_linear_tangent_jacobian(X_current,X_nbr,R,k_spr,leaflet)
 % 
 % Computes the contribution to the Jacobian for X and its neighbor
 % 
@@ -23,7 +23,7 @@ function J_tension = tension_linear_tangent_jacobian(X_current,X_nbr,R,k_spr,ref
     % jacobian is an outer product 
     % plus a multiple of the identity 
     J_tension = -k_spr / (X_norm^3) * (X_nbr - X_current)*((X_nbr - X_current)') ... 
-                -tension_linear(X_current,X_nbr,R,k_spr,ref_frac)/X_norm * eye(3); 
+                -tension_with_reference(X_current,X_nbr,R,k_spr,leaflet)/X_norm * eye(3); 
      
 end 
 

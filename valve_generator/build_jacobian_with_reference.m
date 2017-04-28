@@ -123,7 +123,7 @@ function J = build_jacobian_linear(leaflet)
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
 
-                        J_tmp = tension_linear_tangent_jacobian(X,X_nbr,R_u(j_spr,k_spr),k_u(j_spr,k_spr));                    
+                        J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, R_u(j_spr,k_spr), k_u(j_spr,k_spr), leaflet);                    
 
                         % current term is always added in 
                         % this gets no sign 
@@ -153,7 +153,7 @@ function J = build_jacobian_linear(leaflet)
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
  
-                        J_tmp = tension_linear_tangent_jacobian(X,X_nbr,R_v(j_spr,k_spr),k_v(j_spr,k_spr));
+                        J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet);
                         
                         % current term is always added in 
                         % this gets no sign  
@@ -191,7 +191,7 @@ function J = build_jacobian_linear(leaflet)
 
                     X_nbr = C(:,idx_chordae);
 
-                    J_tmp = tension_linear_tangent_jacobian(X,X_nbr,chordae(tree_idx).R_free_edge(i),chordae(tree_idx).k_free_edge(i));
+                    J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, chordae(tree_idx).R_free_edge(i), chordae(tree_idx).k_free_edge(i), leaflet);
 
                     % current term is always added in 
                     % this gets no sign 
@@ -243,7 +243,7 @@ function J = build_jacobian_linear(leaflet)
                 end
 
                 % tension Jacobian for this spring 
-                J_tmp = tension_linear_tangent_jacobian(C(:,i),nbr,R_nbr,k_val); 
+                J_tmp = tension_tangent_jacobian_with_reference(C(:,i), nbr, R_nbr, k_val, leaflet); 
 
                 % current always gets a contribution from this spring 
                 place_tmp_block(range_current, range_current, J_tmp); 
