@@ -6,7 +6,24 @@ function T = tension_with_reference(X, X_nbr, R, k_spr, leaflet)
 
 
 if isfield(leaflet, 'collagen_constitutive') && leaflet.collagen_constitutive
-    error('not implemented')
+    
+    collagen_curve       = leaflet.collagen_curve; 
+    a                    = collagen_curve.a; 
+    b                    = collagen_curve.b; 
+    full_recruitment     = collagen_curve.full_recruitment; 
+    eta_collagen         = collagen_curve.eta_collagen; 
+    collagen_y_intercept = collagen_curve.collagen_y_intercept;
+    
+    
+    E = norm(X - X_nbr)/R - 1.0; 
+    
+    if E < 0
+        T = 0; 
+    elseif E < full_recruitment
+        T = k_spr * a * (exp(b*E) - 1);
+    else 
+        T = k_spr * (eta_collagen*E + collagen_y_intercept); 
+    end 
     
 else 
 

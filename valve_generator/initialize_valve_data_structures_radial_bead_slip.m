@@ -132,7 +132,7 @@ valve.num_copies = 1;
 valve.collagen_constitutive = false; 
 
 % Constant strain of pressurized configuration 
-valve.strain = .16; 
+valve.strain = .10; 
 
 % no reflections in this version 
 reflect_x = false; 

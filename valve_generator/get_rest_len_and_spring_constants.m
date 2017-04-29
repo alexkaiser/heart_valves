@@ -18,12 +18,27 @@ function [k R] = get_rest_len_and_spring_constants(X, X_nbr, tension, strain, le
 
 if isfield(leaflet, 'collagen_constitutive') && leaflet.collagen_constitutive
     
-    if strain < leaflet.collagen_curve.full_recruitment
-        error('Must set constants with affine part of constitutive law for now. Exponential not implemented'); 
-    end 
+    collagen_curve       = leaflet.collagen_curve; 
+    a                    = collagen_curve.a; 
+    b                    = collagen_curve.b; 
+    full_recruitment     = collagen_curve.full_recruitment; 
+    eta_collagen         = collagen_curve.eta_collagen;
+    collagen_y_intercept = collagen_curve.collagen_y_intercept;
     
-    % affine part of constitutive law 
-    k = tension / (leaflet.collagen_curve.eta_collagen * strain + leaflet.collagen_curve.collagen_y_intercept);
+    if strain <= 0
+        error('Cannot determine spring constant with negative strain.'); 
+    
+    elseif strain < full_recruitment
+        
+        % exponential part 
+        k = tension / (a * (exp(b*strain) - 1)); 
+    
+    else
+        
+        % affine part of constitutive law
+        k = tension / (eta_collagen * strain + collagen_y_intercept);
+    
+    end 
 else 
     % linear law by default 
     k = tension / strain; 
