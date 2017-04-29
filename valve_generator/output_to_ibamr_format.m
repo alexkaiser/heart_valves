@@ -252,6 +252,9 @@ function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, 
         warning(sprintf('Zero strength spring on idx,nbr = %d,%d, not placed.', idx, nbr_idx)); 
         return; 
     end 
+    
+    warning('REMOVE BAD K SCALE!!!'); 
+    k_rel = k_rel / 10; 
 
 %    max_strain = .01; 
     
