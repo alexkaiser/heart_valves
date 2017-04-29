@@ -129,10 +129,10 @@ valve.num_copies = 1;
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
-valve.collagen_constitutive = false; 
+valve.collagen_constitutive = true; 
 
 % Constant strain of pressurized configuration 
-valve.strain = .10; 
+valve.strain = .12; 
 
 % no reflections in this version 
 reflect_x = false; 
