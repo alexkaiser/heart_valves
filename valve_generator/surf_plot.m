@@ -52,23 +52,24 @@ if isfield(leaflet, 'periodic_j')
     z_component = squeeze(X_copy(3,(N_anterior+1):j_max,:));
     surf(x_component, y_component, z_component, 'LineWidth',width);
     
-    % patch commissures 
-    if n_periodic > 0
-        
+    % patch commissures
+    % ring is always periodic and do not patch it 
+    if n_periodic > 1
+
         left_comm = X_copy(:, [j_max, 1], (k_max-n_periodic+1):k_max); 
-    
+
         x_component = squeeze(left_comm(1,:,:)); 
         y_component = squeeze(left_comm(2,:,:)); 
         z_component = squeeze(left_comm(3,:,:)); 
         surf(x_component, y_component, z_component, 'LineWidth',width);
-        
+
         right_comm = X_copy(:,N_anterior:(N_anterior+1),(k_max-n_periodic+1):k_max); 
-    
+
         x_component = squeeze(right_comm(1,:,:)); 
         y_component = squeeze(right_comm(2,:,:)); 
         z_component = squeeze(right_comm(3,:,:)); 
-        surf(x_component, y_component, z_component, 'LineWidth',width);        
-        
+        surf(x_component, y_component, z_component, 'LineWidth',width); 
+            
     end
         
 else 

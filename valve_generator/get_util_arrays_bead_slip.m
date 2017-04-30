@@ -10,25 +10,39 @@ function leaflet = get_util_arrays_bead_slip(leaflet)
 % 
 
 
-j_max                   = leaflet.j_max; 
-k_min                   = leaflet.k_min; 
-k_max                   = leaflet.k_max; 
-ring_k_idx              = leaflet.ring_k_idx; 
-n_rings_periodic        = leaflet.n_rings_periodic; 
+j_max                     = leaflet.j_max; 
+k_min                     = leaflet.k_min; 
+k_max                     = leaflet.k_max; 
+ring_k_idx                = leaflet.ring_k_idx; 
+n_rings_periodic          = leaflet.n_rings_periodic;
 
-alpha_anterior          = leaflet.tension_coeffs.alpha_anterior;  % circumferential 
-beta_anterior           = leaflet.tension_coeffs.beta_anterior;  % radial
-alpha_posterior         = leaflet.tension_coeffs.alpha_posterior;  % circumferential 
-beta_posterior          = leaflet.tension_coeffs.beta_posterior;  % radial
-alpha_hoops             = leaflet.tension_coeffs.alpha_hoops; 
+tension_coeffs            = leaflet.tension_coeffs; 
 
-is_internal             = zeros(j_max, k_max); 
-is_bc                   = zeros(j_max, k_max); 
-linear_idx_offset       = zeros(j_max, k_max); 
-point_idx_with_bc       = zeros(j_max, k_max); 
+alpha_anterior            = tension_coeffs.alpha_anterior;  % circumferential 
+beta_anterior             = tension_coeffs.beta_anterior;   % radial
+alpha_posterior           = tension_coeffs.alpha_posterior; % circumferential 
+beta_posterior            = tension_coeffs.beta_posterior;  % radial
+alpha_hoops               = tension_coeffs.alpha_hoops;     % circumferential hoops  
 
-alpha                   = zeros(j_max, k_max); 
-beta                    = zeros(j_max, k_max);
+c_circ_dec_anterior       = tension_coeffs.c_circ_dec_anterior;  % circumferential 
+c_rad_dec_anterior        = tension_coeffs.c_rad_dec_anterior   ;  % radial
+c_circ_dec_posterior      = tension_coeffs.c_circ_dec_posterior ;  % circumferential 
+c_rad_dec_posterior       = tension_coeffs.c_rad_dec_posterior  ;  % radial
+c_circ_dec_hoops          = tension_coeffs.c_circ_dec_hoops     ;  % radial hoops
+c_rad_dec_hoops_anterior  = tension_coeffs.c_rad_dec_hoops_anterior  ;  % radial hoops, anterior part 
+c_rad_dec_hoops_posterior = tension_coeffs.c_rad_dec_hoops_posterior ;  % radial hoops, posterior part 
+
+
+is_internal               = zeros(j_max, k_max); 
+is_bc                     = zeros(j_max, k_max); 
+linear_idx_offset         = zeros(j_max, k_max); 
+point_idx_with_bc         = zeros(j_max, k_max); 
+
+alpha                     = zeros(j_max, k_max); 
+beta                      = zeros(j_max, k_max);
+
+c_dec_radial              = zeros(j_max, k_max); 
+c_dec_circumferential     = zeros(j_max, k_max);
 
 
 if leaflet.radial_and_circumferential 
@@ -104,25 +118,43 @@ end
 % always half split for now 
 N_anterior  = j_max/2; 
 
+% circumferential hoops 
+k_min_hoop = k_max - n_rings_periodic;
+
 % radial anterior 
 for j=1:N_anterior    
     for k=k_min(j):(k_max-1)
-        beta(j,k) = beta_anterior; 
+        
+        beta(j,k)         = beta_anterior; 
+        
+        if k < k_min_hoop
+            c_dec_radial(j,k) = c_rad_dec_anterior; 
+        else 
+            c_dec_radial(j,k) = c_rad_dec_hoops_anterior; 
+        end 
     end
 end 
 
 % radial posterior 
 for j=(N_anterior+1):j_max     
     for k=k_min(j):(k_max-1)
+        
         beta(j,k) = beta_posterior; 
+
+        if k < k_min_hoop
+            c_dec_radial(j,k) = c_rad_dec_posterior; 
+        else 
+            c_dec_radial(j,k) = c_rad_dec_hoops_posterior; 
+        end 
+        
     end
 end 
 
-% circumferential hoops 
-k_min_hoop = k_max - n_rings_periodic;
+
 for j=1:j_max 
     for k=k_min_hoop:(k_max-1)
         alpha(j,k) = alpha_hoops; 
+        c_dec_circumferential(j,k) = c_circ_dec_hoops; 
     end 
 end 
 
@@ -141,7 +173,8 @@ for j=1:(N_anterior-1)
         k_nbr = k; 
         
         if is_internal(j_nbr, k_nbr)
-            alpha(j,k) = alpha_anterior; 
+            alpha(j,k)                 = alpha_anterior; 
+            c_dec_circumferential(j,k) = c_circ_dec_anterior; 
         end 
         
     end 
@@ -161,6 +194,7 @@ for j=(N_anterior+1):(j_max-1)
         
         if is_internal(j_nbr, k_nbr)
             alpha(j,k) = alpha_posterior; 
+            c_dec_circumferential(j,k) = c_circ_dec_posterior; 
         end 
         
     end 
@@ -168,11 +202,12 @@ for j=(N_anterior+1):(j_max-1)
 end 
 
 
-
-leaflet.is_internal       = is_internal;
-leaflet.is_bc             = is_bc;
-leaflet.linear_idx_offset = linear_idx_offset;
-leaflet.point_idx_with_bc = point_idx_with_bc;
-leaflet.alpha             = alpha; 
-leaflet.beta              = beta; 
+leaflet.is_internal           = is_internal;
+leaflet.is_bc                 = is_bc;
+leaflet.linear_idx_offset     = linear_idx_offset;
+leaflet.point_idx_with_bc     = point_idx_with_bc;
+leaflet.alpha                 = alpha; 
+leaflet.beta                  = beta; 
+leaflet.c_dec_radial          = c_dec_radial; 
+leaflet.c_dec_circumferential = c_dec_circumferential; 
 

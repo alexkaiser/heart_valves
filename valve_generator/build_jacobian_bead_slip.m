@@ -12,6 +12,8 @@ function J = build_jacobian_bead_slip(leaflet)
     p_0                       = leaflet.p_0; 
     alpha                     = leaflet.alpha; 
     beta                      = leaflet.beta; 
+    c_dec_radial           = leaflet.c_dec_radial; 
+    c_dec_circumferential  = leaflet.c_dec_circumferential; 
     chordae                   = leaflet.chordae; 
     chordae_idx               = leaflet.chordae_idx; 
     j_max                     = leaflet.j_max; 
@@ -24,30 +26,11 @@ function J = build_jacobian_bead_slip(leaflet)
     total_internal_with_trees = leaflet.total_internal_with_trees; 
     
     
-    % repulsive potential coefficients, if used 
-    if isfield(leaflet, 'repulsive_potential') && leaflet.repulsive_potential
-        repulsive_potential         = true; 
-        power                       = leaflet.repulsive_power; 
-        c_repulsive_circumferential = leaflet.c_repulsive_circumferential; 
-        c_repulsive_radial          = leaflet.c_repulsive_radial; 
-        c_repulsive_chordae         = leaflet.c_repulsive_chordae; 
-    else 
-        repulsive_potential         = false; 
-        power                       = 1; 
-        c_repulsive_circumferential = 0.0; 
-        c_repulsive_radial          = 0.0; 
-        c_repulsive_chordae         = 0.0; 
-    end 
-    
     if isfield(leaflet, 'decreasing_tension') && leaflet.decreasing_tension
-        decreasing_tension = true; 
-        c_dec_tension_circumferential = leaflet.c_dec_tension_circumferential; 
-        c_dec_tension_radial          = leaflet.c_dec_tension_radial; 
+        decreasing_tension = true;  
         c_dec_tension_chordae         = leaflet.c_dec_tension_chordae; 
     else 
-        decreasing_tension = false; 
-        c_dec_tension_circumferential = 0.0; 
-        c_dec_tension_radial          = 0.0; 
+        decreasing_tension = false;  
         c_dec_tension_chordae         = 0.0; 
     end
 
@@ -134,7 +117,7 @@ function J = build_jacobian_bead_slip(leaflet)
                     end 
 
                 end 
-
+                
 
                 for j_nbr_tmp = [j-1,j+1]
                     
@@ -147,18 +130,15 @@ function J = build_jacobian_bead_slip(leaflet)
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
 
-                        alpha_tmp = alpha(j_spr,k_spr); 
+                        alpha_tmp     = alpha(j_spr,k_spr);
+                        c_dec_tension = c_dec_circumferential(j_spr,k_spr); 
                         
                         % There is a 1/du term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
                         J_tmp = du * alpha_tmp * tangent_jacobian(X, X_nbr); 
                         
-                        if repulsive_potential
-                            J_tmp = J_tmp + du * alpha_tmp * c_repulsive_circumferential * du^2 * replusive_jacobian(X,X_nbr,power); 
-                        end 
-                        
-                        if decreasing_tension
-                            J_tmp = J_tmp + du * alpha_tmp * dec_tension_jacobian(X,X_nbr,du,c_dec_tension_circumferential); 
+                        if decreasing_tension && (alpha_tmp ~= 0)
+                            J_tmp = J_tmp + du * alpha_tmp * dec_tension_jacobian(X,X_nbr,du,c_dec_tension); 
                         end 
 
                         % current term is always added in 
@@ -188,18 +168,15 @@ function J = build_jacobian_bead_slip(leaflet)
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
                         
-                        beta_tmp = beta(j_spr,k_spr); 
+                        beta_tmp      = beta(j_spr,k_spr); 
+                        c_dec_tension = c_dec_radial(j_spr,k_spr); 
 
                         % There is a 1/du term throughout from taking a finite difference derivative 
                         % Place this on the tension variables, one of which apprears in each term 
                         J_tmp = du * beta_tmp * tangent_jacobian(X, X_nbr); 
                         
-                        if repulsive_potential
-                            J_tmp = J_tmp + du * beta_tmp * c_repulsive_radial * du^2 * replusive_jacobian(X,X_nbr,power); 
-                        end
-                        
-                        if decreasing_tension
-                            J_tmp = J_tmp + du * beta_tmp * dec_tension_jacobian(X,X_nbr,du,c_dec_tension_radial); 
+                        if decreasing_tension && (beta_tmp ~= 0)
+                            J_tmp = J_tmp + du * beta_tmp * dec_tension_jacobian(X,X_nbr,du,c_dec_tension); 
                         end
                         
                         % current term is always added in 
@@ -239,11 +216,7 @@ function J = build_jacobian_bead_slip(leaflet)
 
                     J_tmp = kappa * tangent_jacobian(X, X_nbr); 
 
-                    if repulsive_potential
-                        J_tmp = J_tmp + kappa * c_repulsive_chordae * du^2 * replusive_jacobian(X,X_nbr,power); 
-                    end 
-
-                    if decreasing_tension
+                    if decreasing_tension && (kappa ~= 0)
                         J_tmp = J_tmp + kappa * dec_tension_jacobian(X,X_nbr,du,c_dec_tension_chordae); 
                     end
 
@@ -300,11 +273,7 @@ function J = build_jacobian_bead_slip(leaflet)
                 % tension Jacobian for this spring 
                 J_tmp = k_val * tangent_jacobian(C(:,i), nbr); 
                 
-                if repulsive_potential
-                    J_tmp = J_tmp + k_val * c_repulsive_chordae * du^2 * replusive_jacobian(C(:,i),nbr,power); 
-                end
-                
-                if decreasing_tension
+                if decreasing_tension && (k_val ~= 0.0)
                     J_tmp = J_tmp + k_val * dec_tension_jacobian(C(:,i), nbr, du, c_dec_tension_chordae); 
                 end
 

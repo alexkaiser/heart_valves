@@ -1,4 +1,4 @@
-function [valve] = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization, repulsive_potential, decreasing_tension)
+function [valve] = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization, decreasing_tension)
 % 
 % Initializes data structures for full solve.  
 % 
@@ -61,35 +61,11 @@ valve.radial_and_circumferential = true;
 valve.bead_slip = true; 
 valve.leaflet_only = leaflet_only; 
 valve.optimization = optimization; 
-valve.repulsive_potential = repulsive_potential; 
-valve.repulsive_power     = 1; 
-
-if repulsive_potential
- 
-    % good total value (not including mesh parameters) at N=32
-    repulsive_coeff_32 = 0.002238985441466; 
-    
-    repulsive_coeff_base = repulsive_coeff_32 * 32^2; 
-    
-    % scale so that when multiplied by above value gives the correct value 
-    % valve.repulsive_coeff = repulsive_coeff_32 * 32^2; 
-    
-    valve.c_repulsive_circumferential = 2.0 * repulsive_coeff_base; 
-    valve.c_repulsive_radial          = 6.0 * repulsive_coeff_base; 
-    valve.c_repulsive_chordae         = 1.0 * repulsive_coeff_base; 
-else 
-    valve.repulsive_coeff  = 0.0; 
-end 
-
 
 valve.decreasing_tension = decreasing_tension; 
 
 if decreasing_tension
-    
-    dec_tension_coeff_base = 2.3; 
-    
-    valve.c_dec_tension_circumferential = 2.0 * dec_tension_coeff_base; 
-    valve.c_dec_tension_radial          = 2.0 * dec_tension_coeff_base; 
+    dec_tension_coeff_base = 2.3;  
     valve.c_dec_tension_chordae         = 2.0 * dec_tension_coeff_base; 
 else 
     valve.dec_tension  = 0.0; 
@@ -158,8 +134,6 @@ name = 'leaflet';
 ring_to_ring_range = 0; 
 
 
-
-
 sytole_skeleton = true; 
 if sytole_skeleton 
     % box width 
@@ -204,15 +178,26 @@ valve.tension_base = valve.p_physical / valve.pressure_tension_ratio;
 % alpha    = 1.0 * valve.tension_base;  % circumferential 
 % beta     = 1.0 * valve.tension_base;  % radial
 
-tension_coeffs.alpha_anterior  = 1.0 * valve.tension_base;  % circumferential 
-tension_coeffs.beta_anterior   = 1.0 * valve.tension_base;  % radial
-tension_coeffs.alpha_posterior = 1.0 * valve.tension_base;  % circumferential 
-tension_coeffs.beta_posterior  = 1.0 * valve.tension_base;  % radial
-tension_coeffs.alpha_hoops     = 1.0 * valve.tension_base;  % circumferential hoops 
+% tension coefficients 
+tension_coeffs.alpha_anterior       = 1.0 * valve.tension_base;  % circumferential 
+tension_coeffs.beta_anterior        = 1.0 * valve.tension_base;  % radial
+tension_coeffs.alpha_posterior      = 1.0 * valve.tension_base;  % circumferential 
+tension_coeffs.beta_posterior       = 1.0 * valve.tension_base;  % radial
+tension_coeffs.alpha_hoops          = 1.0 * valve.tension_base;  % circumferential hoops 
+
+
+% decreasing tension coefficients 
+tension_coeffs.c_circ_dec_anterior       = 2.0 * dec_tension_coeff_base;  % circumferential 
+tension_coeffs.c_rad_dec_anterior        = 2.1 * dec_tension_coeff_base;  % radial
+tension_coeffs.c_circ_dec_posterior      = 2.2 * dec_tension_coeff_base;  % circumferential 
+tension_coeffs.c_rad_dec_posterior       = 2.3 * dec_tension_coeff_base;  % radial
+tension_coeffs.c_circ_dec_hoops          = 2.4 * dec_tension_coeff_base;  % circumferential hoops
+tension_coeffs.c_rad_dec_hoops_anterior  = 2.5 * dec_tension_coeff_base;  % radial hoops, anterior part 
+tension_coeffs.c_rad_dec_hoops_posterior = 2.6 * dec_tension_coeff_base;  % radial hoops, posterior part 
 
 
 % places this many periodic rings above 
-n_rings_periodic = max(1,N/64); 
+n_rings_periodic = 4; %max(1,N/64); 
 
 
     

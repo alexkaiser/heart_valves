@@ -14,6 +14,8 @@ function F = difference_equations_bead_slip(leaflet)
     p_0                    = leaflet.p_0; 
     alpha                  = leaflet.alpha; 
     beta                   = leaflet.beta; 
+    c_dec_radial           = leaflet.c_dec_radial; 
+    c_dec_circumferential  = leaflet.c_dec_circumferential; 
     chordae                = leaflet.chordae; 
     chordae_idx            = leaflet.chordae_idx; 
     j_max                  = leaflet.j_max; 
@@ -29,32 +31,12 @@ function F = difference_equations_bead_slip(leaflet)
         periodic_j = zeros(k_max,1); 
     end 
     
-    
-    % repulsive potential coefficients, if used 
-    if isfield(leaflet, 'repulsive_potential') && leaflet.repulsive_potential
-        repulsive_potential         = true; 
-        power                       = leaflet.repulsive_power; 
-        c_repulsive_circumferential = leaflet.c_repulsive_circumferential; 
-        c_repulsive_radial          = leaflet.c_repulsive_radial; 
-        c_repulsive_chordae         = leaflet.c_repulsive_chordae; 
-    else 
-        repulsive_potential         = false; 
-        power                       = 1; 
-        c_repulsive_circumferential = 0.0; 
-        c_repulsive_radial          = 0.0; 
-        c_repulsive_chordae         = 0.0; 
-    end 
-    
     if isfield(leaflet, 'decreasing_tension') && leaflet.decreasing_tension
-        decreasing_tension = true; 
-        c_dec_tension_circumferential = leaflet.c_dec_tension_circumferential; 
-        c_dec_tension_radial          = leaflet.c_dec_tension_radial; 
-        c_dec_tension_chordae         = leaflet.c_dec_tension_chordae; 
+        decreasing_tension    = true;  
+        c_dec_tension_chordae = leaflet.c_dec_tension_chordae; 
     else 
-        decreasing_tension = false; 
-        c_dec_tension_circumferential = 0.0; 
-        c_dec_tension_radial          = 0.0; 
-        c_dec_tension_chordae         = 0.0; 
+        decreasing_tension    = false;  
+        c_dec_tension_chordae = 0.0; 
     end 
     
 
@@ -85,6 +67,7 @@ function F = difference_equations_bead_slip(leaflet)
                     F_tmp = F_tmp + (p_0 / 4) * cross(X_current(:,j_plus__1,k) - X_current(:,j_minus_1,k), X_current(:,j,k+1) - X_current(:,j,k-1));                     
                 end 
 
+                
                 % u type fibers 
                 for j_nbr_tmp = [j-1,j+1]
                     
@@ -96,16 +79,13 @@ function F = difference_equations_bead_slip(leaflet)
 
                         X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                        alpha_tmp = alpha(j_spr,k_spr); 
+                        alpha_tmp     = alpha(j_spr,k_spr); 
+                        c_dec_tension = c_dec_circumferential(j_spr,k_spr); 
                         
-                        tension = alpha_tmp; 
+                        tension = alpha_tmp;  
 
-                        if repulsive_potential
-                            tension = tension - alpha_tmp * c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
-                        end 
-
-                        if decreasing_tension
-                            tension = tension + alpha_tmp * tension_decreasing(X, X_nbr, du, c_dec_tension_circumferential) ; 
+                        if decreasing_tension && (alpha_tmp ~= 0)
+                            tension = tension + alpha_tmp * tension_decreasing(X, X_nbr, du, c_dec_tension) ; 
                         end 
 
                         if tension_debug
@@ -130,16 +110,13 @@ function F = difference_equations_bead_slip(leaflet)
                     
                         X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                        beta_tmp = beta(j_spr,k_spr); 
+                        beta_tmp      = beta(j_spr,k_spr); 
+                        c_dec_tension = c_dec_radial(j_spr,k_spr); 
                         
                         tension = beta_tmp; 
 
-                        if repulsive_potential
-                            tension = tension - beta_tmp * c_repulsive_radial * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
-                        end 
-
-                        if decreasing_tension
-                            tension = tension + beta_tmp * tension_decreasing(X, X_nbr, du, c_dec_tension_radial) ; 
+                        if decreasing_tension && (beta_tmp ~= 0)
+                            tension = tension + beta_tmp * tension_decreasing(X, X_nbr, du, c_dec_tension) ; 
                         end
 
                         if tension_debug
@@ -172,13 +149,9 @@ function F = difference_equations_bead_slip(leaflet)
                     idx_chordae = floor(leaf_idx/2);
 
                     X_nbr = chordae(tree_idx).C(:,idx_chordae);
-                    tension = kappa; 
+                    tension = kappa;  
 
-                    if repulsive_potential
-                        tension = tension - kappa * c_repulsive_chordae * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
-                    end 
-
-                    if decreasing_tension
+                    if decreasing_tension && (kappa ~= 0)
                         tension = tension + kappa * tension_decreasing(X, X_nbr, du, c_dec_tension_chordae) ; 
                     end
 
@@ -214,11 +187,7 @@ function F = difference_equations_bead_slip(leaflet)
                 
                 tension = k_val; 
                 
-                if repulsive_potential
-                    tension = tension - k_val * c_repulsive_chordae * du^2 * power * 1/norm(nbr - C(:,i))^(power+1); 
-                end 
-                
-                if decreasing_tension
+                if decreasing_tension && (k_val ~= 0.0)
                     tension = tension + k_val * tension_decreasing(C(:,i), nbr, du, c_dec_tension_chordae) ; 
                 end
                 

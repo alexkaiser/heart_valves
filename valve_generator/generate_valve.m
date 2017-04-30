@@ -4,7 +4,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 256; 
+N = 32; 
 
 
 % Show some output 
@@ -18,14 +18,13 @@ bead_slip    = true;
 attached     = false; 
 leaflet_only = false; 
 optimization = false; 
-repulsive_potential = false; 
 decreasing_tension = true; 
 
 
 if radial
     
     if bead_slip 
-        valve = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization, repulsive_potential, decreasing_tension); 
+        valve = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization, decreasing_tension); 
     else        
         valve = initialize_valve_data_structures_radial(N); 
     end 

@@ -798,7 +798,6 @@ function params = place_rays(params, leaflet, ds, L, k_rel, k_target, ref_frac, 
     k_max       = leaflet.k_max;
     is_bc       = leaflet.is_bc; 
     is_internal = leaflet.is_internal; 
-    h           = 0.0;        % always place at origin 
     
     if isfield(leaflet, 'periodic_j')
         periodic_j = leaflet.periodic_j; 
