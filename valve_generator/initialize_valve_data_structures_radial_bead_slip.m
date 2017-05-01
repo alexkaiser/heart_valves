@@ -167,7 +167,7 @@ valve.total_angle_dip = pi;
 
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
-valve.pressure_tension_ratio = 0.06; % 0.11 * 0.975; 
+valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
 
 
 % base constant for tensions, derived quantity 
@@ -183,7 +183,7 @@ tension_coeffs.alpha_anterior       = 1.0 * valve.tension_base;  % circumferenti
 tension_coeffs.beta_anterior        = 1.1 * valve.tension_base;  % radial
 tension_coeffs.alpha_posterior      = 1.0 * valve.tension_base;  % circumferential 
 tension_coeffs.beta_posterior       = 1.0 * valve.tension_base;  % radial
-tension_coeffs.alpha_hoops          = 0.1 * valve.tension_base;  % circumferential hoops 
+tension_coeffs.alpha_hoops          = 1.0 * valve.tension_base;  % circumferential hoops 
 
 
 % decreasing tension coefficients 
@@ -192,12 +192,12 @@ tension_coeffs.c_rad_dec_anterior        = 1.0 * dec_tension_coeff_base;  % radi
 tension_coeffs.c_circ_dec_posterior      = 1.0 * dec_tension_coeff_base;  % circumferential 
 tension_coeffs.c_rad_dec_posterior       = 1.0 * dec_tension_coeff_base;  % radial
 tension_coeffs.c_circ_dec_hoops          = 1.0 * dec_tension_coeff_base;  % circumferential hoops
-tension_coeffs.c_rad_dec_hoops_anterior  = 0.2 * dec_tension_coeff_base;  % radial hoops, anterior part 
-tension_coeffs.c_rad_dec_hoops_posterior = 0.2 * dec_tension_coeff_base;  % radial hoops, posterior part 
+tension_coeffs.c_rad_dec_hoops_anterior  = 1.0 * dec_tension_coeff_base;  % radial hoops, anterior part 
+tension_coeffs.c_rad_dec_hoops_posterior = 1.0 * dec_tension_coeff_base;  % radial hoops, posterior part 
 
 
 % places this many periodic rings above 
-n_rings_periodic = max(4,N/64); 
+n_rings_periodic = max(1,N/64); 
 
 
     
