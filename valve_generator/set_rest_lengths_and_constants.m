@@ -10,6 +10,8 @@ function leaflet_with_reference = set_rest_lengths_and_constants(leaflet, strain
 X_current              = leaflet.X; 
 alpha                  = leaflet.alpha; 
 beta                   = leaflet.beta; 
+c_dec_radial           = leaflet.c_dec_radial; 
+c_dec_circumferential  = leaflet.c_dec_circumferential; 
 chordae                = leaflet.chordae; 
 chordae_idx            = leaflet.chordae_idx; 
 j_max                  = leaflet.j_max; 
@@ -51,30 +53,11 @@ for tree_idx = 1:num_trees
 end 
 
 
-% repulsive potential coefficients, if used 
-if isfield(leaflet, 'repulsive_potential') && leaflet.repulsive_potential
-    repulsive_potential         = true; 
-    power                       = leaflet.repulsive_power; 
-    c_repulsive_circumferential = leaflet.c_repulsive_circumferential; 
-    c_repulsive_radial          = leaflet.c_repulsive_radial; 
-    c_repulsive_chordae         = leaflet.c_repulsive_chordae; 
-else 
-    repulsive_potential         = false; 
-    power                       = 1; 
-    c_repulsive_circumferential = 0.0; 
-    c_repulsive_radial          = 0.0; 
-    c_repulsive_chordae         = 0.0; 
-end 
-
 if isfield(leaflet, 'decreasing_tension') && leaflet.decreasing_tension
     decreasing_tension = true; 
-    c_dec_tension_circumferential = leaflet.c_dec_tension_circumferential; 
-    c_dec_tension_radial          = leaflet.c_dec_tension_radial; 
     c_dec_tension_chordae         = leaflet.c_dec_tension_chordae; 
 else 
     decreasing_tension = false; 
-    c_dec_tension_circumferential = 0.0; 
-    c_dec_tension_radial          = 0.0; 
     c_dec_tension_chordae         = 0.0; 
 end 
     
@@ -96,16 +79,13 @@ for j=1:j_max
                 if valid               
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                    alpha_tmp = alpha(j_spr,k_spr); 
-                    
-                    tension = alpha_tmp; 
+                    alpha_tmp     = alpha(j_spr,k_spr); 
+                    c_dec_tension = c_dec_circumferential(j_spr,k_spr); 
 
-                    if repulsive_potential
-                        tension = tension - alpha_tmp * c_repulsive_circumferential * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
-                    end 
+                    tension = alpha_tmp;  
 
-                    if decreasing_tension
-                        tension = tension + alpha_tmp * tension_decreasing(X, X_nbr, du, c_dec_tension_circumferential) ; 
+                    if decreasing_tension && (alpha_tmp ~= 0)
+                        tension = tension + alpha_tmp * tension_decreasing(X, X_nbr, du, c_dec_tension) ; 
                     end 
 
                     % Here tension is a force per unit length 
@@ -129,17 +109,14 @@ for j=1:j_max
 
                 if valid
                     X_nbr = X_current(:,j_nbr,k_nbr); 
-
-                    beta_tmp = beta(j_spr,k_spr); 
                     
+                    beta_tmp      = beta(j_spr,k_spr); 
+                    c_dec_tension = c_dec_radial(j_spr,k_spr); 
+
                     tension = beta_tmp; 
 
-                    if repulsive_potential
-                        tension = tension - beta_tmp * c_repulsive_radial * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
-                    end 
-
-                    if decreasing_tension
-                        tension = tension + beta_tmp * tension_decreasing(X, X_nbr, du, c_dec_tension_radial) ; 
+                    if decreasing_tension && (beta_tmp ~= 0)
+                        tension = tension + beta_tmp * tension_decreasing(X, X_nbr, du, c_dec_tension) ; 
                     end
 
                     tension = du * tension; 
@@ -173,11 +150,7 @@ for j=1:j_max
                 X_nbr = chordae(tree_idx).C(:,idx_chordae);
                 tension = kappa; 
 
-                if repulsive_potential
-                    tension = tension - kappa * c_repulsive_chordae * du^2 * power * 1/norm(X_nbr-X)^(power+1); 
-                end 
-
-                if decreasing_tension
+                if decreasing_tension && (kappa ~= 0)
                     tension = tension + kappa * tension_decreasing(X, X_nbr, du, c_dec_tension_chordae) ; 
                 end
                 
@@ -211,11 +184,7 @@ for tree_idx = 1:num_trees
 
         tension = k_val; 
 
-        if repulsive_potential
-            tension = tension - k_val * c_repulsive_chordae * du^2 * power * 1/norm(nbr - C(:,i))^(power+1); 
-        end 
-
-        if decreasing_tension
+        if decreasing_tension && (k_val ~= 0.0)
             tension = tension + k_val * tension_decreasing(C(:,i), nbr, du, c_dec_tension_chordae) ; 
         end
 

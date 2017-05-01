@@ -65,8 +65,8 @@ valve.optimization = optimization;
 valve.decreasing_tension = decreasing_tension; 
 
 if decreasing_tension
-    dec_tension_coeff_base = 2.3;  
-    valve.c_dec_tension_chordae         = 2.0 * dec_tension_coeff_base; 
+    dec_tension_coeff_base      = 4.6;  
+    valve.c_dec_tension_chordae = 1.0 * dec_tension_coeff_base; 
 else 
     valve.dec_tension  = 0.0; 
 end 
@@ -167,7 +167,7 @@ valve.total_angle_dip = pi;
 
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
-valve.pressure_tension_ratio = 0.05; % 0.11 * 0.975; 
+valve.pressure_tension_ratio = 0.06; % 0.11 * 0.975; 
 
 
 % base constant for tensions, derived quantity 
@@ -180,24 +180,24 @@ valve.tension_base = valve.p_physical / valve.pressure_tension_ratio;
 
 % tension coefficients 
 tension_coeffs.alpha_anterior       = 1.0 * valve.tension_base;  % circumferential 
-tension_coeffs.beta_anterior        = 1.0 * valve.tension_base;  % radial
+tension_coeffs.beta_anterior        = 1.1 * valve.tension_base;  % radial
 tension_coeffs.alpha_posterior      = 1.0 * valve.tension_base;  % circumferential 
 tension_coeffs.beta_posterior       = 1.0 * valve.tension_base;  % radial
-tension_coeffs.alpha_hoops          = 1.0 * valve.tension_base;  % circumferential hoops 
+tension_coeffs.alpha_hoops          = 0.1 * valve.tension_base;  % circumferential hoops 
 
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec_anterior       = 2.0 * dec_tension_coeff_base;  % circumferential 
-tension_coeffs.c_rad_dec_anterior        = 2.1 * dec_tension_coeff_base;  % radial
-tension_coeffs.c_circ_dec_posterior      = 2.2 * dec_tension_coeff_base;  % circumferential 
-tension_coeffs.c_rad_dec_posterior       = 2.3 * dec_tension_coeff_base;  % radial
-tension_coeffs.c_circ_dec_hoops          = 2.4 * dec_tension_coeff_base;  % circumferential hoops
-tension_coeffs.c_rad_dec_hoops_anterior  = 2.5 * dec_tension_coeff_base;  % radial hoops, anterior part 
-tension_coeffs.c_rad_dec_hoops_posterior = 2.6 * dec_tension_coeff_base;  % radial hoops, posterior part 
+tension_coeffs.c_circ_dec_anterior       = 1.0 * dec_tension_coeff_base;  % circumferential 
+tension_coeffs.c_rad_dec_anterior        = 1.0 * dec_tension_coeff_base;  % radial
+tension_coeffs.c_circ_dec_posterior      = 1.0 * dec_tension_coeff_base;  % circumferential 
+tension_coeffs.c_rad_dec_posterior       = 1.0 * dec_tension_coeff_base;  % radial
+tension_coeffs.c_circ_dec_hoops          = 1.0 * dec_tension_coeff_base;  % circumferential hoops
+tension_coeffs.c_rad_dec_hoops_anterior  = 0.2 * dec_tension_coeff_base;  % radial hoops, anterior part 
+tension_coeffs.c_rad_dec_hoops_posterior = 0.2 * dec_tension_coeff_base;  % radial hoops, posterior part 
 
 
 % places this many periodic rings above 
-n_rings_periodic = 4; %max(1,N/64); 
+n_rings_periodic = max(4,N/64); 
 
 
     
@@ -232,11 +232,9 @@ valve.root_tension_base = .9 * 0.5905 * valve.tension_base;
 
 n_trees_anterior = 2; 
 
-k_0_1_anterior = valve.leaf_tension_base / n_trees_anterior; 
-
-% vector version 
+k_0_1_anterior  = 1.1 * valve.leaf_tension_base / n_trees_anterior; 
 k_0_1_anterior  = k_0_1_anterior * [1; 1]; 
-k_root_anterior = valve.root_tension_base / n_trees_anterior; 
+k_root_anterior = 1.1 * valve.root_tension_base / n_trees_anterior; 
 k_root_anterior = k_root_anterior * [1; 1]; 
 
 
@@ -254,9 +252,9 @@ n_leaves_anterior  = N_anterior/n_trees_anterior * ones(n_trees_anterior, 1);
 
 n_trees_posterior = 2; 
 
-k_0_1_posterior  = valve.leaf_tension_base / n_trees_posterior; 
+k_0_1_posterior  = 0.9 * valve.leaf_tension_base / n_trees_posterior; 
 k_0_1_posterior  = k_0_1_posterior * [1; 1]; 
-k_root_posterior = valve.root_tension_base / n_trees_posterior; 
+k_root_posterior = 0.9 * valve.root_tension_base / n_trees_posterior; 
 k_root_posterior = k_root_posterior * [1; 1]; 
 
 papillary_posterior = zeros(3,n_trees_posterior); 
