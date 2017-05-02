@@ -204,7 +204,7 @@ n_rings_periodic = max(2,N/64);
 % No explicit commissural leaflet here 
 N_anterior = N/2; 
 
-total_angle_anterior = 4*pi/6; 
+total_angle_anterior = 5*pi/6; 
 
 % Posterior takes whatever is left 
 N_posterior = N - N_anterior; 
@@ -222,12 +222,12 @@ leaflet_N_start = 0;
 
 
 % Leaf tensions are all modified 
-valve.leaf_tension_base = .85 * valve.tension_base; 
+valve.leaf_tension_base = .9 * valve.tension_base; 
 
 % Base total root tension 
 % The value 0.5905 works well on each tree when using separate solves and two leaflets 
 % Controls constant tension at the root of the tree 
-valve.root_tension_base = .85 * 0.5905 * valve.tension_base; 
+valve.root_tension_base = .9 * 0.5905 * valve.tension_base; 
 
 
 n_trees_anterior = 2; 
