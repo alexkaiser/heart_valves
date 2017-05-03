@@ -51,6 +51,7 @@ else:
 s = SaveWindowAttributes()
 s.fileName = base_name
 s.outputDirectory = cwd
+s.format = s.JPEG
 s.saveTiled = 1
 s.width = 1920*4
 SetSaveWindowAttributes(s)
