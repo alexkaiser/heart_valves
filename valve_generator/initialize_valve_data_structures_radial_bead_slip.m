@@ -25,35 +25,6 @@ else
     valve.attached = false; 
 end 
 
-% Valve skeleton parameters 
-
-% original, supposedly diastolic but we have been using as systolic 
-% valve.r = 1.606587877768772; 
-% valve.left_papillary  = [ -0.972055648767080; -1.611924550017006; -2.990100960298683]; 
-% valve.right_papillary = [ -1.542417595752084;  1.611924550017006; -3.611254871967348]; 
-
-% valve.r = 2.188524100000000; 
-% 
-% valve.left_papillary  = [-2.307266247008847; -1.497270564906998; -2.639154662183959];
-% valve.right_papillary = [-2.058291813251097;  1.497270564906999; -2.712241962241507]; 
-% 
-% 
-% % Places papillary attachments in linear interpolant between single point tips 
-% % vector pointing along line from left to right papillary 
-% l_to_r_papillary = (valve.right_papillary - valve.left_papillary); 
-% l_to_r_papillary = l_to_r_papillary / norm(l_to_r_papillary);
-% 
-% 
-% valve.papillary_radius = 0.25; 
-%  
-% valve.left_papillary_center  = valve.left_papillary  + valve.papillary_radius * l_to_r_papillary; 
-% valve.right_papillary_center = valve.right_papillary - valve.papillary_radius * l_to_r_papillary; 
-
-
-diastolic_increment = [0; 0; 0.0]; 
-valve.left_papillary_diastolic  = []; 
-valve.right_papillary_diastolic = []; 
-
 
 split_papillary = true; 
 valve.split_papillary = split_papillary; 
@@ -139,10 +110,12 @@ if sytole_skeleton
     % box width 
     valve.L = 3.0; 
     valve.skeleton = valve_points_ct_systole(); 
+    valve.diastolic_increment = [1; 0; 0]; 
 else
     % box width 
     valve.L = 2.5; 
     valve.skeleton = valve_points_ct_diastole(); 
+    valve.diastolic_increment = [0; 0; 0]; 
 end 
 
 
@@ -159,7 +132,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 valve.dip_anterior_systole = true; 
-valve.r_dip = 0.5; 
+valve.r_dip = 0.75; 
 valve.total_angle_dip = pi; 
 
 

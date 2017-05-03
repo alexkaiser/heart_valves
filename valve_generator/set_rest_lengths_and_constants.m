@@ -1,4 +1,4 @@
-function leaflet_with_reference = set_rest_lengths_and_constants(leaflet, strain)
+function leaflet_with_reference = set_rest_lengths_and_constants(leaflet, valve)
 % 
 % Assignes spring constants and rest lengths such that the current 
 % valve configuration has uniform strain as specified here 
@@ -19,7 +19,8 @@ k_max                  = leaflet.k_max;
 du                     = leaflet.du; 
 is_internal            = leaflet.is_internal; 
 num_trees              = leaflet.num_trees; 
-
+strain                 = valve.strain; 
+diastolic_increment    = valve.diastolic_increment; 
 
 R_u = zeros(j_max, k_max); 
 k_u = zeros(j_max, k_max); 
@@ -191,7 +192,9 @@ for tree_idx = 1:num_trees
         [chordae_with_reference(tree_idx).k_vals(i), ...
          chordae_with_reference(tree_idx).R_ch(i)]  ... 
              = get_rest_len_and_spring_constants(C(:,i), nbr, tension, strain, leaflet); 
-   
+         
+        % reset all papillary points according to diastolic skeleton 
+        chordae_with_reference(tree_idx).root = chordae(tree_idx).root + diastolic_increment; 
     end 
 end 
 
@@ -210,6 +213,15 @@ leaflet_with_reference.diff_eqns = @difference_equations_with_reference;
 leaflet_with_reference.jacobian  = @build_jacobian_with_reference;
 
 leaflet_with_reference.ref_frac = 1.0; 
+
+
+
+
+
+
+
+
+
 
 
 
