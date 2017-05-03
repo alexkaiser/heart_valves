@@ -18,8 +18,8 @@ while True:
     if count > 20:
         break
 
-if (n != 128) and (n != 256):
-    print 'session files only available for 128,256 resolutions so far'
+if (n != 128) and (n != 256) and (n != 512):
+    print 'session files only available for 128,256,512 resolutions so far'
     quit()
 
 

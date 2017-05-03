@@ -715,6 +715,13 @@ int main(int argc, char* argv[])
                 flux_output_stream.close();
             }
         #endif
+        
+        if (SAMRAI_MPI::getRank() == 0){
+            std::ofstream done_stream;
+            done_stream.open("done.txt", ios_base::out | ios_base::trunc);
+            done_stream << "done\n" ;
+            done_stream.close(); 
+        }
 
         // Cleanup Eulerian boundary condition specification objects (when
         // necessary).

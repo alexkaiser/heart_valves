@@ -88,6 +88,12 @@ if __name__ == '__main__':
     else:
         print ''
         restart_dir = 'restart_IB3d_tree_cycle'
+        
+    # clean up the old done file if needed 
+    if os.path.isfile('done.txt'):
+        code = subprocess.call('rm done.txt', shell=True
+            if code is None:
+                print 'removal of done.txt failed\n'
 
     # check if we have restart available,
     # returns None if not
@@ -243,15 +249,42 @@ if __name__ == '__main__':
         prev_time = mod_time
         check_number += 1
     
+    # submit movie script for post processing 
+    if os.path.isfile('done.txt'):
+        for f in os.listdir('.'):
+            if f.startswith('viz'): 
+                
+                os.chdir(f)
+                
+                viz_dir_name = os.getcwd()
+                
+                movie_script = open('make_movie.sbatch', 'w')
+                
+                slurm = '''#!/bin/bash
+                #SBATCH --nodes=1
+                #SBATCH --ntasks=1
+                #SBATCH --time=4:00:00
+                #SBATCH --mem=16GB
+                #SBATCH --job-name=movie_post_process
+                #SBATCH --mail-user=kaiser@cims.nyu.edu
+                #SBATCH --mail-type=ALL
+                
+                ''' 
+                
+                movie_script.write(slurm)
+                
+                movie_script.write('\n')                
+                movie_script.write('cd ' + viz_dir_name + ' \n')
+                movie_script.write('visit -cli -nowin -s ~/mitral_fully_discrete/make_three_slice_movie.py \n')          
+                
+                movie_script.close()
+                
+                code = subprocess.call('sbatch make_movie.sbatch', shell=True)
+                if code is None:
+                    print 'submit of movie script failed, check for problems.\n'
+                
+                break 
     
     print 'done with main'
-
-
-
-
-
-
-    
-
 
 
