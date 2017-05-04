@@ -91,9 +91,9 @@ if __name__ == '__main__':
         
     # clean up the old done file if needed 
     if os.path.isfile('done.txt'):
-        code = subprocess.call('rm done.txt', shell=True
-            if code is None:
-                print 'removal of done.txt failed\n'
+        code = subprocess.call('rm done.txt', shell=True)
+        if code is None:
+            print 'removal of done.txt failed\n'
 
     # check if we have restart available,
     # returns None if not
@@ -248,11 +248,20 @@ if __name__ == '__main__':
 
         prev_time = mod_time
         check_number += 1
-    
+
+    # wait 30 s for good measure
+    print 'Through main loop, check for post processing'
+    time.sleep(30)
+
     # submit movie script for post processing 
     if os.path.isfile('done.txt'):
+        
+        print 'done.txt found'
+    
         for f in os.listdir('.'):
             if f.startswith('viz'): 
+                
+                print 'Found viz directory'
                 
                 os.chdir(f)
                 
@@ -279,12 +288,18 @@ if __name__ == '__main__':
                 
                 movie_script.close()
                 
+                # again, wait for good measure
+                time.sleep(10)
+                
                 code = subprocess.call('sbatch make_movie.sbatch', shell=True)
                 if code is None:
                     print 'submit of movie script failed, check for problems.\n'
                 
-                break 
+                break
+
+    else:
+        print 'Could not find done.txt'
     
-    print 'done with main'
+    print 'Done with main, exiting'
 
 
