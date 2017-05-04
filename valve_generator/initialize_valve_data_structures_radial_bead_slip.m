@@ -161,7 +161,7 @@ tension_coeffs.alpha_hoops          = 0.5 * valve.tension_base;  % circumferenti
 
 % decreasing tension coefficients 
 tension_coeffs.c_circ_dec_anterior       = 1.0 * dec_tension_coeff_base;  % circumferential 
-tension_coeffs.c_rad_dec_anterior        = 1.0 * dec_tension_coeff_base;  % radial
+tension_coeffs.c_rad_dec_anterior        = 1.5 * dec_tension_coeff_base;  % radial
 tension_coeffs.c_circ_dec_posterior      = 1.0 * dec_tension_coeff_base;  % circumferential 
 tension_coeffs.c_rad_dec_posterior       = 1.5 * dec_tension_coeff_base;  % radial
 tension_coeffs.c_circ_dec_hoops          = 2.0 * dec_tension_coeff_base;  % circumferential hoops
