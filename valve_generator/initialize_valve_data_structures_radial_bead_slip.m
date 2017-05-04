@@ -140,7 +140,7 @@ valve.total_angle_dip = pi;
 
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
-valve.pressure_tension_ratio = 0.05; % 0.11 * 0.975; 
+valve.pressure_tension_ratio = 0.07; % 0.11 * 0.975; 
 
 
 % base constant for tensions, derived quantity 
@@ -152,10 +152,10 @@ valve.tension_base = valve.p_physical / valve.pressure_tension_ratio;
 % beta     = 1.0 * valve.tension_base;  % radial
 
 % tension coefficients 
-tension_coeffs.alpha_anterior       = 1.0 * valve.tension_base;  % circumferential 
-tension_coeffs.beta_anterior        = 1.1 * valve.tension_base;  % radial
-tension_coeffs.alpha_posterior      = 1.0 * valve.tension_base;  % circumferential 
-tension_coeffs.beta_posterior       = 1.0 * valve.tension_base;  % radial
+tension_coeffs.alpha_anterior       = 0.9 * valve.tension_base;  % circumferential 
+tension_coeffs.beta_anterior        = 1.3 * valve.tension_base;  % radial
+tension_coeffs.alpha_posterior      = 0.9 * valve.tension_base;  % circumferential 
+tension_coeffs.beta_posterior       = 1.3 * valve.tension_base;  % radial
 tension_coeffs.alpha_hoops          = 0.5 * valve.tension_base;  % circumferential hoops 
 
 
@@ -225,9 +225,9 @@ n_leaves_anterior  = N_anterior/n_trees_anterior * ones(n_trees_anterior, 1);
 
 n_trees_posterior = 2; 
 
-k_0_1_posterior  = 0.9 * valve.leaf_tension_base / n_trees_posterior; 
+k_0_1_posterior  = 0.8 * valve.leaf_tension_base / n_trees_posterior; 
 k_0_1_posterior  = k_0_1_posterior * [1; 1]; 
-k_root_posterior = 0.9 * valve.root_tension_base / n_trees_posterior; 
+k_root_posterior = 0.8 * valve.root_tension_base / n_trees_posterior; 
 k_root_posterior = k_root_posterior * [1; 1]; 
 
 papillary_posterior = zeros(3,n_trees_posterior); 
