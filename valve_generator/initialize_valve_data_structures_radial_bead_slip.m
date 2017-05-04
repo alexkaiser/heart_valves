@@ -140,7 +140,7 @@ valve.total_angle_dip = pi;
 
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
-valve.pressure_tension_ratio = 0.07; % 0.11 * 0.975; 
+valve.pressure_tension_ratio = 0.065; % 0.11 * 0.975; 
 
 
 % base constant for tensions, derived quantity 
@@ -160,9 +160,9 @@ tension_coeffs.alpha_hoops          = 0.5 * valve.tension_base;  % circumferenti
 
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec_anterior       = 1.0 * dec_tension_coeff_base;  % circumferential 
+tension_coeffs.c_circ_dec_anterior       = 1.5 * dec_tension_coeff_base;  % circumferential 
 tension_coeffs.c_rad_dec_anterior        = 1.5 * dec_tension_coeff_base;  % radial
-tension_coeffs.c_circ_dec_posterior      = 1.0 * dec_tension_coeff_base;  % circumferential 
+tension_coeffs.c_circ_dec_posterior      = 1.5 * dec_tension_coeff_base;  % circumferential 
 tension_coeffs.c_rad_dec_posterior       = 1.5 * dec_tension_coeff_base;  % radial
 tension_coeffs.c_circ_dec_hoops          = 2.0 * dec_tension_coeff_base;  % circumferential hoops
 tension_coeffs.c_rad_dec_hoops_anterior  = 0.5 * dec_tension_coeff_base;  % radial hoops, anterior part 
