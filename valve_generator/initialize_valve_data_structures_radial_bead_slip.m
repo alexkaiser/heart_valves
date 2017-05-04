@@ -131,133 +131,142 @@ valve.ds = 2*pi*valve.r / N;
 left_papillary_idx  = 1; 
 right_papillary_idx = 2; 
 
-valve.dip_anterior_systole = true; 
-valve.r_dip = 0.75; 
-valve.total_angle_dip = pi; 
 
+commissural_leaflets = false; 
 
-% Base constants, individual pieces are tuned relative to these values
-
-% pressure / tension coefficient ratio
-% this tension coefficient is the maximum tension that a fiber can support
-valve.pressure_tension_ratio = 0.065; % 0.11 * 0.975; 
-
-
-% base constant for tensions, derived quantity 
-valve.tension_base = valve.p_physical / valve.pressure_tension_ratio; 
-
-
-% Tension coefficients in two directions 
-% alpha    = 1.0 * valve.tension_base;  % circumferential 
-% beta     = 1.0 * valve.tension_base;  % radial
-
-% tension coefficients 
-tension_coeffs.alpha_anterior       = 0.9 * valve.tension_base;  % circumferential 
-tension_coeffs.beta_anterior        = 1.3 * valve.tension_base;  % radial
-tension_coeffs.alpha_posterior      = 0.9 * valve.tension_base;  % circumferential 
-tension_coeffs.beta_posterior       = 1.3 * valve.tension_base;  % radial
-tension_coeffs.alpha_hoops          = 0.5 * valve.tension_base;  % circumferential hoops 
-
-
-% decreasing tension coefficients 
-tension_coeffs.c_circ_dec_anterior       = 1.5 * dec_tension_coeff_base;  % circumferential 
-tension_coeffs.c_rad_dec_anterior        = 1.5 * dec_tension_coeff_base;  % radial
-tension_coeffs.c_circ_dec_posterior      = 1.5 * dec_tension_coeff_base;  % circumferential 
-tension_coeffs.c_rad_dec_posterior       = 1.5 * dec_tension_coeff_base;  % radial
-tension_coeffs.c_circ_dec_hoops          = 2.0 * dec_tension_coeff_base;  % circumferential hoops
-tension_coeffs.c_rad_dec_hoops_anterior  = 0.5 * dec_tension_coeff_base;  % radial hoops, anterior part 
-tension_coeffs.c_rad_dec_hoops_posterior = 0.5 * dec_tension_coeff_base;  % radial hoops, posterior part 
-
-
-% places this many periodic rings above 
-n_rings_periodic = max(2,N/64); 
-
-
+if commissural_leaflets 
+    error('not implemented'); 
     
-% No explicit commissural leaflet here 
-N_anterior = N/2; 
+else 
 
-total_angle_anterior = 5*pi/6; 
-
-% Posterior takes whatever is left 
-N_posterior = N - N_anterior; 
-
-N_per_direction   = [N_anterior/2, N_anterior/2, N_posterior/2, N_posterior/2]; 
-
-% Anterior goes down then up 
-leaflet_direction = [-1, 1]; 
-
-% Posterior goes down then up 
-leaflet_direction = [leaflet_direction, -1, 1]; 
-
-% No offset, starting at commissure 
-leaflet_N_start = 0; 
+    valve.dip_anterior_systole = true; 
+    valve.r_dip = 0.75; 
+    valve.total_angle_dip = pi; 
 
 
-% Leaf tensions are all modified 
-valve.leaf_tension_base = .9 * valve.tension_base; 
+    % Base constants, individual pieces are tuned relative to these values
 
-% Base total root tension 
-% The value 0.5905 works well on each tree when using separate solves and two leaflets 
-% Controls constant tension at the root of the tree 
-valve.root_tension_base = .9 * 0.5905 * valve.tension_base; 
+    % pressure / tension coefficient ratio
+    % this tension coefficient is the maximum tension that a fiber can support
+    valve.pressure_tension_ratio = 0.05; % 0.11 * 0.975; 
 
 
-n_trees_anterior = 2; 
-
-k_0_1_anterior  = 1.1 * valve.leaf_tension_base / n_trees_anterior; 
-k_0_1_anterior  = k_0_1_anterior * [1; 1]; 
-k_root_anterior = 1.1 * valve.root_tension_base / n_trees_anterior; 
-k_root_anterior = k_root_anterior * [1; 1]; 
+    % base constant for tensions, derived quantity 
+    valve.tension_base = valve.p_physical / valve.pressure_tension_ratio; 
 
 
-papillary_anterior = zeros(3,n_trees_anterior); 
-
-n_points = n_trees_anterior/2; 
-
-left_papillary_range = 1:(n_trees_anterior/2); 
-right_papillary_range  = left_papillary_range + (n_trees_anterior/2);
-
-papillary_anterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points,  0*pi/4,    pi/4); 
-papillary_anterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points,   -pi/4, -0*pi/4); 
-
-n_leaves_anterior  = N_anterior/n_trees_anterior * ones(n_trees_anterior, 1); 
-
-n_trees_posterior = 2; 
-
-k_0_1_posterior  = 0.8 * valve.leaf_tension_base / n_trees_posterior; 
-k_0_1_posterior  = k_0_1_posterior * [1; 1]; 
-k_root_posterior = 0.8 * valve.root_tension_base / n_trees_posterior; 
-k_root_posterior = k_root_posterior * [1; 1]; 
-
-papillary_posterior = zeros(3,n_trees_posterior); 
-
-n_points = n_trees_posterior/2; 
-
-right_papillary_range = 1:(n_trees_posterior/2); 
-left_papillary_range  = right_papillary_range + (n_trees_posterior/2); 
-
-papillary_posterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points,    pi/4,  5*pi/4); 
-papillary_posterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points, -5*pi/4,   -pi/4);
-
-% this is generally pretty good 
-n_leaves_posterior = N_posterior/n_trees_posterior * ones(n_trees_posterior, 1); 
+    % tension coefficients 
+    tension_coeffs.alpha_anterior       = 1.0 * valve.tension_base;  % circumferential 
+    tension_coeffs.beta_anterior        = 1.1 * valve.tension_base;  % radial
+    tension_coeffs.alpha_posterior      = 1.0 * valve.tension_base;  % circumferential 
+    tension_coeffs.beta_posterior       = 1.0 * valve.tension_base;  % radial
+    tension_coeffs.alpha_hoops          = 0.5 * valve.tension_base;  % circumferential hoops 
 
 
-% concatenate all relevant arrays
-n_leaves           = [n_leaves_anterior; n_leaves_posterior];
-papillary          = [papillary_anterior, papillary_posterior]; 
-k_0_1              = [k_0_1_anterior; k_0_1_posterior]; 
-k_root             = [k_root_anterior; k_root_posterior];  
+    % decreasing tension coefficients 
+    tension_coeffs.c_circ_dec_anterior       = 1.0 * dec_tension_coeff_base;  % circumferential 
+    tension_coeffs.c_rad_dec_anterior        = 1.5 * dec_tension_coeff_base;  % radial
+    tension_coeffs.c_circ_dec_posterior      = 1.0 * dec_tension_coeff_base;  % circumferential 
+    tension_coeffs.c_rad_dec_posterior       = 1.5 * dec_tension_coeff_base;  % radial
+    tension_coeffs.c_circ_dec_hoops          = 2.0 * dec_tension_coeff_base;  % circumferential hoops
+    tension_coeffs.c_rad_dec_hoops_anterior  = 0.5 * dec_tension_coeff_base;  % radial hoops, anterior part 
+    tension_coeffs.c_rad_dec_hoops_posterior = 0.5 * dec_tension_coeff_base;  % radial hoops, posterior part 
 
 
+    % places this many periodic rings above 
+    n_rings_periodic = max(2,N/64); 
 
+
+    % No explicit commissural leaflet here 
+    N_anterior = N/2; 
+
+    angles.anterior = 5*pi/6; 
+
+    % Posterior takes whatever is left 
+    N_posterior = N - N_anterior; 
+
+    % store these 
+    valve.N_anterior   = N_anterior; 
+    valve.N_posterior  = N_posterior;
+    valve.commissural_leaflets = false; 
+    valve.N_commissure = 0; 
+
+
+    N_per_direction   = [N_anterior/2, N_anterior/2, N_posterior/2, N_posterior/2]; 
+
+    % Anterior goes down then up 
+    leaflet_direction = [-1, 1]; 
+
+    % Posterior goes down then up 
+    leaflet_direction = [leaflet_direction, -1, 1]; 
+
+    % No offset, starting at commissure 
+    leaflet_N_start = 0; 
+
+
+    % Leaf tensions are all modified 
+    valve.leaf_tension_base = .9 * valve.tension_base; 
+
+    % Base total root tension 
+    % The value 0.5905 works well on each tree when using separate solves and two leaflets 
+    % Controls constant tension at the root of the tree 
+    valve.root_tension_base = .9 * 0.5905 * valve.tension_base; 
+
+
+    n_trees_anterior = 2; 
+
+    k_0_1_anterior  = 1.1 * valve.leaf_tension_base / n_trees_anterior; 
+    k_0_1_anterior  = k_0_1_anterior * [1; 1]; 
+    k_root_anterior = 1.1 * valve.root_tension_base / n_trees_anterior; 
+    k_root_anterior = k_root_anterior * [1; 1]; 
+
+
+    papillary_anterior = zeros(3,n_trees_anterior); 
+
+    n_points = n_trees_anterior/2; 
+
+    left_papillary_range = 1:(n_trees_anterior/2); 
+    right_papillary_range  = left_papillary_range + (n_trees_anterior/2);
+
+    papillary_anterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points,  0*pi/4,    pi/4); 
+    papillary_anterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points,   -pi/4, -0*pi/4); 
+
+    n_leaves_anterior  = N_anterior/n_trees_anterior * ones(n_trees_anterior, 1); 
+
+    n_trees_posterior = 2; 
+
+    k_0_1_posterior  = 0.9 * valve.leaf_tension_base / n_trees_posterior; 
+    k_0_1_posterior  = k_0_1_posterior * [1; 1]; 
+    k_root_posterior = 0.9 * valve.root_tension_base / n_trees_posterior; 
+    k_root_posterior = k_root_posterior * [1; 1]; 
+
+    papillary_posterior = zeros(3,n_trees_posterior); 
+
+    n_points = n_trees_posterior/2; 
+
+    right_papillary_range = 1:(n_trees_posterior/2); 
+    left_papillary_range  = right_papillary_range + (n_trees_posterior/2); 
+
+    papillary_posterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points,    pi/4,  5*pi/4); 
+    papillary_posterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points, -5*pi/4,   -pi/4);
+
+    % this is generally pretty good 
+    n_leaves_posterior = N_posterior/n_trees_posterior * ones(n_trees_posterior, 1); 
+
+
+    % concatenate all relevant arrays
+    n_leaves           = [n_leaves_anterior; n_leaves_posterior];
+    papillary          = [papillary_anterior, papillary_posterior]; 
+    k_0_1              = [k_0_1_anterior; k_0_1_posterior]; 
+    k_root             = [k_root_anterior; k_root_posterior];  
+
+end 
 
 
 leaflet = initialize_leaflet_bead_slip(name,                         ... 
                                 N,                                   ...
                                 reflect_x,                           ... 
-                                total_angle_anterior,                ...
+                                angles,                              ...
                                 papillary,                           ... 
                                 n_leaves,                            ...
                                 leaflet_direction,                   ...

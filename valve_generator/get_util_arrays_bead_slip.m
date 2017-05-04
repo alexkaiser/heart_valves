@@ -1,4 +1,4 @@
-function leaflet = get_util_arrays_bead_slip(leaflet)
+function leaflet = get_util_arrays_bead_slip(leaflet, valve)
 % 
 % Returns three arrays with information about the geometry 
 % 
@@ -16,6 +16,15 @@ k_max                     = leaflet.k_max;
 ring_k_idx                = leaflet.ring_k_idx; 
 n_rings_periodic          = leaflet.n_rings_periodic;
 
+N_anterior                = valve.N_anterior; 
+N_posterior               = valve.N_posterior;
+commissural_leaflets      = valve.commissural_leaflets; 
+if commissural_leaflets 
+    N_commissure          = valve.N_commissure;  
+else 
+    N_commissure          = 0; 
+end 
+
 tension_coeffs            = leaflet.tension_coeffs; 
 
 alpha_anterior            = tension_coeffs.alpha_anterior;  % circumferential 
@@ -32,17 +41,43 @@ c_circ_dec_hoops          = tension_coeffs.c_circ_dec_hoops     ;  % radial hoop
 c_rad_dec_hoops_anterior  = tension_coeffs.c_rad_dec_hoops_anterior  ;  % radial hoops, anterior part 
 c_rad_dec_hoops_posterior = tension_coeffs.c_rad_dec_hoops_posterior ;  % radial hoops, posterior part 
 
-
+% data management stuff 
 is_internal               = zeros(j_max, k_max); 
 is_bc                     = zeros(j_max, k_max); 
 linear_idx_offset         = zeros(j_max, k_max); 
 point_idx_with_bc         = zeros(j_max, k_max); 
 
+% coefficients for computing tensions 
 alpha                     = zeros(j_max, k_max); 
 beta                      = zeros(j_max, k_max);
-
 c_dec_radial              = zeros(j_max, k_max); 
 c_dec_circumferential     = zeros(j_max, k_max);
+
+
+if commissural_leaflets 
+    j_range_anterior   = (1:N_anterior); 
+    j_range_right_comm = (1:N_commissure) + max(j_range_anterior); 
+    j_range_posterior  = (1:N_posterior)  + max(j_range_right_comm); 
+    j_range_left_comm  = (1:N_commissure) + max(j_range_posterior); 
+    
+    indices = [j_range_anterior, j_range_right_comm, j_range_posterior, j_range_left_comm]; 
+    if ~all(indices == (1:j_max))
+        error('Inconsistency in indices'); 
+    end 
+        
+else 
+    j_range_anterior   = (1:N_anterior); 
+    j_range_right_comm = [];
+    j_range_posterior  = (1:N_posterior)  + max(j_range_anterior); 
+    j_range_left_comm  = []; 
+    
+    indices = [j_range_anterior, j_range_posterior]; 
+    if ~all(indices == (1:j_max))
+        error('Inconsistency in indices'); 
+    end 
+    
+end 
+
 
 
 if leaflet.radial_and_circumferential 
@@ -115,14 +150,11 @@ for k=1:k_max
 end
 
 
-% always half split for now 
-N_anterior  = j_max/2; 
-
 % circumferential hoops 
 k_min_hoop = k_max - n_rings_periodic;
 
 % radial anterior 
-for j=1:N_anterior    
+for j=j_range_anterior
     for k=k_min(j):(k_max-1)
         
         beta(j,k)         = beta_anterior; 
@@ -136,7 +168,7 @@ for j=1:N_anterior
 end 
 
 % radial posterior 
-for j=(N_anterior+1):j_max     
+for j=j_range_posterior 
     for k=k_min(j):(k_max-1)
         
         beta(j,k) = beta_posterior; 
@@ -162,7 +194,7 @@ end
 % here need to ensure that neighbors are in bounds 
 % also do not place a leaflet to leaflet circumferential spring
 % only hoops connect leaflets 
-for j=1:(N_anterior-1)
+for j=j_range_anterior(1:(end-1))
     
     % start at minimum, stop below hoop points 
     for k=k_min(j):(k_min_hoop-1)
@@ -182,7 +214,7 @@ for j=1:(N_anterior-1)
 end 
 
 % radial posterior 
-for j=(N_anterior+1):(j_max-1) 
+for j=j_range_posterior(1:(end-1))
     
     % start at minimum, stop below hoop points 
     for k=k_min(j):(k_min_hoop-1)
@@ -211,3 +243,7 @@ leaflet.beta                  = beta;
 leaflet.c_dec_radial          = c_dec_radial; 
 leaflet.c_dec_circumferential = c_dec_circumferential; 
 
+leaflet.j_range_anterior   = j_range_anterior; 
+leaflet.j_range_right_comm = j_range_right_comm; 
+leaflet.j_range_posterior  = j_range_posterior; 
+leaflet.j_range_left_comm  = j_range_left_comm; 

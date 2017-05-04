@@ -1,7 +1,7 @@
 function leaflet = initialize_leaflet_bead_slip(name,               ...
                                       N,                            ... 
                                       reflect_x,                    ...  
-                                      total_angle_anterior,         ... 
+                                      angles,                       ... 
                                       papillary,                    ...
                                       n_leaves,                     ...
                                       leaflet_direction,            ...
@@ -73,7 +73,12 @@ else
 end 
 
 
-leaflet.total_angle_anterior = total_angle_anterior; 
+leaflet.total_angle_anterior = angles.anterior; 
+
+if valve.commissural_leaflets
+    leaflet.total_angle_posterior = angles.posterior; 
+end 
+
 
 leaflet.du = 1/N; 
 
@@ -119,14 +124,14 @@ end
 leaflet = get_free_edge_ranges_bead_slip(leaflet);
 
 % information about geometry 
-leaflet = get_util_arrays_bead_slip(leaflet); 
+leaflet = get_util_arrays_bead_slip(leaflet, valve); 
 
 % layout on 
 leaflet.X = build_initial_fibers_bead_slip(leaflet, valve); 
 
 
 % Scalar pressure to support 
-leaflet.p_0      = p_0; 
+leaflet.p_0 = p_0; 
 
 % Total number of internal leaflet coordinates (three times number of vertices)
 leaflet.total_internal_leaflet    = 3*sum(leaflet.is_internal(:)); 

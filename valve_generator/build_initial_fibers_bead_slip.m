@@ -4,13 +4,15 @@ function [X] = build_initial_fibers_bead_slip(leaflet, valve)
 % 
 
 
-r                       = leaflet.r; 
-j_max                   = leaflet.j_max; 
-k_min                   = leaflet.k_min; 
-k_max                   = leaflet.k_max; 
-ring_k_idx              = leaflet.ring_k_idx; 
+r                = leaflet.r; 
+j_max            = leaflet.j_max; 
+k_min            = leaflet.k_min; 
+k_max            = leaflet.k_max; 
+ring_k_idx       = leaflet.ring_k_idx; 
+n_rings_periodic = leaflet.n_rings_periodic; 
 
-n_rings_periodic        = leaflet.n_rings_periodic; 
+N_anterior       = valve.N_anterior; 
+N_posterior      = valve.N_posterior;
 
 X = NaN * zeros(3,j_max,k_max); 
 
@@ -26,12 +28,6 @@ if leaflet.radial_and_circumferential
 %         
 %         % clip the redundant point
 %         mesh = mesh(1:j_max); 
-        
-        
-        % each leaflet gets the same number of points
-        % and they are placed according to their total angles 
-        N_anterior  = j_max/2; 
-        N_posterior = j_max/2; 
         
         % centered around zero 
         min_anterior = -leaflet.total_angle_anterior/2; 
