@@ -166,8 +166,8 @@ if __name__ == '__main__':
         # poll returns none if still running
         if current_sh_calls_mpi.poll() is not None:
             print 'MPI run has stopped, check for completion or crashes.'
-            print 'Killing python watchdog.'
-            sys.exit()
+            print 'Exit python watchdog loop.'
+            break
         
         if mod_time == prev_time:
             print 'On check number ', check_number, ', modification time unchanged'
@@ -270,15 +270,15 @@ if __name__ == '__main__':
                 movie_script = open('make_movie.sbatch', 'w')
                 
                 slurm = '''#!/bin/bash
-                #SBATCH --nodes=1
-                #SBATCH --ntasks=1
-                #SBATCH --time=4:00:00
-                #SBATCH --mem=16GB
-                #SBATCH --job-name=movie_post_process
-                #SBATCH --mail-user=kaiser@cims.nyu.edu
-                #SBATCH --mail-type=ALL
-                
-                ''' 
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --time=4:00:00
+#SBATCH --mem=16GB
+#SBATCH --job-name=movie_post_process
+#SBATCH --mail-user=kaiser@cims.nyu.edu
+#SBATCH --mail-type=ALL
+
+''' 
                 
                 movie_script.write(slurm)
                 
@@ -298,8 +298,10 @@ if __name__ == '__main__':
                 break
 
     else:
-        print 'Could not find done.txt'
+        print 'Could not find done.txt\n'
     
-    print 'Done with main, exiting'
-
+    print 'Done with main, exiting.\n'
+    
+    # again for good measure 
+    sys.exit()
 
