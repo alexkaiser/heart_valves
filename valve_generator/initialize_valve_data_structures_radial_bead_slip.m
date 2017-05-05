@@ -105,29 +105,6 @@ name = 'leaflet';
 ring_to_ring_range = 0; 
 
 
-sytole_skeleton = true; 
-if sytole_skeleton 
-    % box width 
-    valve.L = 3.0; 
-    valve.skeleton = valve_points_ct_systole(); 
-    valve.diastolic_increment = [0; 0; 0]; 
-else
-    % box width 
-    valve.L = 2.5; 
-    valve.skeleton = valve_points_ct_diastole(); 
-    valve.diastolic_increment = [0; 0; 0]; 
-end 
-
-
-valve.r        = valve.skeleton.r; 
-
-
-% Approximate Lagrangian mesh spacing at ring 
-% Used for later splitting of springs 
-% If any spring is placed at more than double this length an extra vertex is placed
-valve.ds = 2*pi*valve.r / N; 
-
-
 left_papillary_idx  = 1; 
 right_papillary_idx = 2; 
 
@@ -139,13 +116,17 @@ if commissural_leaflets
     valve.dip_anterior_systole = true; 
     valve.r_dip = 0.75; 
     valve.total_angle_dip = pi; 
+    
+    valve.L = 3.0; 
+    valve.skeleton = valve_points_ct_systole(); 
+    valve.diastolic_increment = [1; 0; 0]; 
 
 
     % Base constants, individual pieces are tuned relative to these values
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    valve.pressure_tension_ratio = 0.05; % 0.11 * 0.975; 
+    valve.pressure_tension_ratio = 0.025; % 0.11 * 0.975; 
 
 
     % base constant for tensions, derived quantity 
@@ -153,28 +134,28 @@ if commissural_leaflets
 
 
     % tension coefficients 
-    tension_coeffs.alpha_anterior       = 1%1.0 * valve.tension_base;  % circumferential 
-    tension_coeffs.beta_anterior        = 2%1.1 * valve.tension_base;  % radial
-    tension_coeffs.alpha_posterior      = 3%1.0 * valve.tension_base;  % circumferential 
-    tension_coeffs.beta_posterior       = 4%1.0 * valve.tension_base;  % radial
-    tension_coeffs.alpha_commissure     = 5%1.0 * valve.tension_base;  % circumferential 
-    tension_coeffs.beta_commissure      = 6%1.0 * valve.tension_base;  % radial
-    tension_coeffs.alpha_hoops          = 7%0.5 * valve.tension_base;  % circumferential hoops 
+    tension_coeffs.alpha_anterior       = 1.0 * valve.tension_base;  % circumferential 
+    tension_coeffs.beta_anterior        = 1.1 * valve.tension_base;  % radial
+    tension_coeffs.alpha_posterior      = 1.0 * valve.tension_base;  % circumferential 
+    tension_coeffs.beta_posterior       = 1.0 * valve.tension_base;  % radial
+    tension_coeffs.alpha_commissure     = 1.0 * valve.tension_base;  % circumferential 
+    tension_coeffs.beta_commissure      = 1.0 * valve.tension_base;  % radial
+    tension_coeffs.alpha_hoops          = 0.5 * valve.tension_base;  % circumferential hoops 
 
 
     % decreasing tension coefficients 
-    tension_coeffs.c_circ_dec_anterior        = 8%1.0 * dec_tension_coeff_base;  % circumferential 
-    tension_coeffs.c_rad_dec_anterior         = 9%1.5 * dec_tension_coeff_base;  % radial
-    tension_coeffs.c_circ_dec_posterior       = 10%1.0 * dec_tension_coeff_base;  % circumferential 
-    tension_coeffs.c_rad_dec_posterior        = 11%1.5 * dec_tension_coeff_base;  % radial
-    tension_coeffs.c_circ_dec_commissure      = 12%1.0 * dec_tension_coeff_base;  % circumferential 
-    tension_coeffs.c_rad_dec_commissure       = 13%1.0 * dec_tension_coeff_base;  % radial 
+    tension_coeffs.c_circ_dec_anterior        = 1.0 * dec_tension_coeff_base;  % circumferential 
+    tension_coeffs.c_rad_dec_anterior         = 1.5 * dec_tension_coeff_base;  % radial
+    tension_coeffs.c_circ_dec_posterior       = 1.0 * dec_tension_coeff_base;  % circumferential 
+    tension_coeffs.c_rad_dec_posterior        = 1.5 * dec_tension_coeff_base;  % radial
+    tension_coeffs.c_circ_dec_commissure      = 1.0 * dec_tension_coeff_base;  % circumferential 
+    tension_coeffs.c_rad_dec_commissure       = 1.0 * dec_tension_coeff_base;  % radial 
     
     % dec tension coefficients in hoops 
-    tension_coeffs.c_circ_dec_hoops           = 14%2.0 * dec_tension_coeff_base;  % circumferential hoops
-    tension_coeffs.c_rad_dec_hoops_anterior   = 15%0.5 * dec_tension_coeff_base;  % radial hoops, anterior part 
-    tension_coeffs.c_rad_dec_hoops_posterior  = 16%0.5 * dec_tension_coeff_base;  % radial hoops, posterior part 
-    tension_coeffs.c_rad_dec_hoops_commissure = 17%0.5 * dec_tension_coeff_base;  % radial hoops, posterior part 
+    tension_coeffs.c_circ_dec_hoops           = 2.0 * dec_tension_coeff_base;  % circumferential hoops
+    tension_coeffs.c_rad_dec_hoops_anterior   = 0.5 * dec_tension_coeff_base;  % radial hoops, anterior part 
+    tension_coeffs.c_rad_dec_hoops_posterior  = 0.5 * dec_tension_coeff_base;  % radial hoops, posterior part 
+    tension_coeffs.c_rad_dec_hoops_commissure = 0.5 * dec_tension_coeff_base;  % radial hoops, posterior part 
 
 
     % places this many periodic rings above 
@@ -183,11 +164,11 @@ if commissural_leaflets
 
     % No explicit commissural leaflet here 
     N_anterior = N/4; 
-    angles.anterior = 5*pi/6; 
+    angles.anterior = 4*pi/6 - pi/12; 
 
     % Posterior takes whatever is left 
     N_posterior = N/4;
-    angles.posterior = 5*pi/6; 
+    angles.posterior = 4*pi/6 - pi/12; 
     
     N_commissure = N/4; 
     
@@ -220,32 +201,32 @@ if commissural_leaflets
 
 
     % Leaf tensions are all modified 
-    valve.leaf_tension_base = .9 * valve.tension_base; 
+    valve.leaf_tension_base = .5 * valve.tension_base; 
 
     % Base total root tension 
     % The value 0.5905 works well on each tree when using separate solves and two leaflets 
     % Controls constant tension at the root of the tree 
-    valve.root_tension_base = .9 * 0.5905 * valve.tension_base; 
+    valve.root_tension_base = .5 * 0.5905 * valve.tension_base; 
 
     % tree constants 
     n_trees_anterior   = 2; 
-    k_0_1_anterior     = 1.1 * valve.leaf_tension_base / n_trees_anterior; 
+    k_0_1_anterior     = 1.0 * valve.leaf_tension_base / n_trees_anterior; 
     k_0_1_anterior     = k_0_1_anterior * [1; 1]; 
-    k_root_anterior    = 1.1 * valve.root_tension_base / n_trees_anterior; 
+    k_root_anterior    = 1.0 * valve.root_tension_base / n_trees_anterior; 
     k_root_anterior    = k_root_anterior * [1; 1]; 
     n_leaves_anterior  = N_anterior/n_trees_anterior * ones(n_trees_anterior, 1); 
 
     n_trees_posterior  = 2; 
-    k_0_1_posterior    = 0.9 * valve.leaf_tension_base / n_trees_posterior; 
+    k_0_1_posterior    = 1.0 * valve.leaf_tension_base / n_trees_posterior; 
     k_0_1_posterior    = k_0_1_posterior * [1; 1]; 
-    k_root_posterior   = 0.9 * valve.root_tension_base / n_trees_posterior; 
+    k_root_posterior   = 1.0 * valve.root_tension_base / n_trees_posterior; 
     k_root_posterior   = k_root_posterior * [1; 1]; 
     n_leaves_posterior = N_posterior/n_trees_posterior * ones(n_trees_posterior, 1); 
 
     n_trees_comm       = 2; 
-    k_0_1_comm         = 0.9 * valve.leaf_tension_base / n_trees_comm; 
+    k_0_1_comm         = 0.8 * valve.leaf_tension_base / n_trees_comm; 
     k_0_1_comm         = k_0_1_comm * [1; 1]; 
-    k_root_comm        = 0.9 * valve.root_tension_base / n_trees_comm; 
+    k_root_comm        = 0.8 * valve.root_tension_base / n_trees_comm; 
     k_root_comm        = k_root_comm * [1; 1]; 
     n_leaves_comm      = N_commissure/n_trees_comm * ones(n_trees_comm, 1);
     
@@ -263,8 +244,14 @@ if commissural_leaflets
     % get all points needed from left and right papillary locations 
     % these are all placed counterclockwise with respect to the entire setup 
     trees_per_side = total_trees/2; 
-    papillary_left  = get_papillary_coords(valve, left_papillary_idx,  trees_per_side, -5*pi/4, pi/4); 
-    papillary_right = get_papillary_coords(valve, right_papillary_idx, trees_per_side,   -pi/4, 5*pi/4);
+    
+    papillary_left_min_angle = -pi; %-5*pi/4; 
+    papillary_left_max_angle = 0; %pi/4; 
+    
+    papillary_left  = get_papillary_coords(valve, left_papillary_idx,  trees_per_side,  papillary_left_min_angle,  papillary_left_max_angle); 
+    
+    % right takes reflected angles 
+    papillary_right = get_papillary_coords(valve, right_papillary_idx, trees_per_side, -papillary_left_max_angle, -papillary_left_min_angle);
     
     % number of trees on left starting at one index 
     trees_anterior_to_midline_on_left = 1;
@@ -283,6 +270,19 @@ else
     valve.r_dip = 0.75; 
     valve.total_angle_dip = pi; 
 
+    sytole_skeleton = true; 
+    if sytole_skeleton 
+        % box width 
+        valve.L = 3.0; 
+        valve.skeleton = valve_points_ct_systole(); 
+        valve.diastolic_increment = [0; 0; 0]; 
+    else
+        % box width 
+        valve.L = 2.5; 
+        valve.skeleton = valve_points_ct_diastole(); 
+        valve.diastolic_increment = [0; 0; 0]; 
+    end 
+    
     zero_radius = true; 
     if zero_radius
         for i = 1:length(valve.skeleton)
@@ -410,6 +410,14 @@ else
 end 
 
 
+valve.r        = valve.skeleton.r; 
+
+% Approximate Lagrangian mesh spacing at ring 
+% Used for later splitting of springs 
+% If any spring is placed at more than double this length an extra vertex is placed
+valve.ds = 2*pi*valve.r / N; 
+
+
 leaflet = initialize_leaflet_bead_slip(name,                         ... 
                                 N,                                   ...
                                 reflect_x,                           ... 
@@ -432,8 +440,8 @@ leaflet = initialize_leaflet_bead_slip(name,                         ...
 
 valve.leaflets(1) = leaflet; 
     
-valve_plot(valve); 
-pause(.1); 
+% valve_plot(valve); 
+% pause(.1); 
 
 disp('Done with initialize.'); 
 
