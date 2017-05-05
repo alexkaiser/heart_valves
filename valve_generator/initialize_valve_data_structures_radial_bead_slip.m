@@ -272,19 +272,26 @@ elseif parameter_values == 2
     valve.diastolic_increment = [0; 0; 0]; 
 
     
-    zero_radius = true; 
+    zero_radius = false; 
     if zero_radius
         for i = 1:length(valve.skeleton.papillary)
             valve.skeleton.papillary(i).radius = 0; 
         end 
     end 
     
+    vertical_normal_papillary = true; 
+    if vertical_normal_papillary 
+        for i = 1:length(valve.skeleton.papillary)
+            valve.skeleton.papillary(i).normal = [0; 0; 1]; 
+        end 
+    end  
+    
 
     % Base constants, individual pieces are tuned relative to these values
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    valve.pressure_tension_ratio = 0.05; % 0.11 * 0.975; 
+    valve.pressure_tension_ratio = 0.06; % 0.11 * 0.975; 
 
 
     % base constant for tensions, derived quantity 
@@ -341,7 +348,7 @@ elseif parameter_values == 2
 
 
     % Leaf tensions are all modified 
-    valve.leaf_tension_base = .9 * valve.tension_base; 
+    valve.leaf_tension_base = .8 * valve.tension_base; 
 
     % Base total root tension 
     % The value 0.5905 works well on each tree when using separate solves and two leaflets 
@@ -425,9 +432,34 @@ elseif parameter_values == 2
     
     % concatenate all relevant arrays
     n_leaves           = [n_leaves_anterior; n_leaves_posterior_and_comm];
-    papillary          = [papillary_anterior, papillary_posterior_and_comm]; 
     k_0_1              = [k_0_1_anterior; k_0_1_posterior_and_comm]; 
     k_root             = [k_root_anterior; k_root_posterior_and_comm]; 
+    
+    % Count all trees and pull papillary locations 
+    total_trees = length(n_leaves);  
+    
+    % get all points needed from left and right papillary locations 
+    % these are all placed counterclockwise with respect to the entire setup 
+    trees_per_side = total_trees/2; 
+    
+    papillary_left_min_angle = -pi; %-5*pi/4; 
+    papillary_left_max_angle =   0; %pi/4; 
+    
+    papillary_left  = get_papillary_coords(valve, left_papillary_idx,  trees_per_side,  papillary_left_min_angle,  papillary_left_max_angle); 
+    
+    % right takes reflected angles 
+    papillary_right = get_papillary_coords(valve, right_papillary_idx, trees_per_side, -papillary_left_max_angle, -papillary_left_min_angle);
+    
+    % number of trees on left starting at one index 
+    trees_anterior_left = length(n_leaves_anterior)/2;
+    papillary = papillary_left(:, (end - trees_anterior_left + 1): end); 
+    
+    % then all the right trees 
+    papillary = [papillary, papillary_right]; 
+    
+    % then remaining left trees 
+    papillary = [papillary, papillary_left(:, 1:(end - trees_anterior_left))];
+    
     
     
 elseif parameters == 3
@@ -449,7 +481,7 @@ elseif parameters == 3
         for i = 1:length(valve.skeleton.papillary)
             valve.skeleton.papillary(i).radius = 0; 
         end 
-    end 
+    end   
 
     % Base constants, individual pieces are tuned relative to these values
 
@@ -625,8 +657,8 @@ leaflet = initialize_leaflet_bead_slip(name,                         ...
 
 valve.leaflets(1) = leaflet; 
     
-% valve_plot(valve); 
-% pause(.1); 
+valve_plot(valve); 
+pause(.1); 
 
 disp('Done with initialize.'); 
 
