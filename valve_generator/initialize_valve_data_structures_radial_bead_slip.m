@@ -435,7 +435,7 @@ elseif parameter_values == 2
     
     % arrangements of anchor points 
     min_papillary_angle_posterior = -pi; 
-    max_papillary_angle_posterior = -pi/3; 
+    max_papillary_angle_posterior = 0; 
     
     papillary_posterior_and_comm(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points, -max_papillary_angle_posterior, -min_papillary_angle_posterior); 
     papillary_posterior_and_comm(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points,  min_papillary_angle_posterior,  max_papillary_angle_posterior);
