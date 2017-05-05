@@ -4,7 +4,6 @@ function fig = surf_plot(leaflet, fig)
 % 
 
 X_copy      = leaflet.X; 
-N           = leaflet.N; 
 j_max       = leaflet.j_max; 
 k_max       = leaflet.k_max; 
 is_internal = leaflet.is_internal; 

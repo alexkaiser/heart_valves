@@ -65,6 +65,12 @@ if commissural_leaflets
         error('Inconsistency in indices'); 
     end 
         
+    alpha_commissure           = tension_coeffs.alpha_commissure;      % circumferential 
+    beta_commissure            = tension_coeffs.beta_commissure;       % radial
+    c_circ_dec_commissure      = tension_coeffs.c_circ_dec_commissure; % circumferential 
+    c_rad_dec_commissure       = tension_coeffs.c_rad_dec_commissure;  % radial 
+    c_rad_dec_hoops_commissure = tension_coeffs.c_rad_dec_hoops_commissure; % radial in commissures 
+
 else 
     j_range_anterior   = (1:N_anterior); 
     j_range_right_comm = [];
@@ -182,7 +188,37 @@ for j=j_range_posterior
     end
 end 
 
+if commissural_leaflets 
+    for j=j_range_right_comm
+        for k=k_min(j):(k_max-1)
+            
+            beta(j,k)         = beta_commissure; 
+        
+            if k < k_min_hoop
+                c_dec_radial(j,k) = c_rad_dec_commissure; 
+            else 
+                c_dec_radial(j,k) = c_rad_dec_hoops_commissure; 
+            end 
+        end
+    end 
 
+    % radial posterior 
+    for j=j_range_left_comm 
+        for k=k_min(j):(k_max-1)
+
+            beta(j,k) = beta_commissure; 
+
+            if k < k_min_hoop
+                c_dec_radial(j,k) = c_rad_dec_commissure; 
+            else 
+                c_dec_radial(j,k) = c_rad_dec_hoops_commissure; 
+            end 
+        end
+    end 
+end 
+
+
+% hoops in circumferential (hoop) direction 
 for j=1:j_max 
     for k=k_min_hoop:(k_max-1)
         alpha(j,k) = alpha_hoops; 
@@ -190,7 +226,7 @@ for j=1:j_max
     end 
 end 
 
-% radial anterior 
+% cicumferential anterior 
 % here need to ensure that neighbors are in bounds 
 % also do not place a leaflet to leaflet circumferential spring
 % only hoops connect leaflets 
@@ -213,7 +249,7 @@ for j=j_range_anterior(1:(end-1))
     
 end 
 
-% radial posterior 
+% cicumferential posterior 
 for j=j_range_posterior(1:(end-1))
     
     % start at minimum, stop below hoop points 
@@ -233,6 +269,46 @@ for j=j_range_posterior(1:(end-1))
     
 end 
 
+if commissural_leaflets 
+    for j=j_range_right_comm(1:(end-1))
+
+        % start at minimum, stop below hoop points 
+        for k=k_min(j):(k_min_hoop-1)
+
+            % spring is always owned by minimum neighbor 
+            % j direction springs here 
+            j_nbr = j + 1; 
+            k_nbr = k; 
+
+            if is_internal(j_nbr, k_nbr)
+                alpha(j,k)                 = alpha_commissure; 
+                c_dec_circumferential(j,k) = c_circ_dec_commissure; 
+            end 
+
+        end 
+
+    end 
+
+    % cicumferential posterior 
+    for j=j_range_left_comm(1:(end-1))
+
+        % start at minimum, stop below hoop points 
+        for k=k_min(j):(k_min_hoop-1)
+
+            % spring is always owned by minimum neighbor 
+            % j direction springs here 
+            j_nbr = j + 1; 
+            k_nbr = k; 
+
+            if is_internal(j_nbr, k_nbr)
+                alpha(j,k) = alpha_commissure; 
+                c_dec_circumferential(j,k) = c_circ_dec_commissure; 
+            end 
+
+        end 
+
+    end 
+end 
 
 leaflet.is_internal           = is_internal;
 leaflet.is_bc                 = is_bc;

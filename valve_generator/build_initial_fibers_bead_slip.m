@@ -14,6 +14,11 @@ n_rings_periodic = leaflet.n_rings_periodic;
 N_anterior       = valve.N_anterior; 
 N_posterior      = valve.N_posterior;
 
+commissural_leaflets = valve.commissural_leaflets; 
+if commissural_leaflets
+    N_commissure = valve.N_commissure; 
+end 
+    
 X = NaN * zeros(3,j_max,k_max); 
 
 debug = false; 
@@ -22,31 +27,46 @@ if leaflet.radial_and_circumferential
     
     if true % n_rings_periodic > 0 
         
-%         % periodic, initial points on cylinder
-%         % completes circle, so first and final point are equal 
-%         mesh = linspace(leaflet.min_angle, leaflet.max_angle, j_max + 1);
-%         
-%         % clip the redundant point
-%         mesh = mesh(1:j_max); 
-        
-        % centered around zero 
-        min_anterior = -leaflet.total_angle_anterior/2; 
-        max_anterior =  leaflet.total_angle_anterior/2; 
-        
-        % mesh anterior inclusive of ends 
-        mesh_anterior   = linspace(min_anterior, max_anterior, N_anterior); 
-        
-        % mesh posterior includes two anterior points
-        min_anterior_wrapped = min_anterior + 2*pi; 
-        mesh_posterior  = linspace(max_anterior, min_anterior_wrapped, N_posterior + 2);
-        mesh_posterior  = mesh_posterior(2:(N_posterior+1)); 
-        
-        % try putting the meshes closer together  
-%         small = 1e-10; 
-%         mesh_posterior  = linspace(max_anterior + small, min_anterior_wrapped - small, N_posterior);
-        
+        if commissural_leaflets
+            
+            % centered around zero 
+            min_anterior = -leaflet.total_angle_anterior/2; 
+            max_anterior =  leaflet.total_angle_anterior/2; 
 
-        mesh = [mesh_anterior mesh_posterior]; 
+            % mesh anterior inclusive of ends 
+            mesh_anterior   = linspace(min_anterior, max_anterior, N_anterior); 
+
+            min_posterior = pi - leaflet.total_angle_posterior/2; 
+            max_posterior = pi + leaflet.total_angle_posterior/2;             
+            
+            % calculate inclusive, the crop outer points 
+            mesh_right_comm = linspace(max_anterior, min_posterior, N_commissure + 2); 
+            mesh_right_comm = mesh_right_comm(2:(end-1)); 
+            
+            mesh_posterior  = linspace(min_posterior, max_posterior, N_posterior);  
+            
+            min_anterior_wrapped = min_anterior + 2*pi; 
+            mesh_left_comm  = linspace(max_posterior, min_anterior_wrapped, N_commissure + 2);
+            mesh_left_comm  = mesh_left_comm(2:(end-1)); 
+            
+            mesh = [mesh_anterior mesh_right_comm mesh_posterior mesh_left_comm];
+            
+        else 
+            
+            % centered around zero 
+            min_anterior = -leaflet.total_angle_anterior/2; 
+            max_anterior =  leaflet.total_angle_anterior/2; 
+
+            % mesh anterior inclusive of ends 
+            mesh_anterior   = linspace(min_anterior, max_anterior, N_anterior); 
+
+            % mesh posterior includes two anterior points
+            min_anterior_wrapped = min_anterior + 2*pi; 
+            mesh_posterior  = linspace(max_anterior, min_anterior_wrapped, N_posterior + 2);
+            mesh_posterior  = mesh_posterior(2:(end-1)); 
+
+            mesh = [mesh_anterior mesh_posterior];
+        end 
         
         if isfield(valve, 'dip_anterior_systole') && valve.dip_anterior_systole 
             x_coord_extra = @(t) cos_bump(t, valve.total_angle_dip, valve.r_dip); 
