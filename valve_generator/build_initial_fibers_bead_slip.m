@@ -60,19 +60,11 @@ if leaflet.radial_and_circumferential
             % mesh anterior inclusive of ends 
             mesh_anterior   = linspace(min_anterior, max_anterior, N_anterior); 
 
-            tiny_adjustment = true; 
-            if tiny_adjustment
-                small = 1e-10; 
-                max_posterior = min_anterior + 2*pi - small;
-                min_posterior = max_anterior + small; 
-                mesh_posterior  = linspace(min_posterior, max_posterior, N_posterior);
-            else             
-                % mesh posterior includes two anterior points
-                min_anterior_wrapped = min_anterior + 2*pi; 
-                mesh_posterior  = linspace(max_anterior, min_anterior_wrapped, N_posterior + 2);
-                mesh_posterior  = mesh_posterior(2:(end-1)); 
-            end 
-            
+            % mesh posterior includes two anterior points
+            min_anterior_wrapped = min_anterior + 2*pi; 
+            mesh_posterior  = linspace(max_anterior, min_anterior_wrapped, N_posterior + 2);
+            mesh_posterior  = mesh_posterior(2:(end-1)); 
+
             mesh = [mesh_anterior mesh_posterior];
         end 
         
