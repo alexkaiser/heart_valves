@@ -291,7 +291,8 @@ elseif parameter_values == 2
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    valve.pressure_tension_ratio = 0.06; % 0.11 * 0.975; 
+    valve.pressure_tension_ratio = 0.065; % 0.11 * 0.975; 
+
 
 
     % base constant for tensions, derived quantity 
@@ -300,9 +301,9 @@ elseif parameter_values == 2
 
     % tension coefficients 
     tension_coeffs.alpha_anterior       = 1.0 * valve.tension_base;  % circumferential 
-    tension_coeffs.beta_anterior        = 1.1 * valve.tension_base;  % radial
+    tension_coeffs.beta_anterior        = 1.2 * valve.tension_base;  % radial
     tension_coeffs.alpha_posterior      = 1.0 * valve.tension_base;  % circumferential 
-    tension_coeffs.beta_posterior       = 1.0 * valve.tension_base;  % radial
+    tension_coeffs.beta_posterior       = 1.1 * valve.tension_base;  % radial
     tension_coeffs.alpha_hoops          = 0.5 * valve.tension_base;  % circumferential hoops 
 
 
@@ -379,11 +380,11 @@ elseif parameter_values == 2
     n_tree_posterior         = n_posterior_tree_total   / n_trees_posterior; 
     n_tree_commissure        = n_commissural_tree_total / n_trees_commissure; 
     
-    k_0_1_posterior          = 0.4 * valve.leaf_tension_base / n_trees_posterior; 
-    k_root_posterior         = 0.4 * valve.root_tension_base / n_trees_posterior; 
+    k_0_1_posterior          = 0.3 * valve.leaf_tension_base / n_trees_posterior; 
+    k_root_posterior         = 0.35 * valve.root_tension_base / n_trees_posterior; 
     
     k_0_1_commissure         = 0.5 * valve.leaf_tension_base / n_trees_commissure; 
-    k_root_commissure        = 0.5 * valve.root_tension_base / n_trees_commissure; 
+    k_root_commissure        = 0.6 * valve.root_tension_base / n_trees_commissure; 
 
     
     k_0_1_posterior_and_comm    = zeros(n_trees_posterior_and_comm, 1);
@@ -657,8 +658,8 @@ leaflet = initialize_leaflet_bead_slip(name,                         ...
 
 valve.leaflets(1) = leaflet; 
     
-valve_plot(valve); 
-pause(.1); 
+% valve_plot(valve); 
+% pause(.1); 
 
 disp('Done with initialize.'); 
 
