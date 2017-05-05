@@ -272,19 +272,25 @@ elseif parameter_values == 2
     valve.diastolic_increment = [0; 0; 0]; 
 
     
-    zero_radius = true; 
+    zero_radius = false; 
     if zero_radius
         for i = 1:length(valve.skeleton.papillary)
             valve.skeleton.papillary(i).radius = 0; 
         end 
     end 
     
+    vertical_normal_papillary = true; 
+    if vertical_normal_papillary 
+        for i = 1:length(valve.skeleton.papillary)
+            valve.skeleton.papillary(i).normal = [0; 0; 1]; 
+        end 
+    end 
 
     % Base constants, individual pieces are tuned relative to these values
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    valve.pressure_tension_ratio = 0.05; % 0.11 * 0.975; 
+    valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
 
 
     % base constant for tensions, derived quantity 
@@ -411,16 +417,28 @@ elseif parameter_values == 2
     n_points = n_trees_anterior/2; 
     left_papillary_range = 1:(n_trees_anterior/2); 
     right_papillary_range  = left_papillary_range + (n_trees_anterior/2);
-    papillary_anterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points,  0*pi/4,    pi/4); 
-    papillary_anterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points,   -pi/4, -0*pi/4); 
+    
+    % arrangements of connection to papillary muscle 
+    % angles are measured form approximate x direction on left papillary 
+    % negatives and swapped on right papillary 
+    min_papillary_angle_anterior = 0; 
+    max_papillary_angle_anterior = 0; 
+    
+    papillary_anterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points,  min_papillary_angle_anterior,  max_papillary_angle_anterior); 
+    papillary_anterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points, -max_papillary_angle_anterior, -min_papillary_angle_anterior); 
 
     
     papillary_posterior_and_comm = zeros(3,n_trees_posterior_and_comm); 
     n_points = n_trees_posterior_and_comm/2; 
     right_papillary_range = 1:(n_trees_posterior_and_comm/2); 
     left_papillary_range  = right_papillary_range + (n_trees_posterior_and_comm/2); 
-    papillary_posterior_and_comm(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points,    pi/4,  5*pi/4); 
-    papillary_posterior_and_comm(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points, -5*pi/4,   -pi/4);
+    
+    % arrangements of anchor points 
+    min_papillary_angle_posterior = -pi; 
+    max_papillary_angle_posterior = -pi/3; 
+    
+    papillary_posterior_and_comm(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points, -max_papillary_angle_posterior, -min_papillary_angle_posterior); 
+    papillary_posterior_and_comm(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points,  min_papillary_angle_posterior,  max_papillary_angle_posterior);
 
     
     % concatenate all relevant arrays
