@@ -126,7 +126,7 @@ if commissural_leaflets
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    valve.pressure_tension_ratio = 0.025; % 0.11 * 0.975; 
+    valve.pressure_tension_ratio = 0.05; % 0.11 * 0.975; 
 
 
     % base constant for tensions, derived quantity 
@@ -137,8 +137,8 @@ if commissural_leaflets
     tension_coeffs.alpha_anterior       = 1.0 * valve.tension_base;  % circumferential 
     tension_coeffs.beta_anterior        = 1.1 * valve.tension_base;  % radial
     tension_coeffs.alpha_posterior      = 1.0 * valve.tension_base;  % circumferential 
-    tension_coeffs.beta_posterior       = 1.0 * valve.tension_base;  % radial
-    tension_coeffs.alpha_commissure     = 1.0 * valve.tension_base;  % circumferential 
+    tension_coeffs.beta_posterior       = 1.1 * valve.tension_base;  % radial
+    tension_coeffs.alpha_commissure     = 0.5 * valve.tension_base;  % circumferential 
     tension_coeffs.beta_commissure      = 1.0 * valve.tension_base;  % radial
     tension_coeffs.alpha_hoops          = 0.5 * valve.tension_base;  % circumferential hoops 
 
@@ -148,7 +148,7 @@ if commissural_leaflets
     tension_coeffs.c_rad_dec_anterior         = 1.5 * dec_tension_coeff_base;  % radial
     tension_coeffs.c_circ_dec_posterior       = 1.0 * dec_tension_coeff_base;  % circumferential 
     tension_coeffs.c_rad_dec_posterior        = 1.5 * dec_tension_coeff_base;  % radial
-    tension_coeffs.c_circ_dec_commissure      = 1.0 * dec_tension_coeff_base;  % circumferential 
+    tension_coeffs.c_circ_dec_commissure      = 2.0 * dec_tension_coeff_base;  % circumferential 
     tension_coeffs.c_rad_dec_commissure       = 1.0 * dec_tension_coeff_base;  % radial 
     
     % dec tension coefficients in hoops 
