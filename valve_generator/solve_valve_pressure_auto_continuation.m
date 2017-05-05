@@ -8,7 +8,7 @@ function [leaflet pass err] = solve_valve_pressure_auto_continuation(leaflet, to
 
 leaflet.p_0 = p_initial; 
 
-initial_p_plot = false; 
+initial_p_plot = true; 
 plots = false; 
 
 [leaflet_current pass err] = newton_solve_valve(leaflet, tol, max_it_init, max_consecutive_fails, max_total_fails);  
