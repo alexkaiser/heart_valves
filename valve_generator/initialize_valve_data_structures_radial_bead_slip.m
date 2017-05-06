@@ -264,7 +264,7 @@ elseif parameter_values == 2
     % but without explicit commissural leaflets 
     
     valve.dip_anterior_systole = true; 
-    valve.r_dip = 0.75; 
+    valve.r_dip = 0.5; 
     valve.total_angle_dip = pi; 
 
     valve.L = 3.0; 
@@ -290,7 +290,7 @@ elseif parameter_values == 2
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    valve.pressure_tension_ratio = 0.056; % 0.11 * 0.975; 
+    valve.pressure_tension_ratio = 0.054; % 0.11 * 0.975; 
 
 
     % base constant for tensions, derived quantity 
@@ -301,7 +301,7 @@ elseif parameter_values == 2
     tension_coeffs.alpha_anterior       = 1.0 * valve.tension_base;  % circumferential 
     tension_coeffs.beta_anterior        = 1.1 * valve.tension_base;  % radial
     tension_coeffs.alpha_posterior      = 1.0 * valve.tension_base;  % circumferential 
-    tension_coeffs.beta_posterior       = 1.0 * valve.tension_base;  % radial
+    tension_coeffs.beta_posterior       = 1.1 * valve.tension_base;  % radial
     tension_coeffs.alpha_hoops          = 0.5 * valve.tension_base;  % circumferential hoops 
 
 
