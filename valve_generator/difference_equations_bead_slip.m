@@ -89,9 +89,8 @@ function F = difference_equations_bead_slip(leaflet)
                         end 
 
                         if tension_debug
-                            if tension < 0 
-                                fprintf('tension = %f, (j,k) = (%d, %d) radial\n', tension, j, k); 
-                            end 
+                            dec = tension_decreasing(X, X_nbr, du, c_dec_tension) ; 
+                            fprintf('tension = %e, dec_tension = %f, (j,k) = (%d, %d) circ\n', tension, dec, j, k); 
                         end 
 
                         F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
@@ -120,11 +119,10 @@ function F = difference_equations_bead_slip(leaflet)
                         end
 
                         if tension_debug
-                            if tension < 0 
-                                fprintf('tension = %f, (j,k) = (%d, %d) circumferential\n', tension, j, k); 
-                            end 
+                            dec = tension_decreasing(X, X_nbr, du, c_dec_tension) ; 
+                            fprintf('tension = %e, dec_tension = %f, (j,k) = (%d, %d) radial\n', tension, dec, j, k); 
                         end 
-
+                        
                         F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
                     
                     end 
@@ -152,8 +150,13 @@ function F = difference_equations_bead_slip(leaflet)
                     tension = kappa;  
 
                     if decreasing_tension && (kappa ~= 0)
-                        tension = tension + kappa * tension_decreasing(X, X_nbr, du, c_dec_tension_chordae) ; 
+                        tension = tension + kappa * tension_decreasing(X, X_nbr, du, c_dec_tension_chordae); 
                     end
+                    
+                    if tension_debug
+                        dec = tension_decreasing(X, X_nbr, du, c_dec_tension_chordae); 
+                        fprintf('tension = %e, dec_tension = %f, (j,k) = (%d, %d) free edge\n', tension, dec, j, k); 
+                    end 
 
                     F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
 
@@ -192,9 +195,8 @@ function F = difference_equations_bead_slip(leaflet)
                 end
                 
                 if tension_debug
-                    if tension < 0 
-                        fprintf('tension = %f, (i, nbr_idx, tree_idx) = (%d, %d, %d) chordae\n', tension, i, nbr_idx, tree_idx); 
-                    end 
+                    dec = tension_decreasing(C(:,i), nbr, du, c_dec_tension_chordae) ; 
+                    fprintf('tension = %e, dec_tension = %f, (i, nbr_idx, tree_idx) = (%d, %d, %d) chordae\n', tension, dec, i, nbr_idx, tree_idx); 
                 end 
 
                 tension_by_tangent = tension * (nbr - C(:,i)) / norm(nbr - C(:,i));  
