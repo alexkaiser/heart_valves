@@ -290,7 +290,7 @@ elseif parameter_values == 2
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    valve.pressure_tension_ratio = 0.07; % 0.11 * 0.975; 
+    valve.pressure_tension_ratio = 0.065; % 0.11 * 0.975; 
 
 
     % base constant for tensions, derived quantity 
@@ -309,7 +309,7 @@ elseif parameter_values == 2
     tension_coeffs.c_circ_dec_anterior       = 1.0 * dec_tension_coeff_base;  % circumferential 
     tension_coeffs.c_rad_dec_anterior        = 1.5 * dec_tension_coeff_base;  % radial
     tension_coeffs.c_circ_dec_posterior      = 1.0 * dec_tension_coeff_base;  % circumferential 
-    tension_coeffs.c_rad_dec_posterior       = 1.0 * dec_tension_coeff_base;  % radial
+    tension_coeffs.c_rad_dec_posterior       = 1.5 * dec_tension_coeff_base;  % radial
     tension_coeffs.c_circ_dec_hoops          = 2.0 * dec_tension_coeff_base;  % circumferential hoops
     tension_coeffs.c_rad_dec_hoops_anterior  = 0.5 * dec_tension_coeff_base;  % radial hoops, anterior part 
     tension_coeffs.c_rad_dec_hoops_posterior = 0.5 * dec_tension_coeff_base;  % radial hoops, posterior part 
@@ -382,7 +382,7 @@ elseif parameter_values == 2
     k_root_posterior         = 0.4 * valve.root_tension_base / n_trees_posterior; 
     
     k_0_1_commissure         = 0.5 * valve.leaf_tension_base / n_trees_commissure; 
-    k_root_commissure        = 0.55 * valve.root_tension_base / n_trees_commissure; 
+    k_root_commissure        = 0.5 * valve.root_tension_base / n_trees_commissure; 
 
     
     k_0_1_posterior_and_comm    = zeros(n_trees_posterior_and_comm, 1);
