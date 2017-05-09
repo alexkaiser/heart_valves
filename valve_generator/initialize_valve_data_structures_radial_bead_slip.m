@@ -347,7 +347,7 @@ elseif parameter_values == 2
 
 
     % Leaf tensions are all modified 
-    valve.leaf_tension_base = .85 * valve.tension_base; 
+    valve.leaf_tension_base = .8 * valve.tension_base; 
 
     % Base total root tension 
     % The value 0.5905 works well on each tree when using separate solves and two leaflets 
