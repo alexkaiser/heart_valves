@@ -848,25 +848,25 @@ inline double spring_function_collagen(double R, const double* params, int lag_m
     
     // Compute the force
     if (E > full_recruitment){
-        if ((lag_mastr_idx % 2500) == 0){
+        /*if ((lag_mastr_idx % 2500) == 0){
             std::cout << "Affine. (idx,nbr) = (" << lag_mastr_idx << ", " <<  lag_slave_idx
                       << "\tE = " << E
                       << "\tF = " << kappa * (eta_collagen*E + collagen_y_intercept)
                       << "\tEffective slope = " << kappa * eta_collagen
                       << "\tRest len = " << rest_len
                       << "\n";
-        }
+        }*/ 
         return kappa * (eta_collagen*E + collagen_y_intercept);
     }
     else if (E > 0.0){
-        if ((lag_mastr_idx % 2500) == 0){
+        /*if ((lag_mastr_idx % 2500) == 0){
             std::cout << "Exp.   (idx,nbr) = (" << lag_mastr_idx << ", " <<  lag_slave_idx << ")"
                       << "\tE = " << E
                       << "\tF = " << kappa * a * (exp(b*E) - 1)
                       << "\tEffective slope = " << kappa * a * b // taylor series coefficient on first term
                       << "\tRest len = " << rest_len
                       << "\n";
-        }
+        }*/ 
         return kappa * a * (exp(b*E) - 1);
     }
     else{
