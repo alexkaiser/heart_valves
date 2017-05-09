@@ -43,8 +43,8 @@ for i=1:length(valve.leaflets)
     
     leaflet = valve_with_reference.leaflets(i); 
     
-    p_initial = 0;%leaflet.p_0; 
-    p_goal    = 0; 
+    p_initial = leaflet.p_0/5; 
+    p_goal    = leaflet.p_0/1000; 
 
     [valve_with_reference.leaflets(i) pass err] = solve_valve_pressure_auto_continuation(leaflet, valve.tol_global, valve.max_it, valve.max_it_continuation, p_initial, p_goal, valve.max_consecutive_fails, valve.max_total_fails); 
 

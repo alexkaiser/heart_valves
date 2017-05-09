@@ -253,6 +253,10 @@ while err > tol
         break; 
     end  
     
+    if isnan(err)
+        error('NaN failure in solve. Return control to parent.'); 
+    end 
+    
     if consecutive_fails > max_consecutive_fails
         error('Too many consecutive failures on line search. Return control to parent.'); 
     end 

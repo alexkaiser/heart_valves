@@ -269,7 +269,7 @@ elseif parameter_values == 2
 
     valve.L = 3.0; 
     valve.skeleton = valve_points_ct_systole(); 
-    valve.diastolic_increment = [0; 0; 0]; 
+    valve.diastolic_increment = [1.25; 0.0; 0.25]; 
 
     
     zero_radius = false; 

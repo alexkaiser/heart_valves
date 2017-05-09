@@ -37,10 +37,11 @@ function [] = output_to_ibamr_format(valve)
         error('Must have split papillary locations in current implementation.'); 
     end
 
-    params.vertex = fopen(strcat(base_name, '.vertex'), 'w'); 
-    params.spring = fopen(strcat(base_name, '.spring'), 'w'); 
-    params.target = fopen(strcat(base_name, '.target'), 'w'); 
-    params.inst   = fopen(strcat(base_name, '.inst'  ), 'w'); 
+    params.vertex    = fopen(strcat(base_name, '.vertex'), 'w'); 
+    params.spring    = fopen(strcat(base_name, '.spring'), 'w'); 
+    params.target    = fopen(strcat(base_name, '.target'), 'w'); 
+    params.inst      = fopen(strcat(base_name, '.inst'), 'w'); 
+    params.papillary = fopen(strcat(base_name, '.papillary'), 'w'); 
     
     % just make this ridiculously big for now 
     % would be better to implement some resizing but that will also clutter things up 
@@ -56,9 +57,10 @@ function [] = output_to_ibamr_format(valve)
     params.max_idx_after_reserved_indices = 0; 
     
     % just count the number of vertices and strings throughout 
-    params.total_vertices = 0; 
-    params.total_springs  = 0; 
-    params.total_targets  = 0; 
+    params.total_vertices  = 0; 
+    params.total_springs   = 0; 
+    params.total_targets   = 0; 
+    params.total_papillary = 0; 
 
 
     % Spring constant base for targets and 
@@ -105,7 +107,12 @@ function [] = output_to_ibamr_format(valve)
         z_offset_vals = 0; 
     end  
     
-        
+    % print the increment for systolic motion
+    % this is the negative of the motion that occurred 
+    % from the systolic to diastolic before 
+    systolic_increment = -valve.diastolic_increment; 
+    fprintf(params.papillary, '%.14f\t %.14f\t %.14f\n', systolic_increment(1), systolic_increment(2), systolic_increment(3)); 
+    
     
     % ugh this is terrible fix it it makes my head hurt by I'm tired 
     global z_offset
@@ -176,14 +183,16 @@ function [] = output_to_ibamr_format(valve)
     params = write_all_vertices(params); 
 
     % and clean up files with totals 
-    fclose(params.vertex); 
-    fclose(params.spring); 
-    fclose(params.target); 
-    fclose(params.inst  ); 
+    fclose(params.vertex   ); 
+    fclose(params.spring   ); 
+    fclose(params.target   ); 
+    fclose(params.inst     ); 
+    fclose(params.papillary); 
 
     prepend_line_with_int(strcat(base_name, '.vertex'), params.total_vertices); 
     prepend_line_with_int(strcat(base_name, '.spring'), params.total_springs); 
     prepend_line_with_int(strcat(base_name, '.target'), params.total_targets); 
+    prepend_line_with_int(strcat(base_name, '.papillary'), params.total_papillary); 
 
 end 
 
@@ -370,6 +379,13 @@ function params = target_string(params, idx, kappa, eta)
 end 
 
 
+function params = papillary_string(params, idx, coords)
+    % prints a papillary format string to target file 
+    fprintf(params.papillary, '%d\t %.14f\t %.14f %.14f\n', idx, coords(1), coords(2), coords(3));
+    params.total_papillary = params.total_papillary + 1; 
+end 
+
+
 function [] = prepend_line_with_int(file_name, val)
     % Adds a single line to the file with given name
     % at the beginning with the integer val 
@@ -451,6 +467,9 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_targ
         else
             params = target_string(params, params.global_idx, k_target);     
         end 
+        
+        % write papillary file 
+        params = papillary_string(params, params.global_idx, leaflet.chordae(tree_idx).root); 
         
         params.global_idx = params.global_idx + 1;
         
