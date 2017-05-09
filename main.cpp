@@ -83,11 +83,40 @@
 #include <silo.h>
 #endif
 
-//void init_source_variables(vector<double>& Q_src, const vector<double>& P_src);
-//void set_source_variables(vector<double>& Q_src, const vector<double>& P_src, double current_time, double dt, bool sink_on);
-//void update_rest_lengths(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager* const l_data_manager, const double alpha);
 
-void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager* const l_data_manager, const double current_time, const double dt, fourier_series_data *fourier_body_force);
+typedef struct{
+
+    // number of target points that move  
+    int N_targets;      
+    
+    // vertex number for each target 
+    int *vertex_idx;  
+    
+    // base coordinates 
+    double *x_initial; 
+    double *y_initial;
+    double *z_initial;
+    
+    // maximum increment 
+    double x_increment; 
+    double y_increment; 
+    double z_increment; 
+
+    // pressure limits 
+    double min_pressure_mmHg;
+    double max_pressure_mmHg; 
+    
+} papillary_info; 
+
+
+papillary_info* initialize_moving_papillary_info(string structure_name, fourier_series_data *fourier_body_force); 
+
+void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, 
+                                   LDataManager* const l_data_manager, 
+                                   const double current_time, 
+                                   const double dt, 
+                                   fourier_series_data *fourier_body_force, 
+                                   papillary_info *papillary);
 
 inline double spring_function_collagen(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
 inline double deriv_spring_collagen(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
@@ -111,7 +140,7 @@ inline double deriv_spring_collagen(double R, const double* params, int lag_mast
 
 #define MAX_STEP_FOR_CHANGE 1000
 
-// #define MOVING_PAPILLARY
+#define MOVING_PAPILLARY
 
 
 namespace{
@@ -156,7 +185,7 @@ int main(int argc, char* argv[])
         // and enable file logging.
         Pointer<AppInitializer> app_initializer = new AppInitializer(argc, argv, "IB.log");
         Pointer<Database> input_db = app_initializer->getInputDatabase();
-
+                
         // check if have a restarted run 
         string restart_read_dirname;
         // int restore_num = 0;
@@ -452,6 +481,21 @@ int main(int argc, char* argv[])
         #endif
 
 
+        #ifdef MOVING_PAPILLARY
+            #ifdef FOURIER_SERIES_BODY_FORCE
+                
+                // get base name and 
+                std::string structure_name = input_db->getString("NAME"); 
+                
+                papillary_info* papillary = initialize_moving_papillary_info(structure_name, fourier_body_force); 
+                
+                #else
+                    pout << "other papillary movement not implemented, must use periodic with fourier series for now\n";
+                    SAMRAI_MPI::abort();
+                #endif
+            #endif
+
+
         // Set up visualization plot file writers.
         Pointer<VisItDataWriter<NDIM> > visit_data_writer = app_initializer->getVisItDataWriter();
         Pointer<LSiloDataWriter> silo_data_writer = app_initializer->getLSiloDataWriter();
@@ -491,7 +535,6 @@ int main(int argc, char* argv[])
             }
             
         #endif
-
 
         // Deallocate initialization objects.
         ib_method_ops->freeLInitStrategy();
@@ -590,7 +633,7 @@ int main(int argc, char* argv[])
             #ifdef MOVING_PAPILLARY
                 #ifdef FOURIER_SERIES_BODY_FORCE
                     if (z_periodic){
-                        update_target_point_positions(patch_hierarchy, l_data_manager, loop_time, dt, fourier_body_force);
+                        update_target_point_positions(patch_hierarchy, l_data_manager, loop_time, dt, fourier_body_force, papillary);
                     }
                 #else
                     pout << "other papillary movement not implemented, must use periodic with fourier series for now\n";
@@ -736,7 +779,75 @@ int main(int argc, char* argv[])
 
 
 
-void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDataManager* const l_data_manager, const double current_time, const double dt, fourier_series_data *fourier_body_force){
+papillary_info* initialize_moving_papillary_info(string structure_name, fourier_series_data *fourier_body_force){
+    // reads file structure_name.papillary 
+    // and initializes information for moving papillary 
+    
+    papillary_info* papillary = new papillary_info; 
+    
+    
+    
+    string full_name = structure_name + string(".papillary"); 
+    
+    std::cout << "name = " << full_name << "\n"; 
+    
+    ifstream papillary_file(full_name.c_str());
+    
+    // first is number of points 
+    papillary_file >> papillary->N_targets; 
+    
+    papillary->vertex_idx = new int[papillary->N_targets];  
+    papillary->x_initial  = new double[papillary->N_targets]; 
+    papillary->y_initial  = new double[papillary->N_targets]; 
+    papillary->z_initial  = new double[papillary->N_targets]; 
+    
+    // next gets x,y,z increments 
+    papillary_file >> papillary->x_increment; 
+    papillary_file >> papillary->y_increment; 
+    papillary_file >> papillary->z_increment;
+    
+    std::cout << "N_targets = " << papillary->N_targets << "\n"; 
+    std::cout << "increment = " << papillary->x_increment << " " << papillary->y_increment << " " << papillary->z_increment << "\n"; 
+    
+    for (int i=0; i<papillary->N_targets; i++){
+        papillary_file >> papillary->vertex_idx[i];  
+        papillary_file >> papillary->x_initial[i]; 
+        papillary_file >> papillary->y_initial[i]; 
+        papillary_file >> papillary->z_initial[i];
+        
+        std::cout << "idx, coords = " << papillary->vertex_idx[i]  << " " <<  papillary->x_initial[i]  << " " << papillary->y_initial[i]  << " " << papillary->z_initial[i] << "\n";
+    }
+    
+    
+    papillary->min_pressure_mmHg = 0.0; 
+    papillary->max_pressure_mmHg = 0.0; 
+    
+    double p;
+    for (unsigned int i=0; i<(fourier_body_force->N_times); i++){
+        
+        p = fourier_body_force->values[i]; 
+        
+        if (p < papillary->min_pressure_mmHg)
+            papillary->min_pressure_mmHg = p;
+            
+        if (p > papillary->max_pressure_mmHg)
+            papillary->max_pressure_mmHg = p;
+    
+    }
+    
+    std::cout << "min, max p = " << papillary->min_pressure_mmHg << " " << papillary->max_pressure_mmHg << "\n"; 
+    
+    return papillary; 
+}  
+
+
+void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, 
+                                   LDataManager* const l_data_manager, 
+                                   const double current_time, 
+                                   const double dt, 
+                                   fourier_series_data *fourier_body_force, 
+                                   papillary_info *papillary){
+                                   
     // Requires to have pressure difference as a Fourier series
     // Atrial pressure is positive if higher
     // so positive pressure drives forward flow
@@ -746,12 +857,12 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDa
         return; 
 
 
-    const static double LEFT_PAPILLARY[3]  = {-0.972055648767080, -1.611924550017006, -2.990100960298683 + 1.0};
-    const static double RIGHT_PAPILLARY[3] = {-1.542417595752084,  1.611924550017006, -3.611254871967348 + 1.0};
+    // const static double LEFT_PAPILLARY[3]  = {-0.972055648767080, -1.611924550017006, -2.990100960298683 + 1.0};
+    // const static double RIGHT_PAPILLARY[3] = {-1.542417595752084,  1.611924550017006, -3.611254871967348 + 1.0};
 
     // max absolute value of the pressure difference
-    const static double MAX_ABS_VAL_PRESSURE_DIFF = 106.0;
-    const static double MAX_DISPLACEMENT_SYSTOLE  = 1.0; // papillary tips move this far at their peak
+    // const static double MAX_ABS_VAL_PRESSURE_DIFF = 106.0;
+    // const static double MAX_DISPLACEMENT_SYSTOLE  = 1.0; // papillary tips move this far at their peak
     
     // We require that the structures are associated with the finest level of
     // the patch hierarchy.
@@ -775,8 +886,11 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDa
 
     // move compared to the current pressure difference
     // if the pressure is negative (higher ventricular pressure towards closure)
-    const double displacement  = (pressure_mmHg < 0.0) ? MAX_DISPLACEMENT_SYSTOLE * abs(pressure_mmHg / MAX_ABS_VAL_PRESSURE_DIFF) : 0.0;
-
+    double displacement_frac; 
+    if  (pressure_mmHg < 0.0) 
+        displacement_frac = abs(pressure_mmHg / papillary->min_pressure_mmHg); 
+    else 
+        displacement_frac = 0.0;
 
     // Loop over all Lagrangian mesh nodes and update the target point
     // positions.
@@ -794,20 +908,25 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, LDa
             Point& X_target = force_spec->getTargetPointPosition();
             const int lag_idx = node->getLagrangianIndex();
             
-            if (lag_idx == 0){
-                // z coord down
-                X_target(2) = LEFT_PAPILLARY[2]  - displacement;
-
+            // loop over struct, little wasteful but not that many 
+            for (int i=0; i<(papillary->N_targets); i++){
+                if (lag_idx == (papillary->vertex_idx[i])){
+                    X_target(0) = papillary->x_initial[i] + displacement_frac * papillary->x_increment; 
+                    X_target(1) = papillary->y_initial[i] + displacement_frac * papillary->y_increment; 
+                    X_target(2) = papillary->z_initial[i] + displacement_frac * papillary->z_increment; 
+                }            
             }
-            else if (lag_idx == 1){
-                // z coord down
-                X_target(2) = RIGHT_PAPILLARY[2] - displacement;
-            }
+            
         }
     }
 
     return;
 }// update_target_point_positions
+
+
+
+
+
 
 
 
