@@ -290,7 +290,7 @@ elseif parameter_values == 2
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    valve.pressure_tension_ratio = 0.065; % 0.11 * 0.975; 
+    valve.pressure_tension_ratio = 0.062; % 0.11 * 0.975; 
 
 
     % base constant for tensions, derived quantity 
@@ -299,9 +299,9 @@ elseif parameter_values == 2
 
     % tension coefficients 
     tension_coeffs.alpha_anterior       = 1.0 * valve.tension_base;  % circumferential 
-    tension_coeffs.beta_anterior        = 1.2 * valve.tension_base;  % radial
+    tension_coeffs.beta_anterior        = 1.1 * valve.tension_base;  % radial
     tension_coeffs.alpha_posterior      = 1.0 * valve.tension_base;  % circumferential 
-    tension_coeffs.beta_posterior       = 1.1 * valve.tension_base;  % radial
+    tension_coeffs.beta_posterior       = 1.0 * valve.tension_base;  % radial
     tension_coeffs.alpha_hoops          = 0.5 * valve.tension_base;  % circumferential hoops 
 
 
@@ -347,12 +347,12 @@ elseif parameter_values == 2
 
 
     % Leaf tensions are all modified 
-    valve.leaf_tension_base = .9 * valve.tension_base; 
+    valve.leaf_tension_base = .85 * valve.tension_base; 
 
     % Base total root tension 
     % The value 0.5905 works well on each tree when using separate solves and two leaflets 
     % Controls constant tension at the root of the tree 
-    valve.root_tension_base = .9 * 0.5905 * valve.tension_base; 
+    valve.root_tension_base = .85 * 0.5905 * valve.tension_base; 
 
 
     n_trees_anterior = 2; 
