@@ -60,6 +60,7 @@ p_0 = -valve.p_physical;
 
 % scaling for target points 
 valve.target_multiplier = 40/128; 
+valve.target_multiplier_papillary = 2 * 40/128; 
 
 % number of lagrangian tracers in each dimension 
 % arranged in a mesh near the origin

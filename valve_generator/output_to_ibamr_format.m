@@ -23,14 +23,15 @@ function [] = output_to_ibamr_format(valve)
     %    Files written in IBAMR format 
     % 
     
-    N                         = valve.N; 
-    base_name                 = valve.base_name; 
-    L                         = valve.L; 
-    tension_base              = valve.tension_base; 
-    target_multiplier         = valve.target_multiplier; 
-    n_lagrangian_tracers      = valve.n_lagrangian_tracers; 
-    num_copies                = valve.num_copies; 
-    collagen_constitutive     = valve.collagen_constitutive; 
+    N                           = valve.N; 
+    base_name                   = valve.base_name; 
+    L                           = valve.L; 
+    tension_base                = valve.tension_base; 
+    target_multiplier           = valve.target_multiplier; 
+    target_multiplier_papillary = valve.target_multiplier_papillary; 
+    n_lagrangian_tracers        = valve.n_lagrangian_tracers; 
+    num_copies                  = valve.num_copies; 
+    collagen_constitutive       = valve.collagen_constitutive; 
 
     
     if ~valve.split_papillary
@@ -71,7 +72,8 @@ function [] = output_to_ibamr_format(valve)
     % base rate for target spring constants
     % target constant for a single point 
     % this does not scale when the mesh is changed 
-    k_target = target_multiplier * tension_base / num_copies; 
+    k_target_papillary = target_multiplier_papillary * tension_base / num_copies; 
+    k_target           = target_multiplier           * tension_base / num_copies; 
     
     % No general target damping for now 
     eta = 0.0; 
@@ -136,11 +138,11 @@ function [] = output_to_ibamr_format(valve)
         end 
         
         for i=1:length(valve.leaflets)
-            [params valve.leaflets(i)] = assign_indices_vertex_target(params, valve.leaflets(i), k_target, eta); 
+            [params valve.leaflets(i)] = assign_indices_vertex_target(params, valve.leaflets(i), k_target, k_target_papillary, eta); 
         end 
         
         for i=1:length(valve.leaflets)
-            params = add_springs(params, valve.leaflets(i),  num_copies, ds, collagen_constitutive); 
+            params = add_springs(params, valve.leaflets(i), num_copies, ds, collagen_constitutive); 
         end 
 
         % flat part of mesh 
@@ -405,7 +407,7 @@ function [] = prepend_line_with_int(file_name, val)
 end 
 
 
-function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_target, eta)
+function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_target, k_target_papillary, eta)
     % 
     % Assigns global indices to the leaflet and chordae 
     % Includes all boundary condition points and internal 
@@ -463,9 +465,9 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_targ
         
         % root is always a boundary condition 
         if exist('eta', 'var')
-            params = target_string(params, params.global_idx, k_target, eta);     
+            params = target_string(params, params.global_idx, k_target_papillary, eta);     
         else
-            params = target_string(params, params.global_idx, k_target);     
+            params = target_string(params, params.global_idx, k_target_papillary);     
         end 
         
         % write papillary file 
