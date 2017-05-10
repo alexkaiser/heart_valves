@@ -1,4 +1,4 @@
-function skeleton = valve_points_ct_systole(output)
+function skeleton = valve_points_ct_systole(low, output)
 
 
 % 
@@ -6,6 +6,10 @@ function skeleton = valve_points_ct_systole(output)
 % Moves center to origin 
 % Takes papillary tips in rigid manner
 % 
+
+if ~exist('low', 'var')
+    low = false; 
+end 
 
 
 if ~exist('output', 'var')
@@ -22,22 +26,46 @@ ring_point_two = 0.1 * [40.091951; 9.874523; -33.887690];
 
 % initial coordinates are in mm
 % multiply by .1 everywhere to get cm 
-
 center          = 0.1 * [51.119208;  5.729583; -15.443644]; 
-papillary_left  = 0.1 * [66.194740;  0.831810; -50.110394]; 
-papillary_right = 0.1 * [85.581177; -1.730428; -27.283619]; 
+
 
 
 % polygons from papillary segmentation 
-left_points = 0.1 * [68.126724 0.328857 -47.740620
-                     64.706276 -1.425585 -50.922058
-                     65.751228 3.592152 -51.668495]'; 
-           
-right_points = 0.1 * [88.904839 -1.376166 -23.674393
-                      86.042999 -5.822769 -25.194181
-                      83.157478 -4.150777 -29.086617
-                      83.295311 0.410899 -30.680325
-                      86.505264 2.286659 -27.782587]'; 
+if low 
+    
+    % second pair of points with two coordinates 
+    % less close to valve ring 
+    papillary_left  = 0.1 * [72.223297; -0.936141; -51.966995]; 
+    papillary_right = 0.1 * [89.357727; -2.348701; -32.118557]; 
+
+    left_points  = 0.1 * [74.520561 -0.935657 -49.378654
+                          71.058113 -4.873147 -51.770401
+                          70.101616 -0.572233 -54.497208
+                          73.212921  2.636479 -52.221695]'; 
+                      
+    right_points = 0.1 * [92.406425 -2.556190 -28.603773
+                          89.884819 -7.167146 -29.677172
+                          86.689972 -7.036054 -33.327343
+                          85.979973 -1.755905 -36.151848
+                          89.252831  2.847135 -34.228916
+                          91.932350  1.575949 -30.722275]';    
+
+else 
+    
+    % first pair of points with two coordinates 
+    papillary_left  = 0.1 * [66.194740;  0.831810; -50.110394]; 
+    papillary_right = 0.1 * [85.581177; -1.730428; -27.283619]; 
+
+    left_points = 0.1 * [68.126724 0.328857 -47.740620
+                         64.706276 -1.425585 -50.922058
+                         65.751228 3.592152 -51.668495]'; 
+
+    right_points = 0.1 * [88.904839 -1.376166 -23.674393
+                          86.042999 -5.822769 -25.194181
+                          83.157478 -4.150777 -29.086617
+                          83.295311 0.410899 -30.680325
+                          86.505264 2.286659 -27.782587]'; 
+end 
 
                   
 [m n] = size(left_points); 

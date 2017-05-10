@@ -109,7 +109,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 
-parameter_values = 2; 
+parameter_values = 3; 
     
 
 if parameter_values == 1  
@@ -268,7 +268,10 @@ elseif parameter_values == 2
     valve.total_angle_dip = pi; 
 
     valve.L = 3.0; 
+    
     valve.skeleton = valve_points_ct_systole(); 
+    
+    
     valve.diastolic_increment = [1.25; 0.0; 0.25]; 
 
     
@@ -448,6 +451,199 @@ elseif parameter_values == 2
     k_root             = [k_root_anterior; k_root_posterior_and_comm]; 
     
     
+    
+elseif parameter_values == 3 
+
+    % commissural tree version 
+    % but without explicit commissural leaflets 
+    
+    valve.dip_anterior_systole = true; 
+    valve.r_dip = 0.75; 
+    valve.total_angle_dip = pi; 
+
+    valve.L = 3.0; 
+    
+    low_papillary = true; 
+    valve.skeleton = valve_points_ct_systole(low_papillary); 
+    
+    
+    valve.diastolic_increment = [1.25; 0.0; 0.25]; 
+
+    
+    zero_radius = false; 
+    if zero_radius
+        for i = 1:length(valve.skeleton.papillary)
+            valve.skeleton.papillary(i).radius = 0; 
+        end 
+    end 
+    
+    vertical_normal_papillary = true; 
+    if vertical_normal_papillary 
+        for i = 1:length(valve.skeleton.papillary)
+            valve.skeleton.papillary(i).normal = [0; 0; 1]; 
+        end 
+    end 
+
+    % Base constants, individual pieces are tuned relative to these values
+
+    % pressure / tension coefficient ratio
+    % this tension coefficient is the maximum tension that a fiber can support
+    valve.pressure_tension_ratio = 0.05; % 0.11 * 0.975; 
+
+
+    % base constant for tensions, derived quantity 
+    valve.tension_base = valve.p_physical / valve.pressure_tension_ratio; 
+
+
+    % tension coefficients 
+    tension_coeffs.alpha_anterior       = 1.0 * valve.tension_base;  % circumferential 
+    tension_coeffs.beta_anterior        = 1.1 * valve.tension_base;  % radial
+    tension_coeffs.alpha_posterior      = 1.0 * valve.tension_base;  % circumferential 
+    tension_coeffs.beta_posterior       = 1.0 * valve.tension_base;  % radial
+    tension_coeffs.alpha_hoops          = 0.5 * valve.tension_base;  % circumferential hoops 
+
+
+    % decreasing tension coefficients 
+    tension_coeffs.c_circ_dec_anterior       = 1.0 * dec_tension_coeff_base;  % circumferential 
+    tension_coeffs.c_rad_dec_anterior        = 1.5 * dec_tension_coeff_base;  % radial
+    tension_coeffs.c_circ_dec_posterior      = 1.0 * dec_tension_coeff_base;  % circumferential 
+    tension_coeffs.c_rad_dec_posterior       = 1.5 * dec_tension_coeff_base;  % radial
+    tension_coeffs.c_circ_dec_hoops          = 2.0 * dec_tension_coeff_base;  % circumferential hoops
+    tension_coeffs.c_rad_dec_hoops_anterior  = 0.5 * dec_tension_coeff_base;  % radial hoops, anterior part 
+    tension_coeffs.c_rad_dec_hoops_posterior = 0.5 * dec_tension_coeff_base;  % radial hoops, posterior part 
+
+
+    % places this many periodic rings above 
+    n_rings_periodic = max(2,N/64); 
+
+
+    % No explicit commissural leaflet here 
+    N_anterior = N/2; 
+
+    angles.anterior = 5*pi/6; 
+
+    % Posterior takes whatever is left 
+    N_posterior = N - N_anterior; 
+
+    % store these 
+    valve.N_anterior   = N_anterior; 
+    valve.N_posterior  = N_posterior;
+    valve.commissural_leaflets = false; 
+    valve.N_commissure = 0; 
+
+
+    N_per_direction   = [N_anterior/2, N_anterior/2, N_posterior/2, N_posterior/2]; 
+
+    % Anterior goes down then up 
+    leaflet_direction = [-1, 1]; 
+
+    % Posterior goes down then up 
+    leaflet_direction = [leaflet_direction, -1, 1]; 
+
+    % No offset, starting at commissure 
+    leaflet_N_start = 0; 
+
+
+    % Leaf tensions are all modified 
+    valve.leaf_tension_base = .8 * valve.tension_base; 
+
+    % Base total root tension 
+    % The value 0.5905 works well on each tree when using separate solves and two leaflets 
+    % Controls constant tension at the root of the tree 
+    valve.root_tension_base = .8 * 0.5905 * valve.tension_base; 
+
+
+    n_trees_anterior = 2; 
+
+    k_0_1_anterior  = 1.1 * valve.leaf_tension_base / n_trees_anterior; 
+    k_0_1_anterior  = k_0_1_anterior * [1; 1]; 
+    k_root_anterior = 1.1 * valve.root_tension_base / n_trees_anterior; 
+    k_root_anterior = k_root_anterior * [1; 1]; 
+
+    n_leaves_anterior  = N_anterior/n_trees_anterior * ones(n_trees_anterior, 1); 
+
+    
+    % posterior and included commissural trees 
+    n_trees_posterior_and_comm  = 6;
+    n_trees_posterior           = 2; 
+    n_trees_commissure          = 4; 
+    n_trees_commissure_per_side = n_trees_commissure/2; 
+    
+    % include commissural trees in posterior leaflet 
+    n_posterior_tree_total   = N_posterior / 2; 
+    n_commissural_tree_total = N_posterior / 2;
+    
+    n_tree_posterior         = n_posterior_tree_total   / n_trees_posterior; 
+    n_tree_commissure        = n_commissural_tree_total / n_trees_commissure; 
+    
+    k_0_1_posterior          = 0.4 * valve.leaf_tension_base / n_trees_posterior; 
+    k_root_posterior         = 0.4 * valve.root_tension_base / n_trees_posterior; 
+    
+    k_0_1_commissure         = 0.5 * valve.leaf_tension_base / n_trees_commissure; 
+    k_root_commissure        = 0.5 * valve.root_tension_base / n_trees_commissure; 
+
+    
+    k_0_1_posterior_and_comm    = zeros(n_trees_posterior_and_comm, 1);
+    k_root_posterior_and_comm   = zeros(n_trees_posterior_and_comm, 1);
+    n_leaves_posterior_and_comm = zeros(n_trees_posterior_and_comm, 1); 
+    
+    
+    j = 1; 
+    for tmp=1:n_trees_commissure_per_side
+        k_0_1_posterior_and_comm(j)    = k_0_1_commissure; 
+        k_root_posterior_and_comm(j)   = k_root_commissure; 
+        n_leaves_posterior_and_comm(j) = n_tree_commissure; 
+        j = j+1; 
+    end 
+    
+    for tmp=1:n_trees_posterior
+        k_0_1_posterior_and_comm(j)    = k_0_1_posterior; 
+        k_root_posterior_and_comm(j)   = k_root_posterior; 
+        n_leaves_posterior_and_comm(j) = n_tree_posterior; 
+        j = j+1; 
+    end    
+    
+    for tmp=1:n_trees_commissure_per_side
+        k_0_1_posterior_and_comm(j)    = k_0_1_commissure; 
+        k_root_posterior_and_comm(j)   = k_root_commissure; 
+        n_leaves_posterior_and_comm(j) = n_tree_commissure; 
+        j = j+1; 
+    end
+    
+    
+    papillary_anterior = zeros(3,n_trees_anterior); 
+    n_points = n_trees_anterior/2; 
+    left_papillary_range = 1:(n_trees_anterior/2); 
+    right_papillary_range  = left_papillary_range + (n_trees_anterior/2);
+    
+    % arrangements of connection to papillary muscle 
+    % angles are measured form approximate x direction on left papillary 
+    % negatives and swapped on right papillary 
+    min_papillary_angle_anterior = 0; 
+    max_papillary_angle_anterior = 0; 
+    
+    papillary_anterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points,  min_papillary_angle_anterior,  max_papillary_angle_anterior); 
+    papillary_anterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points, -max_papillary_angle_anterior, -min_papillary_angle_anterior); 
+
+    
+    papillary_posterior_and_comm = zeros(3,n_trees_posterior_and_comm); 
+    n_points = n_trees_posterior_and_comm/2; 
+    right_papillary_range = 1:(n_trees_posterior_and_comm/2); 
+    left_papillary_range  = right_papillary_range + (n_trees_posterior_and_comm/2); 
+    
+    % arrangements of anchor points 
+    min_papillary_angle_posterior = -pi; 
+    max_papillary_angle_posterior = 0; 
+    
+    papillary_posterior_and_comm(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points, -max_papillary_angle_posterior, -min_papillary_angle_posterior); 
+    papillary_posterior_and_comm(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points,  min_papillary_angle_posterior,  max_papillary_angle_posterior);
+
+    
+    % concatenate all relevant arrays
+    n_leaves           = [n_leaves_anterior; n_leaves_posterior_and_comm];
+    papillary          = [papillary_anterior, papillary_posterior_and_comm]; 
+    k_0_1              = [k_0_1_anterior; k_0_1_posterior_and_comm]; 
+    k_root             = [k_root_anterior; k_root_posterior_and_comm]; 
     
 end 
 
