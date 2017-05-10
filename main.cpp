@@ -856,14 +856,6 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
     if (current_time < 0.1)
         return; 
 
-
-    // const static double LEFT_PAPILLARY[3]  = {-0.972055648767080, -1.611924550017006, -2.990100960298683 + 1.0};
-    // const static double RIGHT_PAPILLARY[3] = {-1.542417595752084,  1.611924550017006, -3.611254871967348 + 1.0};
-
-    // max absolute value of the pressure difference
-    // const static double MAX_ABS_VAL_PRESSURE_DIFF = 106.0;
-    // const static double MAX_DISPLACEMENT_SYSTOLE  = 1.0; // papillary tips move this far at their peak
-    
     // We require that the structures are associated with the finest level of
     // the patch hierarchy.
     const int level_num = hierarchy->getFinestLevelNumber();
@@ -887,9 +879,17 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
     // move compared to the current pressure difference
     // if the pressure is negative (higher ventricular pressure towards closure)
     // double power = 1.0 / 10.0;
-    double displacement_frac; 
-    if  (pressure_mmHg < 0.0){ 
-        displacement_frac = abs(pressure_mmHg / papillary->min_pressure_mmHg);
+    double displacement_frac;
+    
+    // displacement varies down to this negative value
+    // at which point it is constant in systolic position
+    double max_p_displacement = npapillary->min_pressure_mmHg / 2.0;
+    
+    if (pressure_mmHg < max_p_displacement){
+        displacement_frac = 1.0;
+    }
+    else if (pressure_mmHg < 0.0){
+        displacement_frac = abs(pressure_mmHg / max_p_displacement);
         //displacement_frac = pow(displacement_frac, power);
     } 
     else{ 
