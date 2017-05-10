@@ -886,11 +886,11 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
 
     // move compared to the current pressure difference
     // if the pressure is negative (higher ventricular pressure towards closure)
-    double power = 1.0 / 10.0; 
+    // double power = 1.0 / 10.0;
     double displacement_frac; 
     if  (pressure_mmHg < 0.0){ 
         displacement_frac = abs(pressure_mmHg / papillary->min_pressure_mmHg);
-        displacement_frac = pow(displacement_frac, power); 
+        //displacement_frac = pow(displacement_frac, power);
     } 
     else{ 
         displacement_frac = 0.0;
