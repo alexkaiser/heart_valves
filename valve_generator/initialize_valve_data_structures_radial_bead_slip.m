@@ -109,7 +109,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 
-parameter_values = 3; 
+parameter_values = 2; 
     
 
 if parameter_values == 1  
@@ -269,7 +269,9 @@ elseif parameter_values == 2
 
     valve.L = 3.0; 
     
-    valve.skeleton = valve_points_ct_systole(); 
+    low_papillary = false; 
+    tip_radius = .2; 
+    valve.skeleton = valve_points_ct_systole(low_papillary, tip_radius); 
     
     
     valve.diastolic_increment = [1.25; 0.0; 0.25]; 
@@ -293,7 +295,7 @@ elseif parameter_values == 2
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    valve.pressure_tension_ratio = 0.056; % 0.11 * 0.975; 
+    valve.pressure_tension_ratio = 0.0525; % 0.11 * 0.975; 
 
 
     % base constant for tensions, derived quantity 
@@ -464,7 +466,8 @@ elseif parameter_values == 3
     valve.L = 3.0; 
     
     low_papillary = true; 
-    valve.skeleton = valve_points_ct_systole(low_papillary); 
+    tip_radius = .2; 
+    valve.skeleton = valve_points_ct_systole(low_papillary, tip_radius); 
     
     
     valve.diastolic_increment = [1.25; 0.0; 0.25]; 
@@ -488,7 +491,7 @@ elseif parameter_values == 3
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    valve.pressure_tension_ratio = 0.05; % 0.11 * 0.975; 
+    valve.pressure_tension_ratio = 0.065; % 0.11 * 0.975; 
 
 
     % base constant for tensions, derived quantity 
@@ -550,7 +553,7 @@ elseif parameter_values == 3
     % Base total root tension 
     % The value 0.5905 works well on each tree when using separate solves and two leaflets 
     % Controls constant tension at the root of the tree 
-    valve.root_tension_base = .8 * 0.5905 * valve.tension_base; 
+    valve.root_tension_base = .825 * 0.5905 * valve.tension_base; 
 
 
     n_trees_anterior = 2; 

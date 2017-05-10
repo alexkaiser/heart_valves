@@ -1,4 +1,4 @@
-function skeleton = valve_points_ct_systole(low, output)
+function skeleton = valve_points_ct_systole(low, tip_radius, output)
 
 
 % 
@@ -79,8 +79,12 @@ for j=1:n
     radii(j) = norm(papillary_left - left_points(:,j)); 
 end 
 
-left_radius = mean(radii); 
-                  
+if exist('tip_radius', 'var')
+    left_radius = tip_radius; 
+else 
+    left_radius = mean(radii); 
+end 
+
 left_normal = cross(left_points(:,2) - papillary_left, left_points(:,1) - papillary_left); 
 left_normal = left_normal / norm(left_normal); 
 
@@ -95,7 +99,11 @@ for j=1:n
     radii(j) = norm(papillary_right - right_points(:,j)); 
 end 
 
-right_radius = mean(radii); 
+if exist('tip_radius', 'var')
+    right_radius = tip_radius; 
+else 
+    right_radius = mean(radii); 
+end
 
 right_normal = cross(right_points(:,2) - papillary_right, right_points(:,1) - papillary_right);                  
 
