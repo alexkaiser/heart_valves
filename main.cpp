@@ -883,7 +883,7 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
     
     // displacement varies down to this negative value
     // at which point it is constant in systolic position
-    double max_p_displacement = npapillary->min_pressure_mmHg / 2.0;
+    double max_p_displacement = papillary->min_pressure_mmHg / 1.0;
     
     if (pressure_mmHg < max_p_displacement){
         displacement_frac = 1.0;
