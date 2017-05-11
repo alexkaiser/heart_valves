@@ -853,7 +853,8 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
     // so positive pressure drives forward flow
 
     // quick return at beginning so that things do not move in discontinuous manner
-    if (current_time < 0.1)
+    // magic number here, 0.1255 is the location in time of the max fwd pressure in diastole 
+    if (current_time < 0.1255)
         return; 
 
     // We require that the structures are associated with the finest level of
@@ -883,18 +884,14 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
     
     // displacement varies down to this negative value
     // at which point it is constant in systolic position
-    double max_p_displacement = papillary->min_pressure_mmHg / 2.0;
+    double max_p_displacement = papillary->max_pressure_mmHg;
     
-    if (pressure_mmHg < max_p_displacement){
-        displacement_frac = 1.0;
+    if (pressure_mmHg > 0.0){
+        abs(pressure_mmHg / max_p_displacement);
     }
     else if (pressure_mmHg < 0.0){
-        displacement_frac = abs(pressure_mmHg / max_p_displacement);
-        //displacement_frac = pow(displacement_frac, power);
+        displacement_frac = 1.0; 
     } 
-    else{ 
-        displacement_frac = 0.0;
-    }
     
     // Loop over all Lagrangian mesh nodes and update the target point
     // positions.
