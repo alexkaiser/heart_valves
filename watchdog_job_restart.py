@@ -284,6 +284,15 @@ if __name__ == '__main__':
                 
                 movie_script.write('\n')                
                 movie_script.write('cd ' + viz_dir_name + ' \n')
+                
+#                                move = '''mv dumps.visit dumps.visit_2
+# cat dumps.visit_1 dumps.visit_2 > dumps.visit
+# mv lag_data.visit lag_data.visit_2
+# cat lag_data.visit_1 lag_data.visit_2 > lag_data.visit  
+# '''
+#                movie_script.write(move)
+
+                
                 movie_script.write('visit -cli -nowin -s ~/mitral_fully_discrete/make_three_slice_movie.py \n')          
                 
                 movie_script.close()
