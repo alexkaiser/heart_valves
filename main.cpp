@@ -102,9 +102,13 @@ typedef struct{
     double y_increment; 
     double z_increment; 
 
-    // pressure limits 
+    // pressure limits and locations
     double min_pressure_mmHg;
-    double max_pressure_mmHg; 
+    double max_pressure_mmHg;
+    double min_p_time;
+    double max_p_time;
+    int min_p_idx;
+    int max_p_idx;
     
 } papillary_info; 
 
@@ -783,9 +787,7 @@ papillary_info* initialize_moving_papillary_info(string structure_name, fourier_
     // reads file structure_name.papillary 
     // and initializes information for moving papillary 
     
-    papillary_info* papillary = new papillary_info; 
-    
-    
+    papillary_info* papillary = new papillary_info;
     
     string full_name = structure_name + string(".papillary"); 
     
@@ -818,6 +820,8 @@ papillary_info* initialize_moving_papillary_info(string structure_name, fourier_
         std::cout << "idx, coords = " << papillary->vertex_idx[i]  << " " <<  papillary->x_initial[i]  << " " << papillary->y_initial[i]  << " " << papillary->z_initial[i] << "\n";
     }
     
+    papillary->min_p_idx = 0;
+    papillary->max_p_idx = 0;
     
     papillary->min_pressure_mmHg = 0.0; 
     papillary->max_pressure_mmHg = 0.0; 
@@ -827,15 +831,23 @@ papillary_info* initialize_moving_papillary_info(string structure_name, fourier_
         
         p = fourier_body_force->values[i]; 
         
-        if (p < papillary->min_pressure_mmHg)
+        if (p < papillary->min_pressure_mmHg){
             papillary->min_pressure_mmHg = p;
-            
-        if (p > papillary->max_pressure_mmHg)
+            papillary->min_p_idx = i;
+        }
+        
+        if (p > papillary->max_pressure_mmHg){
             papillary->max_pressure_mmHg = p;
-    
+            papillary->max_p_idx = i;
+        }
     }
+
+    papillary->min_p_time = papillary->min_p_idx * fourier_body_force->dt;
+    papillary->max_p_time = papillary->max_p_idx * fourier_body_force->dt;
     
-    std::cout << "min, max p = " << papillary->min_pressure_mmHg << " " << papillary->max_pressure_mmHg << "\n"; 
+    std::cout << "min, max p = " << papillary->min_pressure_mmHg << " " << papillary->max_pressure_mmHg << "\n";
+    std::cout << "min_p_idx, max_p_idx = " << papillary->min_p_idx << " " << papillary->max_p_idx << "\n";
+    std::cout << "min_p_time, max_p_time = " << papillary->min_p_time << " " << papillary->max_p_time << "\n";
     
     return papillary; 
 }  
@@ -854,7 +866,7 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
 
     // quick return at beginning so that things do not move in discontinuous manner
     // magic number here, 0.1255 is the location in time of the max fwd pressure in diastole 
-    if (current_time < 0.1255)
+    if (current_time < papillary->max_p_time)
         return; 
 
     // We require that the structures are associated with the finest level of
@@ -886,12 +898,17 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
     // at which point it is constant in systolic position
     double max_p_displacement = papillary->max_pressure_mmHg;
     
-    if (pressure_mmHg > 0.0){
-        abs(pressure_mmHg / max_p_displacement);
+    if (pressure_mmHg >= 0.0){
+        // diastole
+        displacement_frac = 1.0 - abs(pressure_mmHg / max_p_displacement);
     }
-    else if (pressure_mmHg < 0.0){
+    else{
+        // if (pressure_mmHg < 0.0)
+        // systole
         displacement_frac = 1.0; 
-    } 
+    }
+    
+    // std::cout << "t = " << current_time << " p = " << pressure_mmHg << "displacement_frac = " << displacement_frac << "\n";
     
     // Loop over all Lagrangian mesh nodes and update the target point
     // positions.
