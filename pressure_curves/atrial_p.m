@@ -8,10 +8,10 @@ y_0 = 419.006;
 % two beats in the current diagram 
 min_x =  0.0; 
 max_x =  1.6; 
-min_y =  1.0; 
+min_y =  2.2; 
 max_y =  12.0; 
 
-dt = 1.0e-4; % 1.0e-6; 
+dt = 1.0e-6; 
 % each unit length (in paramter space) is evaluated at this many points 
 N_per_unit_length = ceil(1/dt); 
 
@@ -33,7 +33,7 @@ N_per_unit_length = ceil(1/dt);
 
 min_x =  0.0; 
 max_x =  1.6; 
-min_y =  0.0; 
+min_y = -2.0; 
 % max_y =  65.0;  % reduced here, 20 too low, split difference  
 max_y = 110.0; % physiological  
 
@@ -158,7 +158,9 @@ ylabel('p (mmHg)')
 printfig(fig, 'pressure_curves')
 
 fig = figure; 
-plot(t, vals_atrium_series - vals_ventricle_series); 
+plot(t, vals_atrium_series - vals_ventricle_series, 'k'); 
+hold on; 
+plot(t, 0*(vals_atrium_series - vals_ventricle_series), '--k'); 
 title('Pressure difference, atrium positive')
 
 t = 0:.0001:true_cycle_length*2; 
