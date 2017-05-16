@@ -63,6 +63,10 @@ function [] = output_to_ibamr_format(valve)
     params.total_targets   = 0; 
     params.total_papillary = 0; 
 
+    % keep a single parameter for outputting copies 
+    params.z_offset = 0; 
+    
+    
 
     % Spring constant base for targets and 
     % Approximate force is tension_base multiplied by a length element 
@@ -115,12 +119,10 @@ function [] = output_to_ibamr_format(valve)
     systolic_increment = -valve.diastolic_increment; 
     fprintf(params.papillary, '%.14f\t %.14f\t %.14f\n', systolic_increment(1), systolic_increment(2), systolic_increment(3)); 
     
-    
-    % ugh this is terrible fix it it makes my head hurt by I'm tired 
-    global z_offset
-    
-    
-    for z_offset = z_offset_vals
+    for copy = 1:num_copies
+        
+        params.z_offset = z_offset_vals(copy); 
+        first_idx = params.global_idx + 1; 
         
         for i=1:length(valve.leaflets)
             j_max = valve.leaflets(i).j_max; 
@@ -172,10 +174,14 @@ function [] = output_to_ibamr_format(valve)
         params = place_cartesian_net(params, valve.leaflets(i), r_extra, L, ds, k_rel, k_target_net, ref_frac_net, eta_net); 
         end 
         
+        % adjust for offset 
+        last_idx = params.global_idx + 1; 
+        params.vertices(3,first_idx:last_idx) = params.vertices(3,first_idx:last_idx) + params.z_offset; 
+        
     end 
                                             
     if n_lagrangian_tracers > 0
-        double_z = false; 
+        double_z = true; 
         [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_lagrangian_tracers, L, double_z); 
         particles = fopen(strcat(base_name, '.particles'), 'w'); 
         fprintf(particles, '%d\n', total_lagrangian_placed); 
@@ -205,10 +211,7 @@ end
 function params = vertex_string(params, coords)
     % prints formatted string for current vertex to vertex file   
     
-    % FIXME!!! 
-    global z_offset
-    
-    fprintf(params.vertex, '%.14f\t %.14f\t %.14f\n', coords(1), coords(2), coords(3) + z_offset); 
+    fprintf(params.vertex, '%.14f\t %.14f\t %.14f\n', coords(1), coords(2), coords(3)); 
     params.total_vertices = params.total_vertices + 1; 
 end
 
@@ -1171,7 +1174,7 @@ function [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_
     dx = L / n_lagrangian_tracers; 
     total_lagrangian_placed = 0; 
     
-    z_extra_offset = 0.0; 
+    z_extra_offset = -1.0; 
     
     n_z_dir = n_lagrangian_tracers; 
     z_min = -L/2; 

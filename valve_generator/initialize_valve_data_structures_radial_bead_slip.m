@@ -65,7 +65,7 @@ valve.target_multiplier_papillary = 40/128;
 % number of lagrangian tracers in each dimension 
 % arranged in a mesh near the origin
 % z direction is doubled 
-valve.n_lagrangian_tracers = 0; 
+valve.n_lagrangian_tracers = 8; 
 
 % Uses configuration of X 
 valve.X_config_is_reference = true; 
@@ -73,7 +73,7 @@ valve.X_config_is_reference = true;
 % places this many exact copies of the leaflet downward in z 
 % spring constants are all reduced by num_copies 
 % spacing is always half a mesh width 
-valve.num_copies = 1; 
+valve.num_copies = 3; 
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
