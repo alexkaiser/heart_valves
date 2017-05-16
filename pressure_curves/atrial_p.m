@@ -11,7 +11,7 @@ max_x =  1.6;
 min_y =  1.0; 
 max_y =  12.0; 
 
-dt = 1.0e-6; 
+dt = 1.0e-4; % 1.0e-6; 
 % each unit length (in paramter space) is evaluated at this many points 
 N_per_unit_length = ceil(1/dt); 
 
@@ -34,8 +34,8 @@ N_per_unit_length = ceil(1/dt);
 min_x =  0.0; 
 max_x =  1.6; 
 min_y =  0.0; 
-max_y =  65.0;  % reduced here, 20 too low, split difference  
-%max_y = 110.0; % physiological  
+% max_y =  65.0;  % reduced here, 20 too low, split difference  
+max_y = 110.0; % physiological  
 
 
 % probably not the right curve, 
