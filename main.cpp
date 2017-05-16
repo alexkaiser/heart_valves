@@ -493,11 +493,11 @@ int main(int argc, char* argv[])
                 
                 papillary_info* papillary = initialize_moving_papillary_info(structure_name, fourier_body_force); 
                 
-                #else
-                    pout << "other papillary movement not implemented, must use periodic with fourier series for now\n";
-                    SAMRAI_MPI::abort();
-                #endif
+            #else
+                pout << "other papillary movement not implemented, must use periodic with fourier series for now\n";
+                SAMRAI_MPI::abort();
             #endif
+        #endif
 
 
         // Set up visualization plot file writers.
@@ -900,7 +900,7 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
     
     if (pressure_mmHg >= 0.0){
         // diastole
-        displacement_frac = 1.0 - pow(abs(pressure_mmHg / max_p_displacement), 0.25);
+        displacement_frac = 1.0 - abs(pressure_mmHg / max_p_displacement);
     }
     else{
         // if (pressure_mmHg < 0.0)
