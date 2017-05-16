@@ -69,6 +69,49 @@ def get_restart_number(restart_dir):
     return largest_restart_num
 
 
+def fix_visit_files(viz_directory):
+    ''' 
+    Checks viz directory to find output increment and rewrites visit files 
+    '''
+                
+    prev_dir = os.getcwd()
+    os.chdir(viz_directory)
+    
+    # minimum nonzero step 
+    min_nonzero = float('Inf')
+    max_idx = 0
+    
+    for f in os.listdir('.'): 
+        if f.startswith('visit_dump.'):
+            step_num = int(f.split('.')[1])
+            
+            if (step_num is not 0):
+                if step_num < min_nonzero: 
+                    min_nonzero = step_num
+                    
+            if step_num > max_idx: 
+                max_idx = step_num
+    
+    dumps = open('dumps.visit', 'w')
+    lag   = open('lag_data.visit', 'w')
+
+    state = 0 
+    dumps.write('visit_dump.' + str('%05d' % state)    +  '/summary.samrai\n')
+    lag.write('lag_data.cycle_' + str('%06d' % state) + '/lag_data.cycle_' + str('%06d' % state) + '.summary.silo\n') 
+
+
+    for state in range(stride, max_step, stride):
+        dumps.write('visit_dump.' + str('%05d' % state)    +  '/summary.samrai\n')
+        lag.write('lag_data.cycle_' + str('%06d' % state) + '/lag_data.cycle_' + str('%06d' % state) + '.summary.silo\n') 
+
+    state = max_step
+    dumps.write('visit_dump.' + str('%05d' % state)    +  '/summary.samrai\n')
+    lag.write('lag_data.cycle_' + str('%06d' % state) + '/lag_data.cycle_' + str('%06d' % state) + '.summary.silo\n') 
+
+    dumps.close()
+    lag.close()
+    os.chdir(prev_dir)
+
 
 
 if __name__ == '__main__':
@@ -149,6 +192,7 @@ if __name__ == '__main__':
     number_restarts = 0
     prev_time = os.path.getmtime('IB3d.log')
     check_number = 0
+    restart_now = False 
 
     # wait, check if stopped, restart if needed
     while True:
@@ -165,13 +209,39 @@ if __name__ == '__main__':
         # no restart should occur if so
         # poll returns none if still running
         if current_sh_calls_mpi.poll() is not None:
-            print 'MPI run has stopped, check for completion or crashes.'
-            print 'Exit python watchdog loop.'
-            break
+            if os.path.isfile('done.txt'):
+                print 'MPI run has stopped, done.txt found.'
+                print 'Exit python watchdog loop.'
+                break
+                
+            # check for CFL crashes 
+            else: 
+                if os.path.isfile('IB3d.log'):
+                
+                    log = open('IB3d.log', 'r')
+                    for line in log: 
+                        if 'Time step size change encountered' in line: 
+                            print 'Found:' 
+                            print '    Time step size change encountered'
+                            print 'in log file.'
+                            print 'Exit python watchdog loop.'
+                            break 
+                            
+                    print 'Did not detect time step change in log file.'
+                    print 'Mpi has stopped for some other reason.'
+                    print 'Initiate restart.'
+                    restart_now = True
+                
+                else:
+                    print 'Could not find log to check for CFL crash.'
+                    print 'Exit python watchdog loop.'
+                    break
+                
         
         if mod_time == prev_time:
             print 'On check number ', check_number, ', modification time unchanged'
             print 'Initiating restart.'
+            restart_now = True 
 
             # kill the sh script
             current_sh_calls_mpi.kill()
@@ -186,6 +256,9 @@ if __name__ == '__main__':
                 print 'kill_all_mpi is still running (even though it should have completed).'
                 print 'Beware of strange behavior'
 
+
+        if restart_now: 
+        
             # move old log and output files
             move_str = 'mv IB3d.log IB3d.log_restart_' + str(number_restarts)
             subprocess.call(move_str, shell=True)
@@ -267,6 +340,9 @@ if __name__ == '__main__':
                 
                 viz_dir_name = os.getcwd()
                 
+                # clean up visit files to be consistent after restarts
+                fix_visit_files(viz_dir_name)
+                
                 movie_script = open('make_movie.sbatch', 'w')
                 
                 slurm = '''#!/bin/bash
@@ -284,14 +360,6 @@ if __name__ == '__main__':
                 
                 movie_script.write('\n')                
                 movie_script.write('cd ' + viz_dir_name + ' \n')
-                
-#                                move = '''mv dumps.visit dumps.visit_2
-# cat dumps.visit_1 dumps.visit_2 > dumps.visit
-# mv lag_data.visit lag_data.visit_2
-# cat lag_data.visit_1 lag_data.visit_2 > lag_data.visit  
-# '''
-#                movie_script.write(move)
-
                 
                 movie_script.write('visit -cli -nowin -s ~/mitral_fully_discrete/make_three_slice_movie.py \n')          
                 
