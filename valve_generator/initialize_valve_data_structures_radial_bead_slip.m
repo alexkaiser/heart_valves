@@ -73,7 +73,7 @@ valve.X_config_is_reference = true;
 % places this many exact copies of the leaflet downward in z 
 % spring constants are all reduced by num_copies 
 % spacing is always half a mesh width 
-valve.num_copies = 1; 
+valve.num_copies = 3; 
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
@@ -271,7 +271,7 @@ elseif parameter_values == 2
     valve.L = 3.0; 
     
     low_papillary = false; 
-    tip_radius = .1; 
+    tip_radius = .2; 
     valve.skeleton = valve_points_ct_systole(low_papillary, tip_radius); 
     
     
@@ -296,7 +296,7 @@ elseif parameter_values == 2
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
+    valve.pressure_tension_ratio = 0.0525; % 0.11 * 0.975; 
 
 
     % base constant for tensions, derived quantity 
