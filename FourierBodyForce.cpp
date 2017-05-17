@@ -28,7 +28,7 @@
 #include <tbox/Utilities.h>
 
 
-#define FLOW_STRAIGHTENER
+// #define FLOW_STRAIGHTENER
 
 // #define EXTRA_FWD_PRESSURE
 
