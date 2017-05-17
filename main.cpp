@@ -900,7 +900,7 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
     
     if (pressure_mmHg >= 0.0){
         // diastole
-        displacement_frac = 1.0 - pow(abs(pressure_mmHg / max_p_displacement), 0.25);
+        displacement_frac = 1.0 - abs(pressure_mmHg / max_p_displacement);
     }
     else{
         // if (pressure_mmHg < 0.0)
