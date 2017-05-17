@@ -30,7 +30,7 @@
 
 #define FLOW_STRAIGHTENER
 
-#define EXTRA_FWD_PRESSURE
+// #define EXTRA_FWD_PRESSURE
 
 
 /////////////////////////////// NAMESPACE ////////////////////////////////////
