@@ -65,8 +65,13 @@ function [] = output_to_ibamr_format(valve)
 
     % keep a single parameter for outputting copies 
     params.z_offset = 0; 
-    
-    
+
+    params.x_min = -L; 
+    params.x_max =  L; 
+    params.y_min = -L; 
+    params.y_max =  L; 
+    params.z_min =  3.0 - 4*L; 
+    params.z_max =  3.0; 
 
     % Spring constant base for targets and 
     % Approximate force is tension_base multiplied by a length element 
@@ -182,9 +187,10 @@ function [] = output_to_ibamr_format(valve)
                                             
     if n_lagrangian_tracers > 0
         double_z = true; 
-        [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_lagrangian_tracers, L, double_z); 
+        [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_lagrangian_tracers, double_z); 
         particles = fopen(strcat(base_name, '.particles'), 'w'); 
         fprintf(particles, '%d\n', total_lagrangian_placed); 
+        fclose(particles); 
     end 
 
     % finally, write all vertices 
@@ -1155,7 +1161,7 @@ function outside = point_out_of_polygon(vert, test)
 end 
 
 
-function [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_lagrangian_tracers, L, double_z)
+function [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_lagrangian_tracers, double_z)
     % Places a uniform cartesian mesh of lagrangian particle tracers 
     % Simple lopp implementation 
     %
@@ -1171,25 +1177,31 @@ function [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_
         return; 
     end 
     
-    dx = L / n_lagrangian_tracers; 
-    total_lagrangian_placed = 0; 
+    x_min = params.x_min; 
+    x_max = params.x_max; 
+    y_min = params.y_min; 
+    y_max = params.y_max; 
+    z_min = params.z_min; 
+    z_max = params.z_max;
     
-    z_extra_offset = -1.0; 
-    
-    n_z_dir = n_lagrangian_tracers; 
-    z_min = -L/2; 
+    n_z_dir = n_lagrangian_tracers;  
     if double_z
         n_z_dir = 2*n_z_dir; 
-        z_min = -L; 
     end 
     
-    for i = 0:n_lagrangian_tracers
-        for j = 0:n_lagrangian_tracers
-            for k = 0:n_z_dir; 
+    dx = (x_max - x_min) / n_lagrangian_tracers; 
+    dy = (y_max - y_min) / n_lagrangian_tracers; 
+    dz = (z_max - z_min) / n_z_dir; 
+    
+    total_lagrangian_placed = 0; 
+    
+    for i = 1:n_lagrangian_tracers
+        for j = 1:n_lagrangian_tracers
+            for k = 1:n_z_dir; 
                 
-                x = i * dx - L/2; 
-                y = j * dx - L/2; 
-                z = k * dx + z_min + z_extra_offset; 
+                x = (i - .5)*dx + x_min; 
+                y = (j - .5)*dy + y_min; 
+                z = (k - .5)*dz + z_min; 
                 
                 params.vertices(:,params.global_idx + 1) = [x y z]; 
     
