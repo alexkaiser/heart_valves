@@ -95,10 +95,12 @@ def fix_visit_files(viz_directory):
     dumps = open('dumps.visit', 'w')
     lag   = open('lag_data.visit', 'w')
 
-    state = 0 
+    state = 0
+    stride = min_nonzero
+    max_step = max_idx
+
     dumps.write('visit_dump.' + str('%05d' % state)    +  '/summary.samrai\n')
     lag.write('lag_data.cycle_' + str('%06d' % state) + '/lag_data.cycle_' + str('%06d' % state) + '.summary.silo\n') 
-
 
     for state in range(stride, max_step, stride):
         dumps.write('visit_dump.' + str('%05d' % state)    +  '/summary.samrai\n')
