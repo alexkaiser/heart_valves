@@ -271,7 +271,7 @@ elseif parameter_values == 2
     valve.L = 3.0; 
     
     low_papillary = false; 
-    tip_radius = .2; 
+    tip_radius = .1; 
     valve.skeleton = valve_points_ct_systole(low_papillary, tip_radius); 
     
     
