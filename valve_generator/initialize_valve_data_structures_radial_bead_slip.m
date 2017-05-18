@@ -58,9 +58,6 @@ valve.p_physical = 110 * MMHG_TO_CGS;
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
 
-% scaling for target points 
-valve.target_multiplier = 40/128; 
-valve.target_multiplier_papillary = 40/128; 
 
 % number of lagrangian tracers in each dimension 
 % arranged in a mesh near the origin
@@ -653,6 +650,18 @@ end
 
 
 valve.r        = valve.skeleton.r; 
+
+% scaling for target points 
+% note that this does not include copies 
+% and scaling for copies is handled by the output routine 
+
+% scales for by mesh width for consistant total mesh force on 
+valve.target_net       = 40/valve.N * valve.tension_base; 
+
+% does not scale since total number of points is constant 
+valve.target_papillary = 40/128 * valve.tension_base; 
+
+
 
 % Approximate Lagrangian mesh spacing at ring 
 % Used for later splitting of springs 

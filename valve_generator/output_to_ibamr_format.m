@@ -27,8 +27,8 @@ function [] = output_to_ibamr_format(valve)
     base_name                   = valve.base_name; 
     L                           = valve.L; 
     tension_base                = valve.tension_base; 
-    target_multiplier           = valve.target_multiplier; 
-    target_multiplier_papillary = valve.target_multiplier_papillary; 
+    target_net                  = valve.target_net; 
+    target_papillary            = valve.target_papillary; 
     n_lagrangian_tracers        = valve.n_lagrangian_tracers; 
     num_copies                  = valve.num_copies; 
     collagen_constitutive       = valve.collagen_constitutive; 
@@ -66,6 +66,7 @@ function [] = output_to_ibamr_format(valve)
     % keep a single parameter for outputting copies 
     params.z_offset = 0; 
 
+    % box sizes 
     params.x_min = -L; 
     params.x_max =  L; 
     params.y_min = -L; 
@@ -81,8 +82,8 @@ function [] = output_to_ibamr_format(valve)
     % base rate for target spring constants
     % target constant for a single point 
     % this does not scale when the mesh is changed 
-    k_target_papillary = target_multiplier_papillary * tension_base / num_copies; 
-    k_target           = target_multiplier           * tension_base / num_copies; 
+    k_target_papillary = target_papillary / num_copies; 
+    k_target           = target_net       / num_copies; 
     
     % No general target damping for now 
     eta = 0.0; 
