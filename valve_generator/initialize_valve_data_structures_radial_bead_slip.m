@@ -655,8 +655,8 @@ valve.r        = valve.skeleton.r;
 % note that this does not include copies 
 % and scaling for copies is handled by the output routine 
 
-% scales for by mesh width for consistant total mesh force on 
-valve.target_net       = 40/valve.N * valve.tension_base; 
+% scales for by mesh width for consistant total mesh force on ring 
+valve.target_net       = 8/valve.N * valve.tension_base; 
 
 % does not scale since total number of points is constant 
 valve.target_papillary = 40/128 * valve.tension_base; 
