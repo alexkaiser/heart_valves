@@ -194,7 +194,6 @@ if __name__ == '__main__':
     number_restarts = 0
     prev_time = os.path.getmtime('IB3d.log')
     check_number = 0
-    restart_now = False 
 
     # wait, check if stopped, restart if needed
     while True:
@@ -211,39 +210,13 @@ if __name__ == '__main__':
         # no restart should occur if so
         # poll returns none if still running
         if current_sh_calls_mpi.poll() is not None:
-            if os.path.isfile('done.txt'):
-                print 'MPI run has stopped, done.txt found.'
-                print 'Exit python watchdog loop.'
-                break
-                
-            # check for CFL crashes 
-            else: 
-                if os.path.isfile('IB3d.log'):
-                
-                    log = open('IB3d.log', 'r')
-                    for line in log: 
-                        if 'Time step size change encountered' in line: 
-                            print 'Found:' 
-                            print '    Time step size change encountered'
-                            print 'in log file.'
-                            print 'Exit python watchdog loop.'
-                            break 
-                            
-                    print 'Did not detect time step change in log file.'
-                    print 'Mpi has stopped for some other reason.'
-                    print 'Initiate restart.'
-                    restart_now = True
-                
-                else:
-                    print 'Could not find log to check for CFL crash.'
-                    print 'Exit python watchdog loop.'
-                    break
-                
-        
+            print 'MPI run has stopped, check for completion or crashes.'
+            print 'Exit python watchdog loop.'
+            break
+
         if mod_time == prev_time:
             print 'On check number ', check_number, ', modification time unchanged'
             print 'Initiating restart.'
-            restart_now = True 
 
             # kill the sh script
             current_sh_calls_mpi.kill()
@@ -258,8 +231,6 @@ if __name__ == '__main__':
                 print 'kill_all_mpi is still running (even though it should have completed).'
                 print 'Beware of strange behavior'
 
-
-        if restart_now: 
         
             # move old log and output files
             move_str = 'mv IB3d.log IB3d.log_restart_' + str(number_restarts)
@@ -343,7 +314,8 @@ if __name__ == '__main__':
                 viz_dir_name = os.getcwd()
                 
                 # clean up visit files to be consistent after restarts
-                fix_visit_files(viz_dir_name)
+                if number_restarts > 0:
+                    fix_visit_files(viz_dir_name)
                 
                 movie_script = open('make_movie.sbatch', 'w')
                 
