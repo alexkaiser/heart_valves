@@ -656,11 +656,16 @@ valve.r        = valve.skeleton.r;
 % and scaling for copies is handled by the output routine 
 
 % scales for by mesh width for consistant total mesh force on ring 
-valve.target_net       = 8/valve.N * valve.tension_base; 
+valve.target_net       = 80/valve.N * valve.tension_base; 
 
 % does not scale since total number of points is constant 
 valve.target_papillary = 40/128 * valve.tension_base; 
 
+% viscoelastic damping coefficients for net, does not include copies 
+valve.eta_net = 0; 
+
+% viscoelastic damping coefficients for root attachments, does not include copies  
+valve.eta_papillary = 0; %valve.target_papillary/100; 
 
 
 % Approximate Lagrangian mesh spacing at ring 

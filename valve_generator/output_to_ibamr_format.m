@@ -30,10 +30,8 @@ function [] = output_to_ibamr_format(valve)
     target_net                  = valve.target_net; 
     target_papillary            = valve.target_papillary; 
     n_lagrangian_tracers        = valve.n_lagrangian_tracers; 
-    num_copies                  = valve.num_copies; 
     collagen_constitutive       = valve.collagen_constitutive; 
 
-    
     if ~valve.split_papillary
         error('Must have split papillary locations in current implementation.'); 
     end
@@ -73,48 +71,31 @@ function [] = output_to_ibamr_format(valve)
     params.y_max =  L; 
     params.z_min =  3.0 - 4*L; 
     params.z_max =  3.0; 
+    
+    params.num_copies = valve.num_copies; 
 
     % Spring constant base for targets and 
     % Approximate force is tension_base multiplied by a length element 
     du = 1/N; 
-    k_rel = tension_base * du / num_copies; 
+    k_rel = tension_base * du; 
         
-    % base rate for target spring constants
-    % target constant for a single point 
-    % this does not scale when the mesh is changed 
-    k_target_papillary = target_papillary / num_copies; 
-    k_target           = target_net       / num_copies; 
-    
-    % No general target damping for now 
-    eta = 0.0; 
-    
-    % the valve ring is 1d, should be halfed with doubling of mesh 
-    % also set damping coefficients accordingly 
-    k_target_ring = k_target; %  / refinement; 
-    m_ring = 0.0; 
-    eta_ring = 0.0; %sqrt(m_ring * k_target_ring); 
-    
-    % there are four times as many, so they get multiplied by refinement squared 
-    % can also just divide by refinement because not want them to get stiffer
-    k_target_net = k_target; % / refinement; 
-    m_net = 0.0; 
-    eta_net = 0.0; % sqrt(m_net * k_target_net);
 
-    % output the left and right papillary as the first two vertices and targets
+    % papillary target constants 
+    % this does not scale when the mesh is changed 
+    k_target_papillary = target_papillary; 
+    eta_papillary      = valve.eta_papillary; 
     
-    % Critical damping for given k, mass m is 2*sqrt(m*k) 
-    % Set to half critical for first test
-    % 
-    % m_effective_papillary = 1.0 * pi * filter_params_posterior.r^2; 
-    eta_papillary         = 0.0; %sqrt(k_target/2 * m_effective_papillary); 
+    k_target_net       = target_net; 
+    eta_net            = valve.eta_net; 
+
     
     % Lagrangian mesh spacing 
     ds = valve.ds;
     
     
     % copies, if needed, will be placed this far down 
-    if num_copies > 1
-        z_offset_vals = -linspace(0, ds, num_copies); 
+    if params.num_copies > 1
+        z_offset_vals = -linspace(0, ds, params.num_copies); 
     else 
         z_offset_vals = 0; 
     end  
@@ -125,7 +106,7 @@ function [] = output_to_ibamr_format(valve)
     systolic_increment = -valve.diastolic_increment; 
     fprintf(params.papillary, '%.14f\t %.14f\t %.14f\n', systolic_increment(1), systolic_increment(2), systolic_increment(3)); 
     
-    for copy = 1:num_copies
+    for copy = 1:params.num_copies
         
         params.z_offset = z_offset_vals(copy); 
         first_idx = params.global_idx + 1; 
@@ -146,11 +127,11 @@ function [] = output_to_ibamr_format(valve)
         end 
         
         for i=1:length(valve.leaflets)
-            [params valve.leaflets(i)] = assign_indices_vertex_target(params, valve.leaflets(i), k_target, k_target_papillary, eta); 
+            [params valve.leaflets(i)] = assign_indices_vertex_target(params, valve.leaflets(i), k_target_net, k_target_papillary, eta_net, eta_papillary); 
         end 
         
         for i=1:length(valve.leaflets)
-            params = add_springs(params, valve.leaflets(i), num_copies, ds, collagen_constitutive); 
+            params = add_springs(params, valve.leaflets(i), ds, collagen_constitutive); 
         end 
 
         % flat part of mesh 
@@ -239,7 +220,7 @@ function params = spring_string(params, idx, nbr, kappa, rest_len, function_idx)
         error('By convention, only place springs with the second index larger to prevent duplicates'); 
     end 
     
-    fprintf(params.spring, '%d\t %d\t %.14f\t %.14f', idx, nbr, kappa, rest_len); 
+    fprintf(params.spring, '%d\t %d\t %.14f\t %.14f', idx, nbr, kappa/params.num_copies, rest_len); 
     
     % index for custom spring functions 
     if exist('function_idx', 'var') 
@@ -252,7 +233,7 @@ function params = spring_string(params, idx, nbr, kappa, rest_len, function_idx)
 end 
 
 
-function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies, collagen_spring)
+function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, collagen_spring)
     % 
     % Add one or more springs 
     % If the rest length is more than 2 times the specificed mesh width
@@ -296,12 +277,12 @@ function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, 
     if N_springs <= 1 
         if collagen_spring
             % Scaling constant here does not change with rest lengths 
-            k_col = k_rel / num_copies; 
+            k_col = k_rel; 
 
             % Finally, write the spring string 
             params = spring_string(params, idx, nbr_idx, k_col, rest_len, function_idx); 
         else 
-            k_abs = k_rel / (rest_len * num_copies); 
+            k_abs = k_rel / rest_len; 
             params = spring_string(params, idx, nbr_idx, k_abs, rest_len); 
         end 
     else 
@@ -356,14 +337,14 @@ function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, 
             
             if collagen_spring
                 % Scaling constant here does not change with rest lengths 
-                k_col = k_rel / num_copies; 
+                k_col = k_rel; 
 
                 % Finally, write the spring string 
                 params = spring_string(params, min_idx, max_idx, k_col, R, function_idx);
             
             else 
                 % Absolute spring constant must be used in spring file 
-                k_abs = k_rel / (R * num_copies); 
+                k_abs = k_rel / R; 
 
                 % Finally, write the spring string 
                 params = spring_string(params, min_idx, max_idx, k_abs, R);
@@ -383,9 +364,9 @@ function params = target_string(params, idx, kappa, eta)
     % prints a target format string to target file 
     
     if exist('eta', 'var') && (eta > 0.0)
-        fprintf(params.target, '%d\t %.14f\t %.14f\n', idx, kappa, eta);
+        fprintf(params.target, '%d\t %.14f\t %.14f\n', idx, kappa/params.num_copies, eta/params.num_copies);
     else
-        fprintf(params.target, '%d\t %.14f\n', idx, kappa);
+        fprintf(params.target, '%d\t %.14f\n', idx, kappa/params.num_copies);
     end 
     params.total_targets = params.total_targets + 1; 
 end 
@@ -417,7 +398,7 @@ function [] = prepend_line_with_int(file_name, val)
 end 
 
 
-function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_target, k_target_papillary, eta)
+function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_target_net, k_target_papillary, eta_net, eta_papillary)
     % 
     % Assigns global indices to the leaflet and chordae 
     % Includes all boundary condition points and internal 
@@ -450,10 +431,10 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_targ
                 
                 % if on boundary, this is a target point 
                 if is_bc(j,k)
-                    if exist('eta', 'var')
-                        params = target_string(params, params.global_idx, k_target, eta);     
+                    if exist('eta_net', 'var')
+                        params = target_string(params, params.global_idx, k_target_net, eta_net);     
                     else
-                        params = target_string(params, params.global_idx, k_target);     
+                        params = target_string(params, params.global_idx, k_target_net);     
                     end 
                 end 
                 
@@ -474,8 +455,8 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_targ
         leaflet.chordae(tree_idx).idx_root = params.global_idx;                 
         
         % root is always a boundary condition 
-        if exist('eta', 'var')
-            params = target_string(params, params.global_idx, k_target_papillary, eta);     
+        if exist('eta_papillary', 'var')
+            params = target_string(params, params.global_idx, k_target_papillary, eta_papillary);     
         else
             params = target_string(params, params.global_idx, k_target_papillary);     
         end 
@@ -496,15 +477,15 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_targ
 end 
  
 
-function params = add_springs(params, leaflet, num_copies, ds, collagen_spring)
+function params = add_springs(params, leaflet, ds, collagen_spring)
 
-    params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_spring); 
-    params = add_chordae_tree_springs(params, leaflet, num_copies, ds, collagen_spring); 
+    params = add_leaflet_springs(params, leaflet, ds, collagen_spring); 
+    params = add_chordae_tree_springs(params, leaflet, ds, collagen_spring); 
 
 end 
 
 
-function params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_spring)
+function params = add_leaflet_springs(params, leaflet, ds, collagen_spring)
                       
     % Places all main data into IBAMR format for this leaflet
     % Updates running totals on the way 
@@ -562,7 +543,7 @@ function params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_
 
                     k_rel = chordae(tree_idx).k_free_edge(i); 
                     
-                    params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies, collagen_spring); 
+                    params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, collagen_spring); 
                     
                 end 
                                 
@@ -583,10 +564,10 @@ function params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_
                         
                         if j_nbr_tmp ~= j_nbr 
                             % periodic wrapping requires oppositite order 
-                            params = place_spring_and_split(params, nbr_idx, idx, k_rel, rest_len, ds, num_copies, collagen_spring);
+                            params = place_spring_and_split(params, nbr_idx, idx, k_rel, rest_len, ds, collagen_spring);
                         else 
                            % standard order 
-                            params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies, collagen_spring);
+                            params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, collagen_spring);
                         end 
 
                     end 
@@ -607,7 +588,7 @@ function params = add_leaflet_springs(params, leaflet, num_copies, ds, collagen_
 
                         nbr_idx = leaflet.indices_global(j_nbr,k_nbr);
 
-                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, num_copies, collagen_spring);
+                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, collagen_spring);
 
                     end 
 
@@ -620,7 +601,7 @@ end
 
 
 
-function params = add_chordae_tree_springs(params, leaflet, num_copies, ds, collagen_spring)
+function params = add_chordae_tree_springs(params, leaflet, ds, collagen_spring)
     % 
     % Adds chordae tree to IBAMR format files 
     % 
@@ -653,7 +634,7 @@ function params = add_chordae_tree_springs(params, leaflet, num_copies, ds, coll
             [nbr rest_len k_rel] = get_nbr_chordae(leaflet, i, parent, tree_idx); 
             
             % list nbr index first because nbr is parent and has lower index
-            params = place_spring_and_split(params, nbr_idx, idx, k_rel, rest_len, ds, num_copies, collagen_spring);
+            params = place_spring_and_split(params, nbr_idx, idx, k_rel, rest_len, ds, collagen_spring);
                 
         end 
         
