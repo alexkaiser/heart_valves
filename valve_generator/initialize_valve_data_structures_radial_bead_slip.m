@@ -665,7 +665,7 @@ valve.target_papillary = 40/128 * valve.tension_base;
 valve.eta_net = 0; 
 
 % viscoelastic damping coefficients for root attachments, does not include copies  
-valve.eta_papillary = valve.target_papillary/100; 
+valve.eta_papillary = valve.target_papillary/1000; 
 
 
 % Approximate Lagrangian mesh spacing at ring 
