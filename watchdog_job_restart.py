@@ -328,6 +328,9 @@ if __name__ == '__main__':
 #SBATCH --mail-user=kaiser@cims.nyu.edu
 #SBATCH --mail-type=ALL
 
+module load visit/2.12.0
+module load ffmpeg/intel/3.2.2
+
 ''' 
                 
                 movie_script.write(slurm)
