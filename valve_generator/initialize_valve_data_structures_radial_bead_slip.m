@@ -662,7 +662,7 @@ valve.target_net       = 8/valve.N * valve.tension_base;
 valve.target_papillary = 40/128 * valve.tension_base; 
 
 % viscoelastic damping coefficients for net, does not include copies 
-valve.eta_net = 0; 
+valve.eta_net = valve.target_net/5000; 
 
 % viscoelastic damping coefficients for root attachments, does not include copies  
 valve.eta_papillary = valve.target_papillary/1000; 
