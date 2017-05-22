@@ -468,7 +468,7 @@ elseif parameter_values == 3
     valve.skeleton = valve_points_ct_systole(low_papillary, tip_radius); 
     
     
-    valve.diastolic_increment = [1.5; 0.0; 0.25]; 
+    valve.diastolic_increment = [valve.skeleton.r; 0.0; 0.25]; 
 
     
     zero_radius = false; 
@@ -489,7 +489,7 @@ elseif parameter_values == 3
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    valve.pressure_tension_ratio = 0.04; % 0.11 * 0.975; 
+    valve.pressure_tension_ratio = 0.065; % 0.11 * 0.975; 
 
 
     % base constant for tensions, derived quantity 
@@ -546,12 +546,12 @@ elseif parameter_values == 3
 
 
     % Leaf tensions are all modified 
-    valve.leaf_tension_base = .8 * valve.tension_base; 
+    valve.leaf_tension_base = .7 * valve.tension_base; 
 
     % Base total root tension 
     % The value 0.5905 works well on each tree when using separate solves and two leaflets 
     % Controls constant tension at the root of the tree 
-    valve.root_tension_base = .9 * 0.5905 * valve.tension_base; 
+    valve.root_tension_base = .8 * 0.5905 * valve.tension_base; 
 
 
     n_trees_anterior = 2; 
@@ -580,7 +580,7 @@ elseif parameter_values == 3
     k_0_1_posterior          = 0.4 * valve.leaf_tension_base / n_trees_posterior; 
     k_root_posterior         = 0.4 * valve.root_tension_base / n_trees_posterior; 
     
-    k_0_1_commissure         = 0.5 * valve.leaf_tension_base / n_trees_commissure; 
+    k_0_1_commissure         = 0.4 * valve.leaf_tension_base / n_trees_commissure; 
     k_root_commissure        = 0.5 * valve.root_tension_base / n_trees_commissure; 
 
     
@@ -666,6 +666,12 @@ valve.eta_net = valve.target_net/5000;
 
 % viscoelastic damping coefficients for root attachments, does not include copies  
 valve.eta_papillary = valve.target_papillary/1000; 
+
+% viscoelastic damping coefficients springs 
+% eta, damping coeff here, is multiplied by the coefficient on the 
+% associated spring 
+valve.eta_multiplier_linear   = 0; 
+valve.eta_multiplier_collagen = 1e5; 
 
 
 % Approximate Lagrangian mesh spacing at ring 

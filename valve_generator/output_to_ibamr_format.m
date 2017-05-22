@@ -72,7 +72,10 @@ function [] = output_to_ibamr_format(valve)
     params.z_min =  3.0 - 4*L; 
     params.z_max =  3.0; 
     
+    % parameters for scaling of other constants 
     params.num_copies = valve.num_copies; 
+    params.eta_multiplier_linear   = valve.eta_multiplier_linear; 
+    params.eta_multiplier_collagen = valve.eta_multiplier_collagen; 
 
     % Spring constant base for targets and 
     % Approximate force is tension_base multiplied by a length element 
@@ -193,9 +196,6 @@ function [] = output_to_ibamr_format(valve)
 end 
 
 
-
-% nest this function so it can access the z increment
-% this is bad practice and should be removed 
 function params = vertex_string(params, coords)
     % prints formatted string for current vertex to vertex file   
     
@@ -223,11 +223,19 @@ function params = spring_string(params, idx, nbr, kappa, rest_len, function_idx)
     fprintf(params.spring, '%d\t %d\t %.14f\t %.14f', idx, nbr, kappa/params.num_copies, rest_len); 
     
     % index for custom spring functions 
-    if exist('function_idx', 'var') 
-        fprintf(params.spring, '\t%d', function_idx); 
+    if ~exist('function_idx', 'var') 
+        function_idx = 0; 
     end 
-    
-    fprintf(params.spring, '\n'); 
+   
+    if function_idx == 0
+        eta = params.eta_multiplier_linear   * kappa; 
+    elseif function_idx == 1
+        eta = params.eta_multiplier_collagen * kappa; 
+    else 
+        error('Only linear (default) and collagen function indices implemented'); 
+    end 
+   
+    fprintf(params.spring, '\t%d\t %.14f\n', function_idx, eta); 
     
     params.total_springs = params.total_springs + 1; 
 end 
