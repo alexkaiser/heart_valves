@@ -107,7 +107,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 
-parameter_values = 3; 
+parameter_values = 2; 
     
 
 if parameter_values == 1  
