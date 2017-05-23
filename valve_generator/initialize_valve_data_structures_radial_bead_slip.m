@@ -489,7 +489,7 @@ elseif parameter_values == 3
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    valve.pressure_tension_ratio = 0.065; % 0.11 * 0.975; 
+    valve.pressure_tension_ratio = 0.06; % 0.11 * 0.975; 
 
 
     % base constant for tensions, derived quantity 
@@ -497,7 +497,7 @@ elseif parameter_values == 3
 
 
     % tension coefficients 
-    tension_coeffs.alpha_anterior       = 1.0 * valve.tension_base;  % circumferential 
+    tension_coeffs.alpha_anterior       = 0.9 * valve.tension_base;  % circumferential 
     tension_coeffs.beta_anterior        = 1.1 * valve.tension_base;  % radial
     tension_coeffs.alpha_posterior      = 1.0 * valve.tension_base;  % circumferential 
     tension_coeffs.beta_posterior       = 1.0 * valve.tension_base;  % radial
