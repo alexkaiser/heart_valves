@@ -671,7 +671,7 @@ valve.eta_papillary = valve.target_papillary/1000;
 % eta, damping coeff here, is multiplied by the coefficient on the 
 % associated spring 
 valve.eta_multiplier_linear   = 0; 
-valve.eta_multiplier_collagen = 1e5; 
+valve.eta_multiplier_collagen = 1e4; 
 
 
 % Approximate Lagrangian mesh spacing at ring 

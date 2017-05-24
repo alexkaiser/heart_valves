@@ -228,9 +228,9 @@ function params = spring_string(params, idx, nbr, kappa, rest_len, function_idx)
     end 
    
     if function_idx == 0
-        eta = params.eta_multiplier_linear   * kappa; 
+        eta = params.eta_multiplier_linear   * kappa / params.num_copies; 
     elseif function_idx == 1
-        eta = params.eta_multiplier_collagen * kappa; 
+        eta = params.eta_multiplier_collagen * kappa / params.num_copies; 
     else 
         error('Only linear (default) and collagen function indices implemented'); 
     end 
