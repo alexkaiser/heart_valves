@@ -15,61 +15,12 @@ points_one_cycle = [0.0,   0;
 0.75, 120; 
 cycle_length, 8]; 
 
-dt = 1e-5; 
-times = (0:dt:(cycle_length-dt))'; 
-
-n_times = length(times); 
-
-vals = interp1(  points_one_cycle(:,1), points_one_cycle(:,2), times); 
-
-fig = figure; 
-plot(times, vals); 
-title('ventricular pressure, piecewise linear')
-
-
-times_three_cycle = [times; times+cycle_length; times+(2*cycle_length)]; 
-
-vals_three_cycle = [vals; vals; vals]; 
-
-% fig = figure; 
-% plot(times_three_cycle, vals_three_cycle)
-% title('three cycle')
-
-% total width of bump 
-width = .15; 
-
-% this should integrate to one 
-cos_bump = @(x) (abs(x) <= width/4) .* (pi/width) .* cos( (2*pi/width) * x); 
-
-% want this mesh to be aligned with the previous mesh
-% shift by scalar to be approx centered at zero 
-mesh_bump = times_three_cycle - times_three_cycle(length(times_three_cycle)/2); 
-bump_vals = cos_bump(mesh_bump); 
-
-% fig = figure; 
-% plot(mesh_bump, bump_vals); 
-% title('bump'); 
-
-approx_integral = dt * sum(bump_vals)  
-
-integral_by_quad = quad(cos_bump, -1,1); 
-
-
-smoothed = dt*conv(vals_three_cycle, bump_vals, 'same'); 
-
-% fig = figure; 
-% plot(smoothed); 
-% title('after convolution')
-
-smoothed_one_cycle = smoothed( (n_times+1) : (2*n_times)); 
-
-fig = figure; 
-plot(times, smoothed_one_cycle ); 
-title('after convolution, one cycle')
-
-
+dt = 1e-4; 
+bump_radius = .05; 
 n_fourier_coeffs = 1000; 
-[a_0 a_n b_n Series_ventricle] = fourier_series_uniform(times, smoothed_one_cycle, cycle_length, n_fourier_coeffs, dt); 
+plots = false; 
+
+[a_0_ventricle a_n_ventricle b_n_ventricle Series_ventricle] = series_and_smooth(points_one_cycle, dt, bump_radius, n_fourier_coeffs, plots); 
 
 t = 0:dt:cycle_length; 
 vals_ventricle_series = Series_ventricle(t); 
@@ -81,52 +32,128 @@ ylabel('p (mmHg)')
 printfig(fig, 'ventricular_pressure_yellin')
 
 
-t = 0:dt:(3*cycle_length); 
-vals_ventricle_series = Series_ventricle(t); 
+% t = 0:dt:(3*cycle_length); 
+% vals_ventricle_series = Series_ventricle(t); 
+% fig = figure; 
+% plot(t, vals_ventricle_series, 'k'); 
+% title('Ventricular pressure')
+% xlabel('t')
+% ylabel('p (mmHg)')
+% printfig(fig, 'ventricular_pressure_yellin_three_cycles')
+% 
+% fig = figure; 
+% semilogy( abs(a_n_ventricle), 'k')
+% hold on 
+% semilogy( abs(b_n_ventricle), ':k')
+% legend('ventricle cos', 'ventricle sin')
+% xlabel('n')
+% ylabel('|a_n|, |b_n|')
+% % title('Modulus of Fourier coefficients')
+% printfig(fig, 'coefficients')
+
+
+
+
+points_one_cycle_atrium = [0.0, 22.5; 
+0.06, 4; 
+0.40, 7; 
+0.47, 20; 
+0.53, 5; 
+0.58, 7; 
+0.7,  10; 
+cycle_length, 22.5]; 
+
+[a_0_atrium a_n_atrium b_n_atrium Series_atrium] = series_and_smooth(points_one_cycle_atrium, dt, bump_radius, n_fourier_coeffs, plots); 
+
+t = 0:dt:cycle_length; 
+vals_atrium_series = Series_atrium(t); 
 fig = figure; 
-plot(t, vals_ventricle_series, 'k'); 
-title('Ventricular pressure')
+plot(t, vals_atrium_series, 'k'); 
+title('Atrial pressure')
 xlabel('t')
 ylabel('p (mmHg)')
-printfig(fig, 'ventricular_pressure_yellin_three_cycles')
+printfig(fig, 'atrial_pressure_yellin')
+
+
 
 fig = figure; 
-semilogy( abs(a_n), 'k')
-hold on 
-semilogy( abs(b_n), ':k')
-legend('ventricle cos', 'ventricle sin')
-xlabel('n')
-ylabel('|a_n|, |b_n|')
-% title('Modulus of Fourier coefficients')
-printfig(fig, 'coefficients')
+plot(t, vals_ventricle_series, 'k'); 
+hold on
+plot(t, vals_atrium_series, 'k'); 
+title('Atrial pressure')
+xlabel('t')
+ylabel('p (mmHg)')
+printfig(fig, 'both_pressure_yellin')
 
-file_name = 'fourier_coeffs_ventricle.txt'; 
+
+fig = figure; 
+p_diff = vals_atrium_series - vals_ventricle_series; 
+plot(t, p_diff , 'k'); 
+hold on 
+plot(t, 0*p_diff , 'k--'); 
+title('Pressure difference')
+xlabel('t')
+ylabel('p (mmHg)')
+printfig(fig, 'pressure_diff_yellin')
+
+
+
+% t = 0:dt:(3*cycle_length); 
+% vals_atrium_series = Series_atrium(t); 
+% fig = figure; 
+% plot(t, vals_atrium_series, 'k'); 
+% title('Atrial pressure')
+% xlabel('t')
+% ylabel('p (mmHg)')
+% printfig(fig, 'atrial_pressure_yellin_three_cycles')
+% 
+% fig = figure; 
+% semilogy( abs(a_n), 'k')
+% hold on 
+% semilogy( abs(b_n), ':k')
+% legend('atrium cos', 'atrium sin')
+% xlabel('n')
+% ylabel('|a_n|, |b_n|')
+% title('Modulus of Fourier coefficients')
+
+
 
 save('series_data_yellin')
 
 
-n_coeffs_to_output = 400; 
-
-n = n_coeffs_to_output; 
-a_n = a_n(1:n);
-b_n = b_n(1:n);
-series_no_array = @(t) a_0 + sum(a_n .* cos((2*pi/cycle_length) * (1:n) .* t)' + ...  
-                                 b_n .* sin((2*pi/cycle_length) * (1:n) .* t)' );   
-
-Series_truncated = @(t) arrayfun(series_no_array, t); 
-
-t = 0:dt:cycle_length; 
-vals_ventricle_series = Series_truncated(t); 
-fig = figure; 
-plot(t, vals_ventricle_series, 'k'); 
-title('Ventricular pressure, truncated series')
-xlabel('t')
-ylabel('p (mmHg)')
 
 
-output_series_coeffs_to_txt(a_0, a_n, b_n, n_coeffs_to_output, cycle_length, file_name); 
 
 
+
+
+
+
+
+% 
+% 
+% n_coeffs_to_output = 400; 
+% 
+% n = n_coeffs_to_output; 
+% a_n = a_n(1:n);
+% b_n = b_n(1:n);
+% series_no_array = @(t) a_0 + sum(a_n .* cos((2*pi/cycle_length) * (1:n) .* t)' + ...  
+%                                  b_n .* sin((2*pi/cycle_length) * (1:n) .* t)' );   
+% 
+% Series_truncated = @(t) arrayfun(series_no_array, t); 
+% 
+% t = 0:dt:cycle_length; 
+% vals_ventricle_series = Series_truncated(t); 
+% fig = figure; 
+% plot(t, vals_ventricle_series, 'k'); 
+% title('Ventricular pressure, truncated series')
+% xlabel('t')
+% ylabel('p (mmHg)')
+% 
+% 
+% output_series_coeffs_to_txt(a_0, a_n, b_n, n_coeffs_to_output, cycle_length, file_name); 
+% 
+% 
 
 
 
