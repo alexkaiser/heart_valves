@@ -670,7 +670,9 @@ valve.eta_papillary = valve.target_papillary/1000;
 % viscoelastic damping coefficients springs 
 % eta, damping coeff here, is multiplied by the coefficient on the 
 % associated spring 
-valve.eta_multiplier_linear   = 0; 
+% note that linear springs and collagen springs have vastly different constants 
+% and these are tuned manually to make the dashpot constants equal order of magnitude
+valve.eta_multiplier_linear   = 1e-4; 
 valve.eta_multiplier_collagen = 1e4; 
 
 
