@@ -15,7 +15,7 @@ points_one_cycle = [0.0,   0;
 0.75, 130; 
 cycle_length, 8]; 
 
-dt = 1e-4; 
+dt = 1e-5; 
 bump_radius = .05; 
 n_fourier_coeffs = 1000; 
 plots = false; 
@@ -121,39 +121,42 @@ printfig(fig, 'pressure_diff_yellin')
 save('series_data_yellin')
 
 
+n_coeffs_to_output = 600; 
+
+n = n_coeffs_to_output; 
+
+a_0 = a_0_atrium - a_0_ventricle; 
+a_n = a_n_atrium - a_n_ventricle; 
+b_n = b_n_atrium - b_n_ventricle; 
+
+a_n = a_n(1:n);
+b_n = b_n(1:n);
+series_no_array = @(t) a_0 + sum(a_n .* cos((2*pi/cycle_length) * (1:n) .* t)' + ...  
+                                 b_n .* sin((2*pi/cycle_length) * (1:n) .* t)' );   
+
+Series_truncated = @(t) arrayfun(series_no_array, t); 
+
+t = 0:dt:cycle_length; 
+vals_ventricle_series = Series_truncated(t); 
+fig = figure; 
+plot(t, vals_ventricle_series, 'k'); 
+title('Pressure diff, truncated series')
+xlabel('t')
+ylabel('p (mmHg)')
+
+fig = figure; 
+semilogy( abs(a_n), 'k')
+hold on 
+semilogy( abs(b_n), ':k')
+legend('atrium cos', 'atrium sin')
+xlabel('n')
+ylabel('|a_n|, |b_n|')
+title('Modulus of Fourier coefficients')
+
+file_name = 'fourier_coeffs.txt';
+output_series_coeffs_to_txt(a_0, a_n, b_n, n_coeffs_to_output, cycle_length, file_name); 
 
 
-
-
-
-
-
-
-
-% 
-% 
-% n_coeffs_to_output = 400; 
-% 
-% n = n_coeffs_to_output; 
-% a_n = a_n(1:n);
-% b_n = b_n(1:n);
-% series_no_array = @(t) a_0 + sum(a_n .* cos((2*pi/cycle_length) * (1:n) .* t)' + ...  
-%                                  b_n .* sin((2*pi/cycle_length) * (1:n) .* t)' );   
-% 
-% Series_truncated = @(t) arrayfun(series_no_array, t); 
-% 
-% t = 0:dt:cycle_length; 
-% vals_ventricle_series = Series_truncated(t); 
-% fig = figure; 
-% plot(t, vals_ventricle_series, 'k'); 
-% title('Ventricular pressure, truncated series')
-% xlabel('t')
-% ylabel('p (mmHg)')
-% 
-% 
-% output_series_coeffs_to_txt(a_0, a_n, b_n, n_coeffs_to_output, cycle_length, file_name); 
-% 
-% 
 
 
 
