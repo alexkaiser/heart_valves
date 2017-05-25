@@ -105,10 +105,13 @@ typedef struct{
     // pressure limits and locations
     double min_pressure_mmHg;
     double max_pressure_mmHg;
+    double max_atrial_kick_pressure_mmHg;
     double min_p_time;
     double max_p_time;
+    double max_atrial_kick_p_time;
     int min_p_idx;
     int max_p_idx;
+    int max_atrial_kick_p_idx;
     
 } papillary_info; 
 
@@ -822,9 +825,13 @@ papillary_info* initialize_moving_papillary_info(string structure_name, fourier_
     
     papillary->min_p_idx = 0;
     papillary->max_p_idx = 0;
+    papillary->max_atrial_kick_p_idx = 0;
     
     papillary->min_pressure_mmHg = 0.0; 
     papillary->max_pressure_mmHg = 0.0; 
+    papillary->max_atrial_kick_pressure_mmHg = 0.0; 
+    
+    double min_atrial_kick_diastole_time = 0.3; 
     
     double p;
     for (unsigned int i=0; i<(fourier_body_force->N_times); i++){
@@ -840,14 +847,22 @@ papillary_info* initialize_moving_papillary_info(string structure_name, fourier_
             papillary->max_pressure_mmHg = p;
             papillary->max_p_idx = i;
         }
+        
+        double t = fourier_body_force->dt * i; 
+        if ((p > papillary->max_atrial_kick_pressure_mmHg) && (t > min_atrial_kick_diastole_time)){
+            papillary->max_atrial_kick_pressure_mmHg = p;
+            papillary->max_atrial_kick_p_idx = i;
+        }        
+        
     }
 
     papillary->min_p_time = papillary->min_p_idx * fourier_body_force->dt;
     papillary->max_p_time = papillary->max_p_idx * fourier_body_force->dt;
+    papillary->max_atrial_kick_p_time = papillary->max_atrial_kick_p_idx * fourier_body_force->dt;
     
-    std::cout << "min, max p = " << papillary->min_pressure_mmHg << " " << papillary->max_pressure_mmHg << "\n";
-    std::cout << "min_p_idx, max_p_idx = " << papillary->min_p_idx << " " << papillary->max_p_idx << "\n";
-    std::cout << "min_p_time, max_p_time = " << papillary->min_p_time << " " << papillary->max_p_time << "\n";
+    std::cout << "min, max p, atrial kick max p = " << papillary->min_pressure_mmHg << " " << papillary->max_pressure_mmHg << " " << papillary->max_atrial_kick_pressure_mmHg<< "\n";
+    std::cout << "min_p_idx, max_p_idx, max_atrial_kick_p_idx = " << papillary->min_p_idx << " " << papillary->max_p_idx << " " << papillary->max_atrial_kick_p_idx << "\n";
+    std::cout << "min_p_time, max_p_time,  = " << papillary->min_p_time << " " << papillary->max_p_time << " " << papillary->max_atrial_kick_p_time << "\n";
     
     return papillary; 
 }  
@@ -896,11 +911,32 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
     
     // displacement varies down to this negative value
     // at which point it is constant in systolic position
-    double max_p_displacement = papillary->max_pressure_mmHg;
+    //double max_p_displacement = papillary->max_pressure_mmHg;
     
     if (pressure_mmHg >= 0.0){
+
         // diastole
-        displacement_frac = 1.0 - abs(pressure_mmHg / max_p_displacement);
+
+        // beat time is reduced 
+        double beat_time = fourier_body_force->L; 
+    
+        // calculate time in current period 
+        double t_reduced = current_time - beat_time * floor(current_time/beat_time); 
+    
+        if (t_reduced < papillary->max_p_time){
+            // follow percentage of pressure to initial rise 
+            double max_p_displacement = papillary->max_pressure_mmHg;      
+            displacement_frac = 1.0 - abs(pressure_mmHg / max_p_displacement);
+        }
+        else if (t_reduced < papillary->max_atrial_kick_p_time){
+            // in full diastole, stay here until atrial kick 
+            displacement_frac = 0.0; 
+        }
+        else{
+            double max_p_displacement = papillary->max_atrial_kick_pressure_mmHg;      
+            displacement_frac = 1.0 - abs(pressure_mmHg / max_p_displacement);
+        }
+
     }
     else{
         // if (pressure_mmHg < 0.0)
