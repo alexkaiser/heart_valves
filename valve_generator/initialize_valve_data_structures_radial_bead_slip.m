@@ -672,8 +672,8 @@ valve.eta_papillary = valve.target_papillary/1000;
 % associated spring 
 % note that linear springs and collagen springs have vastly different constants 
 % and these are tuned manually to make the dashpot constants equal order of magnitude
-valve.eta_multiplier_linear   = 1e-4; 
-valve.eta_multiplier_collagen = 1e4; 
+valve.eta_multiplier_linear   = 0; 
+valve.eta_multiplier_collagen = 4e4; 
 
 
 % Approximate Lagrangian mesh spacing at ring 
