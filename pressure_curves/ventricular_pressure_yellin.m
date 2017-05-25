@@ -11,8 +11,8 @@ points_one_cycle = [0.0,   0;
 0.06, 2; 
 0.40, 6; 
 0.53, 14; 
-0.58, 110; 
-0.75, 120; 
+0.58, 120; 
+0.75, 130; 
 cycle_length, 8]; 
 
 dt = 1e-4; 
@@ -54,14 +54,14 @@ printfig(fig, 'ventricular_pressure_yellin')
 
 
 
-points_one_cycle_atrium = [0.0, 22.7; 
+points_one_cycle_atrium = [0.0, 24; 
 0.06, 4; 
 0.40, 7; 
 0.47, 20; 
 0.53, 5; 
 0.58, 7; 
 0.7,  10; 
-cycle_length, 22.7]; 
+cycle_length, 24]; 
 
 [a_0_atrium a_n_atrium b_n_atrium Series_atrium] = series_and_smooth(points_one_cycle_atrium, dt, bump_radius, n_fourier_coeffs, plots); 
 
