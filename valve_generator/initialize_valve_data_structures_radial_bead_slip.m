@@ -107,7 +107,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 
-parameter_values = 2; 
+parameter_values = 3; 
     
 
 if parameter_values == 1  
@@ -489,7 +489,7 @@ elseif parameter_values == 3
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    valve.pressure_tension_ratio = 0.06; % 0.11 * 0.975; 
+    valve.pressure_tension_ratio = 0.04; % 0.11 * 0.975; 
 
 
     % base constant for tensions, derived quantity 
@@ -501,6 +501,8 @@ elseif parameter_values == 3
     tension_coeffs.beta_anterior        = 1.1 * valve.tension_base;  % radial
     tension_coeffs.alpha_posterior      = 1.0 * valve.tension_base;  % circumferential 
     tension_coeffs.beta_posterior       = 1.0 * valve.tension_base;  % radial
+    tension_coeffs.alpha_commissure     = 1.0 * valve.tension_base;  % circumferential 
+    tension_coeffs.beta_commissure      = 1.0 * valve.tension_base;  % radial
     tension_coeffs.alpha_hoops          = 0.5 * valve.tension_base;  % circumferential hoops 
 
 
@@ -509,44 +511,59 @@ elseif parameter_values == 3
     tension_coeffs.c_rad_dec_anterior        = 1.5 * dec_tension_coeff_base;  % radial
     tension_coeffs.c_circ_dec_posterior      = 1.0 * dec_tension_coeff_base;  % circumferential 
     tension_coeffs.c_rad_dec_posterior       = 1.5 * dec_tension_coeff_base;  % radial
+    tension_coeffs.c_circ_dec_commissure      = 4.0 * dec_tension_coeff_base;  % circumferential 
+    tension_coeffs.c_rad_dec_commissure       = 1.0 * dec_tension_coeff_base;  % radial 
+    
     tension_coeffs.c_circ_dec_hoops          = 2.0 * dec_tension_coeff_base;  % circumferential hoops
     tension_coeffs.c_rad_dec_hoops_anterior  = 0.5 * dec_tension_coeff_base;  % radial hoops, anterior part 
     tension_coeffs.c_rad_dec_hoops_posterior = 0.5 * dec_tension_coeff_base;  % radial hoops, posterior part 
+    tension_coeffs.c_rad_dec_hoops_commissure = 0.5 * dec_tension_coeff_base;  % radial hoops, commissure part
 
 
     % places this many periodic rings above 
     n_rings_periodic = max(2,N/64); 
 
 
-    % No explicit commissural leaflet here 
-    N_anterior = N/2; 
-
+    % Explicit commissural leaflet here 
+    N_anterior = N/4; 
     angles.anterior = 5*pi/6; 
 
     % Posterior takes whatever is left 
-    N_posterior = N - N_anterior; 
+    N_posterior = N/4;
+    angles.posterior = 4*pi/6;
 
+    N_commissure = N/4; 
+    
     % store these 
     valve.N_anterior   = N_anterior; 
     valve.N_posterior  = N_posterior;
-    valve.commissural_leaflets = false; 
-    valve.N_commissure = 0; 
+    valve.commissural_leaflets = true; 
+    valve.N_commissure = N_commissure; 
 
 
-    N_per_direction   = [N_anterior/2, N_anterior/2, N_posterior/2, N_posterior/2]; 
+    N_per_direction   = [N_anterior/2, N_anterior/2, ...
+                         N_commissure/4, N_commissure/4, N_commissure/4, N_commissure/4, ... 
+                         N_posterior/2, N_posterior/2, ...
+                         N_commissure/4, N_commissure/4, N_commissure/4, N_commissure/4]; 
 
     % Anterior goes down then up 
     leaflet_direction = [-1, 1]; 
 
+    % Commissure down, flat, flat, up 
+    leaflet_direction = [leaflet_direction, -1, 0, 0, 1]; 
+    
     % Posterior goes down then up 
     leaflet_direction = [leaflet_direction, -1, 1]; 
 
+    % Commissure down, flat, flat, up 
+    leaflet_direction = [leaflet_direction, -1, 0, 0, 1]; 
+    
     % No offset, starting at commissure 
     leaflet_N_start = 0; 
 
 
     % Leaf tensions are all modified 
-    valve.leaf_tension_base = .7 * valve.tension_base; 
+    valve.leaf_tension_base = .8 * valve.tension_base; 
 
     % Base total root tension 
     % The value 0.5905 works well on each tree when using separate solves and two leaflets 
@@ -556,9 +573,9 @@ elseif parameter_values == 3
 
     n_trees_anterior = 2; 
 
-    k_0_1_anterior  = 1.1 * valve.leaf_tension_base / n_trees_anterior; 
+    k_0_1_anterior  = 1.0 * valve.leaf_tension_base / n_trees_anterior; 
     k_0_1_anterior  = k_0_1_anterior * [1; 1]; 
-    k_root_anterior = 1.1 * valve.root_tension_base / n_trees_anterior; 
+    k_root_anterior = 1.0 * valve.root_tension_base / n_trees_anterior; 
     k_root_anterior = k_root_anterior * [1; 1]; 
 
     n_leaves_anterior  = N_anterior/n_trees_anterior * ones(n_trees_anterior, 1); 
@@ -571,17 +588,17 @@ elseif parameter_values == 3
     n_trees_commissure_per_side = n_trees_commissure/2; 
     
     % include commissural trees in posterior leaflet 
-    n_posterior_tree_total   = N_posterior / 2; 
-    n_commissural_tree_total = N_posterior / 2;
+    n_posterior_tree_total   = N_posterior; 
+    n_commissural_tree_total = N_commissure * 2;
     
     n_tree_posterior         = n_posterior_tree_total   / n_trees_posterior; 
     n_tree_commissure        = n_commissural_tree_total / n_trees_commissure; 
     
-    k_0_1_posterior          = 0.4 * valve.leaf_tension_base / n_trees_posterior; 
-    k_root_posterior         = 0.4 * valve.root_tension_base / n_trees_posterior; 
+    k_0_1_posterior          = 1.0 * valve.leaf_tension_base / n_trees_posterior; 
+    k_root_posterior         = 1.0 * valve.root_tension_base / n_trees_posterior; 
     
-    k_0_1_commissure         = 0.4 * valve.leaf_tension_base / n_trees_commissure; 
-    k_root_commissure        = 0.5 * valve.root_tension_base / n_trees_commissure; 
+    k_0_1_commissure         = 1.0 * valve.leaf_tension_base / n_trees_commissure; 
+    k_root_commissure        = 1.0 * valve.root_tension_base / n_trees_commissure; 
 
     
     k_0_1_posterior_and_comm    = zeros(n_trees_posterior_and_comm, 1);
@@ -704,8 +721,8 @@ leaflet = initialize_leaflet_bead_slip(name,                         ...
 
 valve.leaflets(1) = leaflet; 
     
-% valve_plot(valve); 
-% pause(.1); 
+valve_plot(valve); 
+pause(.1); 
 
 disp('Done with initialize.'); 
 
