@@ -511,7 +511,7 @@ elseif parameter_values == 3
     tension_coeffs.c_rad_dec_anterior        = 1.5 * dec_tension_coeff_base;  % radial
     tension_coeffs.c_circ_dec_posterior      = 1.0 * dec_tension_coeff_base;  % circumferential 
     tension_coeffs.c_rad_dec_posterior       = 1.5 * dec_tension_coeff_base;  % radial
-    tension_coeffs.c_circ_dec_commissure      = 4.0 * dec_tension_coeff_base;  % circumferential 
+    tension_coeffs.c_circ_dec_commissure      = 1.0 * dec_tension_coeff_base;  % circumferential 
     tension_coeffs.c_rad_dec_commissure       = 1.0 * dec_tension_coeff_base;  % radial 
     
     tension_coeffs.c_circ_dec_hoops          = 2.0 * dec_tension_coeff_base;  % circumferential hoops
@@ -563,19 +563,19 @@ elseif parameter_values == 3
 
 
     % Leaf tensions are all modified 
-    valve.leaf_tension_base = .8 * valve.tension_base; 
+    valve.leaf_tension_base = 0.82 * valve.tension_base; 
 
     % Base total root tension 
     % The value 0.5905 works well on each tree when using separate solves and two leaflets 
     % Controls constant tension at the root of the tree 
-    valve.root_tension_base = .8 * 0.5905 * valve.tension_base; 
+    valve.root_tension_base = 0.82 * 0.5905 * valve.tension_base; 
 
 
     n_trees_anterior = 2; 
 
-    k_0_1_anterior  = 1.0 * valve.leaf_tension_base / n_trees_anterior; 
+    k_0_1_anterior  = 0.5 * valve.leaf_tension_base / n_trees_anterior; 
     k_0_1_anterior  = k_0_1_anterior * [1; 1]; 
-    k_root_anterior = 1.0 * valve.root_tension_base / n_trees_anterior; 
+    k_root_anterior = 0.5 * valve.root_tension_base / n_trees_anterior; 
     k_root_anterior = k_root_anterior * [1; 1]; 
 
     n_leaves_anterior  = N_anterior/n_trees_anterior * ones(n_trees_anterior, 1); 
@@ -594,8 +594,8 @@ elseif parameter_values == 3
     n_tree_posterior         = n_posterior_tree_total   / n_trees_posterior; 
     n_tree_commissure        = n_commissural_tree_total / n_trees_commissure; 
     
-    k_0_1_posterior          = 1.0 * valve.leaf_tension_base / n_trees_posterior; 
-    k_root_posterior         = 1.0 * valve.root_tension_base / n_trees_posterior; 
+    k_0_1_posterior          = 0.5 * valve.leaf_tension_base / n_trees_posterior; 
+    k_root_posterior         = 0.5 * valve.root_tension_base / n_trees_posterior; 
     
     k_0_1_commissure         = 1.0 * valve.leaf_tension_base / n_trees_commissure; 
     k_root_commissure        = 1.0 * valve.root_tension_base / n_trees_commissure; 
