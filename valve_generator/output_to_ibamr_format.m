@@ -227,16 +227,20 @@ function params = spring_string(params, idx, nbr, kappa, rest_len, function_idx)
         function_idx = 0; 
     end 
    
-    if function_idx == 0
-        eta = params.eta_multiplier_linear   * kappa / params.num_copies; 
-    elseif function_idx == 1
-        eta = params.eta_multiplier_collagen * kappa / params.num_copies; 
-    else 
-        error('Only linear (default) and collagen function indices implemented'); 
-    end 
-   
-    fprintf(params.spring, '\t%d\t %.14f\n', function_idx, eta); 
+    fprintf(params.spring, '\t %d', function_idx); 
     
+%     if function_idx == 0
+%         eta = params.eta_multiplier_linear   * kappa / params.num_copies; 
+%     elseif function_idx == 1
+%         eta = params.eta_multiplier_collagen * kappa / params.num_copies; 
+%     else 
+%         error('Only linear (default) and collagen function indices implemented'); 
+%     end 
+%    
+%     fprintf(params.spring, '\t %.14f', eta); 
+
+    fprintf(params.spring, '\n'); 
+
     params.total_springs = params.total_springs + 1; 
 end 
 
