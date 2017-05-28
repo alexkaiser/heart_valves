@@ -518,14 +518,14 @@ elseif parameter_values == 3
     tension_coeffs.beta_posterior       = 1.0 * valve.tension_base;  % radial
     tension_coeffs.alpha_commissure     = 1.0 * valve.tension_base;  % circumferential 
     tension_coeffs.beta_commissure      = 1.0 * valve.tension_base;  % radial
-    tension_coeffs.alpha_hoops          = 0.8 * valve.tension_base;  % circumferential hoops 
+    tension_coeffs.alpha_hoops          = 1.0 * valve.tension_base;  % circumferential hoops 
 
 
     % decreasing tension coefficients 
     tension_coeffs.c_circ_dec_anterior        = 1.0 * dec_tension_coeff_base;  % circumferential 
-    tension_coeffs.c_rad_dec_anterior         = 1.5 * dec_tension_coeff_base;  % radial
+    tension_coeffs.c_rad_dec_anterior         = 1.0 * dec_tension_coeff_base;  % radial
     tension_coeffs.c_circ_dec_posterior       = 1.0 * dec_tension_coeff_base;  % circumferential 
-    tension_coeffs.c_rad_dec_posterior        = 1.5 * dec_tension_coeff_base;  % radial
+    tension_coeffs.c_rad_dec_posterior        = 1.0 * dec_tension_coeff_base;  % radial
     tension_coeffs.c_circ_dec_commissure      = 1.0 * dec_tension_coeff_base;  % circumferential 
     tension_coeffs.c_rad_dec_commissure       = 1.0 * dec_tension_coeff_base;  % radial 
     
