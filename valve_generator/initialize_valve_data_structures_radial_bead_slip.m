@@ -107,7 +107,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 
-parameter_values = 3; 
+parameter_values = 2; 
     
 
 if parameter_values == 1  
@@ -293,7 +293,7 @@ elseif parameter_values == 2
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    valve.pressure_tension_ratio = 0.0525; % 0.11 * 0.975; 
+    valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
 
 
     % base constant for tensions, derived quantity 
@@ -489,7 +489,7 @@ elseif parameter_values == 3
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    valve.pressure_tension_ratio = 0.04; % 0.11 * 0.975; 
+    valve.pressure_tension_ratio = 0.02; 
 
 
     % base constant for tensions, derived quantity 
@@ -530,7 +530,7 @@ elseif parameter_values == 3
 
     % Posterior takes whatever is left 
     N_posterior = N/4;
-    angles.posterior = 4*pi/6;
+    angles.posterior = 3*pi/6;
 
     N_commissure = N/4; 
     
@@ -563,12 +563,12 @@ elseif parameter_values == 3
 
 
     % Leaf tensions are all modified 
-    valve.leaf_tension_base = 0.45 * valve.tension_base; 
+    valve.leaf_tension_base = 0.4 * valve.tension_base; 
 
     % Base total root tension 
     % The value 0.5905 works well on each tree when using separate solves and two leaflets 
     % Controls constant tension at the root of the tree 
-    valve.root_tension_base = 0.45 * 0.5905 * valve.tension_base; 
+    valve.root_tension_base = 0.4 * 0.5905 * valve.tension_base; 
 
 
     n_trees_anterior = 2; 
@@ -690,7 +690,7 @@ valve.eta_papillary = valve.target_papillary/1000;
 % note that linear springs and collagen springs have vastly different constants 
 % and these are tuned manually to make the dashpot constants equal order of magnitude
 valve.eta_multiplier_linear   = 0; 
-valve.eta_multiplier_collagen = 1e4; 
+valve.eta_multiplier_collagen = 0; 
 
 
 % Approximate Lagrangian mesh spacing at ring 

@@ -29,9 +29,9 @@ use_energy = false;
 
 
 % Get function handles for energy, diff eqns and Jacobian 
-if use_energy
-    energy   = leaflet.energy; 
-end 
+% if use_energy
+%     energy   = leaflet.energy; 
+% end 
 diff_eqns = leaflet.diff_eqns; %@(leaflet) diff_eqns_and_linearize(leaflet, leaflet.diff_eqns); 
 jacobian  = leaflet.jacobian; 
 
@@ -40,28 +40,10 @@ jacobian  = leaflet.jacobian;
 % and decreases step length adaptively if not 
 back_tracking = true; 
 max_back_tracking_it = 20; 
-if back_tracking 
-    if use_energy
-        use_energy = true; 
-        E = energy(leaflet); 
-        c_backtrack = .9; 
-    end 
-end 
 
-line_search = false; 
-if line_search
-    if isfield(leaflet, 'energy')
-        use_energy = true; 
-        E = energy(leaflet); 
-    else 
-        error('Cannot line search without energy'); 
-    end         
-end 
+% call 1D optimiazation routine if true 
+optimization = false; 
 
-
-if back_tracking && line_search
-    error('only one line search strategy allowed'); 
-end 
 
 
 consecutive_fails = 0; 
@@ -143,7 +125,7 @@ while err > tol
     err = total_global_err(leaflet);         
     
     
-    if back_tracking && (~use_energy)
+    if back_tracking && (~optimization)
         
         alpha = 1.0; 
         back_tracking_it = 0; 
@@ -151,6 +133,7 @@ while err > tol
            
             % pass
             if (err < err_prev) 
+                fprintf('Line search passed with alpha = %f, \t ||F|| = %e\n', alpha, err); 
                 consecutive_fails = 0; 
                 break; 
             end 
@@ -182,68 +165,91 @@ while err > tol
             end 
         end 
         
-    end 
-    
-    
-    if back_tracking && use_energy
+    elseif back_tracking && optimization
         
-        % first order term in Taylor series, no coefficients
-        F_J_inv_F = F_linearized' * soln;  
-        
-        if F_J_inv_F <= 0.0
-           warning('Hessian has not made positive definite quadratic form');  
-        end 
-        
-        E = energy(leaflet); 
-        
-        alpha = 1.0; 
-        back_tracking_it = 0; 
-        while (E >= E_prev - c_backtrack * alpha * F_J_inv_F) 
-           
-            alpha = alpha / 2.0; 
-            
-            % add in to get the next iterate 
-            X_linearized = X_linearized_prev + alpha * soln; 
-
-            % copy data back to 2d 
-            leaflet = internal_points_to_2d(X_linearized, leaflet); 
-
-            E = energy(leaflet); 
-        
-            back_tracking_it = back_tracking_it + 1; 
-            
-            if back_tracking_it > max_back_tracking_it
-                warning('failed to find a descent guess in allowed number of iterations'); 
-                break; 
-            end 
-        end 
-        
-        err = total_global_err(leaflet); 
-    end 
-    
-    
-    if line_search && use_energy
-        
-        energy_gradient_hessian_handle = @(alpha) energy_gradient_hessian(X_linearized_prev + alpha*soln, leaflet); 
+        % norm squared of difference eqns 
+        objective_fn = @(alpha) sum(diff_eqns(internal_points_to_2d(X_linearized_prev + alpha * soln, leaflet)).^2); 
         
         min_alpha = 0.0; 
         max_alpha = 1.0; 
         
         options = optimset('TolX', 1e2*tol, 'Display', 'off'); 
         
-        [alpha_opt, E, exitflag, output] = fminbnd(energy_gradient_hessian_handle, min_alpha, max_alpha, options); 
+        [alpha_opt, norm_F_squared, exitflag, output] = fminbnd(objective_fn, min_alpha, max_alpha, options); 
         
         if exitflag == 1
-            fprintf('One D optimization passed with alpha = %e, \t E = %f\n', alpha_opt, E); 
+            fprintf('One D optimization passed with alpha = %f, \t ||F|| = %e\n', alpha_opt, sqrt(norm_F_squared)); 
         else
-            error('One dimensional optimization failed'); 
+            error('One dimensional optimization failed. Return control to parent.'); 
         end 
         
         X_linearized = X_linearized_prev + alpha_opt * soln; 
         leaflet = internal_points_to_2d(X_linearized, leaflet); 
+
     end 
     
     
+    
+%     
+%     if back_tracking && use_energy
+%         
+%         % first order term in Taylor series, no coefficients
+%         F_J_inv_F = F_linearized' * soln;  
+%         
+%         if F_J_inv_F <= 0.0
+%            warning('Hessian has not made positive definite quadratic form');  
+%         end 
+%         
+%         E = energy(leaflet); 
+%         
+%         alpha = 1.0; 
+%         back_tracking_it = 0; 
+%         while (E >= E_prev - c_backtrack * alpha * F_J_inv_F) 
+%            
+%             alpha = alpha / 2.0; 
+%             
+%             % add in to get the next iterate 
+%             X_linearized = X_linearized_prev + alpha * soln; 
+% 
+%             % copy data back to 2d 
+%             leaflet = internal_points_to_2d(X_linearized, leaflet); 
+% 
+%             E = energy(leaflet); 
+%         
+%             back_tracking_it = back_tracking_it + 1; 
+%             
+%             if back_tracking_it > max_back_tracking_it
+%                 warning('failed to find a descent guess in allowed number of iterations'); 
+%                 break; 
+%             end 
+%         end 
+%         
+%         err = total_global_err(leaflet); 
+%     end 
+%     
+%     
+%     if line_search && use_energy
+%         
+%         energy_gradient_hessian_handle = @(alpha) energy_gradient_hessian(X_linearized_prev + alpha*soln, leaflet); 
+%         
+%         min_alpha = 0.0; 
+%         max_alpha = 1.0; 
+%         
+%         options = optimset('TolX', 1e2*tol, 'Display', 'off'); 
+%         
+%         [alpha_opt, E, exitflag, output] = fminbnd(energy_gradient_hessian_handle, min_alpha, max_alpha, options); 
+%         
+%         if exitflag == 1
+%             fprintf('One D optimization passed with alpha = %e, \t E = %f\n', alpha_opt, E); 
+%         else
+%             error('One dimensional optimization failed'); 
+%         end 
+%         
+%         X_linearized = X_linearized_prev + alpha_opt * soln; 
+%         leaflet = internal_points_to_2d(X_linearized, leaflet); 
+%     end 
+%     
+%     
     
     
     it = it + 1; 
