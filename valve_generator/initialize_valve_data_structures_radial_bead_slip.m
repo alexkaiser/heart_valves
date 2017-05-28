@@ -35,13 +35,6 @@ valve.optimization = optimization;
 
 valve.decreasing_tension = decreasing_tension; 
 
-if decreasing_tension
-    dec_tension_coeff_base      = 4.6;  
-    valve.c_dec_tension_chordae = 1.0 * dec_tension_coeff_base; 
-else 
-    valve.dec_tension  = 0.0; 
-end 
-
 
 valve.diff_eqns = @difference_equations_bead_slip; 
 valve.jacobian  = @build_jacobian_bead_slip;
@@ -107,7 +100,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 
-parameter_values = 2; 
+parameter_values = 3; 
     
 
 if parameter_values == 1  
@@ -136,6 +129,13 @@ if parameter_values == 1
         for i = 1:length(valve.skeleton.papillary)
             valve.skeleton.papillary(i).radius = 0; 
         end 
+    end 
+    
+    if decreasing_tension
+        dec_tension_coeff_base      = 4.6;  
+        valve.c_dec_tension_chordae = 1.0 * dec_tension_coeff_base;     
+    else 
+        valve.dec_tension  = 0.0; 
     end 
     
 
@@ -291,6 +291,13 @@ elseif parameter_values == 2
 
     % Base constants, individual pieces are tuned relative to these values
 
+    if decreasing_tension
+        dec_tension_coeff_base      = 4.6;  
+        valve.c_dec_tension_chordae = 1.0 * dec_tension_coeff_base;     
+    else 
+        valve.dec_tension  = 0.0; 
+    end 
+    
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
     valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
@@ -455,7 +462,7 @@ elseif parameter_values == 2
 elseif parameter_values == 3 
 
     % commissural tree version 
-    % but without explicit commissural leaflets 
+    % with explicit commissural leaflets 
     
     valve.dip_anterior_systole = true; 
     valve.r_dip = 0.75; 
@@ -487,6 +494,14 @@ elseif parameter_values == 3
 
     % Base constants, individual pieces are tuned relative to these values
 
+    if decreasing_tension
+        dec_tension_coeff_base      = 4.6 * (3/2);  
+        valve.c_dec_tension_chordae = 1.0 * dec_tension_coeff_base;     
+    else 
+        valve.dec_tension  = 0.0; 
+    end 
+    
+    
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
     valve.pressure_tension_ratio = 0.02; 
@@ -525,21 +540,29 @@ elseif parameter_values == 3
 
 
     % Explicit commissural leaflet here 
-    N_anterior = N/4; 
+    N_anterior = N/2; 
     angles.anterior = 5*pi/6; 
 
     % Posterior takes whatever is left 
-    N_posterior = N/4;
+    N_posterior = N/2;
     angles.posterior = 3*pi/6;
 
     N_commissure = N/4; 
+    
+    N_orig = N; 
+
+    % we have added two commissural leaflets that take one fourth the total N 
+    % changing the total N
+    % this is a strane hack but I'm rolling with it 
+    N = (3/2) * N; 
+    
     
     % store these 
     valve.N_anterior   = N_anterior; 
     valve.N_posterior  = N_posterior;
     valve.commissural_leaflets = true; 
     valve.N_commissure = N_commissure; 
-
+    valve.N_orig       = N_orig; 
 
     N_per_direction   = [N_anterior/2, N_anterior/2, ...
                          N_commissure/4, N_commissure/4, N_commissure/4, N_commissure/4, ... 
@@ -571,98 +594,55 @@ elseif parameter_values == 3
     valve.root_tension_base = 0.4 * 0.5905 * valve.tension_base; 
 
 
-    n_trees_anterior = 2; 
+    
+    % tree constants and parameters  
+    
+    % Here we take one tree half commissure width 
+    % and plave between the commissure and each other leaflet 
+    
+    tree_n_start = N_commissure/2 + 1; 
 
-    k_0_1_anterior  = 1.0 * valve.leaf_tension_base / n_trees_anterior; 
-    k_0_1_anterior  = k_0_1_anterior * [1; 1]; 
-    k_root_anterior = 1.0 * valve.root_tension_base / n_trees_anterior; 
-    k_root_anterior = k_root_anterior * [1; 1]; 
+    % this array determines the fraction of N_orig which each tree takes up 
+    % this allows us to determine initial fractions of constants that go to each tree 
+    frac_of_n_orig = [1/16; 1/16; 1/16; 1/16; ...   % anterior  
+                      1/ 4; 1/ 4;             ...   % anterior and comm, comm and posterior       
+                      1/16; 1/16; 1/16; 1/16; ...   % posterior
+                      1/ 4; 1/ 4];                  % posterior and comm, comm and anterior
+    
+    n_leaves = N_orig                  * frac_of_n_orig; 
+    k_0_1    = valve.leaf_tension_base * frac_of_n_orig;
+    k_root   = valve.root_tension_base * frac_of_n_orig;
+    
+    % number of trees connecting to each papillary muscle 
+    trees_per_side = length(frac_of_n_orig)/2; 
+    
+    % number of anterior trees on left 
+    % for splitting up papillary muscle 
+    n_trees_anterior_left = 2; 
+    
+    papillary_left_min_angle = -5*pi/4; 
+    papillary_left_max_angle =    pi/4; 
+    
+    papillary_left  = get_papillary_coords(valve, left_papillary_idx,  trees_per_side,  papillary_left_min_angle,  papillary_left_max_angle); 
+    
+    % right takes reflected angles 
+    papillary_right = get_papillary_coords(valve, right_papillary_idx, trees_per_side, -papillary_left_max_angle, -papillary_left_min_angle);
+    
+    % left anterior go first 
+    papillary = papillary_left(:,(end - n_trees_anterior_left + 1):end); 
+    
+    % right, whole thing 
+    papillary = [papillary, papillary_right]; 
+    
+    % left, remaining 
+    papillary = [papillary, papillary_left(:, 1:(end - n_trees_anterior_left))]; 
 
-    n_leaves_anterior  = N_anterior/n_trees_anterior * ones(n_trees_anterior, 1); 
+end 
 
-    
-    % posterior and included commissural trees 
-    n_trees_posterior_and_comm  = 6;
-    n_trees_posterior           = 2; 
-    n_trees_commissure          = 4; 
-    n_trees_commissure_per_side = n_trees_commissure/2; 
-    
-    % include commissural trees in posterior leaflet 
-    n_posterior_tree_total   = N_posterior; 
-    n_commissural_tree_total = N_commissure * 2;
-    
-    n_tree_posterior         = n_posterior_tree_total   / n_trees_posterior; 
-    n_tree_commissure        = n_commissural_tree_total / n_trees_commissure; 
-    
-    k_0_1_posterior          = 1.0 * valve.leaf_tension_base / n_trees_posterior; 
-    k_root_posterior         = 1.0 * valve.root_tension_base / n_trees_posterior; 
-    
-    k_0_1_commissure         = 1.0 * valve.leaf_tension_base / n_trees_commissure_per_side; 
-    k_root_commissure        = 1.0 * valve.root_tension_base / n_trees_commissure_per_side; 
 
-    
-    k_0_1_posterior_and_comm    = zeros(n_trees_posterior_and_comm, 1);
-    k_root_posterior_and_comm   = zeros(n_trees_posterior_and_comm, 1);
-    n_leaves_posterior_and_comm = zeros(n_trees_posterior_and_comm, 1); 
-    
-    
-    j = 1; 
-    for tmp=1:n_trees_commissure_per_side
-        k_0_1_posterior_and_comm(j)    = k_0_1_commissure; 
-        k_root_posterior_and_comm(j)   = k_root_commissure; 
-        n_leaves_posterior_and_comm(j) = n_tree_commissure; 
-        j = j+1; 
-    end 
-    
-    for tmp=1:n_trees_posterior
-        k_0_1_posterior_and_comm(j)    = k_0_1_posterior; 
-        k_root_posterior_and_comm(j)   = k_root_posterior; 
-        n_leaves_posterior_and_comm(j) = n_tree_posterior; 
-        j = j+1; 
-    end    
-    
-    for tmp=1:n_trees_commissure_per_side
-        k_0_1_posterior_and_comm(j)    = k_0_1_commissure; 
-        k_root_posterior_and_comm(j)   = k_root_commissure; 
-        n_leaves_posterior_and_comm(j) = n_tree_commissure; 
-        j = j+1; 
-    end
-    
-    
-    papillary_anterior = zeros(3,n_trees_anterior); 
-    n_points = n_trees_anterior/2; 
-    left_papillary_range = 1:(n_trees_anterior/2); 
-    right_papillary_range  = left_papillary_range + (n_trees_anterior/2);
-    
-    % arrangements of connection to papillary muscle 
-    % angles are measured form approximate x direction on left papillary 
-    % negatives and swapped on right papillary 
-    min_papillary_angle_anterior = 0; 
-    max_papillary_angle_anterior = 0; 
-    
-    papillary_anterior(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points,  min_papillary_angle_anterior,  max_papillary_angle_anterior); 
-    papillary_anterior(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points, -max_papillary_angle_anterior, -min_papillary_angle_anterior); 
-
-    
-    papillary_posterior_and_comm = zeros(3,n_trees_posterior_and_comm); 
-    n_points = n_trees_posterior_and_comm/2; 
-    right_papillary_range = 1:(n_trees_posterior_and_comm/2); 
-    left_papillary_range  = right_papillary_range + (n_trees_posterior_and_comm/2); 
-    
-    % arrangements of anchor points 
-    min_papillary_angle_posterior = -pi; 
-    max_papillary_angle_posterior = 0; 
-    
-    papillary_posterior_and_comm(:,right_papillary_range) = get_papillary_coords(valve, right_papillary_idx, n_points, -max_papillary_angle_posterior, -min_papillary_angle_posterior); 
-    papillary_posterior_and_comm(:,left_papillary_range)  = get_papillary_coords(valve, left_papillary_idx,  n_points,  min_papillary_angle_posterior,  max_papillary_angle_posterior);
-
-    
-    % concatenate all relevant arrays
-    n_leaves           = [n_leaves_anterior; n_leaves_posterior_and_comm];
-    papillary          = [papillary_anterior, papillary_posterior_and_comm]; 
-    k_0_1              = [k_0_1_anterior; k_0_1_posterior_and_comm]; 
-    k_root             = [k_root_anterior; k_root_posterior_and_comm];  
-    
+% default value for tree offset 
+if ~exist('tree_n_start', 'var')
+    tree_n_start = 1; 
 end 
 
 
@@ -705,6 +685,7 @@ leaflet = initialize_leaflet_bead_slip(name,                         ...
                                 angles,                              ...
                                 papillary,                           ... 
                                 n_leaves,                            ...
+                                tree_n_start,                        ...
                                 leaflet_direction,                   ...
                                 leaflet_N_start,                     ...
                                 N_per_direction,                     ...

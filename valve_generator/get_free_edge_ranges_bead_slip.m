@@ -1,4 +1,4 @@
-function leaflet = get_free_edge_ranges_bead_slip(leaflet)
+function leaflet = get_free_edge_ranges_bead_slip(leaflet, tree_n_start)
 % 
 % Returns two 2d arrays of indices 
 % 
@@ -72,7 +72,7 @@ if leaflet.radial_and_circumferential
     chordae_idx(N,N/2 + 1).tree_idx = 0;  
     chordae_idx(N,N/2 + 1).leaf_idx = 0;  
     
-    j = 1; 
+    j = tree_n_start; 
     
     for tree_idx = 1:num_trees 
         
@@ -90,6 +90,11 @@ if leaflet.radial_and_circumferential
             
             % Horizonal index always increases 
             j = j + 1; 
+            
+            % periodic reduction if necessary 
+            if j == (j_max + 1)
+                j = 1;
+            end 
             
         end 
         
