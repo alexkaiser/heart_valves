@@ -518,7 +518,7 @@ elseif parameter_values == 3
     tension_coeffs.beta_posterior       = 1.0 * valve.tension_base;  % radial
     tension_coeffs.alpha_commissure     = 1.0 * valve.tension_base;  % circumferential 
     tension_coeffs.beta_commissure      = 1.0 * valve.tension_base;  % radial
-    tension_coeffs.alpha_hoops          = 0.5 * valve.tension_base;  % circumferential hoops 
+    tension_coeffs.alpha_hoops          = 0.8 * valve.tension_base;  % circumferential hoops 
 
 
     % decreasing tension coefficients 
@@ -530,13 +530,13 @@ elseif parameter_values == 3
     tension_coeffs.c_rad_dec_commissure       = 1.0 * dec_tension_coeff_base;  % radial 
     
     tension_coeffs.c_circ_dec_hoops           = 2.0 * dec_tension_coeff_base;  % circumferential hoops
-    tension_coeffs.c_rad_dec_hoops_anterior   = 0.5 * dec_tension_coeff_base;  % radial hoops, anterior part 
-    tension_coeffs.c_rad_dec_hoops_posterior  = 0.5 * dec_tension_coeff_base;  % radial hoops, posterior part 
-    tension_coeffs.c_rad_dec_hoops_commissure = 0.5 * dec_tension_coeff_base;  % radial hoops, commissure part
+    tension_coeffs.c_rad_dec_hoops_anterior   = 1.0 * dec_tension_coeff_base;  % radial hoops, anterior part 
+    tension_coeffs.c_rad_dec_hoops_posterior  = 1.0 * dec_tension_coeff_base;  % radial hoops, posterior part 
+    tension_coeffs.c_rad_dec_hoops_commissure = 1.0 * dec_tension_coeff_base;  % radial hoops, commissure part
 
 
     % places this many periodic rings above 
-    n_rings_periodic = max(2,N/64); 
+    n_rings_periodic = max(2,N/32); 
 
 
     % Explicit commissural leaflet here 
