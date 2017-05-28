@@ -46,7 +46,7 @@ valve.jacobian  = @build_jacobian_bead_slip;
 valve.base_name = sprintf('mitral_tree_%d', N); 
 
 MMHG_TO_CGS      = 1333.22368;
-valve.p_physical = 100 * MMHG_TO_CGS; 
+valve.p_physical = 110 * MMHG_TO_CGS; 
 
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
@@ -470,7 +470,7 @@ elseif parameter_values == 3
 
     valve.L = 3.0; 
     
-    low_papillary = true; 
+    low_papillary = false; 
     tip_radius = .2; 
     valve.skeleton = valve_points_ct_systole(low_papillary, tip_radius); 
     
@@ -504,7 +504,7 @@ elseif parameter_values == 3
     
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    valve.pressure_tension_ratio = 0.02; 
+    valve.pressure_tension_ratio = 0.05; 
 
 
     % base constant for tensions, derived quantity 
@@ -512,7 +512,7 @@ elseif parameter_values == 3
 
 
     % tension coefficients 
-    tension_coeffs.alpha_anterior       = 0.9 * valve.tension_base;  % circumferential 
+    tension_coeffs.alpha_anterior       = 1.0 * valve.tension_base;  % circumferential 
     tension_coeffs.beta_anterior        = 1.1 * valve.tension_base;  % radial
     tension_coeffs.alpha_posterior      = 1.0 * valve.tension_base;  % circumferential 
     tension_coeffs.beta_posterior       = 1.0 * valve.tension_base;  % radial
@@ -522,16 +522,16 @@ elseif parameter_values == 3
 
 
     % decreasing tension coefficients 
-    tension_coeffs.c_circ_dec_anterior       = 1.0 * dec_tension_coeff_base;  % circumferential 
-    tension_coeffs.c_rad_dec_anterior        = 1.5 * dec_tension_coeff_base;  % radial
-    tension_coeffs.c_circ_dec_posterior      = 1.0 * dec_tension_coeff_base;  % circumferential 
-    tension_coeffs.c_rad_dec_posterior       = 1.5 * dec_tension_coeff_base;  % radial
+    tension_coeffs.c_circ_dec_anterior        = 1.0 * dec_tension_coeff_base;  % circumferential 
+    tension_coeffs.c_rad_dec_anterior         = 1.5 * dec_tension_coeff_base;  % radial
+    tension_coeffs.c_circ_dec_posterior       = 1.0 * dec_tension_coeff_base;  % circumferential 
+    tension_coeffs.c_rad_dec_posterior        = 1.5 * dec_tension_coeff_base;  % radial
     tension_coeffs.c_circ_dec_commissure      = 1.0 * dec_tension_coeff_base;  % circumferential 
     tension_coeffs.c_rad_dec_commissure       = 1.0 * dec_tension_coeff_base;  % radial 
     
-    tension_coeffs.c_circ_dec_hoops          = 2.0 * dec_tension_coeff_base;  % circumferential hoops
-    tension_coeffs.c_rad_dec_hoops_anterior  = 0.5 * dec_tension_coeff_base;  % radial hoops, anterior part 
-    tension_coeffs.c_rad_dec_hoops_posterior = 0.5 * dec_tension_coeff_base;  % radial hoops, posterior part 
+    tension_coeffs.c_circ_dec_hoops           = 2.0 * dec_tension_coeff_base;  % circumferential hoops
+    tension_coeffs.c_rad_dec_hoops_anterior   = 0.5 * dec_tension_coeff_base;  % radial hoops, anterior part 
+    tension_coeffs.c_rad_dec_hoops_posterior  = 0.5 * dec_tension_coeff_base;  % radial hoops, posterior part 
     tension_coeffs.c_rad_dec_hoops_commissure = 0.5 * dec_tension_coeff_base;  % radial hoops, commissure part
 
 
@@ -586,12 +586,12 @@ elseif parameter_values == 3
 
 
     % Leaf tensions are all modified 
-    valve.leaf_tension_base = 0.4 * valve.tension_base; 
+    valve.leaf_tension_base = 2.0 * valve.tension_base; 
 
     % Base total root tension 
     % The value 0.5905 works well on each tree when using separate solves and two leaflets 
     % Controls constant tension at the root of the tree 
-    valve.root_tension_base = 0.4 * 0.5905 * valve.tension_base; 
+    valve.root_tension_base = 1.1 * 0.5905 * valve.tension_base; 
 
 
     
