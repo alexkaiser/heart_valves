@@ -319,7 +319,7 @@ elseif parameter_values == 2
 
 
     % places this many periodic rings above 
-    n_rings_periodic = max(2,N/64); 
+    n_rings_periodic = max(2,N/32); 
 
 
     % No explicit commissural leaflet here 
