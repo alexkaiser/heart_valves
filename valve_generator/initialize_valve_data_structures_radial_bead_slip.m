@@ -475,7 +475,7 @@ elseif parameter_values == 3
     valve.skeleton = valve_points_ct_systole(low_papillary, tip_radius); 
     
     
-    valve.diastolic_increment = [valve.skeleton.r; 0.0; 0.25]; 
+    valve.diastolic_increment = [1.75; 0.0; 0.25]; 
 
     
     zero_radius = false; 
@@ -586,12 +586,12 @@ elseif parameter_values == 3
 
 
     % Leaf tensions are all modified 
-    valve.leaf_tension_base = 2.0 * valve.tension_base; 
+    valve.leaf_tension_base = 2.0 * (1/16) * valve.tension_base; 
 
     % Base total root tension 
     % The value 0.5905 works well on each tree when using separate solves and two leaflets 
     % Controls constant tension at the root of the tree 
-    valve.root_tension_base = 1.1 * 0.5905 * valve.tension_base; 
+    valve.root_tension_base = 1.1 * (1/16) * 0.5905 * valve.tension_base; 
 
 
     
@@ -609,9 +609,29 @@ elseif parameter_values == 3
                       1/16; 1/16; 1/16; 1/16; ...   % posterior
                       1/ 4; 1/ 4];                  % posterior and comm, comm and anterior
     
+    % change these to manipulate individial tree coefficients 
+    % for sanity reasons, these shuold mostly be one unless you have a good reason to change 
+    k_0_1_coeff    = [1.0; 1.0; 1.0; 1.0; ...       % anterior  
+                      4.0; 4.0;           ...       % anterior and comm, comm and posterior       
+                      1.0; 1.0; 1.0; 1.0; ...       % posterior
+                      4.0; 4.0];                    % posterior and comm, comm and anterior
+                  
+    k_root_coeff   = [1.0; 1.0; 1.0; 1.0; ...       % anterior  
+                      4.0; 4.0;           ...       % anterior and comm, comm and posterior       
+                      1.0; 1.0; 1.0; 1.0; ...       % posterior
+                      4.0; 4.0];                    % posterior and comm, comm and anterior
+                  
+    
     n_leaves = N_orig                  * frac_of_n_orig; 
-    k_0_1    = valve.leaf_tension_base * frac_of_n_orig;
-    k_root   = valve.root_tension_base * frac_of_n_orig;
+    
+    % this is the total leaf tension on the tree 
+    % scaling by n_leaves occurs automatically when counting the number of trees 
+    k_0_1    = valve.leaf_tension_base * k_0_1_coeff;
+    
+    % root constants,
+    % actual constants, not scaled in any way 
+    k_root   = valve.root_tension_base * k_root_coeff;
+    
     
     % number of trees connecting to each papillary muscle 
     trees_per_side = length(frac_of_n_orig)/2; 
