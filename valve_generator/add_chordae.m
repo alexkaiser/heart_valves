@@ -13,24 +13,10 @@ function leaflet = add_chordae(leaflet, tree_idx)
     tree_frac           = leaflet.tree_frac; 
     papillary           = leaflet.papillary;
     X                   = leaflet.X; 
-    k_root              = leaflet.k_root; 
-    k_0_1               = leaflet.k_0_1;
     chordae             = leaflet.chordae; 
     free_edge_idx       = chordae(tree_idx).free_edge_idx; 
     
     [n_leaves, m] = size(free_edge_idx);  
-
-    
-    if (length(k_0_1) == 1) && (length(k_root) == 1)
-        k_0_1_tmp   = k_0_1; 
-        k_root_tmp  = k_root; 
-    elseif (length(k_0_1) == leaflet.num_trees) && (length(k_root) == leaflet.num_trees)
-        k_0_1_tmp   = k_0_1(tree_idx); 
-        k_root_tmp  = k_root(tree_idx); 
-    else
-        error('Must supply values for all or values for exactly one')
-    end 
-    
     
     if m ~= 2
         error('free edge indices must be an N by 2 array'); 
@@ -50,16 +36,6 @@ function leaflet = add_chordae(leaflet, tree_idx)
         error('multiplier on tree position must be between zero and one'); 
     end 
 
-    % Derived constants 
-    
-    % leaf force is total leaf force over number of leaves 
-    k_0 = k_0_1_tmp / n_leaves; 
-    
-    % scaling formula on k_multiplier 
-    % to achieve desired k_root 
-    k_multiplier = 2.0 * (k_root_tmp/k_0_1_tmp)^(1/log2(n_leaves)); 
-    
-    
     total_len = 2^(n_tree+1) - 1; 
     max_internal = 2^(n_tree) - 1;     % last node that is not a leaf 
    
@@ -106,39 +82,6 @@ function leaflet = add_chordae(leaflet, tree_idx)
     if abs(n_tree - round(n_tree)) > eps 
         error('must use a power of two'); 
     end 
-    
-    % Set tensions 
-    
-    % Each keeps parent wise spring constants 
-    chordae(tree_idx).k_vals = zeros(max_internal,1); 
-
-    % set spring constant data structures 
-    num_at_level = n_leaves/2; 
-    idx = max_internal; 
-
-    % constants connecting to the leaflet are inherited
-    % first internal constant to the tree is k_multiplier times that 
-    k_running = k_multiplier*k_0; 
-    while num_at_level >= 1
-
-        for j=1:num_at_level
-            chordae(tree_idx).k_vals(idx) = k_running; 
-            idx = idx - 1; 
-        end 
-
-        k_running = k_running * k_multiplier; 
-        num_at_level = num_at_level / 2; 
-    end 
-
-    % check that we actually got the desired root 
-    tol = 1e-8; 
-    if abs(chordae(tree_idx).k_vals(1) - k_root_tmp) > tol 
-        error('Scaling incorrect at tree root, constants inconsistent'); 
-    end 
-    
-    
-    chordae(tree_idx).k_0              = k_0; 
-    chordae(tree_idx).k_multiplier     = k_multiplier;
     
     chordae(tree_idx).min_global_idx   = leaflet.total_internal_with_trees + 1; 
     

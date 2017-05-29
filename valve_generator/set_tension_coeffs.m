@@ -39,6 +39,10 @@ c_circ_dec_hoops          = tension_coeffs.c_circ_dec_hoops     ;  % radial hoop
 c_rad_dec_hoops_anterior  = tension_coeffs.c_rad_dec_hoops_anterior  ;  % radial hoops, anterior part 
 c_rad_dec_hoops_posterior = tension_coeffs.c_rad_dec_hoops_posterior ;  % radial hoops, posterior part 
 
+if ~isfield(leaflet, 'chordae')
+    error('Must initialize chordae prior to setting tensions'); 
+end 
+
 
 % coefficients for computing tensions 
 alpha                     = zeros(j_max, k_max); 
@@ -231,6 +235,89 @@ if commissural_leaflets
 
     end 
 end 
+
+
+% set chordae tensions 
+k_root              = tension_coeffs.k_root; 
+k_0_1               = tension_coeffs.k_0_1;
+chordae             = leaflet.chordae; 
+
+for tree_idx = 1:leaflet.num_trees    
+
+    free_edge_idx       = chordae(tree_idx).free_edge_idx; 
+    
+    [n_leaves, m] = size(free_edge_idx);  
+
+    
+    if (length(k_0_1) == 1) && (length(k_root) == 1)
+        k_0_1_tmp   = k_0_1; 
+        k_root_tmp  = k_root; 
+    elseif (length(k_0_1) == leaflet.num_trees) && (length(k_root) == leaflet.num_trees)
+        k_0_1_tmp   = k_0_1(tree_idx); 
+        k_root_tmp  = k_root(tree_idx); 
+    else
+        error('Must supply values for all or values for exactly one')
+    end 
+    
+
+    % Derived constants 
+    
+    % leaf force is total leaf force over number of leaves 
+    k_0 = k_0_1_tmp / n_leaves; 
+    
+    % scaling formula on k_multiplier 
+    % to achieve desired k_root 
+    k_multiplier = 2.0 * (k_root_tmp/k_0_1_tmp)^(1/log2(n_leaves)); 
+       
+    % there are max_internal points on the tree 
+    % leaves are not included as they are part of the leaflet 
+    [m max_internal] = size(chordae(tree_idx).C); 
+    
+    % this parameter is the number of (not included) leaves in the tree
+    NN = max_internal + 1; 
+    
+    % sanity check in building a balanced tree 
+    n_tree = log2(NN);
+    if abs(n_tree - round(n_tree)) > eps 
+        error('must use a power of two'); 
+    end 
+    
+    % Set tensions 
+    
+    % Each keeps parent wise spring constants 
+    chordae(tree_idx).k_vals = zeros(max_internal,1); 
+
+    % set spring constant data structures 
+    num_at_level = n_leaves/2; 
+    idx = max_internal; 
+
+    % constants connecting to the leaflet are inherited
+    % first internal constant to the tree is k_multiplier times that 
+    k_running = k_multiplier*k_0; 
+    while num_at_level >= 1
+
+        for j=1:num_at_level
+            chordae(tree_idx).k_vals(idx) = k_running; 
+            idx = idx - 1; 
+        end 
+
+        k_running = k_running * k_multiplier; 
+        num_at_level = num_at_level / 2; 
+    end 
+
+    % check that we actually got the desired root 
+    tol = 1e-8; 
+    if abs(chordae(tree_idx).k_vals(1) - k_root_tmp) > tol 
+        error('Scaling incorrect at tree root, constants inconsistent'); 
+    end 
+    
+    
+    chordae(tree_idx).k_0              = k_0; 
+    chordae(tree_idx).k_multiplier     = k_multiplier;     
+    leaflet.chordae = chordae;
+    
+end 
+
 
 leaflet.tension_coeffs        = tension_coeffs; 
 leaflet.alpha                 = alpha; 

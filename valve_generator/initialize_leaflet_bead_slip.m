@@ -11,8 +11,6 @@ function leaflet = initialize_leaflet_bead_slip(name,               ...
                                       radial_and_circumferential,   ...  
                                       tension_coeffs,               ... 
                                       p_0,                          ...  
-                                      k_0_1,                        ... 
-                                      k_root,                       ... 
                                       tree_frac,                    ...
                                       leaflet_only,                 ...
                                       ring_to_ring_range,           ...
@@ -130,10 +128,6 @@ leaflet = get_util_arrays_bead_slip(leaflet, valve);
 % build actual data structure 
 leaflet.X = build_initial_fibers_bead_slip(leaflet, valve); 
 
-% set coefficients on tensions
-leaflet = set_tension_coeffs(leaflet, valve, tension_coeffs); 
-
-
 % Scalar pressure to support 
 leaflet.p_0 = p_0; 
 
@@ -145,16 +139,15 @@ leaflet.total_internal_leaflet    = 3*sum(leaflet.is_internal(:));
 leaflet.total_internal_with_trees = 3*sum(leaflet.is_internal(:)); 
 
 
-
+% add trees 
 leaflet.chordae_tree = true; 
-leaflet.k_0_1        = k_0_1; 
-leaflet.k_root       = k_root; 
 leaflet.tree_frac    = tree_frac;
-
 for tree_idx = 1:leaflet.num_trees
     leaflet = add_chordae(leaflet, tree_idx); 
 end 
     
+% set coefficients on tensions
+leaflet = set_tension_coeffs(leaflet, valve, tension_coeffs); 
 
 
 % parameter structure for collagen based nonlinear constitutive 
