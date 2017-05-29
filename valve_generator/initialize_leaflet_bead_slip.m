@@ -112,7 +112,7 @@ leaflet.leaflet_direction         = leaflet_direction;
 leaflet.leaflet_N_start           = leaflet_N_start; 
 leaflet.N_per_direction           = N_per_direction; 
 leaflet.papillary                 = papillary; 
-leaflet.tension_coeffs            = tension_coeffs; 
+
 
 % Radial and circumferential fibers 
 % Or diagonally oriented fibers 
@@ -127,8 +127,11 @@ leaflet = get_free_edge_ranges_bead_slip(leaflet, tree_n_start);
 % information about geometry 
 leaflet = get_util_arrays_bead_slip(leaflet, valve); 
 
-% layout on 
+% build actual data structure 
 leaflet.X = build_initial_fibers_bead_slip(leaflet, valve); 
+
+% set coefficients on tensions
+leaflet = set_tension_coeffs(leaflet, valve, tension_coeffs); 
 
 
 % Scalar pressure to support 
