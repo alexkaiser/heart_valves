@@ -131,31 +131,24 @@ if parameter_values == 1
         end 
     end 
     
-    if decreasing_tension
-        dec_tension_coeff_base      = 4.6;  
-        valve.c_dec_tension_chordae = 1.0;     
-    else 
-        valve.dec_tension  = 0.0; 
-    end 
     
-
-    % Base constants, individual pieces are tuned relative to these values
+    % tension coefficients structure 
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    valve.pressure_tension_ratio = 0.05; % 0.11 * 0.975; 
+    % valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
+    tension_coeffs.pressure_tension_ratio = 0.05; 
+    
+    tension_coeffs.dec_tension_coeff_base = 4.6; 
 
-
-    % base constant for tensions, derived quantity 
-    valve.tension_base = valve.p_physical / valve.pressure_tension_ratio; 
 
 
     % tension coefficients 
-    tension_coeffs.alpha_anterior       = 1.0 * valve.tension_base;  % circumferential 
-    tension_coeffs.beta_anterior        = 1.1 * valve.tension_base;  % radial
-    tension_coeffs.alpha_posterior      = 1.0 * valve.tension_base;  % circumferential 
-    tension_coeffs.beta_posterior       = 1.0 * valve.tension_base;  % radial
-    tension_coeffs.alpha_hoops          = 0.5 * valve.tension_base;  % circumferential hoops 
+    tension_coeffs.alpha_anterior       = 1.0;  % circumferential 
+    tension_coeffs.beta_anterior        = 1.1;  % radial
+    tension_coeffs.alpha_posterior      = 1.0;  % circumferential 
+    tension_coeffs.beta_posterior       = 1.0;  % radial
+    tension_coeffs.alpha_hoops          = 0.5;  % circumferential hoops 
 
 
     % decreasing tension coefficients 
@@ -201,12 +194,12 @@ if parameter_values == 1
 
 
     % Leaf tensions are all modified 
-    valve.leaf_tension_base = .9 * valve.tension_base; 
+    valve.leaf_tension_base = .9; 
 
     % Base total root tension 
     % The value 0.5905 works well on each tree when using separate solves and two leaflets 
     % Controls constant tension at the root of the tree 
-    valve.root_tension_base = .9 * 0.5905 * valve.tension_base; 
+    valve.root_tension_base = .9 * 0.5905; 
 
 
     n_trees_anterior = 2; 
