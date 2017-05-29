@@ -25,6 +25,7 @@ else
     valve.attached = false; 
 end 
 
+valve.interactive = true; 
 
 split_papillary = true; 
 valve.split_papillary = split_papillary; 
