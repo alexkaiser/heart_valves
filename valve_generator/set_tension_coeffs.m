@@ -1,4 +1,4 @@
-function leaflet = set_tension_coeffs(leaflet, valve, tension_coeffs)
+function [leaflet valve] = set_tension_coeffs(leaflet, valve, tension_coeffs)
 % 
 % Returns three arrays with information about the geometry 
 % 
@@ -25,20 +25,23 @@ else
     N_commissure          = 0; 
 end 
 
-alpha_anterior            = tension_coeffs.alpha_anterior;  % circumferential 
-beta_anterior             = tension_coeffs.beta_anterior;   % radial
-alpha_posterior           = tension_coeffs.alpha_posterior; % circumferential 
-beta_posterior            = tension_coeffs.beta_posterior;  % radial
-alpha_hoops               = tension_coeffs.alpha_hoops;     % circumferential hoops  
+tension_base              = valve.p_physical / tension_coeffs.pressure_tension_ratio; 
+dec_tension_coeff_base    = tension_coeffs.dec_tension_coeff_base; 
 
-c_circ_dec_anterior       = tension_coeffs.c_circ_dec_anterior;  % circumferential 
-c_rad_dec_anterior        = tension_coeffs.c_rad_dec_anterior   ;  % radial
-c_circ_dec_posterior      = tension_coeffs.c_circ_dec_posterior ;  % circumferential 
-c_rad_dec_posterior       = tension_coeffs.c_rad_dec_posterior  ;  % radial
-c_circ_dec_hoops          = tension_coeffs.c_circ_dec_hoops     ;  % radial hoops
-c_rad_dec_hoops_anterior  = tension_coeffs.c_rad_dec_hoops_anterior  ;  % radial hoops, anterior part 
-c_rad_dec_hoops_posterior = tension_coeffs.c_rad_dec_hoops_posterior ;  % radial hoops, posterior part 
-c_dec_tension_chordae     = tension_coeffs.c_dec_tension_chordae     ;  % chordae
+alpha_anterior            = tension_coeffs.alpha_anterior  * tension_base; % circumferential 
+beta_anterior             = tension_coeffs.beta_anterior   * tension_base; % radial
+alpha_posterior           = tension_coeffs.alpha_posterior * tension_base; % circumferential 
+beta_posterior            = tension_coeffs.beta_posterior  * tension_base; % radial
+alpha_hoops               = tension_coeffs.alpha_hoops     * tension_base; % circumferential hoops  
+
+c_circ_dec_anterior       = tension_coeffs.c_circ_dec_anterior       * dec_tension_coeff_base;  % circumferential 
+c_rad_dec_anterior        = tension_coeffs.c_rad_dec_anterior        * dec_tension_coeff_base;  % radial
+c_circ_dec_posterior      = tension_coeffs.c_circ_dec_posterior      * dec_tension_coeff_base;  % circumferential 
+c_rad_dec_posterior       = tension_coeffs.c_rad_dec_posterior       * dec_tension_coeff_base;  % radial
+c_circ_dec_hoops          = tension_coeffs.c_circ_dec_hoops          * dec_tension_coeff_base;  % radial hoops
+c_rad_dec_hoops_anterior  = tension_coeffs.c_rad_dec_hoops_anterior  * dec_tension_coeff_base;  % radial hoops, anterior part 
+c_rad_dec_hoops_posterior = tension_coeffs.c_rad_dec_hoops_posterior * dec_tension_coeff_base;  % radial hoops, posterior part 
+c_dec_tension_chordae     = tension_coeffs.c_dec_tension_chordae     * dec_tension_coeff_base;  % chordae
 
 if ~isfield(leaflet, 'chordae')
     error('Must initialize chordae prior to setting tensions'); 
@@ -63,11 +66,11 @@ if commissural_leaflets
         error('Inconsistency in indices'); 
     end 
         
-    alpha_commissure           = tension_coeffs.alpha_commissure;      % circumferential 
-    beta_commissure            = tension_coeffs.beta_commissure;       % radial
-    c_circ_dec_commissure      = tension_coeffs.c_circ_dec_commissure; % circumferential 
-    c_rad_dec_commissure       = tension_coeffs.c_rad_dec_commissure;  % radial 
-    c_rad_dec_hoops_commissure = tension_coeffs.c_rad_dec_hoops_commissure; % radial in commissures 
+    alpha_commissure           = tension_coeffs.alpha_commissure           * tension_base;           % circumferential 
+    beta_commissure            = tension_coeffs.beta_commissure            * tension_base;           % radial
+    c_circ_dec_commissure      = tension_coeffs.c_circ_dec_commissure      * dec_tension_coeff_base; % circumferential 
+    c_rad_dec_commissure       = tension_coeffs.c_rad_dec_commissure       * dec_tension_coeff_base; % radial 
+    c_rad_dec_hoops_commissure = tension_coeffs.c_rad_dec_hoops_commissure * dec_tension_coeff_base; % radial in commissures 
 
 else 
     j_range_anterior   = (1:N_anterior); 
@@ -239,8 +242,8 @@ end
 
 
 % set chordae tensions 
-k_root              = tension_coeffs.k_root; 
-k_0_1               = tension_coeffs.k_0_1;
+k_root              = tension_coeffs.k_root * tension_base; 
+k_0_1               = tension_coeffs.k_0_1  * tension_base;
 chordae             = leaflet.chordae; 
 leaflet.c_dec_tension_chordae = c_dec_tension_chordae; 
 
@@ -312,16 +315,23 @@ for tree_idx = 1:leaflet.num_trees
     if abs(chordae(tree_idx).k_vals(1) - k_root_tmp) > tol 
         error('Scaling incorrect at tree root, constants inconsistent'); 
     end 
-    
-    
+        
     chordae(tree_idx).k_0              = k_0; 
     chordae(tree_idx).k_multiplier     = k_multiplier;
-    
-    leaflet.chordae = chordae;
     
 end 
 
 
+% final scaling on target points 
+valve.tension_base     = tension_base; 
+valve.target_net       = valve.target_net_unscaled       * tension_base; 
+valve.target_papillary = valve.target_papillary_unscaled * tension_base; 
+valve.eta_net          = valve.eta_net_unscaled          * tension_base; 
+valve.eta_papillary    = valve.eta_papillary_unscaled    * tension_base; 
+
+% reset everything 
+tension_coeffs.tension_base   = tension_base;
+leaflet.chordae               = chordae;
 leaflet.tension_coeffs        = tension_coeffs; 
 leaflet.alpha                 = alpha; 
 leaflet.beta                  = beta; 

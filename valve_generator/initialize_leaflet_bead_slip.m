@@ -1,4 +1,4 @@
-function leaflet = initialize_leaflet_bead_slip(name,               ...
+function [leaflet valve] = initialize_leaflet_bead_slip(name,               ...
                                       N,                            ... 
                                       reflect_x,                    ...  
                                       angles,                       ... 
@@ -46,17 +46,14 @@ function leaflet = initialize_leaflet_bead_slip(name,               ...
 leaflet.name               = name; 
 leaflet.N                  = N; 
 leaflet.leaflet_only       = leaflet_only; 
-leaflet.tension_base       = valve.tension_base; 
 leaflet.ring_to_ring_range = ring_to_ring_range; 
 
 leaflet.num_trees          = size(papillary, 2); 
 leaflet.n_rings_periodic   = n_rings_periodic; 
 
-leaflet.decreasing_tension         = valve.decreasing_tension;
-if leaflet.decreasing_tension         
-    leaflet.c_dec_tension_chordae         = valve.c_dec_tension_chordae; 
-else 
-    leaflet.c_dec_tension_chordae         = 0; 
+leaflet.decreasing_tension = valve.decreasing_tension;
+if ~leaflet.decreasing_tension         
+    leaflet.c_dec_tension_chordae = 0; 
 end 
 
 
@@ -147,8 +144,7 @@ for tree_idx = 1:leaflet.num_trees
 end 
     
 % set coefficients on tensions
-leaflet = set_tension_coeffs(leaflet, valve, tension_coeffs); 
-
+[leaflet, valve] = set_tension_coeffs(leaflet, valve, tension_coeffs); 
 
 % parameter structure for collagen based nonlinear constitutive 
 if valve.collagen_constitutive
