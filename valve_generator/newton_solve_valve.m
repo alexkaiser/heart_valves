@@ -133,7 +133,7 @@ while err > tol
            
             % pass
             if (err < err_prev) 
-                fprintf('Line search passed with alpha = %f, \t ||F|| = %e\n', alpha, err); 
+                % fprintf('Line search passed with alpha = %f, \t ||F|| = %e\n', alpha, err); 
                 consecutive_fails = 0; 
                 break; 
             end 
@@ -275,7 +275,11 @@ while err > tol
     if use_energy
         fprintf('Global iteration = %d, \tnorm %e, \tE = %e, \telapsed = %f\n', it, err, E, toc)
     else
-        fprintf('Global iteration = %d, \tnorm %e, \telapsed = %f\n', it, err, toc)
+        fprintf('Global iteration = %d, \tnorm %e, \telapsed = %f', it, err, toc); 
+        if exist('alpha', 'var')
+            fprintf(', \talpha = %f', alpha); 
+        end 
+        fprintf('\n'); 
     end 
     
     if plots && mod(it, plot_freq) == 0 
