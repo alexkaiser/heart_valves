@@ -38,6 +38,7 @@ c_rad_dec_posterior       = tension_coeffs.c_rad_dec_posterior  ;  % radial
 c_circ_dec_hoops          = tension_coeffs.c_circ_dec_hoops     ;  % radial hoops
 c_rad_dec_hoops_anterior  = tension_coeffs.c_rad_dec_hoops_anterior  ;  % radial hoops, anterior part 
 c_rad_dec_hoops_posterior = tension_coeffs.c_rad_dec_hoops_posterior ;  % radial hoops, posterior part 
+c_dec_tension_chordae     = tension_coeffs.c_dec_tension_chordae     ;  % chordae
 
 if ~isfield(leaflet, 'chordae')
     error('Must initialize chordae prior to setting tensions'); 
@@ -241,6 +242,7 @@ end
 k_root              = tension_coeffs.k_root; 
 k_0_1               = tension_coeffs.k_0_1;
 chordae             = leaflet.chordae; 
+leaflet.c_dec_tension_chordae = c_dec_tension_chordae; 
 
 for tree_idx = 1:leaflet.num_trees    
 
@@ -313,7 +315,8 @@ for tree_idx = 1:leaflet.num_trees
     
     
     chordae(tree_idx).k_0              = k_0; 
-    chordae(tree_idx).k_multiplier     = k_multiplier;     
+    chordae(tree_idx).k_multiplier     = k_multiplier;
+    
     leaflet.chordae = chordae;
     
 end 

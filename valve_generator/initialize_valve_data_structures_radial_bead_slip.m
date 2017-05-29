@@ -254,6 +254,9 @@ if parameter_values == 1
     papillary          = [papillary_anterior, papillary_posterior]; 
     k_0_1              = [k_0_1_anterior; k_0_1_posterior]; 
     k_root             = [k_root_anterior; k_root_posterior];  
+    
+    tension_coeffs.k_0_1  = k_0_1; 
+    tension_coeffs.k_root = k_root; 
 
 
 elseif parameter_values == 2  
@@ -292,8 +295,8 @@ elseif parameter_values == 2
     % Base constants, individual pieces are tuned relative to these values
 
     if decreasing_tension
-        dec_tension_coeff_base      = 4.6;  
-        valve.c_dec_tension_chordae = 1.0 * dec_tension_coeff_base;     
+        dec_tension_coeff_base       = 4.6;  
+        valve.dec_tension_coeff_base = dec_tension_coeff_base; 
     else 
         valve.dec_tension  = 0.0; 
     end 
@@ -323,6 +326,7 @@ elseif parameter_values == 2
     tension_coeffs.c_circ_dec_hoops          = 2.0 * dec_tension_coeff_base;  % circumferential hoops
     tension_coeffs.c_rad_dec_hoops_anterior  = 0.5 * dec_tension_coeff_base;  % radial hoops, anterior part 
     tension_coeffs.c_rad_dec_hoops_posterior = 0.5 * dec_tension_coeff_base;  % radial hoops, posterior part 
+    tension_coeffs.c_dec_tension_chordae     = 1.0 * dec_tension_coeff_base;  % chordae
 
 
     % places this many periodic rings above 
@@ -457,7 +461,8 @@ elseif parameter_values == 2
     k_0_1              = [k_0_1_anterior; k_0_1_posterior_and_comm]; 
     k_root             = [k_root_anterior; k_root_posterior_and_comm]; 
     
-    
+    tension_coeffs.k_0_1  = k_0_1; 
+    tension_coeffs.k_root = k_root; 
     
 elseif parameter_values == 3 
 
@@ -533,6 +538,8 @@ elseif parameter_values == 3
     tension_coeffs.c_rad_dec_hoops_anterior   = 1.0 * dec_tension_coeff_base;  % radial hoops, anterior part 
     tension_coeffs.c_rad_dec_hoops_posterior  = 1.0 * dec_tension_coeff_base;  % radial hoops, posterior part 
     tension_coeffs.c_rad_dec_hoops_commissure = 1.0 * dec_tension_coeff_base;  % radial hoops, commissure part
+    
+    tension_coeffs.c_dec_tension_chordae      = 1.0 * dec_tension_coeff_base;  % chordae
 
 
     % places this many periodic rings above 
