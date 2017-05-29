@@ -1,4 +1,4 @@
-function [valve valve_with_reference pass_all] = solve_valve(valve)
+function [valve valve_with_reference pass_all] = solve_valve(valve, from_history)
 % 
 % Refines valve data structure to equilibrium 
 % Applies auto-continuation to pressure and updates both leaflets 
@@ -10,12 +10,27 @@ if length(valve.leaflets) ~= 1
     error('running with single leaflet assumption for now'); 
 end 
 
+if ~exist('from_history', 'var')
+    from_history = false; 
+end 
+
+
 tol_global            = valve.tol_global; 
 max_it                = valve.max_it; 
 max_it_continuation   = valve.max_it_continuation; 
 max_consecutive_fails = valve.max_consecutive_fails; 
 max_total_fails       = valve.max_total_fails; 
 
+
+if from_history
+    if ~isfield(valve, 'tension_coeff_history')
+        error('Must provide history to solve from history'); 
+    end 
+    
+    [leaflet_current valve_current] = set_tension_coeffs(valve.leaflets(1), valve, valve.tension_coeff_history(1)); 
+    valve = valve_current; 
+    valve.leaflets(1) = leaflet_current; 
+end 
 
 
 for i=1:length(valve.leaflets)
@@ -41,8 +56,45 @@ for i=1:length(valve.leaflets)
     
 end 
 
-if valve.interactive && pass_all 
-    fprintf('Solve passed, interactive mode enabled.'); 
+
+if from_history
+    
+    fig = figure; 
+    valve_plot(valve, fig); 
+    title('History mode valve')
+    
+    for history_step = 2:length(valve.tension_coeff_history)
+        [leaflet_current valve_current] = set_tension_coeffs(valve.leaflets(1), valve, valve.tension_coeff_history(history_step)); 
+        
+        valve = valve_current; 
+        valve.leaflets(1) = leaflet_current;
+        
+        [valve.leaflets(1) pass err] = newton_solve_valve(valve.leaflets(1), tol_global, max_it, max_consecutive_fails, max_total_fails);  
+
+        if ~pass 
+            error('History update failed.'); 
+        end 
+
+        fig = figure; 
+        [az el] = view; 
+        clf(fig); 
+        valve_plot(valve, fig);
+        title(sprintf('History mode valve, it %d\n', history_step)); 
+        view(az,el);
+        
+    end 
+end 
+
+
+
+if valve.interactive && pass_all
+    fprintf('Solve passed, interactive mode enabled.\n'); 
+    
+    num_passed = 1; 
+    if from_history
+        num_passed = length(valve.tension_coeff_history) + 1; 
+    end 
+    valve.tension_coeff_history(num_passed) = valve.leaflets(1).tension_coeffs; 
     
     fig = figure; 
     valve_plot(valve, fig); 
@@ -91,12 +143,21 @@ if valve.interactive && pass_all
                     [leaflet_current pass err] = newton_solve_valve(leaflet_current, tol_global, max_it, max_consecutive_fails, max_total_fails);  
 
                     if pass 
+                        
+                        % copy data from new version 
                         valve             = valve_current; 
                         valve.leaflets(1) = leaflet_current; 
+                        
+                        % save history 
+                        num_passed = num_passed + 1; 
+                        valve.tension_coeff_history(num_passed) = valve.leaflets(1).tension_coeffs; 
+
+                        % update plot 
                         [az el] = view; 
                         clf(fig); 
                         valve_plot(valve, fig);
-                        view(az,el); 
+                        view(az,el);
+                        
                     else 
                         fprintf('New parameters failed. Keeping old tension structure. No pass flag.\n'); 
                     end
