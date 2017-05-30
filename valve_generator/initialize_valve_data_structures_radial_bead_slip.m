@@ -545,7 +545,7 @@ elseif parameter_values == 3
 
 
     % places this many periodic rings above 
-    n_rings_periodic = max(2,N/32); 
+    n_rings_periodic = max(2,N/16); 
 
 
     % Explicit commissural leaflet here 
