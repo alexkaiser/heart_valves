@@ -537,7 +537,11 @@ elseif parameter_values == 3
     tension_coeffs.c_rad_dec_hoops_posterior  = 1.0;  % radial hoops, posterior part 
     tension_coeffs.c_rad_dec_hoops_commissure = 1.0;  % radial hoops, commissure part
     
-    tension_coeffs.c_dec_tension_chordae      = 1.0;  % chordae
+                                                                               % chordae
+    tension_coeffs.c_dec_tension_chordae      = [1.0; 1.0; 1.0; 1.0; ...       % anterior  
+                                                 1.0; 1.0;           ...       % anterior and comm, comm and posterior       
+                                                 1.0; 1.0; 1.0; 1.0; ...       % posterior
+                                                 1.0; 1.0];                    % posterior and comm, comm and anterior
 
 
     % places this many periodic rings above 
@@ -591,12 +595,12 @@ elseif parameter_values == 3
 
 
     % Leaf tensions are all modified 
-    valve.leaf_tension_base = 1.5 * (1/16); 
+    tension_coeffs.leaf_tension_base = .1; 
 
     % Base total root tension 
     % The value 0.5905 works well on each tree when using separate solves and two leaflets 
     % Controls constant tension at the root of the tree 
-    valve.root_tension_base = 1.1 * (1/16) * 0.5905; 
+    tension_coeffs.root_tension_base = 0.04; 
 
 
     
@@ -631,11 +635,11 @@ elseif parameter_values == 3
     
     % this is the total leaf tension on the tree 
     % scaling by n_leaves occurs automatically when counting the number of trees 
-    tension_coeffs.k_0_1    = valve.leaf_tension_base * k_0_1_coeff;
+    tension_coeffs.k_0_1    = k_0_1_coeff;
     
     % root constants,
     % actual constants, not scaled in any way 
-    tension_coeffs.k_root   = valve.root_tension_base * k_root_coeff;
+    tension_coeffs.k_root   = k_root_coeff;
     
     
     % number of trees connecting to each papillary muscle 

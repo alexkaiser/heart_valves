@@ -27,6 +27,8 @@ end
 
 tension_base              = valve.p_physical / tension_coeffs.pressure_tension_ratio; 
 dec_tension_coeff_base    = tension_coeffs.dec_tension_coeff_base; 
+leaf_tension_base         = tension_coeffs.leaf_tension_base; 
+root_tension_base         = tension_coeffs.root_tension_base ; 
 
 alpha_anterior            = tension_coeffs.alpha_anterior  * tension_base; % circumferential 
 beta_anterior             = tension_coeffs.beta_anterior   * tension_base; % radial
@@ -242,18 +244,17 @@ end
 
 
 % set chordae tensions 
-k_root              = tension_coeffs.k_root * tension_base; 
-k_0_1               = tension_coeffs.k_0_1  * tension_base;
-chordae             = leaflet.chordae; 
-leaflet.c_dec_tension_chordae = c_dec_tension_chordae; 
+k_root                = tension_coeffs.k_root * tension_base * root_tension_base; 
+k_0_1                 = tension_coeffs.k_0_1  * tension_base * leaf_tension_base;
+chordae               = leaflet.chordae; 
+c_dec_tension_chordae = tension_coeffs.c_dec_tension_chordae * dec_tension_coeff_base; 
 
 for tree_idx = 1:leaflet.num_trees    
 
     free_edge_idx       = chordae(tree_idx).free_edge_idx; 
     
-    [n_leaves, m] = size(free_edge_idx);  
+    n_leaves = size(free_edge_idx,1);  
 
-    
     if (length(k_0_1) == 1) && (length(k_root) == 1)
         k_0_1_tmp   = k_0_1; 
         k_root_tmp  = k_root; 
@@ -316,8 +317,9 @@ for tree_idx = 1:leaflet.num_trees
         error('Scaling incorrect at tree root, constants inconsistent'); 
     end 
         
-    chordae(tree_idx).k_0              = k_0; 
-    chordae(tree_idx).k_multiplier     = k_multiplier;
+    chordae(tree_idx).k_0                   = k_0; 
+    chordae(tree_idx).k_multiplier          = k_multiplier;
+    chordae(tree_idx).c_dec_tension_chordae = c_dec_tension_chordae(tree_idx); 
     
 end 
 

@@ -12,8 +12,8 @@ function J = build_jacobian_bead_slip(leaflet)
     p_0                       = leaflet.p_0; 
     alpha                     = leaflet.alpha; 
     beta                      = leaflet.beta; 
-    c_dec_radial           = leaflet.c_dec_radial; 
-    c_dec_circumferential  = leaflet.c_dec_circumferential; 
+    c_dec_radial              = leaflet.c_dec_radial; 
+    c_dec_circumferential     = leaflet.c_dec_circumferential; 
     chordae                   = leaflet.chordae; 
     chordae_idx               = leaflet.chordae_idx; 
     j_max                     = leaflet.j_max; 
@@ -28,10 +28,8 @@ function J = build_jacobian_bead_slip(leaflet)
     
     if isfield(leaflet, 'decreasing_tension') && leaflet.decreasing_tension
         decreasing_tension = true;  
-        c_dec_tension_chordae         = leaflet.c_dec_tension_chordae; 
     else 
         decreasing_tension = false;  
-        c_dec_tension_chordae         = 0.0; 
     end
 
     if isfield(leaflet, 'periodic_j')
@@ -202,6 +200,7 @@ function J = build_jacobian_bead_slip(leaflet)
                     C = chordae(tree_idx).C; 
                     
                     [m N_chordae] = size(chordae(tree_idx).C);
+                    c_dec_tension_chordae = chordae(tree_idx).c_dec_tension_chordae; 
 
                     kappa = chordae(tree_idx).k_0;
 
@@ -242,7 +241,8 @@ function J = build_jacobian_bead_slip(leaflet)
         
         C = chordae(tree_idx).C; 
         [m N_chordae] = size(C);
-
+        c_dec_tension_chordae = chordae(tree_idx).c_dec_tension_chordae; 
+        
         for i=1:N_chordae
 
             left   = 2*i; 

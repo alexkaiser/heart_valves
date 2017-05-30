@@ -33,10 +33,8 @@ function F = difference_equations_bead_slip(leaflet)
     
     if isfield(leaflet, 'decreasing_tension') && leaflet.decreasing_tension
         decreasing_tension    = true;  
-        c_dec_tension_chordae = leaflet.c_dec_tension_chordae; 
     else 
         decreasing_tension    = false;  
-        c_dec_tension_chordae = 0.0; 
     end 
     
 
@@ -136,6 +134,7 @@ function F = difference_equations_bead_slip(leaflet)
                     tree_idx = chordae_idx(j,k).tree_idx; 
 
                     [m N_chordae] = size(chordae(tree_idx).C);
+                    c_dec_tension_chordae = chordae(tree_idx).c_dec_tension_chordae; 
                     
                     kappa = chordae(tree_idx).k_0;
 
@@ -175,7 +174,9 @@ function F = difference_equations_bead_slip(leaflet)
         
         C = chordae(tree_idx).C; 
         [m N_chordae] = size(C);         
+        c_dec_tension_chordae = chordae(tree_idx).c_dec_tension_chordae; 
         F_chordae(tree_idx).C = zeros(size(C));  
+
 
         for i=1:N_chordae
 

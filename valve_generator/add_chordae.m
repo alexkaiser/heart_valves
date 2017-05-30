@@ -28,7 +28,7 @@ function leaflet = add_chordae(leaflet, tree_idx)
         error('must use a power of two'); 
     end 
     
-    if n_tree < 2
+    if n_tree < 1
         warning('weird boundary errors possible on such a small tree'); 
     end 
 

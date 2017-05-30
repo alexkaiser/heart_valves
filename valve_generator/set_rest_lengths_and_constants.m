@@ -56,10 +56,8 @@ end
 
 if isfield(leaflet, 'decreasing_tension') && leaflet.decreasing_tension
     decreasing_tension = true; 
-    c_dec_tension_chordae         = leaflet.c_dec_tension_chordae; 
 else 
     decreasing_tension = false; 
-    c_dec_tension_chordae         = 0.0; 
 end 
     
 
@@ -135,6 +133,7 @@ for j=1:j_max
                 tree_idx = chordae_idx(j,k).tree_idx; 
 
                 [m N_chordae] = size(chordae(tree_idx).C);
+                c_dec_tension_chordae = chordae(tree_idx).c_dec_tension_chordae; 
 
                 kappa = chordae(tree_idx).k_0;
                 
@@ -171,6 +170,7 @@ for tree_idx = 1:num_trees
 
     C = chordae(tree_idx).C; 
     [m N_chordae] = size(C);
+    c_dec_tension_chordae = chordae(tree_idx).c_dec_tension_chordae; 
 
     for i=1:N_chordae
 
