@@ -537,13 +537,7 @@ elseif parameter_values == 3
     tension_coeffs.c_rad_dec_hoops_posterior  = 1.0;  % radial hoops, posterior part 
     tension_coeffs.c_rad_dec_hoops_commissure = 1.0;  % radial hoops, commissure part
     
-                                                                               % chordae
-    tension_coeffs.c_dec_tension_chordae      = [1.0; 1.0; 1.0; 1.0; ...       % anterior  
-                                                 1.0; 1.0;           ...       % anterior and comm, comm and posterior       
-                                                 1.0; 1.0; 1.0; 1.0; ...       % posterior
-                                                 1.0; 1.0];                    % posterior and comm, comm and anterior
-
-
+    
     % places this many periodic rings above 
     n_rings_periodic = max(2,N/16); 
 
@@ -575,18 +569,19 @@ elseif parameter_values == 3
 
     N_per_direction   = [N_anterior/2, N_anterior/2, ...
                          N_commissure/4, N_commissure/4, N_commissure/4, N_commissure/4, ... 
-                         N_posterior/2, N_posterior/2, ...
+                         N_posterior/4, N_posterior/4, N_posterior/4, N_posterior/4, ... % N_posterior/2, N_posterior/2, ...
                          N_commissure/4, N_commissure/4, N_commissure/4, N_commissure/4]; 
 
     % Anterior goes down then up 
     leaflet_direction = [-1, 1]; 
-
+    
     % Commissure down, flat, flat, up 
     leaflet_direction = [leaflet_direction, -1, 0, 0, 1]; 
     
     % Posterior goes down then up 
-    leaflet_direction = [leaflet_direction, -1, 1]; 
-
+%    leaflet_direction = [leaflet_direction, -1, 1]; 
+    leaflet_direction = [leaflet_direction, -1, 0, 0, 1]; 
+    
     % Commissure down, flat, flat, up 
     leaflet_direction = [leaflet_direction, -1, 0, 0, 1]; 
     
@@ -595,12 +590,12 @@ elseif parameter_values == 3
 
 
     % Leaf tensions are all modified 
-    tension_coeffs.leaf_tension_base = .1; 
+    tension_coeffs.leaf_tension_base = 1.6; 
 
     % Base total root tension 
     % The value 0.5905 works well on each tree when using separate solves and two leaflets 
     % Controls constant tension at the root of the tree 
-    tension_coeffs.root_tension_base = 0.04; 
+    tension_coeffs.root_tension_base = 0.64; 
 
 
     
@@ -611,6 +606,8 @@ elseif parameter_values == 3
     
     tree_n_start = N_commissure/2 + 1; 
 
+    
+
     % this array determines the fraction of N_orig which each tree takes up 
     % this allows us to determine initial fractions of constants that go to each tree 
     frac_of_n_orig = [1/16; 1/16; 1/16; 1/16; ...   % anterior  
@@ -620,34 +617,45 @@ elseif parameter_values == 3
     
     % change these to manipulate individial tree coefficients 
     % for sanity reasons, these shuold mostly be one unless you have a good reason to change 
-    k_0_1_coeff    = [1.0; 1.0; 1.0; 1.0; ...       % anterior  
-                      4.0; 4.0;           ...       % anterior and comm, comm and posterior       
+    % note that these are scaled by the fraction of the leaflet that they take up 
+    k_0_1_coeff    = frac_of_n_orig .*    ... 
+                     [1.0; 1.0; 1.0; 1.0; ...       % anterior  
+                      1.0; 1.0;           ...       % anterior and comm, comm and posterior       
                       1.0; 1.0; 1.0; 1.0; ...       % posterior
-                      4.0; 4.0];                    % posterior and comm, comm and anterior
+                      1.0; 1.0];                    % posterior and comm, comm and anterior
                   
-    k_root_coeff   = [1.0; 1.0; 1.0; 1.0; ...       % anterior  
-                      4.0; 4.0;           ...       % anterior and comm, comm and posterior       
+    k_root_coeff   = frac_of_n_orig .*    ... 
+                    [ 1.0; 1.0; 1.0; 1.0; ...       % anterior  
+                      1.0; 1.0;           ...       % anterior and comm, comm and posterior       
                       1.0; 1.0; 1.0; 1.0; ...       % posterior
-                      4.0; 4.0];                    % posterior and comm, comm and anterior
+                      1.0; 1.0];                    % posterior and comm, comm and anterior
                   
+                                                                           % chordae
+    tension_coeffs.c_dec_tension_chordae  = [1.0; 1.0; 1.0; 1.0; ...       % anterior  
+                                             1.0; 1.0;           ...       % anterior and comm, comm and posterior       
+                                             1.0; 1.0; 1.0; 1.0; ...       % posterior
+                                             1.0; 1.0];                    % posterior and comm, comm and anterior
+                                         
+    % number of anterior trees on left 
+    % for splitting up papillary muscle 
+    n_trees_anterior_left = 2; 
+
     
-    n_leaves = N_orig                  * frac_of_n_orig; 
+    n_leaves = N_orig * frac_of_n_orig; 
     
     % this is the total leaf tension on the tree 
     % scaling by n_leaves occurs automatically when counting the number of trees 
-    tension_coeffs.k_0_1    = k_0_1_coeff;
+    tension_coeffs.k_0_1  = k_0_1_coeff;
     
     % root constants,
     % actual constants, not scaled in any way 
-    tension_coeffs.k_root   = k_root_coeff;
+    tension_coeffs.k_root = k_root_coeff;
     
     
     % number of trees connecting to each papillary muscle 
     trees_per_side = length(frac_of_n_orig)/2; 
     
-    % number of anterior trees on left 
-    % for splitting up papillary muscle 
-    n_trees_anterior_left = 2; 
+
     
     papillary_left_min_angle = -5*pi/4; 
     papillary_left_max_angle =    pi/4; 

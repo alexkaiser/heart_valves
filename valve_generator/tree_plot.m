@@ -44,7 +44,7 @@ if abs(n_tree - round(n_tree)) > eps
     error('must use a power of two'); 
 end 
 
-width = 1.5; 
+width = 1; 
 
 
 % left side 

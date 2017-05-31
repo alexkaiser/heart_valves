@@ -41,7 +41,7 @@ if isfield(leaflet, 'periodic_j')
     y_component = squeeze(X_copy(2,j_range_anterior,:)); 
     z_component = squeeze(X_copy(3,j_range_anterior,:)); 
 
-    width = 1.5; 
+    width = 1.0; 
     surf(x_component, y_component, z_component, 'LineWidth',width);
 
     axis equal 
@@ -82,7 +82,7 @@ else
     y_component = squeeze(X_copy(2,:,:)); 
     z_component = squeeze(X_copy(3,:,:)); 
 
-    width = 1.5; 
+    width = 1.0; 
     surf(x_component, y_component, z_component, 'LineWidth',width);
 
     axis equal 

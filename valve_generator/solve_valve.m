@@ -161,8 +161,16 @@ if valve.interactive && pass_all
                         % save history 
                         num_passed = num_passed + 1; 
                         valve.tension_coeff_history(num_passed) = valve.leaflets(1).tension_coeffs; 
+                        times = clock; 
+                        save_name = sprintf('%s_tension_history_%d_%d_%d_%d.%d.%d.mat', valve.base_name, times(1), times(2), times(3), times(4), times(5), round(times(6))); 
+                        history_tmp = valve.tension_coeff_history; 
+                        save(save_name, 'history_tmp'); 
 
                         % update plot 
+                        % if we do not have a figure add one 
+                        if ~ishandle(fig)
+                            fig = figure; 
+                        end                         
                         [az el] = view; 
                         clf(fig); 
                         valve_plot(valve, fig);
