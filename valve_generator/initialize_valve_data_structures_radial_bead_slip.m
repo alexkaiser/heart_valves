@@ -25,8 +25,6 @@ else
     valve.attached = false; 
 end 
 
-valve.interactive = true; 
-
 split_papillary = true; 
 valve.split_papillary = split_papillary; 
 valve.radial_and_circumferential = true; 
@@ -558,32 +556,32 @@ elseif parameter_values == 3
     % changing the total N
     % this is a strane hack but I'm rolling with it 
     N = (3/2) * N; 
-    
-    
-    % store these 
-    valve.N_anterior   = N_anterior; 
-    valve.N_posterior  = N_posterior;
-    valve.commissural_leaflets = true; 
-    valve.N_commissure = N_commissure; 
-    valve.N_orig       = N_orig; 
 
     N_per_direction   = [N_anterior/2, N_anterior/2, ...
                          N_commissure/4, N_commissure/4, N_commissure/4, N_commissure/4, ... 
                          N_posterior/4, N_posterior/4, N_posterior/4, N_posterior/4, ... % N_posterior/2, N_posterior/2, ...
                          N_commissure/4, N_commissure/4, N_commissure/4, N_commissure/4]; 
 
+    % store these 
+    valve.N_anterior   = N_anterior; 
+    valve.N_posterior  = N_posterior + 2*N_commissure;
+    valve.commissural_leaflets = false; 
+%    valve.N_commissure = N_commissure; 
+    valve.N_orig       = N_orig; 
+                     
+                     
     % Anterior goes down then up 
     leaflet_direction = [-1, 1]; 
     
     % Commissure down, flat, flat, up 
-    leaflet_direction = [leaflet_direction, -1, 0, 0, 1]; 
+    leaflet_direction = [leaflet_direction, -1, 1, 1, -1]; 
     
     % Posterior goes down then up 
 %    leaflet_direction = [leaflet_direction, -1, 1]; 
     leaflet_direction = [leaflet_direction, -1, 0, 0, 1]; 
     
     % Commissure down, flat, flat, up 
-    leaflet_direction = [leaflet_direction, -1, 0, 0, 1]; 
+    leaflet_direction = [leaflet_direction, 1, -1, -1, 1]; 
     
     % No offset, starting at commissure 
     leaflet_N_start = 0; 

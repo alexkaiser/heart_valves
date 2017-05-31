@@ -1,4 +1,4 @@
-function [valve valve_with_reference pass_all] = solve_valve(valve, from_history)
+function [valve valve_with_reference pass_all] = solve_valve(valve, interactive, from_history)
 % 
 % Refines valve data structure to equilibrium 
 % Applies auto-continuation to pressure and updates both leaflets 
@@ -13,6 +13,11 @@ end
 if ~exist('from_history', 'var')
     from_history = false; 
 end 
+
+if ~exist('interactive', 'var')
+    interactive = false; 
+end 
+
 
 
 tol_global            = valve.tol_global; 
@@ -68,11 +73,17 @@ if from_history
         
         valve = valve_current; 
         valve.leaflets(1) = leaflet_current;
-        
-        [valve.leaflets(1) pass err] = newton_solve_valve(valve.leaflets(1), tol_global, max_it, max_consecutive_fails, max_total_fails);  
 
+        try
+            [valve.leaflets(1) pass err] = newton_solve_valve(valve.leaflets(1), tol_global, max_it, max_consecutive_fails, max_total_fails);  
+        catch 
+            fprintf('This iteration in history failed. Maybe by some miracle the next one will. Moving on...'); 
+            continue; 
+        end 
+        
         if ~pass 
-            error('History update failed.'); 
+            fprintf('This iteration in history failed. Maybe by some miracle the next one will. Moving on...'); 
+            continue; 
         end 
 
         fig = figure; 
@@ -87,7 +98,7 @@ end
 
 
 
-if valve.interactive && pass_all
+if interactive && pass_all
     fprintf('Solve passed, interactive mode enabled.\n'); 
     
     num_passed = 1; 
@@ -208,8 +219,8 @@ for i=1:length(valve.leaflets)
     
     leaflet = valve_with_reference.leaflets(i); 
     
-    p_initial = leaflet.p_0/5; 
-    p_goal    = -leaflet.p_0/100; 
+    p_initial = -leaflet.p_0/10; 
+    p_goal    = -leaflet.p_0/500; 
 
     [valve_with_reference.leaflets(i) pass err] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_it_continuation, p_initial, p_goal, max_consecutive_fails, max_total_fails); 
 

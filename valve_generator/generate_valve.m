@@ -64,7 +64,9 @@ if iteration_movie_anterior
 end 
 
 
-from_history = true; 
+interactive = true; 
+
+from_history = false; 
 if from_history 
     history_name = 'mitral_tree_64_tension_history_2017_5_30_20.47.28.mat'; 
     load(history_name); 
@@ -76,7 +78,7 @@ end
 % else 
 % %     valve = solve_valve(valve, p_range, repulsive_coeff_range); 
 
-[valve valve_with_reference pass_all] = solve_valve(valve, from_history); 
+[valve valve_with_reference pass_all] = solve_valve(valve, interactive, from_history); 
 % end 
 
 fig = figure; 

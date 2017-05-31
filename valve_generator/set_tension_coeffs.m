@@ -43,7 +43,7 @@ c_rad_dec_posterior       = tension_coeffs.c_rad_dec_posterior       * dec_tensi
 c_circ_dec_hoops          = tension_coeffs.c_circ_dec_hoops          * dec_tension_coeff_base;  % radial hoops
 c_rad_dec_hoops_anterior  = tension_coeffs.c_rad_dec_hoops_anterior  * dec_tension_coeff_base;  % radial hoops, anterior part 
 c_rad_dec_hoops_posterior = tension_coeffs.c_rad_dec_hoops_posterior * dec_tension_coeff_base;  % radial hoops, posterior part 
-c_dec_tension_chordae     = tension_coeffs.c_dec_tension_chordae     * dec_tension_coeff_base;  % chordae
+
 
 if ~isfield(leaflet, 'chordae')
     error('Must initialize chordae prior to setting tensions'); 
