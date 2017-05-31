@@ -574,14 +574,14 @@ elseif parameter_values == 3
     leaflet_direction = [-1, 1]; 
     
     % Commissure down, flat, flat, up 
-    leaflet_direction = [leaflet_direction, -1, 1, 1, -1]; 
+    leaflet_direction = [leaflet_direction, -1, -1, 1, 1]; 
     
     % Posterior goes down then up 
 %    leaflet_direction = [leaflet_direction, -1, 1]; 
     leaflet_direction = [leaflet_direction, -1, 0, 0, 1]; 
     
     % Commissure down, flat, flat, up 
-    leaflet_direction = [leaflet_direction, 1, -1, -1, 1]; 
+    leaflet_direction = [leaflet_direction, -1, -1, 1, 1]; 
     
     % No offset, starting at commissure 
     leaflet_N_start = 0; 
