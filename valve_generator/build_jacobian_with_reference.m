@@ -1,4 +1,4 @@
-function J = build_jacobian_linear(leaflet)
+function J = build_jacobian_with_reference(leaflet)
     % 
     % Builds the Jacobian for the current index and parameter values 
     % 
@@ -64,17 +64,14 @@ function J = build_jacobian_linear(leaflet)
 
                 % pressure portion 
                 % always four neighbors
-                if (~is_bc(j,k)) && (~chordae_idx(j,k).tree_idx) && (p_0 ~= 0)
+                if p_0 ~= 0
                     
-                    % periodic reduction of nbr indices 
-                    j_plus__1 = get_j_nbr(j+1, k, periodic_j, j_max); 
-                    j_minus_1 = get_j_nbr(j-1, k, periodic_j, j_max);
-                    
+                    [j_plus__1 j_minus_1 k_plus__1 k_minus_1 m] = get_pressure_nbrs(leaflet,j,k); 
                     
                     j_nbr = j_plus__1; 
                     k_nbr = k; 
                     
-                    J_pressure = -(p_0/4) * cross_matrix(X_current(:,j,k+1) - X_current(:,j,k-1)) ; 
+                    J_pressure = -p_0 * m * cross_matrix(X_current(:,j,k_plus__1) - X_current(:,j,k_minus_1)) ; 
 
                     if is_internal(j_nbr,k_nbr)
                         range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
@@ -83,7 +80,7 @@ function J = build_jacobian_linear(leaflet)
                     
                     j_nbr = j_minus_1; 
                     k_nbr = k; 
-                    J_pressure =  (p_0/4) * cross_matrix(X_current(:,j,k+1) - X_current(:,j,k-1)) ; 
+                    J_pressure =  p_0 * m * cross_matrix(X_current(:,j,k_plus__1) - X_current(:,j,k_minus_1)) ; 
                     
                     if is_internal(j_nbr,k_nbr)
                         range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
@@ -91,8 +88,8 @@ function J = build_jacobian_linear(leaflet)
                     end 
                     
                     j_nbr = j; 
-                    k_nbr = k+1; 
-                    J_pressure =  (p_0/4) * cross_matrix(X_current(:,j_plus__1,k) - X_current(:,j_minus_1,k)) ; 
+                    k_nbr = k_plus__1; 
+                    J_pressure =  p_0 * m * cross_matrix(X_current(:,j_plus__1,k) - X_current(:,j_minus_1,k)) ; 
 
                     if is_internal(j_nbr,k_nbr)
                         range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
@@ -100,8 +97,8 @@ function J = build_jacobian_linear(leaflet)
                     end 
                     
                     j_nbr = j; 
-                    k_nbr = k-1; 
-                    J_pressure = -(p_0/4) * cross_matrix(X_current(:,j_plus__1,k) - X_current(:,j_minus_1,k)) ; 
+                    k_nbr = k_minus_1; 
+                    J_pressure = -p_0 * m * cross_matrix(X_current(:,j_plus__1,k) - X_current(:,j_minus_1,k)) ; 
 
                     if is_internal(j_nbr,k_nbr)
                         range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);

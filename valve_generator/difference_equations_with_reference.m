@@ -44,12 +44,11 @@ function F = difference_equations_with_reference(leaflet)
                 F_tmp = zeros(3,1);
 
                 % pressure term first  
-                if (~is_bc(j,k)) && (~chordae_idx(j,k).tree_idx) && (p_0 ~= 0)
+                if p_0 ~= 0
                     
-                    j_plus__1 = get_j_nbr(j+1, k, periodic_j, j_max); 
-                    j_minus_1 = get_j_nbr(j-1, k, periodic_j, j_max); 
+                    [j_plus__1 j_minus_1 k_plus__1 k_minus_1 m] = get_pressure_nbrs(leaflet,j,k); 
                     
-                    F_tmp = F_tmp + (p_0 / 4) * cross(X_current(:,j_plus__1,k) - X_current(:,j_minus_1,k), X_current(:,j,k+1) - X_current(:,j,k-1));                     
+                    F_tmp = F_tmp + p_0 * m * cross(X_current(:,j_plus__1,k) - X_current(:,j_minus_1,k), X_current(:,j,k_plus__1) - X_current(:,j,k_minus_1));                     
                 
                 end 
 

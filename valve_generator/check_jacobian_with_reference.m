@@ -7,15 +7,14 @@
 % reset stream for consistent results 
 
 
-N = 8; 
+N = 32; 
 
 % Initialize structures  
 attached = false; 
 leaflet_only = false; 
 optimization = false; 
-repulsive_potential = false; 
 decreasing_tension = true; 
-valve = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization, repulsive_potential, decreasing_tension); 
+valve = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization, decreasing_tension); 
 
 rand('twister',76599)
 
@@ -23,7 +22,7 @@ epsilon_vals = 10.^(-1:-1:-8);
 
 errors = zeros(size(epsilon_vals)); 
 
-leaflet = set_rest_lengths_and_constants(valve.leaflets(1), valve.strain); 
+leaflet = set_rest_lengths_and_constants(valve.leaflets(1), valve); 
 
 % eval the difference eqns on the perturbation 
 F  = leaflet.diff_eqns(leaflet); 
