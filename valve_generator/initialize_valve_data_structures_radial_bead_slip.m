@@ -84,16 +84,8 @@ radial_and_circumferential = true;
 % 8.3326e-04 is a good number here
 valve.tol_global = 1e-3;
 
-
-% controls initial guess tree vertex placement 
-tree_frac = 0.5;
-
 % name of structure 
 name = 'leaflet'; 
-
-% ring to ring fibers, always zero for now 
-ring_to_ring_range = 0; 
-
 
 left_papillary_idx  = 1; 
 right_papillary_idx = 2; 
@@ -513,14 +505,15 @@ elseif parameter_values == 3
 
 
     % tension coefficients 
-    tension_coeffs.alpha_anterior       = 1.0;  % circumferential 
-    tension_coeffs.beta_anterior        = 1.1;  % radial
-    tension_coeffs.alpha_posterior      = 1.0;  % circumferential 
-    tension_coeffs.beta_posterior       = 1.0;  % radial
-    tension_coeffs.alpha_commissure     = 1.0;  % circumferential 
-    tension_coeffs.beta_commissure      = 1.0;  % radial
-    tension_coeffs.alpha_hoops          = 1.0;  % circumferential hoops 
-
+    tension_coeffs.alpha_anterior             = 1.0;  % circumferential 
+    tension_coeffs.beta_anterior              = 1.1;  % radial
+    tension_coeffs.alpha_posterior            = 1.0;  % circumferential 
+    tension_coeffs.beta_posterior             = 1.0;  % radial
+    tension_coeffs.alpha_commissure           = 1.0;  % circumferential 
+    tension_coeffs.beta_commissure            = 1.0;  % radial
+    tension_coeffs.alpha_hoops                = 1.0;  % circumferential hoops 
+    tension_coeffs.alpha_edge_connector       = 1.0;  % circumferential free edge connector 
+    tension_coeffs.beta_edge_connector        = 1.0;  % circumferential free edge connector 
 
     % decreasing tension coefficients 
     tension_coeffs.c_circ_dec_anterior        = 1.0;  % circumferential 
@@ -530,14 +523,20 @@ elseif parameter_values == 3
     tension_coeffs.c_circ_dec_commissure      = 1.0;  % circumferential 
     tension_coeffs.c_rad_dec_commissure       = 1.0;  % radial 
     
-    tension_coeffs.c_circ_dec_hoops           = 2.0;  % circumferential hoops
+    tension_coeffs.c_circ_dec_hoops           = 1.0;  % circumferential hoops
     tension_coeffs.c_rad_dec_hoops_anterior   = 1.0;  % radial hoops, anterior part 
     tension_coeffs.c_rad_dec_hoops_posterior  = 1.0;  % radial hoops, posterior part 
     tension_coeffs.c_rad_dec_hoops_commissure = 1.0;  % radial hoops, commissure part
     
+    tension_coeffs.c_circ_dec_edge_connector  = 1.0;  % circumferential hoops
+    tension_coeffs.c_rad_dec_edge_connector   = 1.0;  % circumferential hoops
     
-    % places this many periodic rings above 
-    n_rings_periodic = max(2,N/16); 
+    % places this many periodic rings above leaflets 
+    n_rings_periodic = max(2,N/64); 
+    
+    % places circumferential fibers this many below hoops 
+    % if the location is not already covered by leaflet 
+    n_edge_connectors = max(2,N/4); 
 
 
     % Explicit commissural leaflet here 
@@ -718,10 +717,8 @@ valve.ds = 2*pi*valve.r / N;
                                                radial_and_circumferential,          ...  
                                                tension_coeffs,                      ... 
                                                p_0,                                 ... 
-                                               tree_frac,                           ... 
-                                               leaflet_only,                        ...
-                                               ring_to_ring_range,                  ...
                                                n_rings_periodic,                    ...
+                                               n_edge_connectors,                   ... 
                                                valve);  
 
 valve.leaflets(1) = leaflet; 

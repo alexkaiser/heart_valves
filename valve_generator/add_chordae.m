@@ -9,8 +9,7 @@ function leaflet = add_chordae(leaflet, tree_idx)
     %     chordae     Chrodae tree data structure            
     % 
 
-    % unpack relevant parameters 
-    tree_frac           = leaflet.tree_frac; 
+    % unpack relevant parameters
     papillary           = leaflet.papillary;
     X                   = leaflet.X; 
     chordae             = leaflet.chordae; 
@@ -32,10 +31,9 @@ function leaflet = add_chordae(leaflet, tree_idx)
         warning('weird boundary errors possible on such a small tree'); 
     end 
 
-    if ~((0 < tree_frac) && (tree_frac < 1))
-        error('multiplier on tree position must be between zero and one'); 
-    end 
-
+    % just for initial guess 
+    tree_frac           = 0.5; 
+    
     total_len = 2^(n_tree+1) - 1; 
     max_internal = 2^(n_tree) - 1;     % last node that is not a leaf 
    

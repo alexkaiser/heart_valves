@@ -66,7 +66,7 @@ end
 
 interactive = true; 
 
-from_history = true; 
+from_history = false; 
 if from_history 
     history_name = 'mitral_tree_64_tension_history_2017_5_30_20.47.28.mat'; 
     load(history_name); 

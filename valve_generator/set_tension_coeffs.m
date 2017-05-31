@@ -14,6 +14,7 @@ j_max                     = leaflet.j_max;
 k_min                     = leaflet.k_min; 
 k_max                     = leaflet.k_max; 
 n_rings_periodic          = leaflet.n_rings_periodic;
+periodic_j                = leaflet.periodic_j; 
 is_internal               = leaflet.is_internal; 
 
 N_anterior                = valve.N_anterior; 
@@ -85,6 +86,11 @@ else
         error('Inconsistency in indices'); 
     end 
     
+end 
+
+if isfield(leaflet, 'n_edge_connectors') && (leaflet.n_edge_connectors > 0)
+    alpha_edge_connector       = tension_coeffs.alpha_edge_connector      * tension_base; 
+    c_circ_dec_edge_connector  = tension_coeffs.c_circ_dec_edge_connector * dec_tension_coeff_base; 
 end 
 
 
@@ -241,6 +247,28 @@ if commissural_leaflets
 
     end 
 end 
+
+
+% final cleanup on free edge connectors 
+% if there are free edge connectors, 
+% they attach to all internal points that are not otherwise set 
+% above the minimum periodic ring 
+if isfield(leaflet, 'n_edge_connectors') && (leaflet.n_edge_connectors > 0)
+    
+    for k=1:k_max
+        % check if we are at a periodic height 
+        if periodic_j(k)
+            % all circumferential coefficients that are unset, get set 
+            for j = 1:j_max 
+                if alpha(j,k) == 0 
+                    alpha(j,k)                 = alpha_edge_connector; 
+                    c_dec_circumferential(j,k) = c_circ_dec_edge_connector; 
+                end 
+            end 
+        end 
+    end 
+end 
+
 
 
 % set chordae tensions 
