@@ -7,7 +7,7 @@
 % reset stream for consistent results 
 
 
-N = 16; 
+N = 32; 
 
 % Initialize structures  
 attached = false; 

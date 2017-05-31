@@ -77,12 +77,12 @@ if from_history
         try
             [valve.leaflets(1) pass err] = newton_solve_valve(valve.leaflets(1), tol_global, max_it, max_consecutive_fails, max_total_fails);  
         catch 
-            fprintf('This iteration in history failed. Maybe by some miracle the next one will. Moving on...'); 
+            fprintf('This iteration in history failed. Maybe by some miracle the next one will pass. Moving on...\n'); 
             continue; 
         end 
         
         if ~pass 
-            fprintf('This iteration in history failed. Maybe by some miracle the next one will. Moving on...'); 
+            fprintf('This iteration in history failed. Maybe by some miracle the next one will pass. Moving on...\n'); 
             continue; 
         end 
 
