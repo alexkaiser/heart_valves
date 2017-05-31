@@ -513,7 +513,7 @@ elseif parameter_values == 3
     tension_coeffs.beta_commissure            = 1.0;  % radial
     tension_coeffs.alpha_hoops                = 1.0;  % circumferential hoops 
     tension_coeffs.alpha_edge_connector       = 1.0;  % circumferential free edge connector 
-    tension_coeffs.beta_edge_connector        = 1.0;  % circumferential free edge connector 
+    tension_coeffs.beta_edge_connector        = 0.1;  % circumferential free edge connector 
 
     % decreasing tension coefficients 
     tension_coeffs.c_circ_dec_anterior        = 1.0;  % circumferential 

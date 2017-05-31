@@ -90,7 +90,9 @@ end
 
 if isfield(leaflet, 'n_edge_connectors') && (leaflet.n_edge_connectors > 0)
     alpha_edge_connector       = tension_coeffs.alpha_edge_connector      * tension_base; 
+    beta_edge_connector        = tension_coeffs.beta_edge_connector       * tension_base; 
     c_circ_dec_edge_connector  = tension_coeffs.c_circ_dec_edge_connector * dec_tension_coeff_base; 
+    c_rad_dec_edge_connector   = tension_coeffs.c_rad_dec_edge_connector  * dec_tension_coeff_base;   
 end 
 
 
@@ -264,6 +266,12 @@ if isfield(leaflet, 'n_edge_connectors') && (leaflet.n_edge_connectors > 0)
                     alpha(j,k)                 = alpha_edge_connector; 
                     c_dec_circumferential(j,k) = c_circ_dec_edge_connector; 
                 end 
+                
+                if beta(j,k) == 0
+                    beta(j,k)                  = beta_edge_connector; 
+                    c_dec_radial(j,k)          = c_rad_dec_edge_connector; 
+                end 
+                
             end 
         end 
     end 
