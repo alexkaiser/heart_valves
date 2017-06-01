@@ -30,7 +30,7 @@ N                 = leaflet.N;
 j_max = N; 
 
 % minimum index is variable 
-k_min = zeros(j_max,1); 
+k_chordae_attachment = zeros(j_max,1); 
 
 % max possible k
 k_max = N/2; 
@@ -47,7 +47,7 @@ for i = 1:length(N_per_direction)
 
     for tmp = 1:N_tmp
 
-        k_min(j) = k; 
+        k_chordae_attachment(j) = k; 
 
         % j always incremented 
         j = j+1; 
@@ -79,7 +79,7 @@ for tree_idx = 1:num_trees
 
     for leaf_idx=1:n_leaves_tmp
 
-        k = k_min(j); 
+        k = k_chordae_attachment(j); 
 
         chordae(tree_idx).free_edge_idx(leaf_idx,:) = [j; k];
         chordae_idx(j,k).tree_idx = tree_idx;  
@@ -113,22 +113,19 @@ leaflet.comm_point_attached = false;
 
 if leaflet.comm_point_attached 
     error('This messes with lots of other assumptions. Not implemented for now.'); 
-    k_start_periodic = k_min(1); 
+    k_start_periodic = k_chordae_attachment(1); 
 else 
-    k_start_periodic = k_min(1) + 1;
+    k_start_periodic = k_chordae_attachment(1) + 1;
 end 
 
 % here we add points below the chordae attachment free edge if requested
 if leaflet.n_edge_connectors > 0
     k_start_periodic = k_start_periodic - leaflet.n_edge_connectors; 
-    
-    % just move these points down 
-    for j=1:j_max
-        if k_min(j) > k_start_periodic
-            k_min(j) = k_start_periodic; 
-        end 
-    end 
 end 
+
+% minimum valid is minimum chordae attachment
+% or minimum with edge connectors 
+k_min = min(k_start_periodic, k_chordae_attachment); 
 
 for k=k_start_periodic:k_max
     periodic_j(k) = 1; 
@@ -149,12 +146,13 @@ for j=1:j_max
 end 
 
 
-leaflet.j_max               = j_max; 
-leaflet.k_max               = k_max; 
-leaflet.k_min               = k_min; 
-leaflet.periodic_j          = periodic_j; 
-leaflet.chordae             = chordae; 
-leaflet.chordae_idx         = chordae_idx; 
-leaflet.ring_k_idx          = ring_k_idx; 
+leaflet.j_max                = j_max; 
+leaflet.k_max                = k_max; 
+leaflet.k_min                = k_min; 
+leaflet.k_chordae_attachment = k_chordae_attachment; 
+leaflet.periodic_j           = periodic_j; 
+leaflet.chordae              = chordae; 
+leaflet.chordae_idx          = chordae_idx; 
+leaflet.ring_k_idx           = ring_k_idx; 
 
 

@@ -512,7 +512,7 @@ elseif parameter_values == 3
     tension_coeffs.alpha_commissure           = 1.0;  % circumferential 
     tension_coeffs.beta_commissure            = 1.0;  % radial
     tension_coeffs.alpha_hoops                = 1.0;  % circumferential hoops 
-    tension_coeffs.alpha_edge_connector       = 1.0;  % circumferential free edge connector 
+    tension_coeffs.alpha_edge_connector       = 0.1;  % circumferential free edge connector 
     tension_coeffs.beta_edge_connector        = 0.1;  % circumferential free edge connector 
 
     % decreasing tension coefficients 
@@ -532,11 +532,11 @@ elseif parameter_values == 3
     tension_coeffs.c_rad_dec_edge_connector   = 1.0;  % circumferential hoops
     
     % places this many periodic rings above leaflets 
-    n_rings_periodic = max(2,N/64); 
+    n_rings_periodic = max(1,N/64); 
     
     % places circumferential fibers this many below hoops 
     % if the location is not already covered by leaflet 
-    n_edge_connectors = max(2,N/4); 
+    n_edge_connectors = max(2,N/8); 
 
 
     % Explicit commissural leaflet here 
@@ -604,7 +604,6 @@ elseif parameter_values == 3
     tree_n_start = N_commissure/2 + 1; 
 
     
-
     % this array determines the fraction of N_orig which each tree takes up 
     % this allows us to determine initial fractions of constants that go to each tree 
     frac_of_n_orig = [1/16; 1/16; 1/16; 1/16; ...   % anterior  
@@ -637,6 +636,37 @@ elseif parameter_values == 3
     % for splitting up papillary muscle 
     n_trees_anterior_left = 2; 
 
+%     % this array determines the fraction of N_orig which each tree takes up 
+%     % this allows us to determine initial fractions of constants that go to each tree 
+%     frac_of_n_orig = [1/ 8; 1/ 8;             ...   % anterior  
+%                       1/ 4; 1/ 4;             ...   % anterior and comm, comm and posterior       
+%                       1/16; 1/16; 1/16; 1/16; ...   % posterior
+%                       1/ 4; 1/ 4];                  % posterior and comm, comm and anterior
+%     
+%     % change these to manipulate individial tree coefficients 
+%     % for sanity reasons, these shuold mostly be one unless you have a good reason to change 
+%     % note that these are scaled by the fraction of the leaflet that they take up 
+%     k_0_1_coeff    = frac_of_n_orig .*    ... 
+%                      [1.0; 1.0;           ...       % anterior  
+%                       1.0; 1.0;           ...       % anterior and comm, comm and posterior       
+%                       1.0; 1.0; 1.0; 1.0; ...       % posterior
+%                       1.0; 1.0];                    % posterior and comm, comm and anterior
+%                   
+%     k_root_coeff   = frac_of_n_orig .*    ... 
+%                     [ 1.0; 1.0;           ...       % anterior  
+%                       1.0; 1.0;           ...       % anterior and comm, comm and posterior       
+%                       1.0; 1.0; 1.0; 1.0; ...       % posterior
+%                       1.0; 1.0];                    % posterior and comm, comm and anterior
+%                   
+%                                                                            % chordae
+%     tension_coeffs.c_dec_tension_chordae  = [1.0; 1.0;           ...       % anterior  
+%                                              1.0; 1.0;           ...       % anterior and comm, comm and posterior       
+%                                              1.0; 1.0; 1.0; 1.0; ...       % posterior
+%                                              1.0; 1.0];                    % posterior and comm, comm and anterior
+%                                          
+%     % number of anterior trees on left 
+%     % for splitting up papillary muscle 
+%     n_trees_anterior_left = 1; 
     
     n_leaves = N_orig * frac_of_n_orig; 
     

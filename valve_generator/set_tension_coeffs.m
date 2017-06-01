@@ -12,6 +12,7 @@ function [leaflet valve] = set_tension_coeffs(leaflet, valve, tension_coeffs)
 
 j_max                     = leaflet.j_max; 
 k_min                     = leaflet.k_min; 
+k_chordae_attachment      = leaflet.k_chordae_attachment; 
 k_max                     = leaflet.k_max; 
 n_rings_periodic          = leaflet.n_rings_periodic;
 periodic_j                = leaflet.periodic_j; 
@@ -101,7 +102,7 @@ k_min_hoop = k_max - n_rings_periodic;
 
 % radial anterior 
 for j=j_range_anterior
-    for k=k_min(j):(k_max-1)
+    for k=k_chordae_attachment(j):(k_max-1)
         
         beta(j,k)         = beta_anterior; 
         
@@ -115,7 +116,7 @@ end
 
 % radial posterior 
 for j=j_range_posterior 
-    for k=k_min(j):(k_max-1)
+    for k=k_chordae_attachment(j):(k_max-1)
         
         beta(j,k) = beta_posterior; 
 
@@ -130,7 +131,7 @@ end
 
 if commissural_leaflets 
     for j=j_range_right_comm
-        for k=k_min(j):(k_max-1)
+        for k=k_chordae_attachment(j):(k_max-1)
             
             beta(j,k)         = beta_commissure; 
         
@@ -144,7 +145,7 @@ if commissural_leaflets
 
     % radial posterior 
     for j=j_range_left_comm 
-        for k=k_min(j):(k_max-1)
+        for k=k_chordae_attachment(j):(k_max-1)
 
             beta(j,k) = beta_commissure; 
 
@@ -173,7 +174,7 @@ end
 for j=j_range_anterior(1:(end-1))
     
     % start at minimum, stop below hoop points 
-    for k=k_min(j):(k_min_hoop-1)
+    for k=k_chordae_attachment(j):(k_min_hoop-1)
         
         % spring is always owned by minimum neighbor 
         % j direction springs here 
@@ -193,7 +194,7 @@ end
 for j=j_range_posterior(1:(end-1))
     
     % start at minimum, stop below hoop points 
-    for k=k_min(j):(k_min_hoop-1)
+    for k=k_chordae_attachment(j):(k_min_hoop-1)
         
         % spring is always owned by minimum neighbor 
         % j direction springs here 
@@ -213,7 +214,7 @@ if commissural_leaflets
     for j=j_range_right_comm(1:(end-1))
 
         % start at minimum, stop below hoop points 
-        for k=k_min(j):(k_min_hoop-1)
+        for k=k_chordae_attachment(j):(k_min_hoop-1)
 
             % spring is always owned by minimum neighbor 
             % j direction springs here 
@@ -233,7 +234,7 @@ if commissural_leaflets
     for j=j_range_left_comm(1:(end-1))
 
         % start at minimum, stop below hoop points 
-        for k=k_min(j):(k_min_hoop-1)
+        for k=k_chordae_attachment(j):(k_min_hoop-1)
 
             % spring is always owned by minimum neighbor 
             % j direction springs here 
@@ -260,7 +261,7 @@ if isfield(leaflet, 'n_edge_connectors') && (leaflet.n_edge_connectors > 0)
     for k=1:k_max
         % check if we are at a periodic height 
         if periodic_j(k)
-            % all circumferential coefficients that are unset, get set 
+            % all coefficients that are unset, get set 
             for j = 1:j_max 
                 if alpha(j,k) == 0 
                     alpha(j,k)                 = alpha_edge_connector; 
