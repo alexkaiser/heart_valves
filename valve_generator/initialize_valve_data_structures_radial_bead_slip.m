@@ -12,12 +12,12 @@ function [valve] = initialize_valve_data_structures_radial_bead_slip(N, attached
 
 % Main data structure with everything 
 valve.N = N; 
-valve.max_it                = 4000; 
-valve.max_it_continuation   = 2000; 
+valve.max_it                = 1e8; 
+valve.max_it_continuation   = 1e8; 
 
 % Parameters for quick exit on line search 
-valve.max_consecutive_fails = 1;  
-valve.max_total_fails       = 1; 
+valve.max_consecutive_fails = 0;  
+valve.max_total_fails       = 0; 
 
 if exist('attached', 'var') 
     valve.attached = attached; 
@@ -505,18 +505,18 @@ elseif parameter_values == 3
 
 
     % tension coefficients 
-    tension_coeffs.alpha_anterior             = 1.0;  % circumferential 
+    tension_coeffs.alpha_anterior             = 2.0;  % circumferential 
     tension_coeffs.beta_anterior              = 1.1;  % radial
     tension_coeffs.alpha_posterior            = 1.0;  % circumferential 
     tension_coeffs.beta_posterior             = 1.0;  % radial
     tension_coeffs.alpha_commissure           = 1.0;  % circumferential 
     tension_coeffs.beta_commissure            = 1.0;  % radial
     tension_coeffs.alpha_hoops                = 1.0;  % circumferential hoops 
-    tension_coeffs.alpha_edge_connector       = 0.1;  % circumferential free edge connector 
-    tension_coeffs.beta_edge_connector        = 0.1;  % circumferential free edge connector 
+    tension_coeffs.alpha_edge_connector       = 0.5;  % circumferential free edge connector 
+    tension_coeffs.beta_edge_connector        = 0.01;  % circumferential free edge connector 
 
     % decreasing tension coefficients 
-    tension_coeffs.c_circ_dec_anterior        = 1.0;  % circumferential 
+    tension_coeffs.c_circ_dec_anterior        = 3.0;  % circumferential 
     tension_coeffs.c_rad_dec_anterior         = 1.0;  % radial
     tension_coeffs.c_circ_dec_posterior       = 1.0;  % circumferential 
     tension_coeffs.c_rad_dec_posterior        = 1.0;  % radial
@@ -524,12 +524,12 @@ elseif parameter_values == 3
     tension_coeffs.c_rad_dec_commissure       = 1.0;  % radial 
     
     tension_coeffs.c_circ_dec_hoops           = 1.0;  % circumferential hoops
-    tension_coeffs.c_rad_dec_hoops_anterior   = 1.0;  % radial hoops, anterior part 
-    tension_coeffs.c_rad_dec_hoops_posterior  = 1.0;  % radial hoops, posterior part 
-    tension_coeffs.c_rad_dec_hoops_commissure = 1.0;  % radial hoops, commissure part
+    tension_coeffs.c_rad_dec_hoops_anterior   = 0.5;  % radial hoops, anterior part 
+    tension_coeffs.c_rad_dec_hoops_posterior  = 0.5;  % radial hoops, posterior part 
+    tension_coeffs.c_rad_dec_hoops_commissure = 0.1;  % radial hoops, commissure part
     
-    tension_coeffs.c_circ_dec_edge_connector  = 1.0;  % circumferential hoops
-    tension_coeffs.c_rad_dec_edge_connector   = 1.0;  % circumferential hoops
+    tension_coeffs.c_circ_dec_edge_connector  = 2.0;  % circumferential hoops
+    tension_coeffs.c_rad_dec_edge_connector   = 2.0;  % circumferential hoops
     
     % places this many periodic rings above leaflets 
     n_rings_periodic = max(1,N/64); 
@@ -587,12 +587,12 @@ elseif parameter_values == 3
 
 
     % Leaf tensions are all modified 
-    tension_coeffs.leaf_tension_base = 1.6; 
+    tension_coeffs.leaf_tension_base = 1.68; 
 
     % Base total root tension 
     % The value 0.5905 works well on each tree when using separate solves and two leaflets 
     % Controls constant tension at the root of the tree 
-    tension_coeffs.root_tension_base = 0.64; 
+    tension_coeffs.root_tension_base = 0.685; 
 
 
     
