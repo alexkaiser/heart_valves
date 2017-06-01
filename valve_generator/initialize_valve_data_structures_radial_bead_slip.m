@@ -468,7 +468,7 @@ elseif parameter_values == 3
     valve.skeleton = valve_points_ct_systole(low_papillary, tip_radius); 
     
     
-    valve.diastolic_increment = [1.75; 0.0; 0.25]; 
+    valve.diastolic_increment = [1.75; 0.0; 0.0]; 
 
     
     zero_radius = false; 
@@ -499,13 +499,13 @@ elseif parameter_values == 3
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    tension_coeffs.pressure_tension_ratio = 0.05; 
+    tension_coeffs.pressure_tension_ratio = 0.055; 
     
     tension_coeffs.dec_tension_coeff_base = 4.6 * (3/2); 
 
 
     % tension coefficients 
-    tension_coeffs.alpha_anterior             = 2.0;  % circumferential 
+    tension_coeffs.alpha_anterior             = 3.0;  % circumferential 
     tension_coeffs.beta_anterior              = 1.1;  % radial
     tension_coeffs.alpha_posterior            = 1.0;  % circumferential 
     tension_coeffs.beta_posterior             = 1.0;  % radial
@@ -541,7 +541,7 @@ elseif parameter_values == 3
 
     % Explicit commissural leaflet here 
     N_anterior = N/2; 
-    angles.anterior = 5*pi/6; 
+    angles.anterior = 4*pi/6; 
 
     % Posterior takes whatever is left 
     N_posterior = N/2;
@@ -556,9 +556,9 @@ elseif parameter_values == 3
     % this is a strane hack but I'm rolling with it 
     N = (3/2) * N; 
 
-    N_per_direction   = [N_anterior/2, N_anterior/2, ...
+    N_per_direction   = [N_anterior/4, N_anterior/4, N_anterior/4, N_anterior/4, ...  % N_anterior/2, N_anterior/2, ...
                          N_commissure/2, N_commissure/2, ... 
-                         N_posterior/4, N_posterior/4, N_posterior/4, N_posterior/4, ... % N_posterior/2, N_posterior/2, ...
+                         N_posterior/4, N_posterior/4, N_posterior/4, N_posterior/4, ... % N_posterior/2, N_posterior/2, ... 
                          N_commissure/2, N_commissure/2]; 
 
     % store these 
@@ -570,7 +570,8 @@ elseif parameter_values == 3
                      
                      
     % Anterior goes down then up 
-    leaflet_direction = [-1, 1]; 
+    %leaflet_direction = [-1, 1]; 
+    leaflet_direction = [-1, 0, 0, 1]; 
     
     % Commissure down up 
     leaflet_direction = [leaflet_direction, -1, 1]; 
@@ -592,7 +593,7 @@ elseif parameter_values == 3
     % Base total root tension 
     % The value 0.5905 works well on each tree when using separate solves and two leaflets 
     % Controls constant tension at the root of the tree 
-    tension_coeffs.root_tension_base = 0.685; 
+    tension_coeffs.root_tension_base = 0.73; 
 
 
     
@@ -621,16 +622,16 @@ elseif parameter_values == 3
                       1.0; 1.0];                    % posterior and comm, comm and anterior
                   
     k_root_coeff   = frac_of_n_orig .*    ... 
-                    [ 1.0; 1.0; 1.0; 1.0; ...       % anterior  
+                    [ 1.056; 1.056; 1.056; 1.056; ...       % anterior  
                       1.0; 1.0;           ...       % anterior and comm, comm and posterior       
                       1.0; 1.0; 1.0; 1.0; ...       % posterior
                       1.0; 1.0];                    % posterior and comm, comm and anterior
                   
                                                                            % chordae
-    tension_coeffs.c_dec_tension_chordae  = [1.0; 1.0; 1.0; 1.0; ...       % anterior  
-                                             1.0; 1.0;           ...       % anterior and comm, comm and posterior       
-                                             1.0; 1.0; 1.0; 1.0; ...       % posterior
-                                             1.0; 1.0];                    % posterior and comm, comm and anterior
+    tension_coeffs.c_dec_tension_chordae  = 2 * [1.0; 1.0; 1.0; 1.0; ...       % anterior  
+                                                 1.0; 1.0;           ...       % anterior and comm, comm and posterior       
+                                                 1.0; 1.0; 1.0; 1.0; ...       % posterior
+                                                 1.0; 1.0];                    % posterior and comm, comm and anterior
                                          
     % number of anterior trees on left 
     % for splitting up papillary muscle 
