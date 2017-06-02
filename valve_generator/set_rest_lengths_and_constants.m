@@ -194,7 +194,7 @@ for tree_idx = 1:num_trees
              = get_rest_len_and_spring_constants(C(:,i), nbr, tension, strain, leaflet); 
          
         % reset all papillary points according to diastolic skeleton 
-        chordae_with_reference(tree_idx).root = chordae(tree_idx).root + diastolic_increment; 
+        chordae_with_reference(tree_idx).root = chordae(tree_idx).root; %+ diastolic_increment; 
     end 
 end 
 

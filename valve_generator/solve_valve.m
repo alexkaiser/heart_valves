@@ -219,7 +219,7 @@ for i=1:length(valve.leaflets)
     
     leaflet = valve_with_reference.leaflets(i); 
     
-    p_initial = -leaflet.p_0/10; 
+    p_initial = leaflet.p_0/10; 
     p_goal    =  0; 
     
     max_continuations_relaxed = 3; 
