@@ -322,7 +322,7 @@ if __name__ == '__main__':
                 slurm = '''#!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --time=4:00:00
+#SBATCH --time=12:00:00
 #SBATCH --mem=16GB
 #SBATCH --job-name=movie_post_process
 #SBATCH --mail-user=kaiser@cims.nyu.edu
