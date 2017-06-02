@@ -468,7 +468,7 @@ elseif parameter_values == 3
     valve.skeleton = valve_points_ct_systole(low_papillary, tip_radius); 
     
     
-    valve.diastolic_increment = [1.75; 0.0; 0.0]; 
+    valve.diastolic_increment = [1.75; 0.0; 0.25]; 
 
     
     zero_radius = false; 
@@ -505,9 +505,9 @@ elseif parameter_values == 3
 
 
     % tension coefficients 
-    tension_coeffs.alpha_anterior             = 3.0;  % circumferential 
+    tension_coeffs.alpha_anterior             = 4.0;  % circumferential 
     tension_coeffs.beta_anterior              = 1.1;  % radial
-    tension_coeffs.alpha_posterior            = 1.0;  % circumferential 
+    tension_coeffs.alpha_posterior            = 1.5;  % circumferential 
     tension_coeffs.beta_posterior             = 1.0;  % radial
     tension_coeffs.alpha_commissure           = 1.0;  % circumferential 
     tension_coeffs.beta_commissure            = 1.0;  % radial
@@ -517,9 +517,9 @@ elseif parameter_values == 3
 
     % decreasing tension coefficients 
     tension_coeffs.c_circ_dec_anterior        = 3.0;  % circumferential 
-    tension_coeffs.c_rad_dec_anterior         = 1.0;  % radial
+    tension_coeffs.c_rad_dec_anterior         = 0.5;  % radial
     tension_coeffs.c_circ_dec_posterior       = 1.0;  % circumferential 
-    tension_coeffs.c_rad_dec_posterior        = 1.0;  % radial
+    tension_coeffs.c_rad_dec_posterior        = 0.5;  % radial
     tension_coeffs.c_circ_dec_commissure      = 1.0;  % circumferential 
     tension_coeffs.c_rad_dec_commissure       = 1.0;  % radial 
     
@@ -556,7 +556,7 @@ elseif parameter_values == 3
     % this is a strane hack but I'm rolling with it 
     N = (3/2) * N; 
 
-    N_per_direction   = [N_anterior/4, N_anterior/4, N_anterior/4, N_anterior/4, ...  % N_anterior/2, N_anterior/2, ...
+    N_per_direction   = [N_anterior/2, N_anterior/2, ... % N_anterior/4, N_anterior/4, N_anterior/4, N_anterior/4, ...  % 
                          N_commissure/2, N_commissure/2, ... 
                          N_posterior/4, N_posterior/4, N_posterior/4, N_posterior/4, ... % N_posterior/2, N_posterior/2, ... 
                          N_commissure/2, N_commissure/2]; 
@@ -570,14 +570,14 @@ elseif parameter_values == 3
                      
                      
     % Anterior goes down then up 
-    %leaflet_direction = [-1, 1]; 
-    leaflet_direction = [-1, 0, 0, 1]; 
+    leaflet_direction = [-1, 1]; 
+    % leaflet_direction = [-1, 0, 0, 1]; 
     
     % Commissure down up 
     leaflet_direction = [leaflet_direction, -1, 1]; 
     
     % Posterior goes down then up 
-%    leaflet_direction = [leaflet_direction, -1, 1]; 
+    % leaflet_direction = [leaflet_direction, -1, 1]; 
     leaflet_direction = [leaflet_direction, -1, 0, 0, 1]; 
     
     % Commissure down up 
@@ -593,7 +593,7 @@ elseif parameter_values == 3
     % Base total root tension 
     % The value 0.5905 works well on each tree when using separate solves and two leaflets 
     % Controls constant tension at the root of the tree 
-    tension_coeffs.root_tension_base = 0.73; 
+    tension_coeffs.root_tension_base = 0.75; 
 
 
     
@@ -622,7 +622,7 @@ elseif parameter_values == 3
                       1.0; 1.0];                    % posterior and comm, comm and anterior
                   
     k_root_coeff   = frac_of_n_orig .*    ... 
-                    [ 1.056; 1.056; 1.056; 1.056; ...       % anterior  
+                    [ 1.1; 1.0; 1.0; 1.1; ...       % anterior  
                       1.0; 1.0;           ...       % anterior and comm, comm and posterior       
                       1.0; 1.0; 1.0; 1.0; ...       % posterior
                       1.0; 1.0];                    % posterior and comm, comm and anterior
