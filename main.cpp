@@ -881,7 +881,8 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
 
     // quick return at beginning so that things do not move in discontinuous manner
     // magic number here, 0.1255 is the location in time of the max fwd pressure in diastole 
-    if (current_time < papillary->max_p_time)
+    //if (current_time == papillary->max_p_time)
+    if (current_time == 0.0)
         return; 
 
     // We require that the structures are associated with the finest level of
