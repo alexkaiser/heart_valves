@@ -93,7 +93,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 
-parameter_values = 2; 
+parameter_values = 3; 
     
 
 if parameter_values == 1  
@@ -538,7 +538,7 @@ elseif parameter_values == 3
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    tension_coeffs.pressure_tension_ratio = 0.045; 
+    tension_coeffs.pressure_tension_ratio = 0.055; 
     
     tension_coeffs.dec_tension_coeff_base = 4.6 * (3/2); 
 
