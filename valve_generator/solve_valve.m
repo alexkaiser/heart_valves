@@ -22,7 +22,7 @@ end
 
 tol_global            = valve.tol_global; 
 max_it                = valve.max_it; 
-max_it_continuation   = valve.max_it_continuation; 
+max_continuations     = valve.max_continuations; 
 max_consecutive_fails = valve.max_consecutive_fails; 
 max_total_fails       = valve.max_total_fails; 
 
@@ -45,7 +45,7 @@ for i=1:length(valve.leaflets)
     p_initial = 0; 
     p_goal    = leaflet.p_0; 
 
-    [valve.leaflets(i) pass err] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_it_continuation, p_initial, p_goal, max_consecutive_fails, max_total_fails); 
+    [valve.leaflets(i) pass err] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_continuations, p_initial, p_goal, max_consecutive_fails, max_total_fails); 
 
     if pass
         fprintf('Global solve passed, err = %e\n\n', err); 
@@ -219,15 +219,21 @@ for i=1:length(valve.leaflets)
     
     leaflet = valve_with_reference.leaflets(i); 
     
-    p_initial = leaflet.p_0/10; 
-    p_goal    = leaflet.p_0/500; 
+    p_initial = -leaflet.p_0/10; 
+    p_goal    =  0; 
+    
+    max_continuations_relaxed = 3; 
 
-    [valve_with_reference.leaflets(i) pass err] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_it_continuation, p_initial, p_goal, max_consecutive_fails, max_total_fails); 
+    [valve_with_reference.leaflets(i) pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_continuations_relaxed, p_initial, p_goal, max_consecutive_fails, max_total_fails); 
 
     if pass
         fprintf('Global solve passed, err = %e\n\n', err); 
     else 
-        fprintf('Global solve failed, err = %e\n\n', err); 
+        if any_passed
+            fprintf('Global solve passed but with pressure, err = %e\n\n', valve_with_reference.leaflets(i).p_0); 
+        else 
+            fprintf('Global solve failed, err = %e\n\n', err); 
+        end 
     end 
     
 %     fig = figure; 

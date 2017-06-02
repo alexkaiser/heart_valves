@@ -1,8 +1,9 @@
-function [leaflet pass err] = solve_valve_pressure_auto_continuation(leaflet, tol, max_it_init, max_it_continuation, p_initial, p_goal, max_consecutive_fails, max_total_fails)
+function [leaflet pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet, tol, max_it, max_continuations, p_initial, p_goal, max_consecutive_fails, max_total_fails)
 % 
 % Automatically runs a continutation sequence 
-% First tries the current reference fraction 
-% If this fails then it is adaptively reduced and re-run
+% 
+% If any solve has passed then the leaflet that passed closest to goal is returned 
+% 
 % 
 
 
@@ -11,7 +12,7 @@ leaflet.p_0 = p_initial;
 initial_p_plot = true; 
 plots = true; 
 
-[leaflet_current pass err] = newton_solve_valve(leaflet, tol, max_it_init, max_consecutive_fails, max_total_fails);  
+[leaflet_current pass err] = newton_solve_valve(leaflet, tol, max_it, max_consecutive_fails, max_total_fails);  
 
 % quick exit if fail 
 if pass 
@@ -21,6 +22,7 @@ else
 end 
 
 fprintf('Applying adaptive continuation on pressure.\n\n'); 
+any_passed = true; 
 
 if initial_p_plot 
     fig = figure; 
@@ -43,14 +45,17 @@ else
     increasing = true; 
 end 
 
-while true
+continuation_num = 1; 
+
+while true 
     
     fprintf('Solving with p = %f\n', p_current); 
     
     leaflet_okay.p_0 = p_current; 
+    pass = false; 
     
-    try
-        [leaflet_current pass err] = newton_solve_valve(leaflet_okay, tol, max_it_continuation, max_consecutive_fails, max_total_fails);  
+    try    
+        [leaflet_current pass err] = newton_solve_valve(leaflet_okay, tol, max_it, max_consecutive_fails, max_total_fails);  
     
         if pass
         
@@ -64,6 +69,7 @@ while true
             end
 
             if p_current == p_goal
+                leaflet_okay = leaflet_current; 
                 break
             end 
 
@@ -84,6 +90,7 @@ while true
             fprintf('Solve failed due to max iterations.\n')
             p_increment = p_increment / 4;  
             p_current   = p_last_passed + p_increment; 
+            continuation_num = continuation_num + 1; 
         end 
         
         
@@ -94,16 +101,21 @@ while true
         fprintf('Solve failed due to line search errors.\n')
         p_increment = p_increment / 4;  
         p_current   = p_last_passed + p_increment; 
+        continuation_num = continuation_num + 1; 
 
     end 
+    
+    if continuation_num > max_continuations
+        break
+    end 
+    
 end 
     
+leaflet = leaflet_okay; 
+leaflet.p_0 = p_current; 
 
-if pass 
-    leaflet = leaflet_current; 
-    return
-else
-    error('Auto continuation failed.'); 
+if ~pass 
+    warning(sprintf('Leaving with pressure not equal to desired goal.\nFinal pressure = %f\n', leaflet_okay.p_0)); 
 end 
 
 
