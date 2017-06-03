@@ -284,7 +284,8 @@ end
 k_root                = tension_coeffs.k_root * tension_base * root_tension_base; 
 k_0_1                 = tension_coeffs.k_0_1  * tension_base * leaf_tension_base;
 chordae               = leaflet.chordae; 
-c_dec_tension_chordae = tension_coeffs.c_dec_tension_chordae * dec_tension_coeff_base; 
+c_dec_chordae_leaf    = tension_coeffs.c_dec_chordae_leaf * dec_tension_coeff_base; 
+c_dec_chordae_root    = tension_coeffs.c_dec_chordae_root * dec_tension_coeff_base; 
 
 for tree_idx = 1:leaflet.num_trees    
 
@@ -307,7 +308,7 @@ for tree_idx = 1:leaflet.num_trees
     
     % leaf force is total leaf force over number of leaves 
     k_0 = k_0_1_tmp / n_leaves; 
-    
+        
     % scaling formula on k_multiplier 
     % to achieve desired k_root 
     k_multiplier = 2.0 * (k_root_tmp/k_0_1_tmp)^(1/log2(n_leaves)); 
@@ -325,10 +326,15 @@ for tree_idx = 1:leaflet.num_trees
         error('must use a power of two'); 
     end 
     
+    c_dec_chordae_leaf_tmp = c_dec_chordae_leaf(tree_idx); 
+    c_dec_chordae_root_tmp = c_dec_chordae_root(tree_idx); 
+    c_dec_multiplier       = (c_dec_chordae_root_tmp/c_dec_chordae_leaf_tmp)^(1/log2(n_leaves)); 
+    
     % Set tensions 
     
     % Each keeps parent wise spring constants 
-    chordae(tree_idx).k_vals = zeros(max_internal,1); 
+    chordae(tree_idx).k_vals             = zeros(max_internal,1); 
+    chordae(tree_idx).c_dec_chordae_vals = zeros(max_internal,1); 
 
     % set spring constant data structures 
     num_at_level = n_leaves/2; 
@@ -336,16 +342,20 @@ for tree_idx = 1:leaflet.num_trees
 
     % constants connecting to the leaflet are inherited
     % first internal constant to the tree is k_multiplier times that 
-    k_running = k_multiplier*k_0; 
+    k_running     = k_multiplier     * k_0; 
+    c_dec_running = c_dec_multiplier * c_dec_chordae_leaf_tmp; 
+    
     while num_at_level >= 1
 
         for j=1:num_at_level
-            chordae(tree_idx).k_vals(idx) = k_running; 
+            chordae(tree_idx).k_vals(idx)             = k_running; 
+            chordae(tree_idx).c_dec_chordae_vals(idx) = c_dec_running; 
             idx = idx - 1; 
         end 
 
-        k_running = k_running * k_multiplier; 
-        num_at_level = num_at_level / 2; 
+        k_running     = k_running * k_multiplier; 
+        c_dec_running = c_dec_multiplier * c_dec_running; 
+        num_at_level  = num_at_level / 2; 
     end 
 
     % check that we actually got the desired root 
@@ -353,10 +363,16 @@ for tree_idx = 1:leaflet.num_trees
     if abs(chordae(tree_idx).k_vals(1) - k_root_tmp) > tol 
         error('Scaling incorrect at tree root, constants inconsistent'); 
     end 
-        
-    chordae(tree_idx).k_0                   = k_0; 
+
+    if abs(chordae(tree_idx).c_dec_chordae_vals(1) - c_dec_chordae_root_tmp) > tol 
+        error('Scaling incorrect at tree root, constants inconsistent'); 
+    end
+    
+    chordae(tree_idx).k_0                   = k_0;
     chordae(tree_idx).k_multiplier          = k_multiplier;
-    chordae(tree_idx).c_dec_tension_chordae = c_dec_tension_chordae(tree_idx); 
+    
+    chordae(tree_idx).c_dec_chordae_leaf     = c_dec_chordae_leaf_tmp; 
+    chordae(tree_idx).c_dec_multiplier      = c_dec_multiplier;
     
 end 
 

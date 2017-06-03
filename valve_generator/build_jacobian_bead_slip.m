@@ -197,7 +197,8 @@ function J = build_jacobian_bead_slip(leaflet)
                     C = chordae(tree_idx).C; 
                     
                     [m N_chordae] = size(chordae(tree_idx).C);
-                    c_dec_tension_chordae = chordae(tree_idx).c_dec_tension_chordae; 
+                    c_dec_tension_chordae = chordae(tree_idx).c_dec_chordae_leaf; 
+                    du_chordae = 1; 
 
                     kappa = chordae(tree_idx).k_0;
 
@@ -213,7 +214,7 @@ function J = build_jacobian_bead_slip(leaflet)
                     J_tmp = kappa * tangent_jacobian(X, X_nbr); 
 
                     if decreasing_tension && (kappa ~= 0)
-                        J_tmp = J_tmp + kappa * dec_tension_jacobian(X,X_nbr,du,c_dec_tension_chordae); 
+                        J_tmp = J_tmp + kappa * dec_tension_jacobian(X,X_nbr,du_chordae,c_dec_tension_chordae); 
                     end
 
                     % current term is always added in 
@@ -238,7 +239,9 @@ function J = build_jacobian_bead_slip(leaflet)
         
         C = chordae(tree_idx).C; 
         [m N_chordae] = size(C);
-        c_dec_tension_chordae = chordae(tree_idx).c_dec_tension_chordae; 
+        
+        % normalize this, no mesh parameters in chordae computations 
+        du_chordae = 1; 
         
         for i=1:N_chordae
 
@@ -252,7 +255,7 @@ function J = build_jacobian_bead_slip(leaflet)
             for nbr_idx = [left,right,parent]
 
                 % get the neighbors coordinates, reference coordinate and spring constants
-                [nbr R_nbr k_val j_nbr k_nbr] = get_nbr_chordae(leaflet, i, nbr_idx, tree_idx); 
+                [nbr R_nbr k_val j_nbr k_nbr c_dec_tension_chordae] = get_nbr_chordae(leaflet, i, nbr_idx, tree_idx); 
 
                 % if the neighbor is in the chordae 
                 if isempty(j_nbr) && isempty(k_nbr) 
@@ -271,7 +274,7 @@ function J = build_jacobian_bead_slip(leaflet)
                 J_tmp = k_val * tangent_jacobian(C(:,i), nbr); 
                 
                 if decreasing_tension && (k_val ~= 0.0)
-                    J_tmp = J_tmp + k_val * dec_tension_jacobian(C(:,i), nbr, du, c_dec_tension_chordae); 
+                    J_tmp = J_tmp + k_val * dec_tension_jacobian(C(:,i), nbr, du_chordae, c_dec_tension_chordae); 
                 end
 
                 % current always gets a contribution from this spring 

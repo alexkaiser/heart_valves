@@ -93,7 +93,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 
-parameter_values = 2; 
+parameter_values = 3; 
     
 
 if parameter_values == 1  
@@ -666,12 +666,22 @@ elseif parameter_values == 3
                       1.0; 1.0; 1.0; 1.0; ...       % posterior
                       1.0; 1.0];                    % posterior and comm, comm and anterior
                   
-                                                                           % chordae
-    tension_coeffs.c_dec_tension_chordae  = 2 * [1.0; 1.0; 1.0; 1.0; ...       % anterior  
-                                                 1.0; 1.0;           ...       % anterior and comm, comm and posterior       
-                                                 1.0; 1.0; 1.0; 1.0; ...       % posterior
-                                                 1.0; 1.0];                    % posterior and comm, comm and anterior
-                                         
+    % leaf coefficients scale, because we expect the lengths of the leaves to decrease 
+    % with refinement of the mesh  
+    % 
+                                                                                    % chordae
+    tension_coeffs.c_dec_chordae_leaf = (1/N)  * 2 * [1.0; 1.0; 1.0; 1.0; ...       % anterior  
+                                                      1.0; 1.0;           ...       % anterior and comm, comm and posterior       
+                                                      1.0; 1.0; 1.0; 1.0; ...       % posterior
+                                                      1.0; 1.0];                    % posterior and comm, comm and anterior
+                                                 
+    % root constants do not scale, because the root 
+    % should maintain a consistent length when mesh is changed 
+    tension_coeffs.c_dec_chordae_root = (2/96) *     [1.0; 1.0; 1.0; 1.0; ...       % anterior  
+                                                      1.0; 1.0;           ...       % anterior and comm, comm and posterior       
+                                                      1.0; 1.0; 1.0; 1.0; ...       % posterior
+                                                      1.0; 1.0];                    % posterior and comm, comm and anterior
+                                                 
     % number of anterior trees on left 
     % for splitting up papillary muscle 
     n_trees_anterior_left = 2; 

@@ -1,4 +1,4 @@
-function [nbr R_nbr k_val j k] = get_nbr_chordae(leaflet, i, nbr_idx, tree_idx)
+function [nbr R_nbr k_val j k c_dec_tension_chordae] = get_nbr_chordae(leaflet, i, nbr_idx, tree_idx)
 % 
 % Given a current index and nieghbor index 
 % Returns the coordinates, reference coordinates and spring constant
@@ -22,6 +22,7 @@ function [nbr R_nbr k_val j k] = get_nbr_chordae(leaflet, i, nbr_idx, tree_idx)
 j     = []; 
 k     = []; 
 R_nbr = []; 
+c_dec_tension_chordae = []; 
 
 X       = leaflet.X; 
 chordae = leaflet.chordae; 
@@ -47,6 +48,14 @@ else
     R_ch  = []; 
 end 
 
+if isfield(chordae(tree_idx), 'c_dec_chordae_leaf') && isfield(chordae(tree_idx), 'c_dec_chordae_vals')     
+    dec_tension_set = true; 
+    c_dec_chordae_vals = chordae(tree_idx).c_dec_chordae_vals; 
+    c_dec_chordae_leaf = chordae(tree_idx).c_dec_chordae_leaf;
+else 
+    dec_tension_set = false; 
+end 
+
 
 [m max_internal] = size(C); 
 
@@ -69,6 +78,11 @@ if nbr_idx > max_internal
         % free edge springs are all k_0 if not  
         R_nbr = []; 
         k_val = k_0;
+        
+        if dec_tension_set
+            c_dec_tension_chordae = c_dec_chordae_leaf;
+        end 
+        
     end 
     
 % the neighbor is within the tree of chordae 
@@ -87,6 +101,10 @@ else
         
         k_val = k_vals(i);
         
+        if dec_tension_set
+            c_dec_tension_chordae = c_dec_chordae_vals(i);
+        end
+        
     else
 
         nbr   = C(:,nbr_idx); 
@@ -101,6 +119,10 @@ else
                 R_nbr = R_ch(i); 
             end
             
+            if dec_tension_set
+                c_dec_tension_chordae = c_dec_chordae_vals(i);
+            end 
+            
         else 
 
             % child's parent-direction spring is at child's index 
@@ -108,6 +130,10 @@ else
             
             if ~isempty(R_ch)
                 R_nbr = R_ch(nbr_idx); 
+            end 
+            
+            if dec_tension_set
+                c_dec_tension_chordae = c_dec_chordae_vals(nbr_idx);
             end 
         end 
     

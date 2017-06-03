@@ -133,7 +133,8 @@ for j=1:j_max
                 tree_idx = chordae_idx(j,k).tree_idx; 
 
                 [m N_chordae] = size(chordae(tree_idx).C);
-                c_dec_tension_chordae = chordae(tree_idx).c_dec_tension_chordae; 
+                c_dec_tension_chordae = chordae(tree_idx).c_dec_chordae_leaf; 
+                du_chordae = 1; 
 
                 kappa = chordae(tree_idx).k_0;
                 
@@ -151,7 +152,7 @@ for j=1:j_max
                 tension = kappa; 
 
                 if decreasing_tension && (kappa ~= 0)
-                    tension = tension + kappa * tension_decreasing(X, X_nbr, du, c_dec_tension_chordae) ; 
+                    tension = tension + kappa * tension_decreasing(X, X_nbr, du_chordae, c_dec_tension_chordae) ; 
                 end
                 
                 [chordae_with_reference(tree_idx).k_free_edge(i), ... 
@@ -170,7 +171,10 @@ for tree_idx = 1:num_trees
 
     C = chordae(tree_idx).C; 
     [m N_chordae] = size(C);
-    c_dec_tension_chordae = chordae(tree_idx).c_dec_tension_chordae; 
+    % c_dec_tension_chordae = chordae(tree_idx).c_dec_tension_chordae; 
+        
+    % normalize this, no mesh parameters in chordae computations 
+    du_chordae = 1; 
 
     for i=1:N_chordae
 
@@ -181,12 +185,12 @@ for tree_idx = 1:num_trees
         nbr_idx = parent;  
         
         % get the neighbors coordinates, reference coordinate and spring constants
-        [nbr R_nbr k_val] = get_nbr_chordae(leaflet, i, nbr_idx, tree_idx); 
+        [nbr R_nbr k_val j_nbr k_nbr c_dec_tension_chordae] = get_nbr_chordae(leaflet, i, nbr_idx, tree_idx); 
 
         tension = k_val; 
 
         if decreasing_tension && (k_val ~= 0.0)
-            tension = tension + k_val * tension_decreasing(C(:,i), nbr, du, c_dec_tension_chordae) ; 
+            tension = tension + k_val * tension_decreasing(C(:,i), nbr, du_chordae, c_dec_tension_chordae) ; 
         end
 
         [chordae_with_reference(tree_idx).k_vals(i), ...

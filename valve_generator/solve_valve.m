@@ -122,8 +122,10 @@ if interactive && pass_all
         disp(valve.leaflets(1).tension_coeffs.k_0_1)
         fprintf('k_root = \n\n')
         disp(valve.leaflets(1).tension_coeffs.k_root)
-        fprintf('c_dec_tension_chordae = \n\n')
-        disp(valve.leaflets(1).tension_coeffs.c_dec_tension_chordae)
+        fprintf('c_dec_chordae_leaf = \n\n')
+        disp(valve.leaflets(1).tension_coeffs.c_dec_chordae_leaf)
+        fprintf('c_dec_chordae_root = \n\n')
+        disp(valve.leaflets(1).tension_coeffs.c_dec_chordae_root)
         fprintf('\n\n'); 
         
         try 
