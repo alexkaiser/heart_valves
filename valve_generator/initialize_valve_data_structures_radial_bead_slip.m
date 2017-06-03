@@ -538,37 +538,37 @@ elseif parameter_values == 3
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    tension_coeffs.pressure_tension_ratio = 0.055; 
+    tension_coeffs.pressure_tension_ratio = 0.04125; 
     
     tension_coeffs.dec_tension_coeff_base = 4.6 * (3/2); 
 
 
     % tension coefficients 
-    tension_coeffs.alpha_anterior             = 4.0;  % circumferential 
+    tension_coeffs.alpha_anterior             = 1.1;  % circumferential 
     tension_coeffs.beta_anterior              = 1.1;  % radial
-    tension_coeffs.alpha_posterior            = 1.5;  % circumferential 
+    tension_coeffs.alpha_posterior            = 1.1;  % circumferential 
     tension_coeffs.beta_posterior             = 1.0;  % radial
-    tension_coeffs.alpha_commissure           = 1.0;  % circumferential 
-    tension_coeffs.beta_commissure            = 1.0;  % radial
+    tension_coeffs.alpha_commissure           = 0.8;  % circumferential 
+    tension_coeffs.beta_commissure            = 0.8;  % radial
     tension_coeffs.alpha_hoops                = 1.0;  % circumferential hoops 
-    tension_coeffs.alpha_edge_connector       = 0.5;  % circumferential free edge connector 
+    tension_coeffs.alpha_edge_connector       = 1.0;  % circumferential free edge connector 
     tension_coeffs.beta_edge_connector        = 0.01;  % circumferential free edge connector 
 
     % decreasing tension coefficients 
-    tension_coeffs.c_circ_dec_anterior        = 3.0;  % circumferential 
-    tension_coeffs.c_rad_dec_anterior         = 0.5;  % radial
+    tension_coeffs.c_circ_dec_anterior        = 1.0;  % circumferential 
+    tension_coeffs.c_rad_dec_anterior         = 1.0;  % radial
     tension_coeffs.c_circ_dec_posterior       = 1.0;  % circumferential 
     tension_coeffs.c_rad_dec_posterior        = 0.5;  % radial
     tension_coeffs.c_circ_dec_commissure      = 1.0;  % circumferential 
     tension_coeffs.c_rad_dec_commissure       = 1.0;  % radial 
     
     tension_coeffs.c_circ_dec_hoops           = 1.0;  % circumferential hoops
-    tension_coeffs.c_rad_dec_hoops_anterior   = 0.5;  % radial hoops, anterior part 
-    tension_coeffs.c_rad_dec_hoops_posterior  = 0.5;  % radial hoops, posterior part 
-    tension_coeffs.c_rad_dec_hoops_commissure = 0.1;  % radial hoops, commissure part
+    tension_coeffs.c_rad_dec_hoops_anterior   = 1.0;  % radial hoops, anterior part 
+    tension_coeffs.c_rad_dec_hoops_posterior  = 1.0;  % radial hoops, posterior part 
+    tension_coeffs.c_rad_dec_hoops_commissure = 1.0;  % radial hoops, commissure part
     
-    tension_coeffs.c_circ_dec_edge_connector  = 2.0;  % circumferential hoops
-    tension_coeffs.c_rad_dec_edge_connector   = 2.0;  % circumferential hoops
+    tension_coeffs.c_circ_dec_edge_connector  = 1.0;  % circumferential hoops
+    tension_coeffs.c_rad_dec_edge_connector   = 1.0;  % circumferential hoops
     
     % places this many periodic rings above leaflets 
     n_rings_periodic = max(1,N/64); 
