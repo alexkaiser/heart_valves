@@ -538,7 +538,7 @@ elseif parameter_values == 3
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    tension_coeffs.pressure_tension_ratio = 0.04125; 
+    tension_coeffs.pressure_tension_ratio = 0.04; 
     
     tension_coeffs.dec_tension_coeff_base = 4.6 * (3/2); 
 
@@ -548,8 +548,8 @@ elseif parameter_values == 3
     tension_coeffs.beta_anterior              = 1.1;  % radial
     tension_coeffs.alpha_posterior            = 1.1;  % circumferential 
     tension_coeffs.beta_posterior             = 1.0;  % radial
-    tension_coeffs.alpha_commissure           = 0.8;  % circumferential 
-    tension_coeffs.beta_commissure            = 0.8;  % radial
+    tension_coeffs.alpha_commissure           = 1.0;  % circumferential 
+    tension_coeffs.beta_commissure            = 0.6;  % radial
     tension_coeffs.alpha_hoops                = 1.0;  % circumferential hoops 
     tension_coeffs.alpha_edge_connector       = 1.0;  % circumferential free edge connector 
     tension_coeffs.beta_edge_connector        = 0.01;  % circumferential free edge connector 
@@ -563,9 +563,9 @@ elseif parameter_values == 3
     tension_coeffs.c_rad_dec_commissure       = 1.0;  % radial 
     
     tension_coeffs.c_circ_dec_hoops           = 1.0;  % circumferential hoops
-    tension_coeffs.c_rad_dec_hoops_anterior   = 1.0;  % radial hoops, anterior part 
-    tension_coeffs.c_rad_dec_hoops_posterior  = 1.0;  % radial hoops, posterior part 
-    tension_coeffs.c_rad_dec_hoops_commissure = 1.0;  % radial hoops, commissure part
+    tension_coeffs.c_rad_dec_hoops_anterior   = 0.5;  % radial hoops, anterior part 
+    tension_coeffs.c_rad_dec_hoops_posterior  = 0.5;  % radial hoops, posterior part 
+    tension_coeffs.c_rad_dec_hoops_commissure = 0.1;  % radial hoops, commissure part
     
     tension_coeffs.c_circ_dec_edge_connector  = 1.0;  % circumferential hoops
     tension_coeffs.c_rad_dec_edge_connector   = 1.0;  % circumferential hoops
@@ -597,9 +597,12 @@ elseif parameter_values == 3
 
     N_per_direction   = [N_anterior/2, N_anterior/2, ... % N_anterior/4, N_anterior/4, N_anterior/4, N_anterior/4, ...  % 
                          N_commissure/2, N_commissure/2, ... 
-                         N_posterior/4, N_posterior/4, N_posterior/4, N_posterior/4, ... % N_posterior/2, N_posterior/2, ... 
+                         3*N_posterior/8, N_posterior/8, N_posterior/8, 3*N_posterior/8, ... % little flat center on anterior
                          N_commissure/2, N_commissure/2]; 
 
+    % N_posterior/2, N_posterior/2, ... 
+    %                         N_posterior/4, N_posterior/4, N_posterior/4, N_posterior/4, ... 
+                     
     % store these 
     valve.N_anterior   = N_anterior; 
     valve.N_posterior  = N_posterior;
@@ -661,10 +664,10 @@ elseif parameter_values == 3
                       1.0; 1.0];                    % posterior and comm, comm and anterior
                   
     k_root_coeff   = frac_of_n_orig .*    ... 
-                    [ 1.1; 1.0; 1.0; 1.1; ...       % anterior  
-                      1.0; 1.0;           ...       % anterior and comm, comm and posterior       
+                    [ 1.2; 1.0; 1.0; 1.2; ...       % anterior  
+                      0.9; 0.9;           ...       % anterior and comm, comm and posterior       
                       1.0; 1.0; 1.0; 1.0; ...       % posterior
-                      1.0; 1.0];                    % posterior and comm, comm and anterior
+                      0.9; 0.9];                    % posterior and comm, comm and anterior
                   
     % leaf coefficients scale, because we expect the lengths of the leaves to decrease 
     % with refinement of the mesh  
