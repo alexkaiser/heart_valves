@@ -538,7 +538,7 @@ elseif parameter_values == 3
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    tension_coeffs.pressure_tension_ratio = 0.04; 
+    tension_coeffs.pressure_tension_ratio = 0.038; 
     
     tension_coeffs.dec_tension_coeff_base = 4.6 * (3/2); 
 
@@ -551,7 +551,7 @@ elseif parameter_values == 3
     tension_coeffs.alpha_commissure           = 1.0;  % circumferential 
     tension_coeffs.beta_commissure            = 0.6;  % radial
     tension_coeffs.alpha_hoops                = 1.0;  % circumferential hoops 
-    tension_coeffs.alpha_edge_connector       = 1.0;  % circumferential free edge connector 
+    tension_coeffs.alpha_edge_connector       = 0.5;  % circumferential free edge connector 
     tension_coeffs.beta_edge_connector        = 0.01;  % circumferential free edge connector 
 
     % decreasing tension coefficients 
