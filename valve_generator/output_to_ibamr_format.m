@@ -106,8 +106,8 @@ function [] = output_to_ibamr_format(valve)
     % print the increment for systolic motion
     % this is the negative of the motion that occurred 
     % from the systolic to diastolic before 
-    systolic_increment = -valve.diastolic_increment; 
-    fprintf(params.papillary, '%.14f\t %.14f\t %.14f\n', systolic_increment(1), systolic_increment(2), systolic_increment(3)); 
+    diastolic_increment = valve.diastolic_increment; 
+    fprintf(params.papillary, '%.14f\t %.14f\t %.14f\n', diastolic_increment(1), diastolic_increment(2), diastolic_increment(3)); 
     
     for copy = 1:params.num_copies
         

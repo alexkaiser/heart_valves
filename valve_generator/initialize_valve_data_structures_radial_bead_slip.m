@@ -538,7 +538,7 @@ elseif parameter_values == 3
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    tension_coeffs.pressure_tension_ratio = 0.035; 
+    tension_coeffs.pressure_tension_ratio = 0.036; 
     
     tension_coeffs.dec_tension_coeff_base = 4.6 * (3/2); 
 

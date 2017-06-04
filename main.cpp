@@ -93,14 +93,14 @@ typedef struct{
     int *vertex_idx;  
     
     // base coordinates 
-    double *x_initial; 
-    double *y_initial;
-    double *z_initial;
+    double *x_systole; 
+    double *y_systole;
+    double *z_systole;
     
     // maximum increment 
-    double x_increment; 
-    double y_increment; 
-    double z_increment; 
+    double x_increment_systole_to_diastole; 
+    double y_increment_systole_to_diastole; 
+    double z_increment_systole_to_diastole; 
 
     // pressure limits and locations
     double min_pressure_mmHg;
@@ -802,25 +802,25 @@ papillary_info* initialize_moving_papillary_info(string structure_name, fourier_
     papillary_file >> papillary->N_targets; 
     
     papillary->vertex_idx = new int[papillary->N_targets];  
-    papillary->x_initial  = new double[papillary->N_targets]; 
-    papillary->y_initial  = new double[papillary->N_targets]; 
-    papillary->z_initial  = new double[papillary->N_targets]; 
+    papillary->x_systole  = new double[papillary->N_targets]; 
+    papillary->y_systole  = new double[papillary->N_targets]; 
+    papillary->z_systole  = new double[papillary->N_targets]; 
     
     // next gets x,y,z increments 
-    papillary_file >> papillary->x_increment; 
-    papillary_file >> papillary->y_increment; 
-    papillary_file >> papillary->z_increment;
+    papillary_file >> papillary->x_increment_systole_to_diastole; 
+    papillary_file >> papillary->y_increment_systole_to_diastole; 
+    papillary_file >> papillary->z_increment_systole_to_diastole;
     
     std::cout << "N_targets = " << papillary->N_targets << "\n"; 
-    std::cout << "increment = " << papillary->x_increment << " " << papillary->y_increment << " " << papillary->z_increment << "\n"; 
+    std::cout << "increment = " << papillary->x_increment_systole_to_diastole << " " << papillary->y_increment_systole_to_diastole << " " << papillary->z_increment_systole_to_diastole << "\n"; 
     
     for (int i=0; i<papillary->N_targets; i++){
         papillary_file >> papillary->vertex_idx[i];  
-        papillary_file >> papillary->x_initial[i]; 
-        papillary_file >> papillary->y_initial[i]; 
-        papillary_file >> papillary->z_initial[i];
+        papillary_file >> papillary->x_systole[i]; 
+        papillary_file >> papillary->y_systole[i]; 
+        papillary_file >> papillary->z_systole[i];
         
-        std::cout << "idx, coords = " << papillary->vertex_idx[i]  << " " <<  papillary->x_initial[i]  << " " << papillary->y_initial[i]  << " " << papillary->z_initial[i] << "\n";
+        std::cout << "idx, coords = " << papillary->vertex_idx[i]  << " " <<  papillary->x_systole[i]  << " " << papillary->y_systole[i]  << " " << papillary->z_systole[i] << "\n";
     }
     
     papillary->min_p_idx = 0;
@@ -908,7 +908,7 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
     // move compared to the current pressure difference
     // if the pressure is negative (higher ventricular pressure towards closure)
     // double power = 1.0 / 10.0;
-    double displacement_frac;
+    double frac_to_diastole;
     
     // displacement varies down to this negative value
     // at which point it is constant in systolic position
@@ -927,22 +927,22 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
         if (t_reduced < papillary->max_p_time){
             // follow percentage of pressure to initial rise 
             double max_p_displacement = papillary->max_pressure_mmHg;      
-            displacement_frac = 1.0 - abs(pressure_mmHg / max_p_displacement);
+            frac_to_diastole = abs(pressure_mmHg / max_p_displacement);
         }
         else if (t_reduced < papillary->max_atrial_kick_p_time){
             // in full diastole, stay here until atrial kick 
-            displacement_frac = 0.0; 
+            frac_to_diastole = 1.0;
         }
         else{
             double max_p_displacement = papillary->max_atrial_kick_pressure_mmHg;      
-            displacement_frac = 1.0 - abs(pressure_mmHg / max_p_displacement);
+            frac_to_diastole = abs(pressure_mmHg / max_p_displacement);
         }
 
     }
     else{
         // if (pressure_mmHg < 0.0)
         // systole
-        displacement_frac = 1.0; 
+        frac_to_diastole = 0.0;
     }
     
     // std::cout << "t = " << current_time << " p = " << pressure_mmHg << "displacement_frac = " << displacement_frac << "\n";
@@ -966,9 +966,9 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
             // loop over struct, little wasteful but not that many 
             for (int i=0; i<(papillary->N_targets); i++){
                 if (lag_idx == (papillary->vertex_idx[i])){
-                    X_target(0) = papillary->x_initial[i] + displacement_frac * papillary->x_increment; 
-                    X_target(1) = papillary->y_initial[i] + displacement_frac * papillary->y_increment; 
-                    X_target(2) = papillary->z_initial[i] + displacement_frac * papillary->z_increment; 
+                    X_target(0) = papillary->x_systole[i] + frac_to_diastole * papillary->x_increment_systole_to_diastole;
+                    X_target(1) = papillary->y_systole[i] + frac_to_diastole * papillary->y_increment_systole_to_diastole;
+                    X_target(2) = papillary->z_systole[i] + frac_to_diastole * papillary->z_increment_systole_to_diastole;
                 }            
             }
             
