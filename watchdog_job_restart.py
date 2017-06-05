@@ -314,8 +314,8 @@ if __name__ == '__main__':
                 viz_dir_name = os.getcwd()
                 
                 # clean up visit files to be consistent after restarts
-                if number_restarts > 0:
-                    fix_visit_files(viz_dir_name)
+                # if number_restarts > 0:
+                fix_visit_files(viz_dir_name)
                 
                 movie_script = open('make_movie.sbatch', 'w')
                 
