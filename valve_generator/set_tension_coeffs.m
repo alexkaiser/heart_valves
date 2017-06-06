@@ -29,6 +29,7 @@ end
 
 tension_base              = valve.p_physical / tension_coeffs.pressure_tension_ratio; 
 dec_tension_coeff_base    = tension_coeffs.dec_tension_coeff_base; 
+tree_tension_multiplier   = tension_coeffs.tree_tension_multiplier; 
 leaf_tension_base         = tension_coeffs.leaf_tension_base; 
 root_tension_base         = tension_coeffs.root_tension_base ; 
 
@@ -281,8 +282,8 @@ end
 
 
 % set chordae tensions 
-k_root                = tension_coeffs.k_root * tension_base * root_tension_base; 
-k_0_1                 = tension_coeffs.k_0_1  * tension_base * leaf_tension_base;
+k_root                = tension_coeffs.k_root * tension_base * root_tension_base * tree_tension_multiplier; 
+k_0_1                 = tension_coeffs.k_0_1  * tension_base * leaf_tension_base * tree_tension_multiplier;
 chordae               = leaflet.chordae; 
 c_dec_chordae_leaf    = tension_coeffs.c_dec_chordae_leaf * dec_tension_coeff_base; 
 c_dec_chordae_root    = tension_coeffs.c_dec_chordae_root * dec_tension_coeff_base; 

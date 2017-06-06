@@ -93,7 +93,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 
-parameter_values = 3; 
+parameter_values = 2; 
     
 
 if parameter_values == 1  
@@ -356,6 +356,8 @@ elseif parameter_values == 2
     % No offset, starting at commissure 
     leaflet_N_start = 0; 
 
+    % changes entire tree strength by constants 
+    tension_coeffs.tree_tension_multiplier = 1.0; 
 
     % Leaf tensions are all modified 
     tension_coeffs.leaf_tension_base = .9; 
@@ -445,12 +447,19 @@ elseif parameter_values == 2
                       1.6; 1.6;           ...       % posterior
                       2.0; 2.0];                    % posterior and comm, comm and anterior
                   
-                  
-                                                                 % chordae
-    tension_coeffs.c_dec_tension_chordae  = [1.0; 1.0; ...       % anterior  
-                                             1.0; 1.0; ...       % anterior and comm, comm and posterior       
-                                             1.0; 1.0; ...       % posterior
-                                             1.0; 1.0];          % posterior and comm, comm and anterior
+                                         
+    tension_coeffs.c_dec_chordae_leaf = (1/N)  * [1.0; 1.0; ...       % anterior  
+                                                  1.0; 1.0; ...       % comm
+                                                  1.0; 1.0; ...       % posterior
+                                                  1.0; 1.0];          % comm 
+                                              
+    % root constants do not scale, because the root 
+    % should maintain a consistent length when mesh is changed 
+    tension_coeffs.c_dec_chordae_root = (1/256) * [1.0; 1.0; ...       % anterior  
+                                                   1.0; 1.0; ...       % comm
+                                                   1.0; 1.0; ...       % posterior
+                                                   1.0; 1.0];          % comm 
+                                              
     
     n_leaves = N * frac_of_n_orig; 
     
@@ -544,9 +553,9 @@ elseif parameter_values == 3
 
 
     % tension coefficients 
-    tension_coeffs.alpha_anterior             = 1.1;  % circumferential 
+    tension_coeffs.alpha_anterior             = 1.0;  % circumferential 
     tension_coeffs.beta_anterior              = 1.1;  % radial
-    tension_coeffs.alpha_posterior            = 1.1;  % circumferential 
+    tension_coeffs.alpha_posterior            = 1.0;  % circumferential 
     tension_coeffs.beta_posterior             = 1.0;  % radial
     tension_coeffs.alpha_commissure           = 1.0;  % circumferential 
     tension_coeffs.beta_commissure            = 0.6;  % radial
@@ -597,12 +606,13 @@ elseif parameter_values == 3
 
     N_per_direction   = [N_anterior/2, N_anterior/2, ... % N_anterior/4, N_anterior/4, N_anterior/4, N_anterior/4, ...  % 
                          N_commissure/2, N_commissure/2, ... 
-                         3*N_posterior/8, N_posterior/8, N_posterior/8, 3*N_posterior/8, ... % little flat center on anterior
+                         N_posterior/2, N_posterior/2, ... 
                          N_commissure/2, N_commissure/2]; 
 
     % N_posterior/2, N_posterior/2, ... 
     %                         N_posterior/4, N_posterior/4, N_posterior/4, N_posterior/4, ... 
-                     
+    %7*N_posterior/16, N_posterior/16, N_posterior/16, 7*N_posterior/16, ... % little flat center on posterior                 
+    
     % store these 
     valve.N_anterior   = N_anterior; 
     valve.N_posterior  = N_posterior;
@@ -619,8 +629,8 @@ elseif parameter_values == 3
     leaflet_direction = [leaflet_direction, -1, 1]; 
     
     % Posterior goes down then up 
-    % leaflet_direction = [leaflet_direction, -1, 1]; 
-    leaflet_direction = [leaflet_direction, -1, 0, 0, 1]; 
+    leaflet_direction = [leaflet_direction, -1, 1]; 
+    %leaflet_direction = [leaflet_direction, -1, 0, 0, 1]; 
     
     % Commissure down up 
     leaflet_direction = [leaflet_direction, -1, 1]; 
@@ -628,6 +638,7 @@ elseif parameter_values == 3
     % No offset, starting at commissure 
     leaflet_N_start = 0; 
 
+    tension_coeffs.tree_tension_multiplier = 1.0; 
 
     % Leaf tensions are all modified 
     tension_coeffs.leaf_tension_base = 1.68; 
@@ -659,15 +670,15 @@ elseif parameter_values == 3
     % note that these are scaled by the fraction of the leaflet that they take up 
     k_0_1_coeff    = frac_of_n_orig .*    ... 
                      [1.0; 1.0; 1.0; 1.0; ...       % anterior  
-                      1.0; 1.0;           ...       % anterior and comm, comm and posterior       
-                      1.0; 1.0; 1.0; 1.0; ...       % posterior
-                      1.0; 1.0];                    % posterior and comm, comm and anterior
-                  
-    k_root_coeff   = frac_of_n_orig .*    ... 
-                    [ 1.2; 1.0; 1.0; 1.2; ...       % anterior  
                       0.9; 0.9;           ...       % anterior and comm, comm and posterior       
                       1.0; 1.0; 1.0; 1.0; ...       % posterior
                       0.9; 0.9];                    % posterior and comm, comm and anterior
+                  
+    k_root_coeff   = frac_of_n_orig .*    ... 
+                    [ 1.2; 1.0; 1.0; 1.2; ...       % anterior  
+                      0.8; 0.8;           ...       % anterior and comm, comm and posterior       
+                      1.0; 1.0; 1.0; 1.0; ...       % posterior
+                      0.8; 0.8];                    % posterior and comm, comm and anterior
                   
     % leaf coefficients scale, because we expect the lengths of the leaves to decrease 
     % with refinement of the mesh  
