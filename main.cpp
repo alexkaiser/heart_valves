@@ -474,7 +474,7 @@ int main(int argc, char* argv[])
         #ifdef FOURIER_SERIES_BODY_FORCE
 
             const bool z_periodic = (grid_geometry->getPeriodicShift())[2];
-            if (z_periodic){
+            if (!z_periodic){
                 pout << "Periodic required for Fourier body force. Exiting.\n";
                 SAMRAI_MPI::abort();
             }
