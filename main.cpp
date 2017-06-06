@@ -130,9 +130,10 @@ inline double deriv_spring_collagen(double R, const double* params, int lag_mast
 
 #define DEBUG_OUTPUT 0 
 #define ENABLE_INSTRUMENTS
-#define FOURIER_SERIES_BC
 #define FOURIER_SERIES_BODY_FORCE
-#define DYNAMIC_BOUNDARY_STAB
+
+//#define FOURIER_SERIES_BC
+//#define DYNAMIC_BOUNDARY_STAB
 
 
 
@@ -471,20 +472,24 @@ int main(int argc, char* argv[])
 
 
         #ifdef FOURIER_SERIES_BODY_FORCE
-            fourier_series_data *fourier_body_force;
+
             const bool z_periodic = (grid_geometry->getPeriodicShift())[2];
             if (z_periodic){
-                pout << "to Fourier series creation with body force\n";
-            
-                dt = input_db->getDouble("DT");
-            
-                pout << "to constructor\n";
-                fourier_body_force = new fourier_series_data("fourier_coeffs.txt", dt);
-                pout << "series data successfully built\n";
-        
-                Pointer<FourierBodyForce> body_force = new FourierBodyForce(fourier_body_force, navier_stokes_integrator, patch_hierarchy);
-                time_integrator->registerBodyForceFunction(body_force);
+                pout << "Periodic required for Fourier body force. Exiting.\n";
+                SAMRAI_MPI::abort();
             }
+
+            pout << "to Fourier series creation with body force\n";
+        
+            dt = input_db->getDouble("DT");
+        
+            pout << "to constructor\n";
+            fourier_series_data *fourier_body_force = new fourier_series_data("fourier_coeffs.txt", dt);
+            pout << "series data successfully built\n";
+    
+            Pointer<FourierBodyForce> body_force = new FourierBodyForce(fourier_body_force, navier_stokes_integrator, patch_hierarchy);
+            time_integrator->registerBodyForceFunction(body_force);
+            
         #endif
 
 
@@ -649,19 +654,21 @@ int main(int argc, char* argv[])
             #endif
             
             // In non periodic case, update the circulation model
-            const bool z_periodic = (grid_geometry->getPeriodicShift())[2]; 
-            if (!z_periodic){
-                Pointer<hier::Variable<NDIM> > U_var = navier_stokes_integrator->getVelocityVariable();
-                Pointer<hier::Variable<NDIM> > P_var = navier_stokes_integrator->getPressureVariable();
-                Pointer<VariableContext> current_ctx = navier_stokes_integrator->getCurrentContext();
-                const int U_current_idx = var_db->mapVariableAndContextToIndex(U_var, current_ctx);
-                const int P_current_idx = var_db->mapVariableAndContextToIndex(P_var, current_ctx);
-                Pointer<HierarchyMathOps> hier_math_ops = navier_stokes_integrator->getHierarchyMathOps();
-                const int wgt_cc_idx = hier_math_ops->getCellWeightPatchDescriptorIndex();
-                const int wgt_sc_idx = hier_math_ops->getSideWeightPatchDescriptorIndex();
-                circ_model->advanceTimeDependentData(
-                    dt, patch_hierarchy, U_current_idx, P_current_idx, wgt_cc_idx, wgt_sc_idx);
-            } 
+            #ifdef FOURIER_SERIES_BC
+                const bool z_periodic = (grid_geometry->getPeriodicShift())[2]; 
+                if (!z_periodic){
+                    Pointer<hier::Variable<NDIM> > U_var = navier_stokes_integrator->getVelocityVariable();
+                    Pointer<hier::Variable<NDIM> > P_var = navier_stokes_integrator->getPressureVariable();
+                    Pointer<VariableContext> current_ctx = navier_stokes_integrator->getCurrentContext();
+                    const int U_current_idx = var_db->mapVariableAndContextToIndex(U_var, current_ctx);
+                    const int P_current_idx = var_db->mapVariableAndContextToIndex(P_var, current_ctx);
+                    Pointer<HierarchyMathOps> hier_math_ops = navier_stokes_integrator->getHierarchyMathOps();
+                    const int wgt_cc_idx = hier_math_ops->getCellWeightPatchDescriptorIndex();
+                    const int wgt_sc_idx = hier_math_ops->getSideWeightPatchDescriptorIndex();
+                    circ_model->advanceTimeDependentData(
+                        dt, patch_hierarchy, U_current_idx, P_current_idx, wgt_cc_idx, wgt_sc_idx);
+                } 
+            #endif 
             
             // step the whole thing
             time_integrator->advanceHierarchy(dt);
