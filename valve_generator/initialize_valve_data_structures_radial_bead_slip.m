@@ -328,7 +328,7 @@ elseif parameter_values == 2
 
     % places circumferential fibers this many below hoops 
     % if the location is not already covered by leaflet
-    n_edge_connectors = 0; %1; 
+    n_edge_connectors = 1; 
 
     % No explicit commissural leaflet here 
     N_anterior = N/2; 
