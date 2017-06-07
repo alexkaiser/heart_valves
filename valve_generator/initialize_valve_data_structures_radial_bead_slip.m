@@ -583,9 +583,9 @@ elseif parameter_values == 3
     tension_coeffs.c_circ_dec_commissure      = 2.0;  % circumferential 
     tension_coeffs.c_rad_dec_commissure       = 1.0;  % radial 
     
-    tension_coeffs.c_circ_dec_hoops           = 1.0;  % circumferential hoops
-    tension_coeffs.c_rad_dec_hoops_anterior   = 0.2;  % radial hoops, anterior part 
-    tension_coeffs.c_rad_dec_hoops_posterior  = 0.2;  % radial hoops, posterior part 
+    tension_coeffs.c_circ_dec_hoops           = 1.25;  % circumferential hoops
+    tension_coeffs.c_rad_dec_hoops_anterior   = 0.5;  % radial hoops, anterior part 
+    tension_coeffs.c_rad_dec_hoops_posterior  = 0.5;  % radial hoops, posterior part 
     tension_coeffs.c_rad_dec_hoops_commissure = 0.1;  % radial hoops, commissure part
     
     tension_coeffs.c_circ_dec_edge_connector  = 1.0;  % circumferential hoops
