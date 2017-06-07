@@ -30,14 +30,24 @@ def read_springs(spring_name):
     n_springs = int(spring.readline()) 
 
     spring_list = []
+
     
     for i in range(n_springs): 
         line_split = (spring.readline()).split()
         
+        include = True 
+        
         # first two tokens are always the indices 
         indices = (int(line_split[0]), int(line_split[1]))
     
-        spring_list.append(indices)
+        # token after comment may contain information on whether to include this spring 
+        if '#' in line_split:
+            idx = line_split.index('#') + 1
+            if idx < len(line_split):
+                include = int(line_split[idx])
+            
+        if include: 
+            spring_list.append(indices)
 
     return spring_list
 
@@ -65,7 +75,7 @@ def prepend_header(lines3d_file_name, spring_list, n_frames, n_particles=None):
     Adds the number of vertices and the number of frames to 
     the lines3d file. 
     
-    Wasteful and out of place.
+    Writes a new file, calls cat, removes temp and renames 
     
     Input: 
     lines3d_file    lines3d file without opening line 
@@ -75,7 +85,6 @@ def prepend_header(lines3d_file_name, spring_list, n_frames, n_particles=None):
 
     temp_name = 'temp_file.txt' 
     temp = open(temp_name, 'w')
-    lines_file = open(lines3d_file_name, 'r')
 
     # total fibers is the number of springs 
     total_fibers = len(spring_list)
@@ -86,16 +95,15 @@ def prepend_header(lines3d_file_name, spring_list, n_frames, n_particles=None):
      
     header = str(total_fibers) + ' ' + str(n_frames) + '\n'
     temp.write(header)
-    
-    # write the whole old file onto the new one 
-    for line in lines_file:
-        temp.write(line)
-    
-    lines_file.close()
     temp.close()
     
-    # clobber the old with the temp 
-    os.rename(temp_name, lines3d_file_name)
+    temp_lines_name = lines3d_file_name + 'TEMP'
+    os.rename(lines3d_file_name, temp_lines_name)
+        
+    os.system('cat ' + temp_name + ' ' + temp_lines_name + ' > ' + lines3d_file_name)
+
+    os.remove(temp_name)
+    os.remove(temp_lines_name)
     
 
 

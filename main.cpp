@@ -431,7 +431,7 @@ int main(int argc, char* argv[])
                 #endif
             
             #else 
-                pout << "Using b.c. from file, no Fourier series created.\n";
+                pout << "Using b.c. from file, no series for boundary conditions (body force may still have series).\n";
                 for (unsigned int d = 0; d < NDIM; ++d)
                 {
                     ostringstream bc_coefs_name_stream;

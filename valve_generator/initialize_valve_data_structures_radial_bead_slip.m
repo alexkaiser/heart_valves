@@ -66,6 +66,18 @@ valve.X_config_is_reference = true;
 % spacing is always half a mesh width 
 valve.num_copies = 3; 
 
+% add flags to spring files 
+% to view and output with a stride 
+
+
+valve.output.leaflets       = [1;0;1]; 
+valve.output.stride_leaflet = N/32; 
+valve.output.chordae        = [1;1;1]; 
+valve.output.mesh           = [1;0;0]; 
+valve.output.cartesian_mesh = [0;0;0]; 
+valve.output.stride_mesh    = N/32; 
+
+
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
 valve.collagen_constitutive = true; 
@@ -93,7 +105,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 
-parameter_values = 2; 
+parameter_values = 3; 
     
 
 if parameter_values == 1  
@@ -516,7 +528,7 @@ elseif parameter_values == 3
     valve.skeleton = valve_points_ct_systole(low_papillary, tip_radius); 
     
     
-    valve.diastolic_increment = [1.75; 0.0; 0.25]; 
+    valve.diastolic_increment = [1.5; 0.0; 0.25]; 
 
     
     zero_radius = false; 
