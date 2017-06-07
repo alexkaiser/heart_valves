@@ -565,10 +565,10 @@ elseif parameter_values == 3
 
 
     % tension coefficients 
-    tension_coeffs.alpha_anterior             = 1.0;  % circumferential 
+    tension_coeffs.alpha_anterior             = 0.9;  % circumferential 
     tension_coeffs.beta_anterior              = 1.1;  % radial
-    tension_coeffs.alpha_posterior            = 1.0;  % circumferential 
-    tension_coeffs.beta_posterior             = 0.9;  % radial
+    tension_coeffs.alpha_posterior            = 0.9;  % circumferential 
+    tension_coeffs.beta_posterior             = 0.8;  % radial
     tension_coeffs.alpha_commissure           = 1.0;  % circumferential 
     tension_coeffs.beta_commissure            = 0.6;  % radial
     tension_coeffs.alpha_hoops                = 1.0;  % circumferential hoops 
@@ -580,11 +580,11 @@ elseif parameter_values == 3
     tension_coeffs.c_rad_dec_anterior         = 1.25; % radial
     tension_coeffs.c_circ_dec_posterior       = 1.0;  % circumferential 
     tension_coeffs.c_rad_dec_posterior        = 0.5;  % radial
-    tension_coeffs.c_circ_dec_commissure      = 3.0;  % circumferential 
+    tension_coeffs.c_circ_dec_commissure      = 2.0;  % circumferential 
     tension_coeffs.c_rad_dec_commissure       = 1.0;  % radial 
     
     tension_coeffs.c_circ_dec_hoops           = 1.0;  % circumferential hoops
-    tension_coeffs.c_rad_dec_hoops_anterior   = 0.1;  % radial hoops, anterior part 
+    tension_coeffs.c_rad_dec_hoops_anterior   = 0.2;  % radial hoops, anterior part 
     tension_coeffs.c_rad_dec_hoops_posterior  = 0.2;  % radial hoops, posterior part 
     tension_coeffs.c_rad_dec_hoops_commissure = 0.1;  % radial hoops, commissure part
     
@@ -596,7 +596,7 @@ elseif parameter_values == 3
     
     % places circumferential fibers this many below hoops 
     % if the location is not already covered by leaflet 
-    n_edge_connectors = max(2,N/32); 
+    n_edge_connectors = max(2,N/8); 
 
 
     % Explicit commissural leaflet here 
