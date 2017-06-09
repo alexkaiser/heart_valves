@@ -105,7 +105,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 
-explicit_comm_leaflets = false; 
+explicit_comm_leaflets = true; 
     
 
 if ~explicit_comm_leaflets 
@@ -378,7 +378,7 @@ elseif explicit_comm_leaflets
     valve.skeleton = valve_points_ct_systole(low_papillary, tip_radius); 
     
     
-    valve.diastolic_increment = [1.5; 0.0; 0.25]; 
+    valve.diastolic_increment = [1.5; 0.0; 0.5]; 
 
     
     zero_radius = false; 
@@ -409,7 +409,7 @@ elseif explicit_comm_leaflets
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    tension_coeffs.pressure_tension_ratio = 0.035; 
+    tension_coeffs.pressure_tension_ratio = 0.04; 
     
     tension_coeffs.dec_tension_coeff_base = 4.6 * (3/2); 
 
@@ -420,9 +420,9 @@ elseif explicit_comm_leaflets
     tension_coeffs.alpha_posterior            = 0.8;  % circumferential 
     tension_coeffs.beta_posterior             = 0.8;  % radial
     tension_coeffs.alpha_commissure           = 1.0;  % circumferential 
-    tension_coeffs.beta_commissure            = 0.6;  % radial
+    tension_coeffs.beta_commissure            = 0.55;  % radial
     tension_coeffs.alpha_hoops                = 1.0;  % circumferential hoops 
-    tension_coeffs.alpha_edge_connector       = 1.0;  % circumferential free edge connector 
+    tension_coeffs.alpha_edge_connector       = 1.1;  % circumferential free edge connector 
     tension_coeffs.beta_edge_connector        = 0.01;  % circumferential free edge connector 
 
     % decreasing tension coefficients 
@@ -446,12 +446,12 @@ elseif explicit_comm_leaflets
     
     % places circumferential fibers this many below hoops 
     % if the location is not already covered by leaflet 
-    n_edge_connectors = max(2,N/8); 
+    n_edge_connectors = max(1,N/32); 
 
 
     % Explicit commissural leaflet here 
     N_anterior = N/2; 
-    angles.anterior = 4*pi/6; 
+    angles.anterior = 5*pi/6 + pi/12; 
 
     % Posterior takes whatever is left 
     N_posterior = N/2;
@@ -500,7 +500,8 @@ elseif explicit_comm_leaflets
     % No offset, starting at commissure 
     leaflet_N_start = 0; 
 
-    tension_coeffs.tree_tension_multiplier = 0.85; 
+    % changes the whole tree tension by this constant 
+    tension_coeffs.tree_tension_multiplier = 0.81; 
 
     % Leaf tensions are all modified 
     tension_coeffs.leaf_tension_base = 1.68; 
@@ -508,7 +509,7 @@ elseif explicit_comm_leaflets
     % Base total root tension 
     % The value 0.5905 works well on each tree when using separate solves and two leaflets 
     % Controls constant tension at the root of the tree 
-    tension_coeffs.root_tension_base = 0.75; 
+    tension_coeffs.root_tension_base = 0.7; 
 
 
     
@@ -531,15 +532,15 @@ elseif explicit_comm_leaflets
     % for sanity reasons, these shuold mostly be one unless you have a good reason to change 
     % note that these are scaled by the fraction of the leaflet that they take up 
     k_0_1_coeff    = frac_of_n_orig .*    ... 
-                     [1.0; 1.0; 1.0; 1.0; ...       % anterior  
+                     [1.6; 1.0; 1.0; 1.6; ...       % anterior  
                       1.0; 1.0;           ...       % anterior and comm, comm and posterior       
-                      0.9; 0.9; 0.9; 0.9; ...       % posterior
-                      1.0; 1.0];                    % posterior and comm, comm and anterior
+                      1.0; 1.0; 1.0; 1.0; ...       % posterior
+                      1.0; 1.0]; 
                   
     k_root_coeff   = frac_of_n_orig .*    ... 
-                    [ 1.2; 1.0; 1.0; 1.2; ...       % anterior  
+                     [1.6; 1.0; 1.0; 1.6; ...       % anterior  
                       0.9; 0.9;           ...       % anterior and comm, comm and posterior       
-                      0.9; 0.9; 0.9; 0.9; ...       % posterior
+                      1.0; 1.0; 1.0; 1.0; ...       % posterior
                       0.9; 0.9];                    % posterior and comm, comm and anterior
                   
     % leaf coefficients scale, because we expect the lengths of the leaves to decrease 
