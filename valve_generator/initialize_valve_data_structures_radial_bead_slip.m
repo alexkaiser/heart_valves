@@ -373,7 +373,7 @@ elseif explicit_comm_leaflets
 
     valve.L = 3.0; 
     
-    low_papillary = false; 
+    low_papillary = true; 
     tip_radius = .2; 
     valve.skeleton = valve_points_ct_systole(low_papillary, tip_radius); 
     
@@ -409,7 +409,7 @@ elseif explicit_comm_leaflets
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    tension_coeffs.pressure_tension_ratio = 0.04; 
+    tension_coeffs.pressure_tension_ratio = 0.035; 
     
     tension_coeffs.dec_tension_coeff_base = 4.6 * (3/2); 
 
@@ -417,7 +417,7 @@ elseif explicit_comm_leaflets
     % tension coefficients 
     tension_coeffs.alpha_anterior             = 0.9;  % circumferential 
     tension_coeffs.beta_anterior              = 1.1;  % radial
-    tension_coeffs.alpha_posterior            = 0.9;  % circumferential 
+    tension_coeffs.alpha_posterior            = 0.8;  % circumferential 
     tension_coeffs.beta_posterior             = 0.8;  % radial
     tension_coeffs.alpha_commissure           = 1.0;  % circumferential 
     tension_coeffs.beta_commissure            = 0.6;  % radial
@@ -500,7 +500,7 @@ elseif explicit_comm_leaflets
     % No offset, starting at commissure 
     leaflet_N_start = 0; 
 
-    tension_coeffs.tree_tension_multiplier = 1.0; 
+    tension_coeffs.tree_tension_multiplier = 0.85; 
 
     % Leaf tensions are all modified 
     tension_coeffs.leaf_tension_base = 1.68; 
@@ -532,15 +532,15 @@ elseif explicit_comm_leaflets
     % note that these are scaled by the fraction of the leaflet that they take up 
     k_0_1_coeff    = frac_of_n_orig .*    ... 
                      [1.0; 1.0; 1.0; 1.0; ...       % anterior  
-                      0.9; 0.9;           ...       % anterior and comm, comm and posterior       
-                      1.0; 1.0; 1.0; 1.0; ...       % posterior
-                      0.9; 0.9];                    % posterior and comm, comm and anterior
+                      1.0; 1.0;           ...       % anterior and comm, comm and posterior       
+                      0.9; 0.9; 0.9; 0.9; ...       % posterior
+                      1.0; 1.0];                    % posterior and comm, comm and anterior
                   
     k_root_coeff   = frac_of_n_orig .*    ... 
                     [ 1.2; 1.0; 1.0; 1.2; ...       % anterior  
-                      0.8; 0.8;           ...       % anterior and comm, comm and posterior       
-                      1.0; 1.0; 1.0; 1.0; ...       % posterior
-                      0.8; 0.8];                    % posterior and comm, comm and anterior
+                      0.9; 0.9;           ...       % anterior and comm, comm and posterior       
+                      0.9; 0.9; 0.9; 0.9; ...       % posterior
+                      0.9; 0.9];                    % posterior and comm, comm and anterior
                   
     % leaf coefficients scale, because we expect the lengths of the leaves to decrease 
     % with refinement of the mesh  
