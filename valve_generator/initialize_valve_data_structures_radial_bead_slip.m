@@ -77,6 +77,8 @@ valve.output.mesh           = [1;0;0];
 valve.output.cartesian_mesh = [0;0;0]; 
 valve.output.stride_mesh    = N/32; 
 
+valve.papillary_movement_times = [0 .1 .46 .5 .8]; 
+
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
@@ -420,7 +422,7 @@ elseif explicit_comm_leaflets
     tension_coeffs.alpha_posterior            = 0.8;  % circumferential 
     tension_coeffs.beta_posterior             = 0.8;  % radial
     tension_coeffs.alpha_commissure           = 1.0;  % circumferential 
-    tension_coeffs.beta_commissure            = 0.55;  % radial
+    tension_coeffs.beta_commissure            = 0.6;  % radial
     tension_coeffs.alpha_hoops                = 1.0;  % circumferential hoops 
     tension_coeffs.alpha_edge_connector       = 1.1;  % circumferential free edge connector 
     tension_coeffs.beta_edge_connector        = 0.01;  % circumferential free edge connector 

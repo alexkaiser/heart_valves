@@ -111,6 +111,11 @@ function [] = output_to_ibamr_format(valve)
     % from the systolic to diastolic before 
     diastolic_increment = valve.diastolic_increment; 
     fprintf(params.papillary, '%.14f\t %.14f\t %.14f\n', diastolic_increment(1), diastolic_increment(2), diastolic_increment(3)); 
+    times = valve.papillary_movement_times; 
+    if length(times) ~= 5
+        error('Must have five times for movement'); 
+    end 
+    fprintf(params.papillary, '%.14f\t %.14f\t %.14f %.14f %.14f\n', times(1), times(2), times(3), times(4), times(5)); 
     
     for copy = 1:params.num_copies
         
