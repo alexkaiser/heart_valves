@@ -400,7 +400,7 @@ end
 
 function params = papillary_string(params, idx, coords)
     % prints a papillary format string to target file 
-    fprintf(params.papillary, '%d\t %.14f\t %.14f %.14f\n', idx, coords(1), coords(2), coords(3));
+    fprintf(params.papillary, '%d\t %.14f\t %.14f %.14f\n', idx, coords(1), coords(2), coords(3) + params.z_offset);
     params.total_papillary = params.total_papillary + 1; 
 end 
 
