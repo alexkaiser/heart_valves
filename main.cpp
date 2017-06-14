@@ -102,21 +102,23 @@ typedef struct{
     double y_increment_systole_to_diastole; 
     double z_increment_systole_to_diastole; 
 
-    // pressure limits and locations
-    double min_pressure_mmHg;
-    double max_pressure_mmHg;
-    double max_atrial_kick_pressure_mmHg;
-    double min_p_time;
-    double max_p_time;
-    double max_atrial_kick_p_time;
-    int min_p_idx;
-    int max_p_idx;
-    int max_atrial_kick_p_idx;
+    // papillary movement follows these times 
+    double t_diastole_start; 
+    double t_diastole_full; 
+    double t_systole_start; 
+    double t_systole_full; 
+    double t_cycle_length; 
+    
+    // papillary target point velocity
+    // constant across all papillary points 
+    double u_papillary[3]; 
     
 } papillary_info; 
 
 
-papillary_info* initialize_moving_papillary_info(string structure_name, fourier_series_data *fourier_body_force); 
+papillary_info* initialize_moving_papillary_info(string structure_name, 
+                                                 fourier_series_data *fourier_body_force,
+                                                 LDataManager *l_data_manager); 
 
 void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, 
                                    LDataManager* const l_data_manager, 
@@ -499,7 +501,7 @@ int main(int argc, char* argv[])
                 // get base name and 
                 std::string structure_name = input_db->getString("NAME"); 
                 
-                papillary_info* papillary = initialize_moving_papillary_info(structure_name, fourier_body_force); 
+                papillary_info* papillary = initialize_moving_papillary_info(structure_name, fourier_body_force, l_data_manager); 
                 
             #else
                 pout << "other papillary movement not implemented, must use periodic with fourier series for now\n";
@@ -793,7 +795,9 @@ int main(int argc, char* argv[])
 
 
 
-papillary_info* initialize_moving_papillary_info(string structure_name, fourier_series_data *fourier_body_force){
+papillary_info* initialize_moving_papillary_info(string structure_name, 
+                                                 fourier_series_data *fourier_body_force, 
+                                                 LDataManager *l_data_manager){
     // reads file structure_name.papillary 
     // and initializes information for moving papillary 
     
@@ -818,6 +822,17 @@ papillary_info* initialize_moving_papillary_info(string structure_name, fourier_
     papillary_file >> papillary->y_increment_systole_to_diastole; 
     papillary_file >> papillary->z_increment_systole_to_diastole;
     
+    papillary_file >> papillary->t_diastole_start; 
+    papillary_file >> papillary->t_diastole_full; 
+    papillary_file >> papillary->t_systole_start; 
+    papillary_file >> papillary->t_systole_full; 
+    papillary_file >> papillary->t_cycle_length;
+    
+    if (papillary->t_diastole_start != 0.0){
+        std::cout << "Diastole assumed to start at zero for current movement.\n"; 
+        SAMRAI_MPI::abort();
+    }
+    
     std::cout << "N_targets = " << papillary->N_targets << "\n"; 
     std::cout << "increment = " << papillary->x_increment_systole_to_diastole << " " << papillary->y_increment_systole_to_diastole << " " << papillary->z_increment_systole_to_diastole << "\n"; 
     
@@ -830,47 +845,15 @@ papillary_info* initialize_moving_papillary_info(string structure_name, fourier_
         std::cout << "idx, coords = " << papillary->vertex_idx[i]  << " " <<  papillary->x_systole[i]  << " " << papillary->y_systole[i]  << " " << papillary->z_systole[i] << "\n";
     }
     
-    papillary->min_p_idx = 0;
-    papillary->max_p_idx = 0;
-    papillary->max_atrial_kick_p_idx = 0;
+    papillary->u_papillary[0] = 0.0; 
+    papillary->u_papillary[1] = 0.0; 
+    papillary->u_papillary[2] = 0.0; 
     
-    papillary->min_pressure_mmHg = 0.0; 
-    papillary->max_pressure_mmHg = 0.0; 
-    papillary->max_atrial_kick_pressure_mmHg = 0.0; 
-    
-    double min_atrial_kick_diastole_time = 0.3; 
-    
-    double p;
-    for (unsigned int i=0; i<(fourier_body_force->N_times); i++){
+    l_data_manager->initialize_movement_info(papillary->N_targets, papillary->vertex_idx, papillary->u_papillary); 
         
-        p = fourier_body_force->values[i]; 
+    std::cout << "Movement information in initialize\n"; 
+    l_data_manager->print_movement_info(); 
         
-        if (p < papillary->min_pressure_mmHg){
-            papillary->min_pressure_mmHg = p;
-            papillary->min_p_idx = i;
-        }
-        
-        if (p > papillary->max_pressure_mmHg){
-            papillary->max_pressure_mmHg = p;
-            papillary->max_p_idx = i;
-        }
-        
-        double t = fourier_body_force->dt * i; 
-        if ((p > papillary->max_atrial_kick_pressure_mmHg) && (t > min_atrial_kick_diastole_time)){
-            papillary->max_atrial_kick_pressure_mmHg = p;
-            papillary->max_atrial_kick_p_idx = i;
-        }        
-        
-    }
-
-    papillary->min_p_time = papillary->min_p_idx * fourier_body_force->dt;
-    papillary->max_p_time = papillary->max_p_idx * fourier_body_force->dt;
-    papillary->max_atrial_kick_p_time = papillary->max_atrial_kick_p_idx * fourier_body_force->dt;
-    
-    std::cout << "min, max p, atrial kick max p = " << papillary->min_pressure_mmHg << " " << papillary->max_pressure_mmHg << " " << papillary->max_atrial_kick_pressure_mmHg<< "\n";
-    std::cout << "min_p_idx, max_p_idx, max_atrial_kick_p_idx = " << papillary->min_p_idx << " " << papillary->max_p_idx << " " << papillary->max_atrial_kick_p_idx << "\n";
-    std::cout << "min_p_time, max_p_time,  = " << papillary->min_p_time << " " << papillary->max_p_time << " " << papillary->max_atrial_kick_p_time << "\n";
-    
     return papillary; 
 }  
 
@@ -904,55 +887,62 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
     nodes.insert(nodes.end(), ghost_nodes.begin(), ghost_nodes.end());
 
     // index without periodicity in Fourier series
-    unsigned int k = (unsigned int) floor(current_time / (fourier_body_force->dt));
+/*    unsigned int k = (unsigned int) floor(current_time / (fourier_body_force->dt));
     
     // take periodic reduction                         
     unsigned int idx = k % (fourier_body_force->N_times);
 
     // current prescribed pressure difference
     const double pressure_mmHg = fourier_body_force->values[idx];
-
+*/ 
     // move compared to the current pressure difference
     // if the pressure is negative (higher ventricular pressure towards closure)
     // double power = 1.0 / 10.0;
     double frac_to_diastole;
+    double u_target[3]; 
     
-    // displacement varies down to this negative value
-    // at which point it is constant in systolic position
-    //double max_p_displacement = papillary->max_pressure_mmHg;
+    // papillary movement follows these times 
+    double t_reduced = current_time - papillary->t_cycle_length * floor(current_time/ (papillary->t_cycle_length)); 
+    // std::cout << "t = " << current_time << ", t_reduced = " << t_reduced << "\n"; 
     
-    if (pressure_mmHg >= 0.0){
-
-        // diastole
-
-        // beat time is reduced 
-        double beat_time = fourier_body_force->L; 
-    
-        // calculate time in current period 
-        double t_reduced = current_time - beat_time * floor(current_time/beat_time); 
-    
-        if (t_reduced < papillary->max_p_time){
-            // follow percentage of pressure to initial rise 
-            double max_p_displacement = papillary->max_pressure_mmHg;      
-            frac_to_diastole = abs(pressure_mmHg / max_p_displacement);
-        }
-        else if (t_reduced < papillary->max_atrial_kick_p_time){
-            // in full diastole, stay here until atrial kick 
-            frac_to_diastole = 1.0;
-        }
-        else{
-            double max_p_displacement = papillary->max_atrial_kick_pressure_mmHg;      
-            frac_to_diastole = abs(pressure_mmHg / max_p_displacement);
-        }
-
+    if (t_reduced < papillary->t_diastole_full){
+        frac_to_diastole = t_reduced / papillary->t_diastole_full; 
+        
+        // constant velocity in linear movement 
+        u_target[0] = papillary->x_increment_systole_to_diastole / papillary->t_diastole_full; 
+        u_target[1] = papillary->y_increment_systole_to_diastole / papillary->t_diastole_full; 
+        u_target[2] = papillary->z_increment_systole_to_diastole / papillary->t_diastole_full; 
     }
-    else{
-        // if (pressure_mmHg < 0.0)
-        // systole
-        frac_to_diastole = 0.0;
+    else if  (t_reduced < papillary->t_systole_start){
+        frac_to_diastole = 1.0; 
+        
+        // still in diastole 
+        u_target[0] = 0.0;
+        u_target[1] = 0.0;
+        u_target[2] = 0.0;
+        
+    }
+    else if  (t_reduced < papillary->t_systole_full){
+        const double slope     = -1.0/(papillary->t_systole_full - papillary->t_systole_start); 
+        const double intercept = papillary->t_systole_full/(papillary->t_systole_full - papillary->t_systole_start); 
+        frac_to_diastole       = slope * t_reduced + intercept; 
+        
+        u_target[0] = -papillary->x_increment_systole_to_diastole / (papillary->t_systole_full - papillary->t_systole_start);
+        u_target[1] = -papillary->y_increment_systole_to_diastole / (papillary->t_systole_full - papillary->t_systole_start);
+        u_target[2] = -papillary->z_increment_systole_to_diastole / (papillary->t_systole_full - papillary->t_systole_start);
+    }
+    else{ 
+        // full systole 
+        frac_to_diastole = 0.0; 
+                
+        // still in full systole  
+        u_target[0] = 0.0;
+        u_target[1] = 0.0;
+        u_target[2] = 0.0;
     }
     
-    // std::cout << "t = " << current_time << " p = " << pressure_mmHg << "displacement_frac = " << displacement_frac << "\n";
+    // update velocity with data manager 
+    l_data_manager->set_movement_velocity(u_target); 
     
     // Loop over all Lagrangian mesh nodes and update the target point
     // positions.
@@ -981,6 +971,9 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
             
         }
     }
+
+    // std::cout << "Movement information in update_target_point_positions:\n"; 
+    // l_data_manager->print_movement_info(); 
 
     return;
 }// update_target_point_positions
