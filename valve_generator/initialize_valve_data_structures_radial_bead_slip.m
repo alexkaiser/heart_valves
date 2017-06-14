@@ -623,7 +623,7 @@ valve.target_papillary_unscaled = 40/128;
 valve.eta_net_unscaled = valve.target_net_unscaled/5000; 
 
 % viscoelastic damping coefficients for root attachments, does not include copies  
-valve.eta_papillary_unscaled = valve.target_papillary_unscaled/1000; 
+valve.eta_papillary_unscaled = valve.target_papillary_unscaled/500; 
 
 % Approximate Lagrangian mesh spacing at ring 
 % Used for later splitting of springs 
