@@ -30,9 +30,6 @@
 
 #define FLOW_STRAIGHTENER
 
-//#define EXTRA_FWD_PRESSURE
-
-
 /////////////////////////////// NAMESPACE ////////////////////////////////////
 
 /////////////////////////////// STATIC ///////////////////////////////////////
@@ -52,12 +49,25 @@ smooth_kernel(const double r)
 ////////////////////////////// PUBLIC ///////////////////////////////////////
 
 FourierBodyForce::FourierBodyForce(const fourier_series_data* fourier,
-                               const INSHierarchyIntegrator* fluid_solver,
-                               const Pointer<PatchHierarchy<NDIM> > patch_hierarchy)
-  : d_fourier(fourier), d_fluid_solver(fluid_solver), d_patch_hierarchy(patch_hierarchy)
+                                   const bool use_circ_model, 
+                                   CirculationModel *circ_model,
+                                   const INSHierarchyIntegrator* fluid_solver,
+                                   const Pointer<PatchHierarchy<NDIM> > patch_hierarchy)
+  : d_fourier(fourier), 
+    d_use_circ_model(use_circ_model),
+    d_circ_model(circ_model),
+    d_fluid_solver(fluid_solver), 
+    d_patch_hierarchy(patch_hierarchy)
 {
-  // intentionally blank
-  return;
+
+    if (   (( d_use_circ_model) && (!circ_model))
+        || ((!d_use_circ_model) && ( circ_model)) ) 
+    {
+        pout << "Must specify flag for circ model and provide a valid model, or neither.\n"; 
+        SAMRAI_MPI::abort();
+    }
+    
+    return;
 } // FourierBodyForce
 
 FourierBodyForce::~FourierBodyForce()
@@ -108,14 +118,23 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
     
     // take periodic reduction                         
     unsigned int idx = k % (d_fourier->N_times);
-    
-    
-    double force = -MMHG_TO_CGS * d_fourier->values[idx] / z_domain_length;
 
-    #ifdef EXTRA_FWD_PRESSURE
-        const double extra_fwd_pressure_mmHg = 4.0;
-        force += -MMHG_TO_CGS * extra_fwd_pressure_mmHg / z_domain_length;
-    #endif
+    double force; 
+
+    if (d_use_circ_model){
+        // left atrium pressure from circ model 
+        const double P_LA = MMHG_TO_CGS * d_circ_model->d_psrc[0];
+        
+        // left ventricle pressure prescribed from Fourier series 
+        const double P_LV = MMHG_TO_CGS * d_fourier->values[idx]; 
+        
+        // sign is because forward pressure is down 
+        force = -(P_LA - P_LV) / z_domain_length; 
+    }
+    else{ 
+        // sign is because forward pressure is down 
+        force = -MMHG_TO_CGS * d_fourier->values[idx] / z_domain_length;
+    } 
 
     // Always force in the negative z direction
     const int component = 2;

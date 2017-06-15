@@ -69,7 +69,7 @@
 #include <timing.h>
 #include <boundary_condition_util.h>
 #include <CirculationModel.h>
-#include <FeedbackForcer.h>
+// #include <FeedbackForcer.h>
 #include <FourierBodyForce.h>
 
 
@@ -117,14 +117,14 @@ typedef struct{
 
 
 papillary_info* initialize_moving_papillary_info(string structure_name, 
-                                                 fourier_series_data *fourier_body_force,
+                                                 fourier_series_data *fourier_series,
                                                  LDataManager *l_data_manager); 
 
 void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, 
                                    LDataManager* const l_data_manager, 
                                    const double current_time, 
                                    const double dt, 
-                                   fourier_series_data *fourier_body_force, 
+                                   fourier_series_data *fourier_series, 
                                    papillary_info *papillary);
 
 inline double spring_function_collagen(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
@@ -134,11 +134,7 @@ inline double deriv_spring_collagen(double R, const double* params, int lag_mast
 #define ENABLE_INSTRUMENTS
 #define FOURIER_SERIES_BODY_FORCE
 
-//#define FOURIER_SERIES_BC
-//#define DYNAMIC_BOUNDARY_STAB
-
-
-
+#define USE_CIRC_MODEL
 
 #define MMHG_TO_CGS 1333.22368
 #define CGS_TO_MMHG 0.000750061683
@@ -351,102 +347,25 @@ int main(int argc, char* argv[])
 
         // Create Eulerian boundary condition specification objects (when necessary).
         vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM, static_cast<RobinBcCoefStrategy<NDIM>*>(NULL));
-        
-        #ifdef FOURIER_SERIES_BC
-            pout << "to Fourier series creation\n"; 
-        
-            dt = input_db->getDouble("DT"); 
-            
-            pout << "to constructor\n"; 
-            fourier_series_data *fourier_ventricle = new fourier_series_data("fourier_coeffs_ventricle.txt", dt);
-            pout << "series data successfully built\n";
-        
-            // fourier->print_values();
-        
-            // Need to declare these out here for scope reasons
-            // index without periodicity
-            double start = input_db->getDouble("START_TIME");
-            unsigned int k = (unsigned int) floor(start / (fourier_ventricle->dt));
-        
-            // take periodic reduction
-            unsigned int idx = k % (fourier_ventricle->N_times);
-        
-            bool restart_circ_model = true;
-    
-            // End systolic / beginning diastolic PA pressure
-            double P_PA_0 = 18;
-    
-            // Approximate beginning pressure as read from previous simulations 
-            // Note that circ model has units of mmHg
-            // As does Fourier series 
-            double P_LA_0 = 6.5;
-    
-            // Circulation model
-            CirculationModel *circ_model   = new CirculationModel("circ_model", P_PA_0, P_LA_0, start, restart_circ_model);
-        #endif
-        
+                
         // This is needed to pull variables later
         VariableDatabase<NDIM>* var_db = VariableDatabase<NDIM>::getDatabase();
         
         const bool periodic_domain = grid_geometry->getPeriodicShift().min() > 0;
         if (!periodic_domain)
-        {
-        
-            #ifdef FOURIER_SERIES_BC
-                
-                if (NDIM != 3){
-                    pout << "Current implementation requires 3d\n"; 
-                    SAMRAI_MPI::abort();  
-                }
-                    
-                for (unsigned int d = 0; d < 2; ++d)
-                {
-                    ostringstream bc_coefs_name_stream;
-                    bc_coefs_name_stream << "u_bc_coefs_" << d;
-                    const string bc_coefs_name = bc_coefs_name_stream.str();
-                    ostringstream bc_coefs_db_name_stream;
-                    bc_coefs_db_name_stream << "VelocityBcCoefs_" << d;
-                    const string bc_coefs_db_name = bc_coefs_db_name_stream.str();
-                    u_bc_coefs[d] = new muParserRobinBcCoefs(
-                        bc_coefs_name, app_initializer->getComponentDatabase(bc_coefs_db_name), grid_geometry);
-                }
-            
-                // manually update third component, 
-                // which is the only one not easily set in the input file
-                VelocityBcCoefs *z_bdry_coeffs = new VelocityBcCoefs(fourier_ventricle, circ_model);
-                u_bc_coefs[2] = z_bdry_coeffs;
-            
-            
-                #ifdef DYNAMIC_BOUNDARY_STAB
-            
-                    const bool z_periodic = (grid_geometry->getPeriodicShift())[2];
-                    if (z_periodic){
-                        pout << "Code thinks that z is periodic, outflow boundary stabilization off\n" ;
-                    }
-            
-                    // only for staggered grids
-                    if ((solver_type == "STAGGERED") && (!z_periodic)){
-                        // always the Z component
-                        Pointer<FeedbackForcer> bdry_dynamic_stab = new FeedbackForcer(z_bdry_coeffs, navier_stokes_integrator, patch_hierarchy);
-                        time_integrator->registerBodyForceFunction(bdry_dynamic_stab);
-                    }
-                #endif
-            
-            #else 
-                pout << "Using b.c. from file, no series for boundary conditions (body force may still have series).\n";
-                for (unsigned int d = 0; d < NDIM; ++d)
-                {
-                    ostringstream bc_coefs_name_stream;
-                    bc_coefs_name_stream << "u_bc_coefs_" << d;
-                    const string bc_coefs_name = bc_coefs_name_stream.str();
-                    ostringstream bc_coefs_db_name_stream;
-                    bc_coefs_db_name_stream << "VelocityBcCoefs_" << d;
-                    const string bc_coefs_db_name = bc_coefs_db_name_stream.str();
-                    u_bc_coefs[d] = new muParserRobinBcCoefs(
-                        bc_coefs_name, app_initializer->getComponentDatabase(bc_coefs_db_name), grid_geometry);
-                }
-            #endif 
-
+        {        
+            pout << "Using b.c. from file, no series for boundary conditions (body force may still have series).\n";
+            for (unsigned int d = 0; d < NDIM; ++d)
+            {
+                ostringstream bc_coefs_name_stream;
+                bc_coefs_name_stream << "u_bc_coefs_" << d;
+                const string bc_coefs_name = bc_coefs_name_stream.str();
+                ostringstream bc_coefs_db_name_stream;
+                bc_coefs_db_name_stream << "VelocityBcCoefs_" << d;
+                const string bc_coefs_db_name = bc_coefs_db_name_stream.str();
+                u_bc_coefs[d] = new muParserRobinBcCoefs(
+                    bc_coefs_name, app_initializer->getComponentDatabase(bc_coefs_db_name), grid_geometry);
+            }
 
             navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
             if (solver_type == "STAGGERED" && input_db->keyExists("BoundaryStabilization"))
@@ -472,24 +391,46 @@ int main(int argc, char* argv[])
             time_integrator->registerBodyForceFunction(f_fcn);
         }
 
+        const bool z_periodic = (grid_geometry->getPeriodicShift())[2];
+        if (!z_periodic){
+            pout << "Current implementation requires periodic z. Exiting.\n";
+            SAMRAI_MPI::abort();
+        }
+
 
         #ifdef FOURIER_SERIES_BODY_FORCE
 
-            const bool z_periodic = (grid_geometry->getPeriodicShift())[2];
-            if (!z_periodic){
-                pout << "Periodic required for Fourier body force. Exiting.\n";
-                SAMRAI_MPI::abort();
-            }
-
-            pout << "to Fourier series creation with body force\n";
+            pout << "To Fourier series creation with body force\n";
         
             dt = input_db->getDouble("DT");
         
-            pout << "to constructor\n";
-            fourier_series_data *fourier_body_force = new fourier_series_data("fourier_coeffs.txt", dt);
-            pout << "series data successfully built\n";
+            #ifdef USE_CIRC_MODEL
+                bool restart_circ_model = true;
+        
+                double start = input_db->getDouble("START_TIME");
+        
+                // End systolic / beginning diastolic PA pressure
+                double P_PA_0 = 18;
+        
+                // Beginningg pressure equal to ventricular pressure 
+                // Note that circ model has units of mmHg
+                // As does Fourier series 
+                double P_LA_0 = 21.051427137375203;
+        
+                const bool use_circ_model = true; 
+                CirculationModel *circ_model   = new CirculationModel("circ_model", P_PA_0, P_LA_0, start, restart_circ_model);
+                pout << "To constructor\n";
+                fourier_series_data *fourier_series = new fourier_series_data("fourier_coeffs_ventricle.txt", dt);
+                pout << "Series data successfully built\n";
+            #else
+                const bool use_circ_model    = false; 
+                CirculationModel *circ_model = NULL; 
+                pout << "To constructor\n";
+                fourier_series_data *fourier_series = new fourier_series_data("fourier_coeffs.txt", dt);
+                pout << "Series data successfully built\n";
+            #endif
     
-            Pointer<FourierBodyForce> body_force = new FourierBodyForce(fourier_body_force, navier_stokes_integrator, patch_hierarchy);
+            Pointer<FourierBodyForce> body_force = new FourierBodyForce(fourier_series, use_circ_model, circ_model, navier_stokes_integrator, patch_hierarchy);
             time_integrator->registerBodyForceFunction(body_force);
             
         #endif
@@ -501,7 +442,7 @@ int main(int argc, char* argv[])
                 // get base name and 
                 std::string structure_name = input_db->getString("NAME"); 
                 
-                papillary_info* papillary = initialize_moving_papillary_info(structure_name, fourier_body_force, l_data_manager); 
+                papillary_info* papillary = initialize_moving_papillary_info(structure_name, fourier_series, l_data_manager); 
                 
             #else
                 pout << "other papillary movement not implemented, must use periodic with fourier series for now\n";
@@ -642,31 +583,14 @@ int main(int argc, char* argv[])
             #ifdef MOVING_PAPILLARY
                 #ifdef FOURIER_SERIES_BODY_FORCE
                     if (z_periodic){
-                        update_target_point_positions(patch_hierarchy, l_data_manager, loop_time, dt, fourier_body_force, papillary);
+                        update_target_point_positions(patch_hierarchy, l_data_manager, loop_time, dt, fourier_series, papillary);
                     }
                 #else
                     pout << "other papillary movement not implemented, must use periodic with fourier series for now\n";
                     SAMRAI_MPI::abort();
                 #endif
             #endif
-            
-            // In non periodic case, update the circulation model
-            #ifdef FOURIER_SERIES_BC
-                const bool z_periodic = (grid_geometry->getPeriodicShift())[2]; 
-                if (!z_periodic){
-                    Pointer<hier::Variable<NDIM> > U_var = navier_stokes_integrator->getVelocityVariable();
-                    Pointer<hier::Variable<NDIM> > P_var = navier_stokes_integrator->getPressureVariable();
-                    Pointer<VariableContext> current_ctx = navier_stokes_integrator->getCurrentContext();
-                    const int U_current_idx = var_db->mapVariableAndContextToIndex(U_var, current_ctx);
-                    const int P_current_idx = var_db->mapVariableAndContextToIndex(P_var, current_ctx);
-                    Pointer<HierarchyMathOps> hier_math_ops = navier_stokes_integrator->getHierarchyMathOps();
-                    const int wgt_cc_idx = hier_math_ops->getCellWeightPatchDescriptorIndex();
-                    const int wgt_sc_idx = hier_math_ops->getSideWeightPatchDescriptorIndex();
-                    circ_model->advanceTimeDependentData(
-                        dt, patch_hierarchy, U_current_idx, P_current_idx, wgt_cc_idx, wgt_sc_idx);
-                } 
-            #endif 
-            
+                        
             // step the whole thing
             time_integrator->advanceHierarchy(dt);
             loop_time += dt;
@@ -716,6 +640,27 @@ int main(int argc, char* argv[])
                 }                
             
             #endif
+            
+            // Update the circulation model if used 
+            #ifdef USE_CIRC_MODEL
+                {
+/*              Pointer<hier::Variable<NDIM> > U_var = navier_stokes_integrator->getVelocityVariable();
+                Pointer<hier::Variable<NDIM> > P_var = navier_stokes_integrator->getPressureVariable();
+                Pointer<VariableContext> current_ctx = navier_stokes_integrator->getCurrentContext();
+                const int U_current_idx = var_db->mapVariableAndContextToIndex(U_var, current_ctx);
+                const int P_current_idx = var_db->mapVariableAndContextToIndex(P_var, current_ctx);
+                Pointer<HierarchyMathOps> hier_math_ops = navier_stokes_integrator->getHierarchyMathOps();
+                const int wgt_cc_idx = hier_math_ops->getCellWeightPatchDescriptorIndex();
+                const int wgt_sc_idx = hier_math_ops->getSideWeightPatchDescriptorIndex(); 
+                circ_model->advanceTimeDependentData(
+                    dt, patch_hierarchy, U_current_idx, P_current_idx, wgt_cc_idx, wgt_sc_idx);*/ 
+                    
+                // remember that instruments read 
+                circ_model->advanceTimeDependentData(dt, -flux_valve_ring[0]); 
+                    
+                }
+            #endif 
+            
             
             if (dump_restart_data && (iteration_num % restart_dump_interval == 0 || last_step))
             {
@@ -770,6 +715,10 @@ int main(int argc, char* argv[])
             }
         #endif
         
+        #ifdef USE_CIRC_MODEL
+            circ_model->write_plot_code(); 
+        #endif 
+        
         if (SAMRAI_MPI::getRank() == 0){
             std::ofstream done_stream;
             done_stream.open("done.txt", ios_base::out | ios_base::trunc);
@@ -791,7 +740,7 @@ int main(int argc, char* argv[])
 
 
 papillary_info* initialize_moving_papillary_info(string structure_name, 
-                                                 fourier_series_data *fourier_body_force, 
+                                                 fourier_series_data *fourier_series, 
                                                  LDataManager *l_data_manager){
     // reads file structure_name.papillary 
     // and initializes information for moving papillary 
@@ -857,7 +806,7 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
                                    LDataManager* const l_data_manager, 
                                    const double current_time, 
                                    const double dt, 
-                                   fourier_series_data *fourier_body_force, 
+                                   fourier_series_data *fourier_series, 
                                    papillary_info *papillary){
                                    
     // Requires to have pressure difference as a Fourier series
@@ -882,13 +831,13 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
     nodes.insert(nodes.end(), ghost_nodes.begin(), ghost_nodes.end());
 
     // index without periodicity in Fourier series
-/*    unsigned int k = (unsigned int) floor(current_time / (fourier_body_force->dt));
+/*    unsigned int k = (unsigned int) floor(current_time / (fourier_series->dt));
     
     // take periodic reduction                         
-    unsigned int idx = k % (fourier_body_force->N_times);
+    unsigned int idx = k % (fourier_series->N_times);
 
     // current prescribed pressure difference
-    const double pressure_mmHg = fourier_body_force->values[idx];
+    const double pressure_mmHg = fourier_series->values[idx];
 */ 
     // move compared to the current pressure difference
     // if the pressure is negative (higher ventricular pressure towards closure)

@@ -74,11 +74,7 @@ public:
      * \brief Advance time-dependent data.
      */
     void advanceTimeDependentData(const double dt,
-                                  const Pointer<PatchHierarchy<NDIM> > hierarchy,
-                                  const int U_idx,
-                                  const int P_idx,
-                                  const int wgt_cc_idx,
-                                  const int wgt_sc_idx);
+                                  const double Q_mi);
 
     /*!
      * \name Implementation of Serializable interface.
@@ -90,6 +86,8 @@ public:
      * When assertion checking is active, database point must be non-null.
      */
     void putToDatabase(Pointer<Database> db);
+
+    void write_plot_code(); 
 
 private:
     /*!

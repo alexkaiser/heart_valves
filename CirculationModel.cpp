@@ -160,12 +160,9 @@ CirculationModel::~CirculationModel()
 
 void
 CirculationModel::advanceTimeDependentData(const double dt,
-                                           const Pointer<PatchHierarchy<NDIM> > hierarchy,
-                                           const int U_idx,
-                                           const int /*P_idx*/,
-                                           const int /*wgt_cc_idx*/,
-                                           const int wgt_sc_idx)
+                                           const double Q_mi)
 {
+    /* 
     // Compute the mean flow rates in the vicinity of the inflow and outflow
     // boundaries.
     std::fill(d_qsrc.begin(), d_qsrc.end(), 0.0);
@@ -234,56 +231,50 @@ CirculationModel::advanceTimeDependentData(const double dt,
     SAMRAI_MPI::sumReduction(&d_qsrc[0], d_nsrc);
 
     // pout << "computed flux = " << d_qsrc[0] << "\n"; 
+    */ 
     
+
+    // The downstream (Atrial) pressure is determined by a zero-d model 
+    const double t = d_time;
+
+    double& Q_R  = d_Q_R;
+    double& P_PA = d_P_PA;
+    double& Q_P  = d_Q_P;
+    double& P_LA = d_P_LA;
+
+    // Mitral flux passed in 
+    d_Q_mi = -Q_mi;
     
-    #ifdef USE_WINDKESSEL
-        // The downstream (Atrial) pressure is determined by a zero-d model 
-        const double t = d_time;
+    windkessel_be_update(Q_R, P_PA, Q_P, P_LA, d_Q_mi, t, dt);
     
-        double& Q_R  = d_Q_R;
-        double& P_PA = d_P_PA;
-        double& Q_P  = d_Q_P;
-        double& P_LA = d_P_LA;
-    
-        // Mitral flux is inward flow, d_qsrc is outward flux
-        d_Q_mi = -d_qsrc[0];
-        
-        windkessel_be_update(Q_R, P_PA, Q_P, P_LA, d_Q_mi, t, dt);
-        
-        // model in mmHg, to CGS for solver pressure
-        d_psrc[0] = d_P_LA * MMHG_TO_CGS;
-    #else 
-        // Downstream pressure is fixed to zero 
-        d_psrc[0] = 0.0;
-    #endif
+    // model in mmHg, body force converts 
+    d_psrc[0] = d_P_LA;
 
     // Update the current time.
     d_time += dt;
 
-    #ifdef USE_WINDKESSEL
+    // Output the updated values.
+    const long precision = plog.precision();
+    plog.unsetf(ios_base::showpos);
+    plog.unsetf(ios_base::scientific);
 
-        // Output the updated values.
-        const long precision = plog.precision();
-        plog.unsetf(ios_base::showpos);
-        plog.unsetf(ios_base::scientific);
+    plog.precision(12);
 
-        plog.precision(12);
+    plog << "============================================================================\n"
+         << "Circulation model variables at time " << d_time << ":\n";
 
-        plog << "============================================================================\n"
-             << "Circulation model variables at time " << d_time << ":\n";
-
-        plog << "P_PA (mmHg)\t P_LA (mmHg)\t Q_R (ml/s)\t Q_P (ml/s)\t Q_mi (ml/s)\n";
-        plog.setf(ios_base::showpos);
-        plog.setf(ios_base::scientific);
-        
-        plog << d_P_PA << ",\t " << d_P_LA << ",\t " << d_Q_R << ",\t " << d_Q_P << ",\t " << d_Q_mi << "\n";
-        plog << "============================================================================\n";
-
-        plog.unsetf(ios_base::showpos);
-        plog.unsetf(ios_base::scientific);
-        plog.precision(precision);
+    plog << "P_PA (mmHg)\t P_LA (mmHg)\t Q_R (ml/s)\t Q_P (ml/s)\t Q_mi (ml/s)\n";
+    plog.setf(ios_base::showpos);
+    plog.setf(ios_base::scientific);
     
-    #endif
+    plog << d_P_PA << ",\t " << d_P_LA << ",\t " << d_Q_R << ",\t " << d_Q_P << ",\t " << d_Q_mi << "\n";
+    plog << "============================================================================\n";
+
+    plog.unsetf(ios_base::showpos);
+    plog.unsetf(ios_base::scientific);
+    plog.precision(precision);
+    
+
     // Write the current state to disk.
     writeDataFile();
     return;
@@ -305,6 +296,50 @@ CirculationModel::putToDatabase(Pointer<Database> db)
     db->putInteger("d_bdry_interface_level_number", d_bdry_interface_level_number);
     return;
 } // putToDatabase
+
+
+void CirculationModel::write_plot_code()
+{
+    static const int mpi_root = 0;
+    if (SAMRAI_MPI::getRank() == mpi_root)
+    {
+        ofstream fout(DATA_FILE_NAME.c_str(), ios::app);
+        fout << d_time;
+        fout.setf(ios_base::scientific);
+        fout.setf(ios_base::showpos);
+        fout.precision(10);
+        fout << "];\n";  
+        fout << "fig = figure;\n";
+        fout << "subplot(3,2,1)\n";
+        fout << "plot(bc_vals(:,1), bc_vals(:,2))\n";
+        fout << "title('P_{PA}')\n";
+        fout << "subplot(3,2,2)\n";
+        fout << "plot(bc_vals(:,1), bc_vals(:,3))\n";
+        fout << "title('P_{LA}')\n";
+        fout << "subplot(3,2,3)\n";
+        fout << "plot(bc_vals(:,1), bc_vals(:,4))\n";
+        fout << "title('Q_{R}')\n";
+        fout << "subplot(3,2,4)\n";
+        fout << "plot(bc_vals(:,1), bc_vals(:,5))\n";
+        fout << "title('Q_{P}')\n";
+        fout << "subplot(3,2,5)\n";
+        fout << "plot(bc_vals(:,1), bc_vals(:,6))\n";
+        fout << "title('Q_{mi}')\n";
+        fout << "dt = bc_vals(2,1) - bc_vals(1,1);\n"; 
+        fout << "net_flux = dt*cumsum(bc_vals(:,6));\n";
+        fout << "subplot(3,2,6)\n";
+        fout << "plot(bc_vals(:,1), net_flux)\n";
+        fout << "title('net Q')\n";
+        fout << "printfig(fig, 'bc_model_variables')\n";
+    }
+    return;
+}
+
+
+
+
+
+
 
 
 

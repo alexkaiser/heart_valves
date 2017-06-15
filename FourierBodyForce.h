@@ -39,8 +39,10 @@ class FourierBodyForce : public CartGridFunction
    * \brief Constructor
    */
   FourierBodyForce(const fourier_series_data* fourier,
-		 const INSHierarchyIntegrator* fluid_solver,
-		 Pointer<PatchHierarchy<NDIM> > patch_hierarchy);
+                   const bool use_circ_model,
+                   CirculationModel *circ_model,
+		           const INSHierarchyIntegrator* fluid_solver,
+		           Pointer<PatchHierarchy<NDIM> > patch_hierarchy);
 
   /*!
    * \brief Destructor.
@@ -71,7 +73,8 @@ class FourierBodyForce : public CartGridFunction
   //\}
 
   const fourier_series_data *d_fourier;
-
+  const bool d_use_circ_model; 
+  CirculationModel *d_circ_model;
 
  private:
   /*!
