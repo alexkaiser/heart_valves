@@ -591,11 +591,6 @@ int main(int argc, char* argv[])
                 flux_valve_ring = instruments->getFlowValues(); 
                 // pout << "flux at t = " << loop_time << ", Q = " << flux_valve_ring[0] << "\n"; 
                 
-                if (SAMRAI_MPI::getRank() == 0){
-                    flux_output_stream << loop_time << ",\t" << flux_valve_ring[0] << ";\n"; 
-                    flux_output_stream.flush(); 
-                }
-                
             #endif
             
         }
