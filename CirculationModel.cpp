@@ -243,7 +243,7 @@ CirculationModel::advanceTimeDependentData(const double dt,
     double& P_LA = d_P_LA;
 
     // Mitral flux passed in 
-    d_Q_mi = -Q_mi;
+    d_Q_mi = Q_mi;
     
     windkessel_be_update(Q_R, P_PA, Q_P, P_LA, d_Q_mi, t, dt);
     
