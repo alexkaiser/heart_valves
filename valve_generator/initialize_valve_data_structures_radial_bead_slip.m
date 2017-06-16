@@ -192,7 +192,7 @@ if ~explicit_comm_leaflets
 
     % places circumferential fibers this many below hoops 
     % if the location is not already covered by leaflet
-    n_edge_connectors = max(1,N/64);  
+    n_edge_connectors = 1; %max(1,N/64);  
 
     % No explicit commissural leaflet here 
     N_anterior = N/2; 
@@ -614,7 +614,7 @@ valve.r        = valve.skeleton.r;
 % and scaling for copies is handled by the output routine 
 
 % scales for by mesh width for consistant total mesh force on ring 
-valve.target_net_unscaled       = 8/valve.N; 
+valve.target_net_unscaled       = 8 * 256/(valve.N^2); 
 
 % does not scale since total number of points is constant 
 valve.target_papillary_unscaled = 40/128; 
