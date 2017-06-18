@@ -54,7 +54,7 @@ namespace
     // constants 
     static const double C_PA =  4.12; // Pulmonary artery compliance, ml / mmHg 
     static const double C_PV = 10.0;  // Pulmonary vein compliance, ml / mmHg 
-    static const double C_LA =  1.6;  // Left atrial compliance ml / mmHg  
+    static const double C_LA_relaxed =  1.6;  // Left atrial compliance ml / mmHg
     
     static const double R_P  = (9.0/5.6) * MIN_PER_L_T0_SEC_PER_ML; // Pulmonary resistance, mmHg / (ml/s)
     
@@ -65,6 +65,9 @@ namespace
     static const double stroke_volume = 75.0; // ml 
     static const double h = 2.0 * stroke_volume / (T_off - T_on); // Peak flow to get given stroke volume
     
+    static const bool   atrial_kick_on = true;
+    static const double atrial_kick_center = .47;
+    static const double atrial_kick_time_radius = .07;
     
     inline double compute_Q_R(double t){
         // Triangle wave flux 
@@ -84,6 +87,21 @@ namespace
         return 0.0;
     }
     
+    inline double compute_C_LA(double t){
+        
+        if(atrial_kick_on){
+            double t_reduced = t - beat_time * floor(t/beat_time);
+        
+            if (abs(t_reduced - atrial_kick_center) < atrial_kick_time_radius)
+                return C_LA_relaxed * (1.0 - pow(cos(M_PI * (t_reduced - atrial_kick_center) / atrial_kick_time_radius),2));
+            else
+                return C_LA_relaxed;
+        }
+        
+        return C_LA_relaxed;
+    }
+    
+    
     // Backward Euler update for windkessel model.
     inline void
     windkessel_be_update(double& Q_R, double& P_PA, double& Q_P, double& P_LA, const double Q_mi, const double t, const double dt)
@@ -91,14 +109,17 @@ namespace
      
         Q_R = compute_Q_R(t);
         
+        double C_LA_current = compute_C_LA(t);
+        double C_LA_next    = compute_C_LA(t + dt);
+        
         double a = C_PA/dt + 1/R_P; 
         double b = -1/R_P; 
         double c = -1/R_P; 
-        double d = (C_PV + C_LA)/dt + 1/R_P; 
+        double d = (C_PV + C_LA_next)/dt + 1/R_P;
         
         double rhs[2];  
         rhs[0] = (C_PA/dt)*P_PA + Q_R;
-        rhs[1] = ((C_PV + C_LA)/dt)*P_LA - Q_mi;
+        rhs[1] = ((C_PV + C_LA_current)/dt)*P_LA - Q_mi;
         
         double det = a*d - b*c; 
         
