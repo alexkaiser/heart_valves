@@ -134,7 +134,7 @@ inline double deriv_spring_collagen(double R, const double* params, int lag_mast
 #define ENABLE_INSTRUMENTS
 #define FOURIER_SERIES_BODY_FORCE
 
-// #define USE_CIRC_MODEL
+#define USE_CIRC_MODEL
 
 #define MMHG_TO_CGS 1333.22368
 #define CGS_TO_MMHG 0.000750061683
@@ -410,12 +410,12 @@ int main(int argc, char* argv[])
                 double start = input_db->getDouble("START_TIME");
         
                 // End systolic / beginning diastolic PA pressure
-                double P_PA_0 = 18;
+                double P_PA_0 = 24.0;
         
                 // Beginningg pressure equal to ventricular pressure 
                 // Note that circ model has units of mmHg
                 // As does Fourier series 
-                double P_LA_0 = 21.051427137375203;
+                double P_LA_0 = 12.0; //21.051427137375203;
         
                 const bool use_circ_model = true; 
                 CirculationModel *circ_model   = new CirculationModel("circ_model", P_PA_0, P_LA_0, start, restart_circ_model);
