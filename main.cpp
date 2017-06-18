@@ -134,7 +134,7 @@ inline double deriv_spring_collagen(double R, const double* params, int lag_mast
 #define ENABLE_INSTRUMENTS
 #define FOURIER_SERIES_BODY_FORCE
 
-#define USE_CIRC_MODEL
+// #define USE_CIRC_MODEL
 
 #define MMHG_TO_CGS 1333.22368
 #define CGS_TO_MMHG 0.000750061683
@@ -212,6 +212,7 @@ int main(int argc, char* argv[])
             }
         }
 
+    
         #ifdef IMPLICIT_SOLVER
             // Read default Petsc options
             if (input_db->keyExists("petsc_options_file"))
@@ -224,6 +225,12 @@ int main(int argc, char* argv[])
                 #endif
             }
         #endif
+
+        int n_restarts_written = 0;
+        int max_restart_to_write = 20;
+        if (input_db->keyExists("MAX_RESTART_TO_WRITE")){
+            max_restart_to_write = input_db->getInteger("MAX_RESTART_TO_WRITE");
+        }
 
         // Get various standard options set in the input file.
         const bool dump_viz_data = app_initializer->dumpVizData();
@@ -323,8 +330,7 @@ int main(int argc, char* argv[])
             Pointer<IBInstrumentPanel> instruments = new IBInstrumentPanel("meter_0", input_db);
         #endif
         
-        
-        
+
         LDataManager* l_data_manager = ib_method_ops->getLDataManager();
         pout << "passed LDataManager creation\n" ; 
 
@@ -666,6 +672,19 @@ int main(int argc, char* argv[])
             {
                 pout << "\nWriting restart files...\n\n";
                 RestartManager::getManager()->writeRestartFile(restart_dump_dirname, iteration_num);
+                
+                n_restarts_written++;
+                
+                if (n_restarts_written > max_restart_to_write){
+                    if (SAMRAI_MPI::getRank() == 0){
+                        std::ofstream controlled_stop_stream;
+                        controlled_stop_stream.open("controlled_stop.txt", ios_base::out | ios_base::trunc);
+                        controlled_stop_stream << "stopped\n" ;
+                        controlled_stop_stream.close();
+                    }
+                    SAMRAI_MPI::barrier();
+                    SAMRAI_MPI::abort();
+                }
             }
             
             

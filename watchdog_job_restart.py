@@ -195,6 +195,8 @@ if __name__ == '__main__':
     prev_time = os.path.getmtime('IB3d.log')
     check_number = 0
 
+    need_to_restart = False
+
     # wait, check if stopped, restart if needed
     while True:
         
@@ -210,11 +212,20 @@ if __name__ == '__main__':
         # no restart should occur if so
         # poll returns none if still running
         if current_sh_calls_mpi.poll() is not None:
-            print 'MPI run has stopped, check for completion or crashes.'
-            print 'Exit python watchdog loop.'
-            break
+            print 'MPI run has stopped.'
+            
+            if os.path.isfile('controlled_stop.txt'):
+                print 'Found controlled_stop.txt. Restarting.'
+                run_restart = True
+                os.remove('controlled_stop.txt')
+            else:
+                print 'Exit python watchdog loop.'
+                break
 
         if mod_time == prev_time:
+            run_restart = True
+        
+        if run_restart = True
             print 'On check number ', check_number, ', modification time unchanged'
             print 'Initiating restart.'
 
@@ -348,7 +359,11 @@ module load ffmpeg/intel/3.2.2
                 code = subprocess.call('sbatch make_movie.sbatch', shell=True)
                 if code is None:
                     print 'submit of movie script failed, check for problems.\n'
-                
+
+                code = subprocess.call('sbatch sbatch ~/mitral_fully_discrete/post_process.sbatch', shell=True)
+                if code is None:
+                    print 'submit of lines3d post process failed, check for problems.\n'
+
                 break
 
     else:
