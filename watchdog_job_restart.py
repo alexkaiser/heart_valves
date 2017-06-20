@@ -195,7 +195,7 @@ if __name__ == '__main__':
     prev_time = os.path.getmtime('IB3d.log')
     check_number = 0
 
-    need_to_restart = False
+    run_restart = False
 
     # wait, check if stopped, restart if needed
     while True:
@@ -223,25 +223,31 @@ if __name__ == '__main__':
                 break
 
         if mod_time == prev_time:
+            print 'On check number ', check_number, ', modification time unchanged'
+            
+            try:
+                # kill the sh script
+                current_sh_calls_mpi.kill()
+                current_sh_calls_mpi.wait()
+                if current_sh_calls_mpi.poll() is None:
+                    print 'Shell script ', script_name, ' is still running (even though it should have completed).'
+                    print 'Beware of strange behavior'
+
+                # kill the MPI jobs with a shell script, wait for this to finish
+                code = subprocess.call('sh kill_all_mpi.sh', shell=True)
+                if code is None:
+                    print 'kill_all_mpi is still running (even though it should have completed).'
+                    print 'Beware of strange behavior'
+            except:
+                print 'Try block failed in kill during stuck job. Moving on, but watch strange behavior.'
+            
+            
             run_restart = True
         
-        if run_restart = True
-            print 'On check number ', check_number, ', modification time unchanged'
+        if run_restart:
             print 'Initiating restart.'
-
-            # kill the sh script
-            current_sh_calls_mpi.kill()
-            current_sh_calls_mpi.wait()
-            if current_sh_calls_mpi.poll() is None:
-                print 'Shell script ', script_name, ' is still running (even though it should have completed).'
-                print 'Beware of strange behavior'
-
-            # kill the MPI jobs with a shell script, wait for this to finish
-            code = subprocess.call('sh kill_all_mpi.sh', shell=True)
-            if code is None:
-                print 'kill_all_mpi is still running (even though it should have completed).'
-                print 'Beware of strange behavior'
-
+            
+            run_restart = False
         
             # move old log and output files
             move_str = 'mv IB3d.log IB3d.log_restart_' + str(number_restarts)
@@ -263,16 +269,7 @@ if __name__ == '__main__':
 
             time.sleep(wait_time_before_restart)
             
-            # kill the MPI jobs with a shell script (again...), wait for this to finish
-            code = subprocess.call('sh kill_all_mpi.sh', shell=True)
-            if code is None:
-                print 'kill_all_mpi is still running (even though it should have completed).'
-                print 'Beware of strange behavior'
-            time.sleep(wait_time_before_restart)
-            
-            
             print 'restart number ', number_restarts, 'at step ', number_restarts
-
             
             current_sh_calls_mpi = subprocess.Popen('sh ' + script_name, shell=True)
 
