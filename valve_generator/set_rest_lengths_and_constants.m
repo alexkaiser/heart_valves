@@ -18,9 +18,10 @@ j_max                  = leaflet.j_max;
 k_max                  = leaflet.k_max; 
 du                     = leaflet.du; 
 is_internal            = leaflet.is_internal; 
+is_bc                  = leaflet.is_bc; 
 num_trees              = leaflet.num_trees; 
 strain                 = valve.strain; 
-diastolic_increment    = valve.diastolic_increment; 
+% diastolic_increment    = valve.diastolic_increment; 
 
 R_u = zeros(j_max, k_max); 
 k_u = zeros(j_max, k_max); 
@@ -64,9 +65,10 @@ end
 % Internal leaflet part 
 for j=1:j_max
     for k=1:k_max
-        if is_internal(j,k)
-
-            X = X_current(:,j,k); 
+        
+        X = X_current(:,j,k); 
+        
+        if is_internal(j,k)    
 
             % u type fibers 
             for j_nbr_tmp = [j-1,j+1]
@@ -125,43 +127,48 @@ for j=1:j_max
                 end 
                 
             end 
-            
-            % current node has a chordae connection
-            % data added to free edge array 
-            if chordae_idx(j,k).tree_idx
-                
-                tree_idx = chordae_idx(j,k).tree_idx; 
-
-                [m N_chordae] = size(chordae(tree_idx).C);
-                c_dec_tension_chordae = chordae(tree_idx).c_dec_chordae_leaf; 
-                du_chordae = 1; 
-
-                kappa = chordae(tree_idx).k_0;
-                
-                % index in current free edge array 
-                i = chordae_idx(j,k).leaf_idx; 
-
-                % index that free edge would have if on tree
-                % remember that leaves are only in the leaflet
-                leaf_idx = chordae_idx(j,k).leaf_idx + N_chordae;
-
-                % then take the parent index of that number in chordae variables
-                idx_chordae = floor(leaf_idx/2);
-
-                X_nbr = chordae(tree_idx).C(:,idx_chordae);
-                tension = kappa; 
-
-                if decreasing_tension && (kappa ~= 0)
-                    tension = tension + kappa * tension_decreasing(X, X_nbr, du_chordae, c_dec_tension_chordae) ; 
-                end
-                
-                [chordae_with_reference(tree_idx).k_free_edge(i), ... 
-                 chordae_with_reference(tree_idx).R_free_edge(i)] ...
-                    = get_rest_len_and_spring_constants(X, X_nbr, tension, strain, leaflet); 
-                    
+        end
+        
+        
+        % current node has a chordae connection
+        % data added to free edge array
+        % 
+        if chordae_idx(j,k).tree_idx
+            if ~(is_internal(j,k) || is_bc(j,k))
+                error('Chordae attachment to point that is neither internal nor boundary condition'); 
             end 
             
-        end
+            tree_idx = chordae_idx(j,k).tree_idx; 
+
+            [m N_chordae] = size(chordae(tree_idx).C);
+            c_dec_tension_chordae = chordae(tree_idx).c_dec_chordae_leaf; 
+            du_chordae = 1; 
+
+            kappa = chordae(tree_idx).k_0;
+
+            % index in current free edge array 
+            i = chordae_idx(j,k).leaf_idx; 
+
+            % index that free edge would have if on tree
+            % remember that leaves are only in the leaflet
+            leaf_idx = chordae_idx(j,k).leaf_idx + N_chordae;
+
+            % then take the parent index of that number in chordae variables
+            idx_chordae = floor(leaf_idx/2);
+
+            X_nbr = chordae(tree_idx).C(:,idx_chordae);
+            tension = kappa; 
+
+            if decreasing_tension && (kappa ~= 0)
+                tension = tension + kappa * tension_decreasing(X, X_nbr, du_chordae, c_dec_tension_chordae) ; 
+            end
+
+            [chordae_with_reference(tree_idx).k_free_edge(i), ... 
+             chordae_with_reference(tree_idx).R_free_edge(i)] ...
+                = get_rest_len_and_spring_constants(X, X_nbr, tension, strain, leaflet); 
+
+        end 
+            
     end 
 end
 

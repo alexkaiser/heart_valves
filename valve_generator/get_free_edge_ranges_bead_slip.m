@@ -102,8 +102,11 @@ k_max = k_max + 1 + n_rings_periodic;
 ring_k_idx = k_max * ones(j_max,1); 
 
 % resize and zero pad chordae arrays
-chordae_idx(j_max,k_max).tree_idx = 0; 
-chordae_idx(j_max,k_max).leaf_idx = 0;
+k_tmp = size(chordae_idx,2); 
+if k_tmp < k_max
+    chordae_idx(j_max,k_max).tree_idx = 0; 
+    chordae_idx(j_max,k_max).leaf_idx = 0;
+end 
 
 periodic_j = zeros(k_max, 1); 
 
