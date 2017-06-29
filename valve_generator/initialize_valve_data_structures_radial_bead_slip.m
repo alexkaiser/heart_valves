@@ -192,7 +192,7 @@ if ~explicit_comm_leaflets
 
     % places circumferential fibers this many below hoops 
     % if the location is not already covered by leaflet
-    n_edge_connectors = max(1,N/64);  
+    n_edge_connectors = max(1,N/32);  
 
     % No explicit commissural leaflet here 
     N_anterior = N/2; 
