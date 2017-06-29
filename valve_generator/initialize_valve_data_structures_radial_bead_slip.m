@@ -107,7 +107,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 
-explicit_comm_leaflets = true; 
+explicit_comm_leaflets = false; 
     
 
 if ~explicit_comm_leaflets 
@@ -192,7 +192,7 @@ if ~explicit_comm_leaflets
 
     % places circumferential fibers this many below hoops 
     % if the location is not already covered by leaflet
-    n_edge_connectors = 1; %max(1,N/64);  
+    n_edge_connectors = max(1,N/64);  
 
     % No explicit commissural leaflet here 
     N_anterior = N/2; 
@@ -444,7 +444,7 @@ elseif explicit_comm_leaflets
     tension_coeffs.c_rad_dec_edge_connector   = 1.0;  % circumferential hoops
     
     % places this many periodic rings above leaflets 
-    n_rings_periodic = 0; max(1,N/64); 
+    n_rings_periodic = max(1,N/64); 
     
     % places circumferential fibers this many below hoops 
     % if the location is not already covered by leaflet 
@@ -500,7 +500,7 @@ elseif explicit_comm_leaflets
     leaflet_direction = [leaflet_direction, -1, 1]; 
     
     % No offset, starting at commissure 
-    leaflet_N_start = 1; 
+    leaflet_N_start = 0; 
 
     % changes the whole tree tension by this constant 
     tension_coeffs.tree_tension_multiplier = 0.81; 
