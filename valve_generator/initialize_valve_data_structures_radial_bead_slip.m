@@ -425,7 +425,7 @@ elseif explicit_comm_leaflets
     tension_coeffs.beta_commissure            = 0.6;  % radial
     tension_coeffs.alpha_hoops                = 1.0;  % circumferential hoops 
     tension_coeffs.alpha_edge_connector       = 1.1;  % circumferential free edge connector 
-    tension_coeffs.beta_edge_connector        = 0.01;  % circumferential free edge connector 
+    tension_coeffs.beta_edge_connector        = 0.1;  % circumferential free edge connector 
 
     % decreasing tension coefficients 
     tension_coeffs.c_circ_dec_anterior        = 1.0;  % circumferential 
@@ -448,7 +448,7 @@ elseif explicit_comm_leaflets
     
     % places circumferential fibers this many below hoops 
     % if the location is not already covered by leaflet 
-    n_edge_connectors = max(1,N/16); 
+    n_edge_connectors = max(1,N/16); % + max(1,N/64); 
 
 
     % Explicit commissural leaflet here 
@@ -504,15 +504,15 @@ elseif explicit_comm_leaflets
     leaflet_N_start = 0; 
 
     % changes the whole tree tension by this constant 
-    tension_coeffs.tree_tension_multiplier = 1.2; 
+    tension_coeffs.tree_tension_multiplier = 1.17; 
 
     % Leaf tensions are all modified 
-    tension_coeffs.leaf_tension_base = 1.68; 
+    tension_coeffs.leaf_tension_base = 1.68 / 8; 
 
     % Base total root tension 
     % The value 0.5905 works well on each tree when using separate solves and two leaflets 
     % Controls constant tension at the root of the tree 
-    tension_coeffs.root_tension_base = 0.7; 
+    tension_coeffs.root_tension_base = 0.7 / 8; 
 
 
     
@@ -534,16 +534,14 @@ elseif explicit_comm_leaflets
     % change these to manipulate individial tree coefficients 
     % for sanity reasons, these shuold mostly be one unless you have a good reason to change 
     % note that these are scaled by the fraction of the leaflet that they take up 
-    k_0_1_coeff    = frac_of_n_orig .*    ... 
-                     [1.6; 1.0; 1.0; 1.6; ...       % anterior  
+    k_0_1_coeff    = [1.6; 1.0; 1.0; 1.6; ...       % anterior  
                       1.0; 1.0;           ...       % anterior and comm, comm and posterior       
                       1.0; 1.0; 1.0; 1.0; ...       % posterior
                       1.0; 1.0]; 
                   
-    k_root_coeff   = frac_of_n_orig .*    ... 
-                     [1.6; 1.0; 1.0; 1.6; ...       % anterior  
+    k_root_coeff   = [0.8; 0.4; 0.4; 0.8; ...       % anterior  
                       0.9; 0.9;           ...       % anterior and comm, comm and posterior       
-                      1.0; 1.0; 1.0; 1.0; ...       % posterior
+                      0.5; 0.4; 0.4; 0.5; ...       % posterior
                       0.9; 0.9];                    % posterior and comm, comm and anterior
                   
     % leaf coefficients scale, because we expect the lengths of the leaves to decrease 

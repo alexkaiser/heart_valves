@@ -4,7 +4,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 64; 
+N = 128; 
 
 % Show some output 
 plots = false; 
