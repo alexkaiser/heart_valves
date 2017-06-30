@@ -68,6 +68,7 @@ namespace
     static const bool   atrial_kick_on = true;
     static const double atrial_kick_center = .47;
     static const double atrial_kick_time_radius = .07;
+    static const double atrial_kick_time_width = 2.0 * atrial_kick_time_radius;
     
     inline double compute_Q_R(double t){
         // Triangle wave flux 
@@ -93,7 +94,7 @@ namespace
             double t_reduced = t - beat_time * floor(t/beat_time);
         
             if (abs(t_reduced - atrial_kick_center) < atrial_kick_time_radius)
-                return C_LA_relaxed * (1.0 - pow(cos(M_PI * (t_reduced - atrial_kick_center) / atrial_kick_time_radius),2));
+                return C_LA_relaxed * (1.0 - pow(cos(M_PI * (t_reduced - atrial_kick_center) / atrial_kick_time_width),2));
             else
                 return C_LA_relaxed;
         }
