@@ -188,7 +188,7 @@ if __name__ == '__main__':
         print 'No log file found after 10 checks, killing python script'
         sys.exit()
 
-    wait_time_s = 10*60              # check every ten minutes, max 20 minutes lost
+    wait_time_s = 5*60              # check every ten minutes, max 20 minutes lost
     wait_time_before_restart = 2*60  # after everything is killed, just hang out for two minutes
     wait_time_after_restart = 5*60   # once the restart goes, add a few extra minutes for initialization 
     number_restarts = 0
@@ -267,7 +267,7 @@ if __name__ == '__main__':
             script.write(to_run + '\n\n')
             script.close()
 
-            time.sleep(wait_time_before_restart)
+            # time.sleep(wait_time_before_restart)
             
             print 'restart number ', number_restarts, 'at step ', number_restarts
             
@@ -330,7 +330,7 @@ if __name__ == '__main__':
                 slurm = '''#!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --time=12:00:00
+#SBATCH --time=24:00:00
 #SBATCH --mem=16GB
 #SBATCH --job-name=movie_post_process
 #SBATCH --mail-user=kaiser@cims.nyu.edu
