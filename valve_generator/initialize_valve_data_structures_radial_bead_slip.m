@@ -107,7 +107,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 
-explicit_comm_leaflets = false; 
+explicit_comm_leaflets = true; 
     
 
 if ~explicit_comm_leaflets 
@@ -417,10 +417,10 @@ elseif explicit_comm_leaflets
 
 
     % tension coefficients 
-    tension_coeffs.alpha_anterior             = 0.9;  % circumferential 
+    tension_coeffs.alpha_anterior             = 1.0;  % circumferential 
     tension_coeffs.beta_anterior              = 1.1;  % radial
     tension_coeffs.alpha_posterior            = 0.8;  % circumferential 
-    tension_coeffs.beta_posterior             = 0.8;  % radial
+    tension_coeffs.beta_posterior             = 0.7;  % radial
     tension_coeffs.alpha_commissure           = 1.0;  % circumferential 
     tension_coeffs.beta_commissure            = 0.6;  % radial
     tension_coeffs.alpha_hoops                = 1.0;  % circumferential hoops 
@@ -448,31 +448,32 @@ elseif explicit_comm_leaflets
     
     % places circumferential fibers this many below hoops 
     % if the location is not already covered by leaflet 
-    n_edge_connectors = max(1,N/32); 
+    n_edge_connectors = max(1,N/16); 
 
 
     % Explicit commissural leaflet here 
-    N_anterior = N/2; 
-    angles.anterior = 5*pi/6 + pi/12; 
+    N_anterior = 3*N/8; %N/2; 
+    angles.anterior = pi; % 5*pi/6 + pi/12; 
 
     % Posterior takes whatever is left 
-    N_posterior = N/2;
+    N_posterior = 3*N/8;
     angles.posterior = 3*pi/6;
 
-    N_commissure = N/4; 
+    N_commissure = N/8; 
     
     N_orig = N; 
 
     % we have added two commissural leaflets that take one fourth the total N 
     % changing the total N
     % this is a strane hack but I'm rolling with it 
-    N = (3/2) * N; 
+    % N = (3/2) * N; 
 
-    N_per_direction   = [N_anterior/2, N_anterior/2, ... % N_anterior/4, N_anterior/4, N_anterior/4, N_anterior/4, ...  % 
+    N_per_direction   = [N/8 + N/32, N/32, N/32, N/8 + N/32, ...   % N_anterior/2, N_anterior/2, ... 
                          N_commissure/2, N_commissure/2, ... 
-                         N_posterior/2, N_posterior/2, ... 
+                         N/8 + N/32, N/32, N/32, N/8 + N/32, ...   % N_posterior/2, N_posterior/2, ... 
                          N_commissure/2, N_commissure/2]; 
 
+    % N_anterior/4, N_anterior/4, N_anterior/4, N_anterior/4, ...  % 
     % N_posterior/2, N_posterior/2, ... 
     %                         N_posterior/4, N_posterior/4, N_posterior/4, N_posterior/4, ... 
     %7*N_posterior/16, N_posterior/16, N_posterior/16, 7*N_posterior/16, ... % little flat center on posterior                 
@@ -486,15 +487,15 @@ elseif explicit_comm_leaflets
                      
                      
     % Anterior goes down then up 
-    leaflet_direction = [-1, 1]; 
-    % leaflet_direction = [-1, 0, 0, 1]; 
+    % leaflet_direction = [-1, 1]; 
+    leaflet_direction = [-1, 0, 0, 1]; 
     
     % Commissure down up 
     leaflet_direction = [leaflet_direction, -1, 1]; 
     
     % Posterior goes down then up 
-    leaflet_direction = [leaflet_direction, -1, 1]; 
-    %leaflet_direction = [leaflet_direction, -1, 0, 0, 1]; 
+    % leaflet_direction = [leaflet_direction, -1, 1]; 
+    leaflet_direction = [leaflet_direction, -1, 0, 0, 1]; 
     
     % Commissure down up 
     leaflet_direction = [leaflet_direction, -1, 1]; 
@@ -503,7 +504,7 @@ elseif explicit_comm_leaflets
     leaflet_N_start = 0; 
 
     % changes the whole tree tension by this constant 
-    tension_coeffs.tree_tension_multiplier = 0.81; 
+    tension_coeffs.tree_tension_multiplier = 1.2; 
 
     % Leaf tensions are all modified 
     tension_coeffs.leaf_tension_base = 1.68; 
@@ -526,9 +527,9 @@ elseif explicit_comm_leaflets
     % this array determines the fraction of N_orig which each tree takes up 
     % this allows us to determine initial fractions of constants that go to each tree 
     frac_of_n_orig = [1/16; 1/16; 1/16; 1/16; ...   % anterior  
-                      1/ 4; 1/ 4;             ...   % anterior and comm, comm and posterior       
+                      1/ 8; 1/ 8;             ...   % anterior and comm, comm and posterior       
                       1/16; 1/16; 1/16; 1/16; ...   % posterior
-                      1/ 4; 1/ 4];                  % posterior and comm, comm and anterior
+                      1/ 8; 1/ 8];                  % posterior and comm, comm and anterior
     
     % change these to manipulate individial tree coefficients 
     % for sanity reasons, these shuold mostly be one unless you have a good reason to change 
