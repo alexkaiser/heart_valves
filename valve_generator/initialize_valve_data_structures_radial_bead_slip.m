@@ -448,7 +448,7 @@ elseif explicit_comm_leaflets
     
     % places circumferential fibers this many below hoops 
     % if the location is not already covered by leaflet 
-    n_edge_connectors = max(1,N/16); % + max(1,N/64); 
+    n_edge_connectors = max(1,N/16) + 1; %max(1,N/64); 
 
 
     % Explicit commissural leaflet here 
@@ -541,14 +541,14 @@ elseif explicit_comm_leaflets
                   
     k_root_coeff   = [0.8; 0.4; 0.4; 0.8; ...       % anterior  
                       0.9; 0.9;           ...       % anterior and comm, comm and posterior       
-                      0.5; 0.4; 0.4; 0.5; ...       % posterior
+                      0.45; 0.36; 0.36; 0.45; ...       % posterior
                       0.9; 0.9];                    % posterior and comm, comm and anterior
                   
     % leaf coefficients scale, because we expect the lengths of the leaves to decrease 
     % with refinement of the mesh  
     % 
                                                                                     % chordae
-    tension_coeffs.c_dec_chordae_leaf = (1/N)  * 2 * [1.0; 1.0; 1.0; 1.0; ...       % anterior  
+    tension_coeffs.c_dec_chordae_leaf = (1/N)  * 4 * [1.0; 1.0; 1.0; 1.0; ...       % anterior  
                                                       1.0; 1.0;           ...       % anterior and comm, comm and posterior       
                                                       1.0; 1.0; 1.0; 1.0; ...       % posterior
                                                       1.0; 1.0];                    % posterior and comm, comm and anterior
