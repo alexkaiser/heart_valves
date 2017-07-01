@@ -422,7 +422,7 @@ elseif explicit_comm_leaflets
     tension_coeffs.alpha_posterior            = 0.8;  % circumferential 
     tension_coeffs.beta_posterior             = 0.7;  % radial
     tension_coeffs.alpha_commissure           = 1.0;  % circumferential 
-    tension_coeffs.beta_commissure            = 0.4;  % radial
+    tension_coeffs.beta_commissure            = 0.5;  % radial
     tension_coeffs.alpha_hoops                = 1.0;  % circumferential hoops 
     tension_coeffs.alpha_edge_connector       = 1.1;  % circumferential free edge connector 
     tension_coeffs.beta_edge_connector        = 0.1;  % circumferential free edge connector 
@@ -504,7 +504,7 @@ elseif explicit_comm_leaflets
     leaflet_N_start = 0; 
 
     % changes the whole tree tension by this constant 
-    tension_coeffs.tree_tension_multiplier = 1.17; 
+    tension_coeffs.tree_tension_multiplier = 1.21; 
 
     % Leaf tensions are all modified 
     tension_coeffs.leaf_tension_base = 1.68 / 8; 
