@@ -380,7 +380,7 @@ elseif explicit_comm_leaflets
     valve.skeleton = valve_points_ct_systole(low_papillary, tip_radius); 
     
     
-    valve.diastolic_increment = [1.5; 0.0; 0.5]; 
+    valve.diastolic_increment = [1.5; 0.0; 0.75]; 
 
     
     zero_radius = false; 
@@ -411,7 +411,7 @@ elseif explicit_comm_leaflets
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    tension_coeffs.pressure_tension_ratio = 0.044; 
+    tension_coeffs.pressure_tension_ratio = 0.042; 
     
     tension_coeffs.dec_tension_coeff_base = 8; %4.6 * (3/2); 
 
@@ -444,7 +444,7 @@ elseif explicit_comm_leaflets
     tension_coeffs.c_rad_dec_edge_connector   = 1.0;  % radial edge connector 
     
     % places this many periodic rings above leaflets 
-    n_rings_periodic = 0; max(1,N/64); 
+    n_rings_periodic = max(1,N/64); 
     
     % places circumferential fibers this many below hoops 
     % if the location is not already covered by leaflet 
