@@ -411,18 +411,18 @@ elseif explicit_comm_leaflets
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    tension_coeffs.pressure_tension_ratio = 0.043; 
+    tension_coeffs.pressure_tension_ratio = 0.044; 
     
-    tension_coeffs.dec_tension_coeff_base = 4.6 * (3/2); 
+    tension_coeffs.dec_tension_coeff_base = 8; %4.6 * (3/2); 
 
 
     % tension coefficients 
     tension_coeffs.alpha_anterior             = 1.0;  % circumferential 
     tension_coeffs.beta_anterior              = 1.1;  % radial
-    tension_coeffs.alpha_posterior            = 0.8;  % circumferential 
+    tension_coeffs.alpha_posterior            = 0.6;  % circumferential 
     tension_coeffs.beta_posterior             = 0.7;  % radial
     tension_coeffs.alpha_commissure           = 1.0;  % circumferential 
-    tension_coeffs.beta_commissure            = 0.5;  % radial
+    tension_coeffs.beta_commissure            = 0.6;  % radial
     tension_coeffs.alpha_hoops                = 1.0;  % circumferential hoops 
     tension_coeffs.alpha_edge_connector       = 1.1;  % circumferential free edge connector 
     tension_coeffs.beta_edge_connector        = 0.1;  % circumferential free edge connector 
@@ -433,18 +433,18 @@ elseif explicit_comm_leaflets
     tension_coeffs.c_circ_dec_posterior       = 1.0;  % circumferential 
     tension_coeffs.c_rad_dec_posterior        = 0.5;  % radial
     tension_coeffs.c_circ_dec_commissure      = 2.0;  % circumferential 
-    tension_coeffs.c_rad_dec_commissure       = 1.0;  % radial 
+    tension_coeffs.c_rad_dec_commissure       = 2.0;  % radial 
     
     tension_coeffs.c_circ_dec_hoops           = 1.25;  % circumferential hoops
     tension_coeffs.c_rad_dec_hoops_anterior   = 0.5;  % radial hoops, anterior part 
     tension_coeffs.c_rad_dec_hoops_posterior  = 0.5;  % radial hoops, posterior part 
     tension_coeffs.c_rad_dec_hoops_commissure = 0.1;  % radial hoops, commissure part
     
-    tension_coeffs.c_circ_dec_edge_connector  = 1.0;  % circumferential hoops
-    tension_coeffs.c_rad_dec_edge_connector   = 1.0;  % circumferential hoops
+    tension_coeffs.c_circ_dec_edge_connector  = 2.0;  % circumferential edge connector 
+    tension_coeffs.c_rad_dec_edge_connector   = 1.0;  % radial edge connector 
     
     % places this many periodic rings above leaflets 
-    n_rings_periodic = max(1,N/64); 
+    n_rings_periodic = 0; max(1,N/64); 
     
     % places circumferential fibers this many below hoops 
     % if the location is not already covered by leaflet 
@@ -453,7 +453,7 @@ elseif explicit_comm_leaflets
 
     % Explicit commissural leaflet here 
     N_anterior = 3*N/8; %N/2; 
-    angles.anterior = pi; % 5*pi/6 + pi/12; 
+    angles.anterior = 5*pi/6; 
 
     % Posterior takes whatever is left 
     N_posterior = 3*N/8;
@@ -504,7 +504,7 @@ elseif explicit_comm_leaflets
     leaflet_N_start = 0; 
 
     % changes the whole tree tension by this constant 
-    tension_coeffs.tree_tension_multiplier = 1.21; 
+    tension_coeffs.tree_tension_multiplier = 1.26; 
 
     % Leaf tensions are all modified 
     tension_coeffs.leaf_tension_base = 1.68 / 8; 
