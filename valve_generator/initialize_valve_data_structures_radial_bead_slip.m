@@ -440,7 +440,7 @@ elseif explicit_comm_leaflets
     tension_coeffs.c_rad_dec_hoops_posterior  = 0.5;  % radial hoops, posterior part 
     tension_coeffs.c_rad_dec_hoops_commissure = 0.1;  % radial hoops, commissure part
     
-    tension_coeffs.c_circ_dec_edge_connector  = 2.0;  % circumferential edge connector 
+    tension_coeffs.c_circ_dec_edge_connector  = 4.0;  % circumferential edge connector 
     tension_coeffs.c_rad_dec_edge_connector   = 1.0;  % radial edge connector 
     
     % places this many periodic rings above leaflets 
