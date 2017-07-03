@@ -417,7 +417,7 @@ elseif explicit_comm_leaflets
 
 
     % tension coefficients 
-    tension_coeffs.alpha_anterior             = 1.25;  % circumferential 
+    tension_coeffs.alpha_anterior             = 1.4;  % circumferential 
     tension_coeffs.beta_anterior              = 1.1;  % radial
     tension_coeffs.alpha_posterior            = 0.6;  % circumferential 
     tension_coeffs.beta_posterior             = 0.7;  % radial
@@ -428,7 +428,7 @@ elseif explicit_comm_leaflets
     tension_coeffs.beta_edge_connector        = 0.1;  % circumferential free edge connector 
 
     % decreasing tension coefficients 
-    tension_coeffs.c_circ_dec_anterior        = 1.5;  % circumferential 
+    tension_coeffs.c_circ_dec_anterior        = 1.75;  % circumferential 
     tension_coeffs.c_rad_dec_anterior         = 1.25; % radial
     tension_coeffs.c_circ_dec_posterior       = 1.0;  % circumferential 
     tension_coeffs.c_rad_dec_posterior        = 0.5;  % radial
