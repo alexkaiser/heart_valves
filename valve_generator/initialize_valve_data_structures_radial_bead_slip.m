@@ -47,7 +47,7 @@ valve.jacobian  = @build_jacobian_bead_slip;
 valve.base_name = sprintf('mitral_tree_%d', N); 
 
 MMHG_TO_CGS      = 1333.22368;
-valve.p_physical = 100 * MMHG_TO_CGS; 
+valve.p_physical = 80 * MMHG_TO_CGS; 
 
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
