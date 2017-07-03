@@ -411,7 +411,7 @@ elseif explicit_comm_leaflets
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    tension_coeffs.pressure_tension_ratio = 0.042; 
+    tension_coeffs.pressure_tension_ratio = 0.043; 
     
     tension_coeffs.dec_tension_coeff_base = 8; %4.6 * (3/2); 
 
@@ -440,11 +440,11 @@ elseif explicit_comm_leaflets
     tension_coeffs.c_rad_dec_hoops_posterior  = 0.5;  % radial hoops, posterior part 
     tension_coeffs.c_rad_dec_hoops_commissure = 0.1;  % radial hoops, commissure part
     
-    tension_coeffs.c_circ_dec_edge_connector  = 4.0;  % circumferential edge connector 
+    tension_coeffs.c_circ_dec_edge_connector  = 2.0;  % circumferential edge connector 
     tension_coeffs.c_rad_dec_edge_connector   = 1.0;  % radial edge connector 
     
     % places this many periodic rings above leaflets 
-    n_rings_periodic = max(1,N/64); 
+    n_rings_periodic = 0; max(1,N/64); 
     
     % places circumferential fibers this many below hoops 
     % if the location is not already covered by leaflet 
@@ -501,10 +501,10 @@ elseif explicit_comm_leaflets
     leaflet_direction = [leaflet_direction, -1, 1]; 
     
     % No offset, starting at commissure 
-    leaflet_N_start = 0; 
+    leaflet_N_start = 1; 
 
     % changes the whole tree tension by this constant 
-    tension_coeffs.tree_tension_multiplier = 1.26; 
+    tension_coeffs.tree_tension_multiplier = 1.34; 
 
     % Leaf tensions are all modified 
     tension_coeffs.leaf_tension_base = 1.68 / 8; 
@@ -580,8 +580,8 @@ elseif explicit_comm_leaflets
     
 
     
-    papillary_left_min_angle = -5*pi/4; 
-    papillary_left_max_angle =    pi/4; 
+    papillary_left_min_angle = -7*pi/6; %-5*pi/4; 
+    papillary_left_max_angle = pi/6; %   pi/4; 
     
     papillary_left  = get_papillary_coords(valve, left_papillary_idx,  trees_per_side,  papillary_left_min_angle,  papillary_left_max_angle); 
     
