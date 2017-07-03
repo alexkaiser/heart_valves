@@ -357,7 +357,7 @@ module load ffmpeg/intel/3.2.2
                 if code is None:
                     print 'submit of movie script failed, check for problems.\n'
 
-                code = subprocess.call('sbatch sbatch ~/mitral_fully_discrete/post_process.sbatch', shell=True)
+                code = subprocess.call('sbatch ~/mitral_fully_discrete/post_process.sbatch', shell=True)
                 if code is None:
                     print 'submit of lines3d post process failed, check for problems.\n'
 
