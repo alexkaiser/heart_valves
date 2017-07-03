@@ -411,13 +411,13 @@ elseif explicit_comm_leaflets
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    tension_coeffs.pressure_tension_ratio = 0.043; 
+    tension_coeffs.pressure_tension_ratio = 0.040; 
     
     tension_coeffs.dec_tension_coeff_base = 8; %4.6 * (3/2); 
 
 
     % tension coefficients 
-    tension_coeffs.alpha_anterior             = 1.0;  % circumferential 
+    tension_coeffs.alpha_anterior             = 1.25;  % circumferential 
     tension_coeffs.beta_anterior              = 1.1;  % radial
     tension_coeffs.alpha_posterior            = 0.6;  % circumferential 
     tension_coeffs.beta_posterior             = 0.7;  % radial
@@ -428,7 +428,7 @@ elseif explicit_comm_leaflets
     tension_coeffs.beta_edge_connector        = 0.1;  % circumferential free edge connector 
 
     % decreasing tension coefficients 
-    tension_coeffs.c_circ_dec_anterior        = 1.0;  % circumferential 
+    tension_coeffs.c_circ_dec_anterior        = 1.5;  % circumferential 
     tension_coeffs.c_rad_dec_anterior         = 1.25; % radial
     tension_coeffs.c_circ_dec_posterior       = 1.0;  % circumferential 
     tension_coeffs.c_rad_dec_posterior        = 0.5;  % radial
