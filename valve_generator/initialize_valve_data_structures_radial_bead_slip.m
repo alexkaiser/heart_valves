@@ -70,8 +70,8 @@ valve.num_copies = 3;
 % to view and output with a stride 
 
 
-valve.output.leaflets       = [1;0;1]; 
-valve.output.stride_leaflet = N/32; 
+valve.output.leaflets       = [1;1;1]; 
+valve.output.stride_leaflet = max(1,N/128); 
 valve.output.chordae        = [1;1;1]; 
 valve.output.mesh           = [1;0;0]; 
 valve.output.cartesian_mesh = [0;0;0]; 
