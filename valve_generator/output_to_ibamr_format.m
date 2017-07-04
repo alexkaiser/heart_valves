@@ -76,7 +76,7 @@ function [] = output_to_ibamr_format(valve)
     params.num_copies = valve.num_copies; 
     params.eta_multiplier_linear   = valve.eta_multiplier_linear; 
     params.eta_multiplier_collagen = valve.eta_multiplier_collagen; 
-
+    
     % parameters for output flags 
     params.output = valve.output; 
     
@@ -97,6 +97,19 @@ function [] = output_to_ibamr_format(valve)
     
     % Lagrangian mesh spacing 
     ds = valve.ds;
+    
+    
+    if isfield(valve, 'kappa_cross_layer_multipler') && (valve.kappa_cross_layer_multipler ~= 0) && (params.num_copies > 1)
+        params.cross_layer_on          = true; 
+        params.kappa_cross_layer       = valve.kappa_cross_layer_multipler * tension_base / (N^2); 
+        params.rest_len_cross_layer    = ds; 
+        params.total_per_layer         = nan; 
+        params.min_idx_for_cross_layer = nan; 
+        params.max_idx_for_cross_layer = nan; 
+    else 
+        params.cross_layer_on          = false; 
+    end 
+    
     
     
     % copies, if needed, will be placed this far down 
@@ -120,6 +133,11 @@ function [] = output_to_ibamr_format(valve)
     for copy = 1:params.num_copies
         
         params.copy = copy; 
+        
+        
+        if params.cross_layer_on
+            params.min_idx_for_cross_layer = params.global_idx; 
+        end 
         
         params.z_offset = z_offset_vals(copy); 
         first_idx = params.global_idx + 1; 
@@ -147,6 +165,13 @@ function [] = output_to_ibamr_format(valve)
             params = add_springs(params, valve.leaflets(i), ds, collagen_constitutive); 
         end 
 
+        if params.cross_layer_on
+            params.max_idx_for_cross_layer = params.global_idx; 
+            if copy > 1 
+                params = place_cross_layer_springs(params); 
+            end 
+        end 
+        
         % flat part of mesh 
         r = valve.r; 
         ref_frac_net = 1.0;
@@ -171,6 +196,11 @@ function [] = output_to_ibamr_format(valve)
                 error('Only one leaflet version currently supported'); 
             end 
         params = place_cartesian_net(params, valve.leaflets(i), r_extra, L, ds, k_rel, k_target_net, ref_frac_net, eta_net); 
+        end 
+        
+        % first time through, count all included indices 
+        if params.cross_layer_on && (copy == 1)
+            params.total_per_layer = params.global_idx; 
         end 
         
         % adjust for offset 
@@ -699,7 +729,26 @@ function params = add_chordae_tree_springs(params, leaflet, ds, collagen_spring)
     end 
 
 end 
-                        
+
+
+function params = place_cross_layer_springs(params)
+
+    function_idx = 0; 
+    kappa        = params.kappa_cross_layer; 
+    rest_len     = params.rest_len_cross_layer;
+    % don't include these for now 
+    output_tmp = false; 
+        
+    for i=(params.min_idx_for_cross_layer):(params.max_idx_for_cross_layer)
+        idx          = i -  params.total_per_layer; 
+        nbr_idx      = i;  
+
+        params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx, output_tmp); 
+    end 
+
+end 
+
+
                         
 function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac, eta)
     % 

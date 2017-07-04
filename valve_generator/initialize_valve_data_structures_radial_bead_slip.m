@@ -47,7 +47,7 @@ valve.jacobian  = @build_jacobian_bead_slip;
 valve.base_name = sprintf('mitral_tree_%d', N); 
 
 MMHG_TO_CGS      = 1333.22368;
-valve.p_physical = 80 * MMHG_TO_CGS; 
+valve.p_physical = 100 * MMHG_TO_CGS; 
 
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
@@ -623,6 +623,11 @@ valve.eta_net_unscaled = valve.target_net_unscaled/5000;
 
 % viscoelastic damping coefficients for root attachments, does not include copies  
 valve.eta_papillary_unscaled = valve.target_papillary_unscaled/500; 
+
+% if nonzero, linear springs of rest length with spacing between the layers 
+% are placed with this value 
+% final formula is multiplied by valve.tension_base / (valve.N^2); 
+valve.kappa_cross_layer_multipler = 1e0; 
 
 % Approximate Lagrangian mesh spacing at ring 
 % Used for later splitting of springs 
