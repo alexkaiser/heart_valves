@@ -627,7 +627,7 @@ valve.eta_papillary_unscaled = valve.target_papillary_unscaled/500;
 % if nonzero, linear springs of rest length with spacing between the layers 
 % are placed with this value 
 % final formula is multiplied by valve.tension_base / (valve.N^2); 
-valve.kappa_cross_layer_multipler = 1e5; 
+valve.kappa_cross_layer_multipler = 1e6; 
 
 % Approximate Lagrangian mesh spacing at ring 
 % Used for later splitting of springs 
