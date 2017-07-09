@@ -147,6 +147,7 @@ inline double deriv_spring_collagen(double R, const double* params, int lag_mast
 #define MAX_STEP_FOR_CHANGE 1000
 
 #define MOVING_PAPILLARY
+#define C1_MOVEMENT
 
 
 namespace{
@@ -869,12 +870,30 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
     // std::cout << "t = " << current_time << ", t_reduced = " << t_reduced << "\n"; 
     
     if (t_reduced < papillary->t_diastole_full){
-        frac_to_diastole = t_reduced / papillary->t_diastole_full; 
         
-        // constant velocity in linear movement 
-        u_target[0] = papillary->x_increment_systole_to_diastole / papillary->t_diastole_full; 
-        u_target[1] = papillary->y_increment_systole_to_diastole / papillary->t_diastole_full; 
-        u_target[2] = papillary->z_increment_systole_to_diastole / papillary->t_diastole_full; 
+        #ifdef C1_MOVEMENT
+        
+            frac_to_diastole = 0.5 * (1.0 - cos(M_PI * t_reduced/papillary->t_diastole_full));
+            
+            const double deriv_unscaled = M_PI/(2.0 * papillary->t_diastole_full) * sin(M_PI * t_reduced/papillary->t_diastole_full); 
+        
+            // constant velocity in linear movement 
+            u_target[0] = papillary->x_increment_systole_to_diastole / deriv_unscaled; 
+            u_target[1] = papillary->y_increment_systole_to_diastole / deriv_unscaled; 
+            u_target[2] = papillary->z_increment_systole_to_diastole / deriv_unscaled;
+            
+        #else
+        
+            // linear movement 
+            frac_to_diastole = t_reduced / papillary->t_diastole_full; 
+        
+            // constant velocity in linear movement 
+            u_target[0] = papillary->x_increment_systole_to_diastole / papillary->t_diastole_full; 
+            u_target[1] = papillary->y_increment_systole_to_diastole / papillary->t_diastole_full; 
+            u_target[2] = papillary->z_increment_systole_to_diastole / papillary->t_diastole_full;  
+                  
+        #endif
+        
     }
     else if  (t_reduced < papillary->t_systole_start){
         frac_to_diastole = 1.0; 
@@ -886,13 +905,30 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
         
     }
     else if  (t_reduced < papillary->t_systole_full){
-        const double slope     = -1.0/(papillary->t_systole_full - papillary->t_systole_start); 
-        const double intercept = papillary->t_systole_full/(papillary->t_systole_full - papillary->t_systole_start); 
-        frac_to_diastole       = slope * t_reduced + intercept; 
+    
+        #ifdef C1_MOVEMENT
         
-        u_target[0] = -papillary->x_increment_systole_to_diastole / (papillary->t_systole_full - papillary->t_systole_start);
-        u_target[1] = -papillary->y_increment_systole_to_diastole / (papillary->t_systole_full - papillary->t_systole_start);
-        u_target[2] = -papillary->z_increment_systole_to_diastole / (papillary->t_systole_full - papillary->t_systole_start);
+            frac_to_diastole = 0.5 * (cos(M_PI * (t_reduced - papillary->t_systole_start)/(papillary->t_systole_full - papillary->t_systole_start)) + 1.0); 
+            
+            const double deriv_unscaled = -0.5 *  sin(M_PI * (t_reduced - papillary->t_systole_start)/(papillary->t_systole_full - papillary->t_systole_start)) * (M_PI/(papillary->t_systole_full - papillary->t_systole_start)); 
+        
+            // constant velocity in linear movement 
+            u_target[0] = papillary->x_increment_systole_to_diastole / deriv_unscaled; 
+            u_target[1] = papillary->y_increment_systole_to_diastole / deriv_unscaled; 
+            u_target[2] = papillary->z_increment_systole_to_diastole / deriv_unscaled;
+        
+        #else
+        
+            const double slope     = -1.0/(papillary->t_systole_full - papillary->t_systole_start); 
+            const double intercept = papillary->t_systole_full/(papillary->t_systole_full - papillary->t_systole_start); 
+            frac_to_diastole       = slope * t_reduced + intercept; 
+        
+            u_target[0] = -papillary->x_increment_systole_to_diastole / (papillary->t_systole_full - papillary->t_systole_start);
+            u_target[1] = -papillary->y_increment_systole_to_diastole / (papillary->t_systole_full - papillary->t_systole_start);
+            u_target[2] = -papillary->z_increment_systole_to_diastole / (papillary->t_systole_full - papillary->t_systole_start);
+        
+        #endif 
+        
     }
     else{ 
         // full systole 
