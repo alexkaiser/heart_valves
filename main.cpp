@@ -836,8 +836,8 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
     // quick return at beginning so that things do not move in discontinuous manner
     // magic number here, 0.1255 is the location in time of the max fwd pressure in diastole 
     //if (current_time == papillary->max_p_time)
-    if (current_time == 0.0)
-        return; 
+    //if (current_time == 0.0)
+    //    return;
 
     // We require that the structures are associated with the finest level of
     // the patch hierarchy.
@@ -878,9 +878,9 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
             const double deriv_unscaled = M_PI/(2.0 * papillary->t_diastole_full) * sin(M_PI * t_reduced/papillary->t_diastole_full); 
         
             // constant velocity in linear movement 
-            u_target[0] = papillary->x_increment_systole_to_diastole / deriv_unscaled; 
-            u_target[1] = papillary->y_increment_systole_to_diastole / deriv_unscaled; 
-            u_target[2] = papillary->z_increment_systole_to_diastole / deriv_unscaled;
+            u_target[0] = papillary->x_increment_systole_to_diastole * deriv_unscaled;
+            u_target[1] = papillary->y_increment_systole_to_diastole * deriv_unscaled;
+            u_target[2] = papillary->z_increment_systole_to_diastole * deriv_unscaled;
             
         #else
         
@@ -913,9 +913,9 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
             const double deriv_unscaled = -0.5 *  sin(M_PI * (t_reduced - papillary->t_systole_start)/(papillary->t_systole_full - papillary->t_systole_start)) * (M_PI/(papillary->t_systole_full - papillary->t_systole_start)); 
         
             // constant velocity in linear movement 
-            u_target[0] = papillary->x_increment_systole_to_diastole / deriv_unscaled; 
-            u_target[1] = papillary->y_increment_systole_to_diastole / deriv_unscaled; 
-            u_target[2] = papillary->z_increment_systole_to_diastole / deriv_unscaled;
+            u_target[0] = papillary->x_increment_systole_to_diastole * deriv_unscaled;
+            u_target[1] = papillary->y_increment_systole_to_diastole * deriv_unscaled;
+            u_target[2] = papillary->z_increment_systole_to_diastole * deriv_unscaled;
         
         #else
         
