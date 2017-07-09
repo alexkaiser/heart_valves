@@ -101,7 +101,7 @@ function [] = output_to_ibamr_format(valve)
     
     if isfield(valve, 'kappa_cross_layer_multipler') && (valve.kappa_cross_layer_multipler ~= 0) && (params.num_copies > 1)
         params.cross_layer_on          = true; 
-        params.kappa_cross_layer       = valve.kappa_cross_layer_multipler * tension_base / (N^2); 
+        params.kappa_cross_layer       = valve.kappa_cross_layer_multipler * tension_base; 
         params.rest_len_cross_layer    = ds; 
         params.total_per_layer         = nan; 
         params.min_idx_for_cross_layer = nan; 
