@@ -193,7 +193,7 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
             double kappa[NDIM];
             kappa[0] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
             kappa[1] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
-            kappa[2] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0; // much lower friction in the z direction
+            kappa[2] = cycle_num >= 0 ? 1.0e-1 * 0.25 * rho / dt : 0.0; // much lower friction in the z direction
                                                                // at U = 10cm/s, this is ~10x force of gravity 
             double goal[NDIM]; 
             goal[0] = 0.0; 
