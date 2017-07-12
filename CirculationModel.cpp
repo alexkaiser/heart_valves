@@ -52,10 +52,10 @@ namespace
     static const string DATA_FILE_NAME = "bc_data.m";
 
     // constants 
-    static const double C_PA =  4.12; // Pulmonary artery compliance, ml / mmHg 
-    static const double C_PV = 10.0;  // Pulmonary vein compliance, ml / mmHg 
+    static const double C_PA         =  4.12; // Pulmonary artery compliance, ml / mmHg 
     static const double C_LA_relaxed =  1.6;  // Left atrial compliance ml / mmHg
-    
+    static const double C_PV         = 10.0 - C_LA_relaxed;  // Pulmonary vein compliance, ml / mmHg 
+        
     static const double R_P  = (9.0/5.6) * MIN_PER_L_T0_SEC_PER_ML; // Pulmonary resistance, mmHg / (ml/s)
     
     static const double beat_time = 0.8; 
@@ -66,8 +66,8 @@ namespace
     static const double h = 2.0 * stroke_volume / (T_off - T_on); // Peak flow to get given stroke volume
     
     static const bool   atrial_kick_on = true;
-    static const double atrial_kick_center = .47;
-    static const double atrial_kick_time_radius = .07;
+    static const double atrial_kick_center = .44;
+    static const double atrial_kick_time_radius = .09;
     static const double atrial_kick_time_width = 2.0 * atrial_kick_time_radius;
     
     inline double compute_Q_R(double t){
