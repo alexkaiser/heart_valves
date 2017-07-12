@@ -56,6 +56,7 @@ FourierBodyForce::FourierBodyForce(const fourier_series_data* fourier,
   : d_fourier(fourier), 
     d_use_circ_model(use_circ_model),
     d_circ_model(circ_model),
+    d_flux_z(0.0),
     d_fluid_solver(fluid_solver), 
     d_patch_hierarchy(patch_hierarchy)
 {
@@ -111,7 +112,10 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
     //std::cout << "code thinks the lower domain is " << x_lower_global[0] << ", " << x_lower_global[1] << ", " << x_lower_global[2] << "\n" ;
     //std::cout << "code thinks the upper domain is " << x_upper_global[0] << ", " << x_upper_global[1] << ", " << x_upper_global[2] << "\n" ;
     
-    const double z_domain_length = x_upper_global[2] - x_lower_global[2];
+    const double z_domain_length    = x_upper_global[2] - x_lower_global[2];
+
+    const double cross_section_area = (x_upper_global[0] - x_lower_global[0]) * 
+                                      (x_upper_global[1] - x_lower_global[1]);
 
     // index without periodicity
     unsigned int k = (unsigned int) floor(data_time / (d_fourier->dt));
@@ -189,8 +193,14 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
             double kappa[NDIM];
             kappa[0] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
             kappa[1] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
-            kappa[2] = cycle_num >= 0 ?             0.0 : 0.0; // much lower friction in the z direction
+            kappa[2] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0; // much lower friction in the z direction
                                                                // at U = 10cm/s, this is ~10x force of gravity 
+            double goal[NDIM]; 
+            goal[0] = 0.0; 
+            goal[1] = 0.0; 
+            
+            // z component goal is the average value 
+            goal[2] = d_flux_z / cross_section_area; 
             
             // Clamp the velocity in the x,y components
             // Clamp the velocity in the z component, but a lot less
@@ -210,7 +220,7 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
 
                         const double weight    = smooth_kernel((z - center) / (dx[axis]*height_physical));
                     
-                        (*F_data)(i_s)        += weight*(-kappa[component] * U);
+                        (*F_data)(i_s)        += weight*(-kappa[component] * (U - goal[component]));
                         
                         // std::cout << "Placing a force of " << weight*(-kappa * U) << " in component " << component << " at height " << z << "\n";
                         

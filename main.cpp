@@ -646,6 +646,8 @@ int main(int argc, char* argv[])
                     flux_output_stream.flush(); 
                 }                
             
+                body_force->d_flux_z = flux_valve_ring[0]; 
+            
             #endif
             
             // Update the circulation model if used 
