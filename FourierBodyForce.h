@@ -75,6 +75,7 @@ class FourierBodyForce : public CartGridFunction
   const fourier_series_data *d_fourier;
   const bool d_use_circ_model; 
   CirculationModel *d_circ_model;
+  double d_flux_z; 
 
  private:
   /*!
