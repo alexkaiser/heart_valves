@@ -1,0 +1,1 @@
+ffmpeg -f concat -i sound_and_silence.txt -c copy heart_sounds_and_silence.wav
