@@ -134,7 +134,7 @@ inline double deriv_spring_collagen(double R, const double* params, int lag_mast
 #define ENABLE_INSTRUMENTS
 #define FOURIER_SERIES_BODY_FORCE
 
-#define USE_CIRC_MODEL
+//#define USE_CIRC_MODEL
 
 #define MMHG_TO_CGS 1333.22368
 #define CGS_TO_MMHG 0.000750061683
