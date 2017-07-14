@@ -107,7 +107,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 
-explicit_comm_leaflets = true; 
+explicit_comm_leaflets = false; 
     
 
 if ~explicit_comm_leaflets 
@@ -192,7 +192,7 @@ if ~explicit_comm_leaflets
 
     % places circumferential fibers this many below hoops 
     % if the location is not already covered by leaflet
-    n_edge_connectors = max(1,N/32);  
+    n_edge_connectors = max(1,N/64);  
 
     % No explicit commissural leaflet here 
     N_anterior = N/2; 
@@ -448,7 +448,9 @@ elseif explicit_comm_leaflets
     
     % places circumferential fibers this many below hoops 
     % if the location is not already covered by leaflet 
-    n_edge_connectors = max(1,N/16) + 1; %max(1,N/64); 
+    n_edge_connectors = max(1,N/16) + max(1,N/64); 
+    % this could be the problem -- much more strength at lower res here, 
+    % dividing force in these fibers by two every time resolution goes up 
 
 
     % Explicit commissural leaflet here 
@@ -627,7 +629,7 @@ valve.eta_papillary_unscaled = valve.target_papillary_unscaled/500;
 % if nonzero, linear springs of rest length with spacing between the layers 
 % are placed with this value 
 % final formula is multiplied by valve.tension_base  
-valve.kappa_cross_layer_multipler = 1e5 / 256^2; 
+valve.kappa_cross_layer_multipler = 1e4 / (N * 256); 
 
 % Approximate Lagrangian mesh spacing at ring 
 % Used for later splitting of springs 
