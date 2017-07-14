@@ -147,7 +147,7 @@ inline double deriv_spring_collagen(double R, const double* params, int lag_mast
 #define MAX_STEP_FOR_CHANGE 1000
 
 #define MOVING_PAPILLARY
-#define C1_MOVEMENT
+// #define C1_MOVEMENT
 
 
 namespace{
