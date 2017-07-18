@@ -47,7 +47,7 @@ valve.jacobian  = @build_jacobian_bead_slip;
 valve.base_name = sprintf('mitral_tree_%d', N); 
 
 MMHG_TO_CGS      = 1333.22368;
-valve.p_physical = 100 * MMHG_TO_CGS; 
+valve.p_physical = 80 * MMHG_TO_CGS; 
 
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
@@ -411,7 +411,7 @@ elseif explicit_comm_leaflets
 
     % pressure / tension coefficient ratio
     % this tension coefficient is the maximum tension that a fiber can support
-    tension_coeffs.pressure_tension_ratio = 0.040; 
+    tension_coeffs.pressure_tension_ratio = 0.0401; 
     
     tension_coeffs.dec_tension_coeff_base = 8; %4.6 * (3/2); 
 
@@ -506,7 +506,7 @@ elseif explicit_comm_leaflets
     leaflet_N_start = 1; 
 
     % changes the whole tree tension by this constant 
-    tension_coeffs.tree_tension_multiplier = 1.34; 
+    tension_coeffs.tree_tension_multiplier = 1.292; %1.34; 
 
     % Leaf tensions are all modified 
     tension_coeffs.leaf_tension_base = 1.68 / 8; 
@@ -629,7 +629,7 @@ valve.eta_papillary_unscaled = valve.target_papillary_unscaled/500;
 % if nonzero, linear springs of rest length with spacing between the layers 
 % are placed with this value 
 % final formula is multiplied by valve.tension_base  
-valve.kappa_cross_layer_multipler = 1e4 / (N * 256); 
+valve.kappa_cross_layer_multipler = 2 * 1e4 / (N * 256); 
 
 % Approximate Lagrangian mesh spacing at ring 
 % Used for later splitting of springs 
