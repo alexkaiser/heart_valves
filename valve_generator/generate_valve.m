@@ -63,7 +63,7 @@ if iteration_movie_anterior
 end 
 
 
-interactive = true; 
+interactive = false; 
 
 from_history = false; 
 if from_history 

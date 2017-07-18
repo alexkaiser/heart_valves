@@ -46,11 +46,7 @@ valve.jacobian  = @build_jacobian_bead_slip;
 % name 
 valve.base_name = sprintf('mitral_tree_%d', N); 
 
-MMHG_TO_CGS      = 1333.22368;
-valve.p_physical = 80 * MMHG_TO_CGS; 
-
-% Pressure on each leaflet is constant, negative since normal is outward facing 
-p_0 = -valve.p_physical; 
+MMHG_TO_CGS     = 1333.22368;
 
 
 % number of lagrangian tracers in each dimension 
@@ -107,13 +103,18 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 
-explicit_comm_leaflets = true; 
+explicit_comm_leaflets = false; 
     
 
 if ~explicit_comm_leaflets 
 
     % commissural tree version 
     % but without explicit commissural leaflets 
+    
+    valve.p_physical = 100 * MMHG_TO_CGS; 
+
+    % Pressure on each leaflet is constant, negative since normal is outward facing 
+    p_0 = -valve.p_physical; 
     
     valve.dip_anterior_systole = true; 
     valve.r_dip = 0.75; 
@@ -368,6 +369,11 @@ elseif explicit_comm_leaflets
 
     % commissural tree version 
     % with explicit commissural leaflets 
+    
+    valve.p_physical = 80 * MMHG_TO_CGS; 
+
+    % Pressure on each leaflet is constant, negative since normal is outward facing 
+    p_0 = -valve.p_physical; 
     
     valve.dip_anterior_systole = true; 
     valve.r_dip = 0.75; 
