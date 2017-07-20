@@ -58,7 +58,7 @@ Z_linearized = linearize_internal_points(leaflet_Z);
 
 
 
-fprintf('eps\t | taylor series remainder\n'); 
+fprintf('eps\t & Taylor series remainder\n'); 
 
 
 for i = 1:length(epsilon_vals)
@@ -78,18 +78,20 @@ for i = 1:length(epsilon_vals)
 
     errors(i) = norm(F_perturbed - F - ep*J*Z_linearized, 2); 
     
-    fprintf('%e\t | %e \n', ep, errors(i)); 
+    fprintf('%.1e\t & %e \\\\ \n \\hline \n', ep, errors(i)); 
 
 end 
 
 fprintf('\n\n\n\n'); 
 
-figure; 
-loglog(epsilon_vals, errors, '-*'); 
+fig = figure; 
+loglog(epsilon_vals, errors, 'k-*'); 
 hold on 
-loglog(epsilon_vals, epsilon_vals.^2, '--'); 
-
-legend('error', 'eps^2')
+loglog(epsilon_vals, epsilon_vals.^2, 'k--'); 
+axis([min(epsilon_vals) max(epsilon_vals) 1e-18, 1e8])
+xlabel('\epsilon')
+legend('|r(\epsilon)|', '\epsilon^2', 'Location', 'NorthWest')
+printfig(fig, 'jacobian_convergence')
 
 
 figure; 

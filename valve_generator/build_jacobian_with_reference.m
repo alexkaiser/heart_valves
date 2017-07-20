@@ -301,11 +301,7 @@ function J = build_jacobian_with_reference(leaflet)
         % nested function for getting neighbor 
         % nested functions have full access to current work space 
 
-        if chordae_idx(j_nbr,k_nbr).tree_idx
-            X_nbr = X_current(:,j_nbr,k_nbr); 
-            range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
-            nbr_jacobian_needed = true; 
-        elseif is_internal(j_nbr,k_nbr) 
+        if is_internal(j_nbr,k_nbr) 
             X_nbr = X_current(:,j_nbr,k_nbr);
             range_nbr = linear_idx_offset(j_nbr,k_nbr) + (1:3);
             nbr_jacobian_needed = true;                        
