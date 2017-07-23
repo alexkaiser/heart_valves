@@ -103,7 +103,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 
-explicit_comm_leaflets = false; 
+explicit_comm_leaflets = true; 
     
 
 if ~explicit_comm_leaflets 
@@ -451,13 +451,6 @@ elseif explicit_comm_leaflets
     
     % places this many periodic rings above leaflets 
     n_rings_periodic = 0; max(1,N/64); 
-    
-    % places circumferential fibers this many below hoops 
-    % if the location is not already covered by leaflet 
-    n_edge_connectors = max(1,N/16) + max(1,N/64); 
-    % this could be the problem -- much more strength at lower res here, 
-    % dividing force in these fibers by two every time resolution goes up 
-
 
     % Explicit commissural leaflet here 
     N_anterior = 3*N/8; %N/2; 
@@ -475,12 +468,35 @@ elseif explicit_comm_leaflets
     % changing the total N
     % this is a strane hack but I'm rolling with it 
     % N = (3/2) * N; 
+    
+    % If set to one, then tree starts on valve ring 
+    leaflet_N_start = 1; 
+    
+    % Add extra flat points so there are more 
+    % trees connecting to the ring 
+    % this must scale with N
+    % so that the force around the ring scales with N 
+    % this can be zero 
+    flat_comm = max(0, floor(N/128) - 1); 
+    
+    % places circumferential fibers this many below hoops 
+    % if the location is not already covered by leaflet 
+    % this is set to cover the commissural leaflets so there is a hoop at the 
+    % minimum commissural leaflet tree attachment. 
+    n_edge_connectors = max(1,N_commissure/2) - flat_comm; 
+    
+    % this should scale with N 
+    extra_below_comm = max(1,N/64); 
+    n_edge_connectors = n_edge_connectors + extra_below_comm; 
 
-    N_per_direction   = [N/8 + N/32, N/32, N/32, N/8 + N/32, ...   % N_anterior/2, N_anterior/2, ... 
-                         N_commissure/2, N_commissure/2, ... 
-                         N/8 + N/32, N/32, N/32, N/8 + N/32, ...   % N_posterior/2, N_posterior/2, ... 
-                         N_commissure/2, N_commissure/2]; 
-
+    
+    flat_center = N/32; 
+    
+    N_per_direction   = [flat_comm, N/8 + flat_center - flat_comm, flat_center, flat_center, N/8 + flat_center - flat_comm, flat_comm, ...   % N_anterior/2, N_anterior/2, ... 
+                         flat_comm, N_commissure/2 - flat_comm, N_commissure/2 - flat_comm, flat_comm ... 
+                         flat_comm, N/8 + flat_center - flat_comm, flat_center, flat_center, N/8 + flat_center - flat_comm, flat_comm, ...   % N_posterior/2, N_posterior/2, ... 
+                         flat_comm, N_commissure/2 - flat_comm, N_commissure/2 - flat_comm, flat_comm]; 
+                     
     % N_anterior/4, N_anterior/4, N_anterior/4, N_anterior/4, ...  % 
     % N_posterior/2, N_posterior/2, ... 
     %                         N_posterior/4, N_posterior/4, N_posterior/4, N_posterior/4, ... 
@@ -496,23 +512,20 @@ elseif explicit_comm_leaflets
                      
     % Anterior goes down then up 
     % leaflet_direction = [-1, 1]; 
-    leaflet_direction = [-1, 0, 0, 1]; 
+    leaflet_direction = [0, -1, 0, 0, 1, 0]; 
     
     % Commissure down up 
-    leaflet_direction = [leaflet_direction, -1, 1]; 
+    leaflet_direction = [leaflet_direction, 0, -1, 1, 0]; 
     
     % Posterior goes down then up 
     % leaflet_direction = [leaflet_direction, -1, 1]; 
-    leaflet_direction = [leaflet_direction, -1, 0, 0, 1]; 
+    leaflet_direction = [leaflet_direction, 0, -1, 0, 0, 1, 0]; 
     
     % Commissure down up 
-    leaflet_direction = [leaflet_direction, -1, 1]; 
+    leaflet_direction = [leaflet_direction, 0, -1, 1, 0]; 
     
-    % No offset, starting at commissure 
-    leaflet_N_start = 1; 
-
     % changes the whole tree tension by this constant 
-    tension_coeffs.tree_tension_multiplier = 1.292; %1.34; 
+    tension_coeffs.tree_tension_multiplier = 1.34; 
 
     % Leaf tensions are all modified 
     tension_coeffs.leaf_tension_base = 1.68 / 8; 
@@ -547,10 +560,10 @@ elseif explicit_comm_leaflets
                       1.0; 1.0; 1.0; 1.0; ...       % posterior
                       1.0; 1.0]; 
                   
-    k_root_coeff   = [0.8; 0.4; 0.4; 0.8; ...       % anterior  
-                      0.9; 0.9;           ...       % anterior and comm, comm and posterior       
+    k_root_coeff   = [0.8;   0.4; 0.4; 0.8; ...       % anterior  
+                      0.95; 0.95;           ...       % anterior and comm, comm and posterior       
                       0.45; 0.36; 0.36; 0.45; ...       % posterior
-                      0.9; 0.9];                    % posterior and comm, comm and anterior
+                      0.95; 0.95];                    % posterior and comm, comm and anterior
                   
     % leaf coefficients scale, because we expect the lengths of the leaves to decrease 
     % with refinement of the mesh  

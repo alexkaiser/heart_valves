@@ -32,7 +32,7 @@ end
 
 
 
-patch_schematic = true; 
+patch_schematic = false; 
 if patch_schematic
     load /Users/alex/mitral_fully_discrete/valve_generator/meshes/plot_meshes/two_leaflet_8_connector_b7a6aed/mitral_tree_128_final_data
     
@@ -59,7 +59,7 @@ end
     
 
 
-static_plots = false; 
+static_plots = true; 
 if static_plots  
 
     load /Users/alex/mitral_fully_discrete/valve_generator/meshes/plot_meshes/two_leaflet_8_connector_b7a6aed/mitral_tree_256_final_data
@@ -71,6 +71,12 @@ if static_plots
     view(0,90)
     printfig(fig, 'valve_top')
 
+    view(0,0)
+    printfig(fig, 'valve_side')
+
+    view(90,50)
+    printfig(fig, 'valve_mouth')
+    
     'stop'
     
     grid off 
@@ -79,15 +85,20 @@ if static_plots
     zoom(2)
     axis off 
     printfig(fig, 'tree_detail')
+    close all; 
     
-    % fig = figure; 
-    % valve_plot(valve_with_reference,fig)
-    % printfig(fig, 'valve_with_ref_diagonal')
-    % 
-    % view(0,90)
-    % printfig(fig, 'valve_with_ref_top')
-    % 
+    fig = figure; 
+    valve_plot(valve_with_reference,fig)
+    printfig(fig, 'valve_with_ref_diagonal')
+    
+    view(0,90)
+    printfig(fig, 'valve_with_ref_top')
+    
+    view(0,0)
+    printfig(fig, 'valve_with_ref_side')
 
+    view(90,50)
+    printfig(fig, 'valve_with_ref_mouth')
 end 
 
 

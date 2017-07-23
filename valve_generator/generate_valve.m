@@ -4,7 +4,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 32; 
+N = 256; 
 
 % Show some output 
 plots = false; 
@@ -63,7 +63,7 @@ if iteration_movie_anterior
 end 
 
 
-interactive = false; 
+interactive = true; 
 
 from_history = false; 
 if from_history 
