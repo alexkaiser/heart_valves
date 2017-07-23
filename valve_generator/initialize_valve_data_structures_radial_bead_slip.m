@@ -556,14 +556,14 @@ elseif explicit_comm_leaflets
     % for sanity reasons, these shuold mostly be one unless you have a good reason to change 
     % note that these are scaled by the fraction of the leaflet that they take up 
     k_0_1_coeff    = [1.6; 1.0; 1.0; 1.6; ...       % anterior  
-                      1.0; 1.0;           ...       % anterior and comm, comm and posterior       
+                      1.1; 1.1;           ...       % anterior and comm, comm and posterior       
                       1.0; 1.0; 1.0; 1.0; ...       % posterior
-                      1.0; 1.0]; 
+                      1.1; 1.1]; 
                   
     k_root_coeff   = [0.8;   0.4; 0.4; 0.8; ...       % anterior  
-                      0.95; 0.95;           ...       % anterior and comm, comm and posterior       
+                      0.98; 0.98;           ...       % anterior and comm, comm and posterior       
                       0.45; 0.36; 0.36; 0.45; ...       % posterior
-                      0.95; 0.95];                    % posterior and comm, comm and anterior
+                      0.98; 0.98];                    % posterior and comm, comm and anterior
                   
     % leaf coefficients scale, because we expect the lengths of the leaves to decrease 
     % with refinement of the mesh  
