@@ -370,7 +370,7 @@ elseif explicit_comm_leaflets
     % commissural tree version 
     % with explicit commissural leaflets 
     
-    valve.p_physical = 80 * MMHG_TO_CGS; 
+    valve.p_physical = 100 * MMHG_TO_CGS; 
 
     % Pressure on each leaflet is constant, negative since normal is outward facing 
     p_0 = -valve.p_physical; 
@@ -647,7 +647,7 @@ if ~explicit_comm_leaflets
     valve.eta_papillary_unscaled = valve.target_papillary_unscaled/500; 
 else 
     % take the same as the two leaflet version, but ratio and pressure settings are different 
-    valve.eta_papillary_unscaled = 1.25 * (.055/.04) * valve.target_papillary_unscaled/500; 
+    valve.eta_papillary_unscaled = (.055/.04) * valve.target_papillary_unscaled/500; 
 end 
     
 % if nonzero, linear springs of rest length with spacing between the layers 
