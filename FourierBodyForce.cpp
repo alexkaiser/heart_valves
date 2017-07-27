@@ -203,7 +203,7 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
             goal[2] = d_flux_z / cross_section_area; 
             
             // Clamp the velocity in the x,y components
-            // Maybe clamp the velocity in the z component too... 
+            // Maybe clamp the velocity in the z component too... re
             for (int component = 0; component < NDIM; ++component){
                 for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
                 
