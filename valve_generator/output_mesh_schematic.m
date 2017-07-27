@@ -9,7 +9,7 @@ function [] = output_mesh_schematic(valve)
     % hacks to make mesh shape be split in loction of dissection 
     wrap_idx = valve.N_anterior + valve.N_posterior/2; 
     if valve.commissural_leaflets
-        error('not implemented for schematic, must manually for papillary arrangement'); 
+        %error('not implemented for schematic, must manually for papillary arrangement'); 
         wrap_idx = wrap_idx + valve.N_commissure; 
     end 
 
@@ -43,24 +43,23 @@ function [] = output_mesh_schematic(valve)
 
     leaflet_schematic   = leaflet; 
     leaflet_schematic.X = X_schematic; 
-
-    trees_anterior_left = 1; 
-    trees_per_side = size(leaflet.papillary,2)/2; 
-    
-    if trees_per_side ~= 4
-        error('assuming four trees per side in schematic builder')
-    end 
-        
         
 
     % crop for 2d papillary 
     % leaflet_schematic.papillary = leaflet_schematic.papillary(1:2,:); 
 
     % left and right papillary hack placement 
-    
-    papillary_left_x  =      du * [-3, -2, -1, 1]; 
-    papillary_right_x = .5 + du * [-1,  1,  2, 3]; 
-    
+    if ~valve.commissural_leaflets
+        trees_anterior_left = 1; 
+        % trees_per_side = size(leaflet.papillary,2)/2; 
+        papillary_left_x  =      du * [-3, -2, -1, 1]; 
+        papillary_right_x = .5 + du * [-1,  1,  2, 3]; 
+    else 
+        trees_anterior_left = 2; 
+        % trees_per_side = size(leaflet.papillary,2)/2; 
+        papillary_left_x  =      du * (-5:0); 
+        papillary_right_x = .5 + du * ( 0:5);        
+    end 
 
     papillary_x = papillary_left_x( (end - trees_anterior_left + 1) : end); 
     papillary_x = [papillary_x, papillary_right_x]; 
@@ -188,7 +187,7 @@ function [] = output_mesh_schematic(valve)
     axis off; 
     set(gcf,'color',[1 1 1])
     
-    printfig(fig, 'mesh_schematic')
+    % printfig(fig, 'mesh_schematic')
     
 end 
 

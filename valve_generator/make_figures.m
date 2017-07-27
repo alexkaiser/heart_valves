@@ -3,7 +3,7 @@
 % 
 
 
-schematics = false; 
+schematics = true; 
 
 if schematics 
 
@@ -21,12 +21,12 @@ if schematics
 
     output_mesh_schematic(valve); 
 
-    output_valve_ring(valve); 
-
-    output_dec_tension_curve(); 
-
-    N_jacobian = 32; 
-    output_jacobian_figure(N_jacobian); 
+%     output_valve_ring(valve); 
+% 
+%     output_dec_tension_curve(); 
+% 
+%     N_jacobian = 32; 
+%     output_jacobian_figure(N_jacobian); 
     
 end 
 
@@ -59,7 +59,7 @@ end
     
 
 
-static_plots = true; 
+static_plots = false; 
 if static_plots  
 
     load /Users/alex/mitral_fully_discrete/valve_generator/meshes/plot_meshes/two_leaflet_8_connector_b7a6aed/mitral_tree_256_final_data
