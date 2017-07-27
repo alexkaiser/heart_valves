@@ -193,8 +193,8 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
             double kappa[NDIM];
             kappa[0] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
             kappa[1] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
-            kappa[2] = cycle_num >= 0.0; //0 ? 1.0e-2 * 0.25 * rho / dt : 0.0; // much lower friction in the z direction
-                                                               // at U = 10cm/s, this is ~10x force of gravity 
+            kappa[2] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0; 
+                                                               
             double goal[NDIM]; 
             goal[0] = 0.0; 
             goal[1] = 0.0; 
@@ -203,7 +203,7 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
             goal[2] = d_flux_z / cross_section_area; 
             
             // Clamp the velocity in the x,y components
-            // Clamp the velocity in the z component, but a lot less
+            // Maybe clamp the velocity in the z component too... 
             for (int component = 0; component < NDIM; ++component){
                 for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
                 
