@@ -53,7 +53,7 @@ namespace
 
     // constants 
     static const double C_PA         =  4.12; // Pulmonary artery compliance, ml / mmHg 
-    static const double C_LA_relaxed =  4*1.6;  // Left atrial compliance ml / mmHg
+    static const double C_LA_relaxed =  3*1.6;  // Left atrial compliance ml / mmHg
     static const double C_PV         = 10.0 - C_LA_relaxed;  // Pulmonary vein compliance, ml / mmHg 
         
     static const double R_P  = (9.0/5.6) * MIN_PER_L_T0_SEC_PER_ML; // Pulmonary resistance, mmHg / (ml/s)
