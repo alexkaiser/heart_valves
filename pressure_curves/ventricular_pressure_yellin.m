@@ -1,26 +1,14 @@
+function ventricular_pressure_yellin(cycle_length, dt, points_one_cycle_ventricle, points_one_cycle_atrium, base_name, suffix)
 
 
-% Taken from beat 1, p. 227, fig 2 
-% 'dynamics of left ventricular filling' Edward Yellin 
-% In Cardiac Mechanics and Function in the Normal and Diseased Heart 
 
-cycle_length = 0.8; 
+file_name = strcat(base_name, suffix, '.txt'); 
 
-points_one_cycle = [0.0,   0; 
-0.02, -4; 
-0.06, 2; 
-0.40, 6; 
-0.53, 14; 
-0.58, 120; 
-0.75, 130; 
-cycle_length, 8]; 
-
-dt = 1e-5; 
 bump_radius = .05; 
 n_fourier_coeffs = 1000; 
 plots = false; 
 
-[a_0_ventricle a_n_ventricle b_n_ventricle Series_ventricle] = series_and_smooth(points_one_cycle, dt, bump_radius, n_fourier_coeffs, plots); 
+[a_0_ventricle a_n_ventricle b_n_ventricle Series_ventricle] = series_and_smooth(points_one_cycle_ventricle, dt, bump_radius, n_fourier_coeffs, plots); 
 
 t = 0:dt:cycle_length; 
 vals_ventricle_series = Series_ventricle(t); 
@@ -29,7 +17,7 @@ plot(t, vals_ventricle_series, 'k');
 title('Ventricular pressure')
 xlabel('t')
 ylabel('p (mmHg)')
-printfig(fig, 'ventricular_pressure_yellin')
+printfig(fig, strcat('ventricular_pressure_yellin', suffix))
 
 
 % t = 0:dt:(3*cycle_length); 
@@ -53,16 +41,6 @@ printfig(fig, 'ventricular_pressure_yellin')
 
 
 
-
-points_one_cycle_atrium = [0.0, 24.555; 
-0.06, 4; 
-0.40, 7; 
-0.47, 20; 
-0.53, 5; 
-0.58, 7; 
-0.7,  10; 
-cycle_length, 24.555]; 
-
 [a_0_atrium a_n_atrium b_n_atrium Series_atrium] = series_and_smooth(points_one_cycle_atrium, dt, bump_radius, n_fourier_coeffs, plots); 
 
 t = 0:dt:cycle_length; 
@@ -72,7 +50,7 @@ plot(t, vals_atrium_series, 'k');
 title('Atrial pressure')
 xlabel('t')
 ylabel('p (mmHg)')
-printfig(fig, 'atrial_pressure_yellin')
+printfig(fig, strcat('atrial_pressure_yellin', suffix))
 
 
 
@@ -83,7 +61,7 @@ plot(t, vals_atrium_series, 'k');
 title('Atrial pressure')
 xlabel('t')
 ylabel('p (mmHg)')
-printfig(fig, 'both_pressure_yellin')
+printfig(fig, strcat('both_pressure_yellin', suffix))
 
 
 fig = figure; 
@@ -94,7 +72,7 @@ plot(t, 0*p_diff , 'k--');
 title('Pressure difference')
 xlabel('t')
 ylabel('p (mmHg)')
-printfig(fig, 'pressure_diff_yellin')
+printfig(fig, strcat('pressure_diff_yellin', suffix))
 
 
 
@@ -153,7 +131,7 @@ xlabel('n')
 ylabel('|a_n|, |b_n|')
 title('Modulus of Fourier coefficients')
 
-file_name = 'fourier_coeffs.txt';
+
 output_series_coeffs_to_txt(a_0, a_n, b_n, n_coeffs_to_output, cycle_length, file_name); 
 
 
