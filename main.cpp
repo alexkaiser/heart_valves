@@ -134,7 +134,7 @@ inline double deriv_spring_collagen(double R, const double* params, int lag_mast
 #define ENABLE_INSTRUMENTS
 #define FOURIER_SERIES_BODY_FORCE
 
-//#define USE_CIRC_MODEL
+#define USE_CIRC_MODEL
 
 #define MMHG_TO_CGS 1333.22368
 #define CGS_TO_MMHG 0.000750061683
@@ -433,7 +433,7 @@ int main(int argc, char* argv[])
                 const bool use_circ_model    = false; 
                 CirculationModel *circ_model = NULL; 
                 pout << "To constructor\n";
-                fourier_series_data *fourier_series = new fourier_series_data("fourier_coeffsno_atrial_systole.txt", dt);
+                fourier_series_data *fourier_series = new fourier_series_data("fourier_coeffs.txt", dt);
                 pout << "Series data successfully built\n";
             #endif
     
