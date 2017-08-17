@@ -433,7 +433,7 @@ int main(int argc, char* argv[])
                 const bool use_circ_model    = false; 
                 CirculationModel *circ_model = NULL; 
                 pout << "To constructor\n";
-                fourier_series_data *fourier_series = new fourier_series_data("fourier_coeffs.txt", dt);
+                fourier_series_data *fourier_series = new fourier_series_data("fourier_coeffs_high.txt", dt);
                 pout << "Series data successfully built\n";
             #endif
     
