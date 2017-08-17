@@ -422,7 +422,7 @@ int main(int argc, char* argv[])
                 // Beginningg pressure equal to ventricular pressure 
                 // Note that circ model has units of mmHg
                 // As does Fourier series 
-                double P_LA_0 = 12.0; //21.051427137375203;
+                double P_LA_0 = 13.0; //21.051427137375203;
         
                 const bool use_circ_model = true; 
                 CirculationModel *circ_model   = new CirculationModel("circ_model", P_PA_0, P_LA_0, start, restart_circ_model);

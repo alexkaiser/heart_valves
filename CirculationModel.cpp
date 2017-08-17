@@ -326,7 +326,6 @@ void CirculationModel::write_plot_code()
     if (SAMRAI_MPI::getRank() == mpi_root)
     {
         ofstream fout(DATA_FILE_NAME.c_str(), ios::app);
-        fout << d_time;
         fout.setf(ios_base::scientific);
         fout.setf(ios_base::showpos);
         fout.precision(10);
