@@ -18,9 +18,10 @@ if schematics
 
     valve = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization, decreasing_tension); 
 
+    output_leaflet_mesh_schematic(valve); 
 
-    output_mesh_schematic(valve); 
-
+%    output_mesh_schematic(valve); 
+%
 %     output_valve_ring(valve); 
 % 
 %     output_dec_tension_curve(); 
