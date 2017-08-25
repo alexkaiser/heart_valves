@@ -105,15 +105,19 @@ function order_check(path, N_values)
                     % posterior is exclusive of ends, take plus one on N
                     u = .5 + .5 * j_reduced / (N_coarse_posterior + 1);  
                     
-                    j_fine_below_reduced = floor(2*(u-.5) * (N_fine_posterior+1)) + 1; 
+                    j_fine_below_reduced = floor(2*(u-.5) * (N_fine_posterior+1)); 
                     
-                    u_fine_check = .5 + .5 * j_fine_below_reduced / (N_fine_posterior + 1);  
+                    
                     
                     % compute fractions of distances, which are the interpolation coefficients 
-                    s = (2*(u-.5) * (N_fine_posterior + 1)) - (j_fine_below_reduced - 1); 
+                    s = (2*(u-.5) * (N_fine_posterior + 1)) - (j_fine_below_reduced); 
                     
                     j_fine_below = j_fine_below_reduced + j_max_anterior_fine; 
                     
+                    
+                    
+                    
+                    u_fine_check = .5 + .5 * j_fine_below_reduced / (N_fine_posterior + 1);  
                 end 
                 
                 
