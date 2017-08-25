@@ -76,9 +76,9 @@ function order_check(path, N_values)
         % interpolate fine mesh to this location 
         % with bilinear interpolation 
         % only do so if all four points on the fine mesh are valid 
-        for j=1:j_max_anterior_coarse 
+        %for j=1:j_max_anterior_coarse 
         %for j=1:j_max_coarse
-        %for j=(j_max_anterior_coarse+1):j_max_coarse 
+        for j=(j_max_anterior_coarse+1):j_max_coarse 
             for k=1:k_max_coarse
                 
                 % because of weird inclusive/exclusive angle placement 
@@ -99,15 +99,18 @@ function order_check(path, N_values)
                     
                 else
                     
+                    % index in the posterior range 
                     j_reduced = j - j_max_anterior_coarse;
                     
                     % posterior is exclusive of ends, take plus one on N
-                    u = .5 + j_reduced / (N_coarse_posterior + 1);  
+                    u = .5 + .5 * j_reduced / (N_coarse_posterior + 1);  
                     
-                    j_fine_below_reduced = floor((u-.5) * (N_fine_posterior + 1)); 
+                    j_fine_below_reduced = floor(2*(u-.5) * (N_fine_posterior+1)) + 1; 
+                    
+                    u_fine_check = .5 + .5 * j_fine_below_reduced / (N_fine_posterior + 1);  
                     
                     % compute fractions of distances, which are the interpolation coefficients 
-                    s = ((u-.5) * (N_fine_posterior + 1)) - (j_fine_below_reduced - 1); 
+                    s = (2*(u-.5) * (N_fine_posterior + 1)) - (j_fine_below_reduced - 1); 
                     
                     j_fine_below = j_fine_below_reduced + j_max_anterior_fine; 
                     
@@ -219,7 +222,7 @@ function order_check(path, N_values)
                 % check at the ring 
                 if (0 < j_fine_below) && (j_fine_below <= j_max_fine) && (k == k_max_coarse)
                     
-                    fprintf('j = %d, j_fine_below = %d, u = %f, s = %f\n', j, j_fine_below, u, s); 
+                    fprintf('j = %d, j_fine_below = %d, u = %f, s = %f, u_fine_check (should be close, not equal) = %f\n', j, j_fine_below, u, s, u_fine_check); 
                     X_ring_coarse(:,j) = X_coarse(:,j,k); 
 
                     if s == 0
