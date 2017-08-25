@@ -196,7 +196,12 @@ function order_check(path, N_values)
                 
                 % check at the ring 
                 if (0 < j_fine_below) && (j_fine_below <= j_max_fine) && (k == k_max_coarse)
-                    s = (u/du_fine) - (j_fine_below-1); 
+                    
+
+                    s = 2*u*(N_fine_anterior-1) - (j_fine_below - 1);
+                    
+                    fprintf('j = %d, j_fine_below = %d, u = %f, s = %f\n', j, j_fine_below, u, s); 
+                    % s = (u/du_fine) - (j_fine_below-1); 
                     X_ring_coarse(:,j) = X_coarse(:,j,k); 
                     X_ring_interp(:,j) = (1-s) * X_fine(:,j_fine_below,k_max_fine) + s*X_fine(:,j_fine_above,k_max_fine); 
                 end   
