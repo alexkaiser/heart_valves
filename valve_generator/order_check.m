@@ -87,7 +87,12 @@ function order_check(path, N_values)
                     N_coarse_anterior = j_max_anterior_coarse; 
                     
                     u = .5 * (j-1) / (N_coarse_anterior-1); 
-                    v = .5 * (k-1) / (N_coarse_anterior-1); 
+                    
+                    % new fancy 
+                    v = 1 - (k_max_coarse - k) * du_coarse; 
+                    
+                    % old bad 
+                    % v = .5 * (k-1) / (N_coarse_anterior-1); 
                 else 
                     error('fix me!')
                     u = (j-1) / (N_coarse+1);
@@ -96,7 +101,25 @@ function order_check(path, N_values)
                 
                 N_fine_anterior = j_max_anterior_fine; 
                 j_fine_below = floor(2 * u * (N_fine_anterior-1)) + 1; 
-                k_fine_below = floor(2 * v * (N_fine_anterior-1)) + 1; 
+                
+                % new fancy... 
+                k_fine_below = (v - 1)/du_fine + k_max_fine; 
+                
+                v_fine_check = 1 - (k_max_fine - k_fine_below) * du_fine; 
+                
+                fprintf('k = %d, k_fine_below = %d, v = %f, v_fine_check = %f\n', k, k_fine_below, v, v_fine_check); 
+                
+                
+                % old bad 
+                % k_fine_below = floor(2 * v * (N_fine_anterior-1)) + 1; 
+                
+                if k_fine_below ~= floor(k_fine_below)
+                    warning('something off on k indexing, not rounding correctly')
+                end 
+                
+                if abs(v - v_fine_check) > eps 
+                    error('v and v_fine_check not equal to tolerance')
+                end 
                 
                 if is_internal_coarse(j,k)
 
@@ -148,11 +171,19 @@ function order_check(path, N_values)
                                 % this should still congeverge just with no particular order 
 
 
-                                s = (u/du_fine) - (j_fine_below-1); 
-                                t = (v/du_fine) - (k_fine_below-1); 
+                                s = 2*u*(N_fine_anterior-1) - (j_fine_below - 1);   %(u/du_fine) - (j_fine_below-1); 
+%                                 t = (v/du_fine) - (k_fine_below-1); 
+% 
+%                                 if t == 0
+%                                     't = 0 this iteration'
+%                                 else 
+%                                     error('should always be using t=0 here')
+%                                 end 
+%                                 
+%                                 X_fine_interp(:,j,k) = (1-t) * ((1-s) * X_fine(:,j_fine_below,k_fine_below) + s*X_fine(:,j_fine_above,k_fine_below)) + ... 
+%                                                           t  * ((1-s) * X_fine(:,j_fine_below,k_fine_above) + s*X_fine(:,j_fine_above,k_fine_above)); 
 
-                                X_fine_interp(:,j,k) = (1-t) * ((1-s) * X_fine(:,j_fine_below,k_fine_below) + s*X_fine(:,j_fine_above,k_fine_below)) + ... 
-                                                          t  * ((1-s) * X_fine(:,j_fine_below,k_fine_above) + s*X_fine(:,j_fine_above,k_fine_above)); 
+                                X_fine_interp(:,j,k) = (1-s) * X_fine(:,j_fine_below,k_fine_below) + s*X_fine(:,j_fine_above,k_fine_below);
 
 
                                 if (any(isnan(X_fine_interp(:,j,k))) || any(X_fine_interp(:,j,k) == [0;0;0]))
@@ -200,10 +231,15 @@ function order_check(path, N_values)
 
                     s = 2*u*(N_fine_anterior-1) - (j_fine_below - 1);
                     
-                    fprintf('j = %d, j_fine_below = %d, u = %f, s = %f\n', j, j_fine_below, u, s); 
+                    % fprintf('j = %d, j_fine_below = %d, u = %f, s = %f\n', j, j_fine_below, u, s); 
                     % s = (u/du_fine) - (j_fine_below-1); 
                     X_ring_coarse(:,j) = X_coarse(:,j,k); 
-                    X_ring_interp(:,j) = (1-s) * X_fine(:,j_fine_below,k_max_fine) + s*X_fine(:,j_fine_above,k_max_fine); 
+
+                    if s == 0
+                        X_ring_interp(:,j) = X_fine(:,j_fine_below,k_max_fine); 
+                    else 
+                        X_ring_interp(:,j) = (1-s) * X_fine(:,j_fine_below,k_max_fine) + s*X_fine(:,j_fine_above,k_max_fine); 
+                    end 
                 end   
                 
                 
