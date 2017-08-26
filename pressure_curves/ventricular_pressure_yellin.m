@@ -17,17 +17,10 @@ plot(t, vals_ventricle_series, 'k');
 title('Ventricular pressure')
 xlabel('t')
 ylabel('p (mmHg)')
+set(fig, 'Position', [100, 100, 1000, 500])
+set(fig,'PaperPositionMode','auto')
 printfig(fig, strcat('ventricular_pressure_yellin', suffix))
 
-
-% t = 0:dt:(3*cycle_length); 
-% vals_ventricle_series = Series_ventricle(t); 
-% fig = figure; 
-% plot(t, vals_ventricle_series, 'k'); 
-% title('Ventricular pressure')
-% xlabel('t')
-% ylabel('p (mmHg)')
-% printfig(fig, 'ventricular_pressure_yellin_three_cycles')
 % 
 % fig = figure; 
 % semilogy( abs(a_n_ventricle), 'k')
@@ -50,6 +43,8 @@ plot(t, vals_atrium_series, 'k');
 title('Atrial pressure')
 xlabel('t')
 ylabel('p (mmHg)')
+set(fig, 'Position', [100, 100, 1000, 500])
+set(fig,'PaperPositionMode','auto')
 printfig(fig, strcat('atrial_pressure_yellin', suffix))
 
 
@@ -61,7 +56,28 @@ plot(t, vals_atrium_series, 'k');
 title('Atrial pressure')
 xlabel('t')
 ylabel('p (mmHg)')
+set(fig, 'Position', [100, 100, 1000, 500])
+set(fig,'PaperPositionMode','auto')
 printfig(fig, strcat('both_pressure_yellin', suffix))
+
+
+t = 0:dt:(3*cycle_length); 
+vals_ventricle_series = Series_ventricle(t); 
+fig = figure; 
+plot(t, vals_ventricle_series, 'k'); 
+title('Pressures')
+xlabel('t')
+ylabel('p (mmHg)')
+hold on 
+vals_atrium_series = Series_atrium(t); 
+plot(t, vals_atrium_series, '--k');
+axis([0 2.4 -10 140])
+set(fig, 'Position', [100, 100, 1000, 500])
+set(fig,'PaperPositionMode','auto')
+legend('Left Ventricle', 'Left Atrium', 'Location', 'NorthWest')
+printfig(fig, 'both_pressure_yellin_three_cycles')
+
+
 
 
 fig = figure; 
@@ -72,6 +88,8 @@ plot(t, 0*p_diff , 'k--');
 title('Pressure difference')
 xlabel('t')
 ylabel('p (mmHg)')
+set(fig, 'Position', [100, 100, 1000, 500])
+set(fig,'PaperPositionMode','auto')
 printfig(fig, strcat('pressure_diff_yellin', suffix))
 
 
@@ -96,7 +114,7 @@ printfig(fig, strcat('pressure_diff_yellin', suffix))
 
 
 
-save('series_data_yellin')
+save(strcat('series_data_yellin', suffix)); 
 
 
 n_coeffs_to_output = 600; 
