@@ -3,10 +3,11 @@ function [] = output_leaflet_mesh_schematic(valve)
 
 
 leaflet = valve.leaflets(1); 
-
+N                      = leaflet.N; 
 X_current              = leaflet.X; 
 j_max                  = leaflet.j_max; 
-k_max                  = leaflet.k_max; 
+k_max                  = leaflet.k_max;
+j_max_anterior         = max(leaflet.j_range_anterior); 
 du                     = leaflet.du; 
 is_internal            = leaflet.is_internal; 
 is_bc                  = leaflet.is_bc; 
@@ -22,10 +23,25 @@ fig = figure;
 hold on; 
 
 
+N_anterior  = j_max_anterior; 
+N_posterior = N - N_anterior; 
+
+
 for j=1:j_max
     for k=1:k_max
         if is_internal(j, k) || is_bc(j,k)
-            X_schematic(:,j,k) = du * [j;k;nan]; 
+            
+            % use the real locations in u,v from order check here 
+            if (j <= j_max_anterior)
+                u = .5 * (j-1) / (N_anterior-1);
+            else 
+                j_reduced = j - j_max_anterior;
+                u = .5 + .5 * j_reduced / (N_posterior + 1);  
+            end 
+            
+            v = 1 - (k_max - k) * du; 
+            
+            X_schematic(:,j,k) = [u,v,nan]; %du * [j;k;nan]; 
         end 
     end 
 end 
@@ -137,10 +153,10 @@ end
 
 axis equal;    
 
-x_min = -du; 
-x_max = 1 + du; 
-y_min = 1/4; 
-y_max = 1/2 + du * (1 + n_rings_periodic) + du; % add one du here for a little space 
+x_min = -2*du; 
+x_max = 1 + 2*du; 
+y_min = .7; 
+y_max = 1 + du; % add one du here for a little space 
 
 
 axis([x_min x_max y_min y_max])
