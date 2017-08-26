@@ -29,7 +29,7 @@ function order_check(path, N_values)
 
         N_coarse = N_values(i); 
         data_coarse = sprintf('%s/mitral_tree_%d_final_data', path, N_coarse); 
-        load(data_coarse) 
+        load(data_coarse)
 
         valve_coarse       = valve; 
         leaflet_coarse     = valve_coarse.leaflets(1); 
@@ -38,8 +38,13 @@ function order_check(path, N_values)
         j_max_coarse       = leaflet_coarse.j_max; 
         k_max_coarse       = leaflet_coarse.k_max; 
         du_coarse          = leaflet_coarse.du; 
-        is_internal_coarse = leaflet_coarse.is_internal;
+        is_internal_coarse = leaflet_coarse.is_internal; 
 
+%         if i == 1
+%             fig = figure; 
+%             valve_plot(valve_coarse, fig);
+%         end 
+        
         N_fine = 2*N_coarse; 
         data_fine = sprintf('%s/mitral_tree_%d_final_data', path, N_fine); 
         load (data_fine) 
@@ -55,6 +60,9 @@ function order_check(path, N_values)
         is_internal_fine = leaflet_fine.is_internal; 
         is_bc_fine       = leaflet_fine.is_bc;    
 
+%         fig = figure; 
+%         valve_plot(valve_fine, fig);
+        
         points_written_coarse = 0; 
         points_written_fine   = 0; 
 
@@ -71,14 +79,17 @@ function order_check(path, N_values)
         X_ring_interp = zeros(size(X_ring_coarse)); 
         
         
+        u_mesh = zeros(j_max_coarse,1); 
+        v_mesh = zeros(k_max_coarse,1); 
+        
         % for all internal points on coarse mesh 
         % find coordinates in u,v plane 
         % interpolate fine mesh to this location 
         % with bilinear interpolation 
         % only do so if all four points on the fine mesh are valid 
         %for j=1:j_max_anterior_coarse 
-        %for j=1:j_max_coarse
-        for j=(j_max_anterior_coarse+1):j_max_coarse 
+        for j=1:j_max_coarse
+        %for j=(j_max_anterior_coarse+1):j_max_coarse 
             for k=1:k_max_coarse
                 
                 % because of weird inclusive/exclusive angle placement 
@@ -114,13 +125,13 @@ function order_check(path, N_values)
                     
                     j_fine_below = j_fine_below_reduced + j_max_anterior_fine; 
                     
-                    
-                    
-                    
                     u_fine_check = .5 + .5 * j_fine_below_reduced / (N_fine_posterior + 1);  
                 end 
                 
-                
+                if ~bilinear_interp
+                    s = 0; 
+                end 
+                                
                 % v is independent of anterior or posterior 
                 v = 1 - (k_max_coarse - k) * du_coarse; 
                                 
@@ -132,8 +143,10 @@ function order_check(path, N_values)
                 % fprintf('k = %d, k_fine_below = %d, v = %f, v_fine_check = %f\n', k, k_fine_below, v, v_fine_check); 
                 
                 
-                % old bad 
-                % k_fine_below = floor(2 * v * (N_fine_anterior-1)) + 1; 
+                % for plotting 
+                u_mesh(j) = u; 
+                v_mesh(k) = v; 
+                
                 
                 if k_fine_below ~= floor(k_fine_below)
                     warning('something off on k indexing, not rounding correctly')
@@ -180,9 +193,12 @@ function order_check(path, N_values)
                                     error('nan or zero problems in coarse')
                                 end 
 
-                                
-                                X_fine_interp(:,j,k) = (1-s) * X_fine(:,j_fine_below,k_fine_below) + s*X_fine(:,j_fine_above,k_fine_below);
-
+                                if s == 0 
+                                    % edge case, s==0 may be the last point (and there is no point aboce to be read)
+                                    X_fine_interp(:,j,k) = X_fine(:,j_fine_below,k_fine_below);
+                                else 
+                                    X_fine_interp(:,j,k) = (1-s) * X_fine(:,j_fine_below,k_fine_below) + s*X_fine(:,j_fine_above,k_fine_below);
+                                end 
                                 
                                 if (any(isnan(X_fine_interp(:,j,k))) || any(X_fine_interp(:,j,k) == [0;0;0]))
                                     error('nan or zero problems in fine')
@@ -223,13 +239,16 @@ function order_check(path, N_values)
                     'stop'
                 end 
                 
-                % check at the ring 
-                if (0 < j_fine_below) && (j_fine_below <= j_max_fine) && (k == k_max_coarse)
+                % check at the ring to make sure checker gets desired order 
+                % piecewise linear interpolant (with exact application of boundary conditions)
+                % should give secon order on ring 
+                if (0 < j_fine_below) && (j_fine_below <= j_max_fine) && (k == k_max_coarse) 
                     
-                    fprintf('j = %d, j_fine_below = %d, u = %f, s = %f, u_fine_check (should be close, not equal) = %f\n', j, j_fine_below, u, s, u_fine_check); 
+                    fprintf('j = %d, j_fine_below = %d, u = %f, s = %f\n', j, j_fine_below, u, s); 
                     X_ring_coarse(:,j) = X_coarse(:,j,k); 
 
                     if s == 0
+                        % edge case, s==0 may be the last point (and there is no point aboce to be read)
                         X_ring_interp(:,j) = X_fine(:,j_fine_below,k_max_fine); 
                     else 
                         X_ring_interp(:,j) = (1-s) * X_fine(:,j_fine_below,k_max_fine) + s*X_fine(:,j_fine_above,k_max_fine); 
@@ -263,8 +282,7 @@ function order_check(path, N_values)
         diff_two_components = diff_two_components'; 
         diff_inf_components = diff_inf_components'; 
 
-        u_mesh = (1:j_max_coarse) / N_coarse; 
-        v_mesh = (1:k_max_coarse) / N_coarse; 
+
 
         
         
@@ -304,26 +322,48 @@ function order_check(path, N_values)
 
         x_min = 0; 
         x_max = 1; 
-        y_min = .2;
+        y_min = .7; 
         y_max = max(v_mesh);
         z_min = 0;
-        z_max = max(max(diff_inf_components)); 
+        z_max = max(max(diff_two_components)); 
 
-        figure; 
-        diff_inf_components(diff_inf_components == 0) = nan; 
-        surf(u_mesh, v_mesh, diff_inf_components); 
-        axis([x_min x_max y_min y_max z_min z_max]); 
-        xlabel('u')
-        ylabel('v')
+%         figure; 
+%         diff_inf_components(diff_inf_components == 0) = nan; 
+%         surf(u_mesh, v_mesh, diff_inf_components); 
+%         axis([x_min x_max y_min y_max z_min z_max]); 
+%         xlabel('u')
+%         ylabel('v')
 
+        if i == iterations 
 
-        figure; 
-        diff_inf_components(diff_inf_components == 0) = nan; 
-        surf(u_mesh, v_mesh, diff_inf_components,'EdgeColor','None'); 
-        axis([x_min x_max y_min y_max z_min z_max]); 
-        view(2);  
-        xlabel('u')
-        ylabel('v')
+            fig = figure; 
+            diff_two_components(diff_two_components == 0) = nan; 
+            surf(u_mesh, v_mesh, diff_two_components,'EdgeColor','None'); 
+            axis equal
+            axis([x_min x_max y_min y_max z_min z_max]);
+            view(2);  
+            xlabel('u')
+            ylabel('v')
+            cb = colorbar('SouthOutside'); 
+            set(cb,'position',[0.13   0.22   0.78   0.02])
+
+            printfig(fig, 'static_convergence_psuedocolor_difference'); 
+
+            fig = figure; 
+            diff_two_components(diff_two_components == 0) = nan; 
+            surf(u_mesh, v_mesh, diff_two_components);  
+            axis equal
+            axis([x_min x_max y_min y_max z_min z_max]);
+            grid off 
+            axis off 
+            view(-53,14);  
+            %cb = colorbar('location', 'EastOutside'); 
+            %set(cb,'position',[0.8    0.38    0.0446    0.3])
+            %xlabel('u')
+            %ylabel('v')
+            printfig(fig, 'static_convergence_surface_difference'); 
+        
+        end 
 
 %         figure 
 %         pcolor(u_mesh, v_mesh, diff_inf_components)
@@ -363,7 +403,7 @@ function order_check(path, N_values)
         order_2    = diff_2_ring(i) / diff_2_ring(i+1);  
         order_inf  = diff_inf_ring(i) / diff_inf_ring(i+1);  
 
-        fprintf('%d & %f & %f  &  %f    \\\\  \n \\hline \n ',  N,  order_1, order_2, order_inf);
+        fprintf('%d,%d,%d & %f & %f  &  %f    \\\\  \n \\hline \n ',  N, 2*N, 4*N, order_1, order_2, order_inf);
 
         N = 2*N;
     end
@@ -384,7 +424,7 @@ function order_check(path, N_values)
         order_2    = diff_2(i) / diff_2(i+1);  
         order_inf  = diff_inf(i) / diff_inf(i+1);  
 
-        fprintf('%d & %f & %f  &  %f    \\\\  \n \\hline \n ',  N,  order_1, order_2, order_inf);
+        fprintf('%d,%d,%d & %f & %f  &  %f    \\\\  \n \\hline \n ',  N, 2*N, 4*N,   order_1, order_2, order_inf);
 
         N = 2*N;
     end
