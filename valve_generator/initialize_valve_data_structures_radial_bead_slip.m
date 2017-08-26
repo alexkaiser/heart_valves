@@ -189,7 +189,7 @@ if ~explicit_comm_leaflets
     tension_coeffs.c_rad_dec_edge_connector   = 2.0;  % circumferential hoops
 
     % places this many periodic rings above 
-    n_rings_periodic = max(2,N/64); 
+    n_rings_periodic = max(1,N/64); 
 
     % places circumferential fibers this many below hoops 
     % if the location is not already covered by leaflet
