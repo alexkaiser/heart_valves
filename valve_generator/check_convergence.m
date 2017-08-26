@@ -1,7 +1,7 @@
 
 path = '/Users/alex/Dropbox/NYU/research/mitral_fully_discrete/valve_generator/meshes/plot_meshes/two_leaflet_8_connector_b7a6aed'
 
-N_values = 2.^[5:9]; 
+N_values = 2.^[6:10]; 
 
 order_check(path, N_values)
 

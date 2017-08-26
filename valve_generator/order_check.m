@@ -325,7 +325,7 @@ function order_check(path, N_values)
         y_min = .7; 
         y_max = max(v_mesh);
         z_min = 0;
-        z_max = max(max(diff_two_components)); 
+        z_max = max(max(diff_two_components)) + .01; 
 
 %         figure; 
 %         diff_inf_components(diff_inf_components == 0) = nan; 
@@ -334,24 +334,32 @@ function order_check(path, N_values)
 %         xlabel('u')
 %         ylabel('v')
 
-        if i == iterations 
+        if N_fine == 512
 
             fig = figure; 
+            set(gcf,'Renderer','Zbuffer')
             diff_two_components(diff_two_components == 0) = nan; 
             surf(u_mesh, v_mesh, diff_two_components,'EdgeColor','None'); 
+            set(fig, 'Position', [100, 100, 1000, 500])
+            set(fig,'PaperPositionMode','auto')
             axis equal
             axis([x_min x_max y_min y_max z_min z_max]);
             view(2);  
             xlabel('u')
             ylabel('v')
             cb = colorbar('SouthOutside'); 
-            set(cb,'position',[0.13   0.22   0.78   0.02])
+            set(cb,'position',[0.13   0.16   0.35   0.02])
+            %set(cb,'position',[0.13   0.22   0.78   0.02])
 
-            printfig(fig, 'static_convergence_psuedocolor_difference'); 
-
+            
+            printfig(fig,'static_convergence_psuedocolor_difference'); 
+            
+            
             fig = figure; 
             diff_two_components(diff_two_components == 0) = nan; 
-            surf(u_mesh, v_mesh, diff_two_components);  
+            surf(u_mesh, v_mesh, diff_two_components, 'EdgeColor','None');  
+            set(fig, 'Position', [100, 100, 1000, 500])
+            set(fig,'PaperPositionMode','auto')
             axis equal
             axis([x_min x_max y_min y_max z_min z_max]);
             grid off 
@@ -408,7 +416,19 @@ function order_check(path, N_values)
         N = 2*N;
     end
     
-    
+    diff_1
+    diff_2 
+    diff_inf 
+
+
+    fprintf('Comparisons of N,2N points\n'); 
+    N = N_values(1); 
+    for i = 1:iterations
+
+        fprintf('%d,%d & %.2e & %.2e  &  %.2e    \\\\  \n \\hline \n ',  N, 2*N,   diff_1(i), diff_2(i), diff_inf(i));
+
+        N = 2*N;
+    end
     
     
     diff_1
@@ -424,11 +444,14 @@ function order_check(path, N_values)
         order_2    = diff_2(i) / diff_2(i+1);  
         order_inf  = diff_inf(i) / diff_inf(i+1);  
 
-        fprintf('%d,%d,%d & %f & %f  &  %f    \\\\  \n \\hline \n ',  N, 2*N, 4*N,   order_1, order_2, order_inf);
+        fprintf('%d,%d,%d & %.2f & %.2f  &  %.2f    \\\\  \n \\hline \n ',  N, 2*N, 4*N,   order_1, order_2, order_inf);
 
         N = 2*N;
     end
 
+    
+    
+    
 end 
 
 
