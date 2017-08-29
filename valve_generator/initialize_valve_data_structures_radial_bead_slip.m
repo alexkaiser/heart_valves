@@ -103,7 +103,7 @@ left_papillary_idx  = 1;
 right_papillary_idx = 2; 
 
 
-explicit_comm_leaflets = false; 
+explicit_comm_leaflets = true; 
     
 
 if ~explicit_comm_leaflets 

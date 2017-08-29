@@ -4,7 +4,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 512; 
+N = 256; 
 
 % Show some output 
 plots = false; 
@@ -17,7 +17,7 @@ bead_slip    = true;
 attached     = false; 
 leaflet_only = false; 
 optimization = false; 
-decreasing_tension = false; 
+decreasing_tension = true; 
 
 
 if radial
@@ -54,7 +54,7 @@ if plots
 end
 
 
-iteration_movie = true; 
+iteration_movie = false; 
 if iteration_movie
     valve.leaflets(1).iteration_movie = true;
     valve.leaflets(1).movie_name = 'const_tension_newton'; 
