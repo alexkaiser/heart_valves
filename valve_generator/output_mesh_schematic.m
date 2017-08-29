@@ -13,13 +13,15 @@ function [] = output_mesh_schematic(valve)
         wrap_idx = wrap_idx + valve.N_commissure; 
     end 
 
+    
     X_current              = leaflet.X; 
     j_max                  = leaflet.j_max; 
     k_max                  = leaflet.k_max; 
     du                     = leaflet.du; 
     is_internal            = leaflet.is_internal; 
     is_bc                  = leaflet.is_bc; 
-
+    alpha                  = leaflet.alpha; 
+    beta                   = leaflet.beta; 
 
     % same number of points, crop to 2D array 
     X_schematic = nan * zeros(size(X_current)); 
@@ -41,6 +43,11 @@ function [] = output_mesh_schematic(valve)
         end 
     end 
 
+    if valve.commissural_leaflets
+        
+        X_schematic(1,:,:) = X_schematic(1,:,:) - min(min(X_schematic(1,:,:))) + du/2; 
+    end 
+        
     leaflet_schematic   = leaflet; 
     leaflet_schematic.X = X_schematic; 
         
@@ -57,8 +64,10 @@ function [] = output_mesh_schematic(valve)
     else 
         trees_anterior_left = 2; 
         % trees_per_side = size(leaflet.papillary,2)/2; 
-        papillary_left_x  =      du * (-5:0); 
-        papillary_right_x = .5 + du * ( 0:5);        
+        center = .5; 
+        radius = .25; 
+        papillary_left_x  = center - radius + du * (-5:2:5); 
+        papillary_right_x = center + radius + du * (-5:2:5);        
     end 
 
     papillary_x = papillary_left_x( (end - trees_anterior_left + 1) : end); 
@@ -89,17 +98,22 @@ function [] = output_mesh_schematic(valve)
 
                     k_nbr_tmp = k; 
 
-                    [valid j_nbr k_nbr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
  
                     if valid 
+                         
+                        alpha_tmp     = alpha(j_spr,k_spr); 
+                        
                         x_tmp(1) = X_schematic(1,j,k); 
                         x_tmp(2) = X_schematic(1,j_nbr,k_nbr); 
                         y_tmp(1) = X_schematic(2,j,k); 
                         y_tmp(2) = X_schematic(2,j_nbr,k_nbr); 
                         
-                        % lazy hack to not plot weird periodic links 
-                        if abs(x_tmp(1) - x_tmp(2)) < 2*du
-                            plot(x_tmp, y_tmp, plot_options, 'MarkerSize', marker_size); 
+                        if alpha_tmp ~= 0
+                            % lazy hack to not plot weird periodic links 
+                            if abs(x_tmp(1) - x_tmp(2)) < 2*du
+                                plot(x_tmp, y_tmp, plot_options, 'MarkerSize', marker_size); 
+                            end 
                         end 
 
                     end 
@@ -110,14 +124,17 @@ function [] = output_mesh_schematic(valve)
 
                     j_nbr_tmp = j; 
 
-                    [valid j_nbr k_nbr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
 
                     if valid
+                        beta_tmp = beta(j_spr,k_spr); 
                         x_tmp(1) = X_schematic(1,j,k); 
                         x_tmp(2) = X_schematic(1,j_nbr,k_nbr); 
                         y_tmp(1) = X_schematic(2,j,k); 
                         y_tmp(2) = X_schematic(2,j_nbr,k_nbr); 
-                        plot(x_tmp, y_tmp, plot_options, 'MarkerSize', marker_size); 
+                        if beta_tmp ~= 0
+                            plot(x_tmp, y_tmp, plot_options, 'MarkerSize', marker_size); 
+                        end
                     end 
                 end 
             end       
@@ -187,8 +204,11 @@ function [] = output_mesh_schematic(valve)
     axis off; 
     set(gcf,'color',[1 1 1])
     
-    % printfig(fig, 'mesh_schematic')
-    
+    if valve.commissural_leaflets
+        printfig(fig, 'mesh_schematic_commissure')
+    else 
+        printfig(fig, 'mesh_schematic')
+    end 
 end 
 
 
