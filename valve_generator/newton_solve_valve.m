@@ -24,6 +24,8 @@ pass = true;
 err = total_global_err(leaflet); 
 it = 0; 
 
+fprintf('Global iteration = %d, \tnorm %e\n', it, err)
+
 % some versions use an energy in addition to difference equations 
 use_energy = false; 
 
@@ -69,6 +71,27 @@ if plots
     view(74,6); 
     hold off;  
 end 
+
+
+if isfield(leaflet, 'iteration_movie') && leaflet.iteration_movie 
+    
+    movie_name = leaflet.movie_name; 
+    
+    fig_movie = figure; 
+    surf_plot(leaflet, fig_movie); 
+    grid off 
+    axis off 
+    title = sprintf('%s_diagonal_%d', movie_name, it); 
+    printfig(fig_movie, title); 
+    view(90,0)
+    title = sprintf('%s_front_%d', movie_name, it); 
+    printfig(fig_movie, title); 
+    view(0,90)
+    title = sprintf('%s_top_%d', movie_name, it);
+    printfig(fig_movie, title); 
+    close(fig_movie); 
+end 
+
 
 % newton step loop 
 while err > tol
@@ -123,7 +146,6 @@ while err > tol
     leaflet = internal_points_to_2d(X_linearized, leaflet); 
     
     err = total_global_err(leaflet);         
-    
     
     if back_tracking && (~optimization)
         
@@ -293,16 +315,23 @@ while err > tol
     
     if isfield(leaflet, 'iteration_movie') && leaflet.iteration_movie 
         
-        if ~isfield(leaflet, 'frame')
-            error('must have frame number to make movie')
-        end 
-        
-        
-        output_leaflet_to_xyz_format(leaflet, ~leaflet.springs_written)
-        
-        leaflet.springs_written = true; 
-        leaflet.frame = leaflet.frame + 1; 
-        
+%         output_leaflet_to_xyz_format(leaflet, ~leaflet.springs_written)
+%         
+%         leaflet.springs_written = true; 
+
+        fig_movie = figure; 
+        surf_plot(leaflet, fig_movie); 
+        grid off 
+        axis off 
+        title = sprintf('%s_diagonal_%d', movie_name, it); 
+        printfig(fig_movie, title); 
+        view(90,0)
+        title = sprintf('%s_front_%d', movie_name, it); 
+        printfig(fig_movie, title); 
+        view(0,90)
+        title = sprintf('%s_top_%d', movie_name, it);
+        printfig(fig_movie, title); 
+        close(fig_movie); 
     end    
 end 
 
