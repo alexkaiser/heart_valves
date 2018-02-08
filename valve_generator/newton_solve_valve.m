@@ -81,6 +81,8 @@ if isfield(leaflet, 'iteration_movie') && leaflet.iteration_movie
     surf_plot(leaflet, fig_movie); 
     grid off 
     axis off 
+    set(fig_movie, 'Position', [100, 100, 1000, 1000])
+    set(fig_movie,'PaperPositionMode','auto')
     title = sprintf('%s_diagonal_%d', movie_name, it); 
     printfig(fig_movie, title); 
     view(90,0)
@@ -323,6 +325,8 @@ while err > tol
         surf_plot(leaflet, fig_movie); 
         grid off 
         axis off 
+        set(fig_movie, 'Position', [100, 100, 1000, 1000])
+        set(fig_movie,'PaperPositionMode','auto')
         title = sprintf('%s_diagonal_%d', movie_name, it); 
         printfig(fig_movie, title); 
         view(90,0)

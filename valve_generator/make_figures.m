@@ -3,7 +3,7 @@
 % 
 
 
-schematics = true; 
+schematics = false; 
 
 if schematics 
 
@@ -19,14 +19,14 @@ if schematics
     valve = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization, decreasing_tension); 
 
 %    output_leaflet_mesh_schematic(valve); 
-
+%
     output_mesh_schematic(valve); 
 %
 %     output_valve_ring(valve); 
 % 
 %     output_dec_tension_curve(); 
 % 
-%     N_jacobian = 32; 
+     N_jacobian = 32; 
 %     output_jacobian_figure(N_jacobian); 
     
 end 
@@ -78,8 +78,11 @@ if static_plots
     view(90,50)
     printfig(fig, 'valve_mouth')
     
+    view(90,0)
+    printfig(fig, 'valve_front')
+
     'stop'
-    
+
     grid off 
     view(-118,20)
     axis([-2.5 0.0 .3 .7 -2.1 -1.9]);
@@ -87,26 +90,102 @@ if static_plots
     axis off 
     printfig(fig, 'tree_detail')
     close all; 
-    
+
     fig = figure; 
     valve_plot(valve_with_reference,fig)
     printfig(fig, 'valve_with_ref_diagonal')
-    
+
     view(0,90)
     printfig(fig, 'valve_with_ref_top')
-    
+
     view(0,0)
     printfig(fig, 'valve_with_ref_side')
 
     view(90,50)
     printfig(fig, 'valve_with_ref_mouth')
+   
+    
+    grid off 
+    view(90,0)
+    axis equal
+    axis([-2.5 0.0 -2 2 -2.8 -1.6]);
+    zoom(2)
+    axis off 
+    printfig(fig, 'valve_with_ref_front')
+end 
+
+
+static_plots_comm = false; 
+    
+if static_plots_comm   
+
+    load /Users/alex/Dropbox/NYU/research/mitral_fully_discrete/valve_generator/meshes/plot_meshes/7_25_17_comm_with_80mmhg_new_scaling_512_e265671/mitral_tree_256_final_data
+
+    fig = figure; 
+    valve_plot(valve,fig)
+    printfig(fig, 'valve_diagonal_comm')
+
+    view(0,90)
+    printfig(fig, 'valve_top_comm')
+
+    view(0,0)
+    printfig(fig, 'valve_side_comm')
+
+    view(90,50)
+    printfig(fig, 'valve_mouth_comm')
+    
+    view(90,0)
+    printfig(fig, 'valve_front_comm')
+    
+    'stop'
+    
+    grid off 
+    view(-118,20)
+    axis([-2.5 0.0 .3 .7 -2.1 -1.9]);
+    zoom(2)
+    axis off 
+    printfig(fig, 'tree_detail_comm')
+    close all; 
+    
+    fig = figure; 
+    valve_plot(valve_with_reference,fig)
+    printfig(fig, 'valve_with_ref_diagonal_comm')
+    
+    view(0,90)
+    printfig(fig, 'valve_with_ref_top_comm')
+    
+    view(0,0)
+    printfig(fig, 'valve_with_ref_side_comm')
+
+    view(90,50)
+    printfig(fig, 'valve_with_ref_mouth_comm')
+
+    
+    grid off 
+    view(90,0)
+    axis equal
+    axis([-1.8 0.0 -1.8 1.8 -2.8 -1]);
+    zoom(2)
+    axis([-2.3 0.0 -1.4 1.4 -2.7 -1.18]);
+    axis off 
+    printfig(fig, 'valve_with_ref_front_comm')
 end 
 
 
 
+tension_plots = true; 
+if tension_plots
 
+    load /Users/alex/mitral_fully_discrete/valve_generator/meshes/plot_meshes/two_leaflet_8_connector_b7a6aed/mitral_tree_32_final_data
+  
+    anterior = true; 
+    fig_anterior = fiber_tension_surf_plot(valve.leaflets(1), anterior); 
+    savefig(fig_anterior, 'anterior_tension_plot')
 
-
+    anterior = false; 
+    fig_posterior = fiber_tension_surf_plot(valve.leaflets(1), anterior); 
+    savefig(fig_anterior, 'posterior_tension_plot')
+end 
 
 
 

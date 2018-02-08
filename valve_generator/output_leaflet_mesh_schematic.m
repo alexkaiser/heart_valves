@@ -162,8 +162,8 @@ y_max = 1 + du; % add one du here for a little space
 axis([x_min x_max y_min y_max])
 
 set(gcf,'color',[1 1 1])
-xlabel('u (cm)')
-ylabel('v (cm)')
+xlabel('u')
+ylabel('v')
 
 printfig(fig, 'mesh_schematic_leaflet'); 
 

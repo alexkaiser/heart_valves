@@ -3,6 +3,8 @@ function [] = output_mesh_schematic(valve)
     % outputs a schematic of the current mesh 
     % 
 
+    pnas_figure = true; 
+    
     leaflet = valve.leaflets(1); 
 
     % move points in periodic way past this index
@@ -201,13 +203,52 @@ function [] = output_mesh_schematic(valve)
     % axis([-.3, .8, -.1, .6])
     axis tight; 
     axis equal;    
-    axis off; 
+    if ~pnas_figure
+        axis off; 
+    end
     set(gcf,'color',[1 1 1])
     
-    if valve.commissural_leaflets
-        printfig(fig, 'mesh_schematic_commissure')
-    else 
-        printfig(fig, 'mesh_schematic')
+    if pnas_figure
+        xlabel('u')
+        ylabel('v')
+        
+        m = axis
+        m(1) = m(1) - 2*du    % xmin
+        m(3) = m(3) - 2*du    % ymin
+        m 
+        axis([-0.2656    0.7578   -0.0156    0.5234]); 
+        
+        % pos_orig = get(gca, 'Position'); 
+        % this approach fails, because setting 
+        % set(gca, 'Position', get(gca, 'OuterPosition') - get(gca, 'TightInset') * [-1 0 1 0; 0 -1 0 1; 0 0 1 0; 0 0 0 1]);
+        
+%         ax = gca;          
+%         pos = get(ax, 'Position');  
+%         offsets = get(ax, 'TightInset') * [-1 0 1 0; 0 -1 0 1; 0 0 1 0; 0 0 0 1]; 
+%         ax.ActivePositionProperty = 'position';
+%         set(ax, 'OuterPosition', pos + offsets);
+        
+%         ax = gca;
+%         outerpos = ax.OuterPosition;
+%         ti = ax.TightInset; 
+%         left = outerpos(1) + ti(1);
+%         bottom = outerpos(2) + ti(2);
+%         ax_width = outerpos(3) - ti(1) - ti(3);
+%         ax_height = outerpos(4) - ti(2) - ti(4);
+%         ax.Position = [left bottom ax_width ax_height];
+
+        % fig = tightfig(fig); 
+
+        % set(gcf,'paperpositionmode','auto')
+        % print(gcf,'-depsc2','-loose','mesh_schematic_pnas.eps');
+        disp('Try in r2009 if this adds whitespace.')
+        printfig(fig, 'mesh_schematic_pnas')
+    else
+        if valve.commissural_leaflets
+            printfig(fig, 'mesh_schematic_commissure')
+        else 
+            printfig(fig, 'mesh_schematic')
+        end 
     end 
 end 
 

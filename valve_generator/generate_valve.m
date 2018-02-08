@@ -54,12 +54,12 @@ if plots
 end
 
 
-iteration_movie = false; 
+iteration_movie = true; 
 if iteration_movie
     valve.leaflets(1).iteration_movie = true;
     valve.leaflets(1).movie_name = 'const_tension_newton'; 
     
-    % valve.leaflets(1).movie_name = 'iteration_newtons';
+    valve.leaflets(1).movie_name = 'iteration_newtons';
 
 end 
 

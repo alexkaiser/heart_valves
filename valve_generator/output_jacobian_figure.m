@@ -13,8 +13,8 @@ J = build_jacobian_bead_slip(valve.leaflets(1));
 fig = figure; 
 spy(J,'k'); 
 set(gcf,'color',[1 1 1])
-title(sprintf('Jacobian nonzero pattern with N = %d', N_jacobian))
-
+%title(sprintf('Jacobian nonzero pattern with N = %d', N_jacobian))
+xlabel(''); 
 printfig(fig, 'jacobian_nnz')
 
 
