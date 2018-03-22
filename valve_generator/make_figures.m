@@ -176,15 +176,56 @@ end
 tension_plots = true; 
 if tension_plots
 
-    load /Users/alex/mitral_fully_discrete/valve_generator/meshes/plot_meshes/two_leaflet_8_connector_b7a6aed/mitral_tree_32_final_data
+    n = 32;
+    
+    base_dir  = '/Users/alex/mitral_fully_discrete/valve_generator/meshes/plot_meshes/two_leaflet_8_connector_b7a6aed/'
+    file_name = ['mitral_tree_', int2str(n), '_final_data.mat']
+    
+    load([base_dir, file_name])
   
     anterior = true; 
-    fig_anterior = fiber_tension_surf_plot(valve.leaflets(1), anterior); 
-    savefig(fig_anterior, 'anterior_tension_plot')
+    circ = true; 
+    radial = false; 
+    fig_anterior = fiber_tension_surf_plot(valve.leaflets(1), anterior, circ, radial); 
+    savefig(fig_anterior, 'anterior_tension_plot_circ')
+    
+    input('Press any key to move on');  
+    
+    % close(fig_anterior)
+
+
+    
+    circ = false; 
+    radial = true; 
+    fig_anterior = fiber_tension_surf_plot(valve.leaflets(1), anterior, circ, radial); 
+    savefig(fig_anterior, 'anterior_tension_plot_radial')
+    % close(fig_anterior)
+
+    circ = true; 
+    radial = true; 
+    fig_anterior = fiber_tension_surf_plot(valve.leaflets(1), anterior, circ, radial); 
+    savefig(fig_anterior, 'anterior_tension_plot_both')
+    % close(fig_anterior)
 
     anterior = false; 
-    fig_posterior = fiber_tension_surf_plot(valve.leaflets(1), anterior); 
-    savefig(fig_anterior, 'posterior_tension_plot')
+    circ = true; 
+    radial = false; 
+    fig_posterior = fiber_tension_surf_plot(valve.leaflets(1), anterior, circ, radial); 
+    savefig(fig_posterior, 'posterior_tension_plot_circ')
+    % close(fig_posterior)
+
+    circ = false; 
+    radial = true; 
+    fig_posterior = fiber_tension_surf_plot(valve.leaflets(1), anterior, circ, radial); 
+    savefig(fig_posterior, 'posterior_tension_plot_radial')
+    % close(fig_posterior)
+
+    circ = true; 
+    radial = true; 
+    fig_posterior = fiber_tension_surf_plot(valve.leaflets(1), anterior, circ, radial); 
+    savefig(fig_posterior, 'posterior_tension_plot_both')
+    % close(fig_posterior)
+
 end 
 
 

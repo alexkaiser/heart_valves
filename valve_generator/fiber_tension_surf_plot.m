@@ -1,4 +1,4 @@
-function [fig] = fiber_tension_surf_plot(leaflet, anterior, fig)
+function [fig] = fiber_tension_surf_plot(leaflet, anterior, circ, radial, fig)
 % 
 % Plots leaflet with fibers 
 % 
@@ -73,6 +73,7 @@ j_range_right_comm = leaflet.j_range_right_comm;
 j_range_posterior  = leaflet.j_range_posterior; 
 j_range_left_comm  = leaflet.j_range_left_comm; 
 
+% two anterior trees for now, gross hack 
 n_trees_anterior = 2; 
 if anterior 
     j_range    = j_range_anterior; 
@@ -100,7 +101,6 @@ if isfield(leaflet, 'tension_debug') && leaflet.tension_debug
 else 
     tension_debug = false; 
 end 
-tension_debug = true; 
 
 if ~exist('fig', 'var')
     fig = figure;  
@@ -118,8 +118,8 @@ hold on;
 % wide color range, red at top 
 % colormap(jet); 
 
-range = 100; 
-jet_wide_range = jet(range); 
+% range = 100; 
+% jet_wide_range = jet(range); 
 % min_idx = 30; 
 % jet_cropped = jet_wide_range(min_idx:end,:); 
 % colormap(jet_cropped)
@@ -127,22 +127,33 @@ jet_wide_range = jet(range);
 % for i=1:(range/4)
 %      jet_wide_range(i,:) = (1 - (i-1)/range) * jet_wide_range(i,:)/norm(jet_wide_range(i,:)); 
 % end 
-colormap(jet_wide_range); 
+% colormap(jet_wide_range); 
+
+n_colors = 100; 
+colormap(make_colormap(n_colors)); 
+
 
 cmap = colormap;
 n_colors = size(cmap,1); 
 
 max_tension_circ = du * max(alpha(:)); 
-max_tension_radial = du * max(alpha(:)); 
+max_tension_radial = du * max(beta(:)); 
 max_tension = max(max_tension_circ, max_tension_radial); 
 
-colorbar; 
+cbar = colorbar; 
 
-colorbar('Ticks',[0:.25:1],...
-       'TickLabels',{'Cold','Cool','Neutral','Warm','Hot'})
+n_ticks = 5; 
+tick_array = linspace(0,1,n_ticks); 
+tick_labels = {}; 
+for i=1:length(tick_array)
+    tick=tick_array(i); 
+    tension = tick * max_tension * 1e-3; 
+    tick_labels{i} = sprintf('%.2f', tension); 
+end 
 
+cbar = colorbar('Ticks', tick_array, 'TickLabels', tick_labels); 
+cbar.Label.String = 'Tension (K Dyne)'; 
 
-F_leaflet = zeros(size(X_current)); 
 
 % Internal leaflet part 
 for j=j_range
@@ -197,9 +208,11 @@ for j=j_range
                     
                     if color_idx > n_colors
                         error('something off in color indexing')
-                    end 
+                    end
                     
-                    plot3(x_vals,y_vals,z_vals,'color',cmap(color_idx,:)); 
+                    if circ
+                        plot3(x_vals,y_vals,z_vals,'color',cmap(color_idx,:)); 
+                    end 
                     
                     F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
 
@@ -251,7 +264,9 @@ for j=j_range
                         error('something off in color indexing')
                     end 
                     
-                    plot3(x_vals,y_vals,z_vals,'color',cmap(color_idx,:)); 
+                    if radial 
+                        plot3(x_vals,y_vals,z_vals,'color',cmap(color_idx,:)); 
+                    end 
                 end 
 
             end 
@@ -320,9 +335,6 @@ end
 
 
 % chordae internal terms 
-% for tree_idx = 1:num_trees
-
-% two anterior trees for now, gross hack 
 for tree_idx = tree_range
 
     C = chordae(tree_idx).C; 
