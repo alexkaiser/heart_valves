@@ -1,4 +1,4 @@
-function [fig] = fiber_tension_surf_plot(leaflet, anterior, circ, radial, fig)
+function [fig] = total_tension_surf_plot(leaflet, anterior, fig)
 % 
 % Plots leaflet with fibers 
 % 
@@ -138,7 +138,7 @@ n_colors = size(cmap,1);
 
 max_tension_circ = du * max(alpha(:)); 
 max_tension_radial = du * max(beta(:)); 
-max_tension = 0.7 * max(max_tension_circ, max_tension_radial); 
+max_tension = 1.5 * 0.7 * max(max_tension_circ, max_tension_radial); 
 
 % cbar = colorbar; 
 
@@ -170,6 +170,15 @@ if colorbar_figure
     figure(fig); 
 end 
 
+
+% color leaflet by total of tension 
+% required to be m,n,3 (in annoying contrast to my normal convention)
+colors   = nan * zeros(j_max,k_max,3); 
+% counts the number of tensions added to any given node 
+tension_circ  =  zeros(j_max,k_max); 
+num_nbrs_circ =  zeros(j_max,k_max); 
+tension_rad   =  zeros(j_max,k_max); 
+num_nbrs_rad  =  zeros(j_max,k_max); 
 
 % Internal leaflet part 
 for j=j_range
@@ -214,22 +223,26 @@ for j=j_range
                     z_vals = [X(3), X_nbr(3)]; 
                     
                     % fraction of maximum tension gives fraction of way
-                    % through color bar 
-                    tension_frac_of_max = du * tension/max_tension; 
-                    color_idx = ceil(tension_frac_of_max * n_colors); 
-                    
-                    if color_idx == 0
-                        color_idx = 1; 
-                    end 
-                    
-                    if color_idx > n_colors
-                        %warning('max color, something off in color indexing')
-                        color_idx = n_colors; 
-                    end
-                    
-                    if circ
-                        plot3(x_vals,y_vals,z_vals,'color',cmap(color_idx,:)); 
-                    end 
+                    % through color bar
+                    tension_circ(j,k)  = tension_circ(j,k) + du * tension; 
+                    num_nbrs_circ(j,k) = num_nbrs_circ(j,k) + 1; 
+%                     tension_frac_of_max = du * tension/max_tension; 
+%                     color_idx = ceil(tension_frac_of_max * n_colors); 
+%                     
+%                     if color_idx == 0
+%                         color_idx = 1; 
+%                     end 
+%                     
+%                     if color_idx > n_colors
+%                         %warning('max color, something off in color indexing')
+%                         color_idx = n_colors; 
+%                     end
+%                     
+%                     colors(j,k,:) = colors(j,k,:) + cmap(color_idx,:); 
+%                     
+%                     if circ
+%                         plot3(x_vals,y_vals,z_vals,'color',cmap(color_idx,:)); 
+%                     end 
                     
                     F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
 
@@ -270,25 +283,63 @@ for j=j_range
                     
                     % fraction of maximum tension gives fraction of way
                     % through color bar 
-                    tension_frac_of_max = du * tension/max_tension; 
-                    color_idx = ceil(tension_frac_of_max * n_colors); 
-                    
-                    if color_idx == 0
-                        color_idx = 1; 
-                    end 
-                    
-                    if color_idx > n_colors
-                        %warning('max color, something off in color indexing')
-                        color_idx = n_colors; 
-                    end 
-                    
-                    if radial 
-                        plot3(x_vals,y_vals,z_vals,'color',cmap(color_idx,:)); 
-                    end 
+                    tension_rad(j,k) = tension_rad(j,k) + du * tension; 
+                    num_nbrs_rad(j,k) = num_nbrs_rad(j,k) + 1;  
+%                     tension_frac_of_max = du * tension/max_tension; 
+%                     color_idx = ceil(tension_frac_of_max * n_colors); 
+%                     
+%                     if color_idx == 0
+%                         color_idx = 1; 
+%                     end 
+%                     
+%                     if color_idx > n_colors
+%                         %warning('max color, something off in color indexing')
+%                         color_idx = n_colors; 
+%                     end 
+%                     
+%                     if radial 
+%                         plot3(x_vals,y_vals,z_vals,'color',cmap(color_idx,:)); 
+%                     end 
                 end 
 
             end 
 
+            
+            % update color map for sum of local tensions 
+            % tensions either take the exact value (if they only are connected to one node)
+            % or the average on the connecting segments 
+            tension_sum = 0; 
+
+            if num_nbrs_circ(j,k) == 1
+                tension_sum = tension_sum + tension_circ(j,k); 
+            elseif num_nbrs_circ(j,k) == 2
+                tension_sum = tension_sum + 0.5 * tension_circ(j,k); 
+            else 
+                error('Improper number of circumferential tension nodes'); 
+            end    
+            
+            if num_nbrs_rad(j,k) == 1
+                tension_sum = tension_sum +       tension_circ(j,k); 
+            elseif num_nbrs_rad(j,k) == 2
+                tension_sum = tension_sum + 0.5 * tension_circ(j,k); 
+            else 
+                error('Improper number of radial tension nodes'); 
+            end    
+            
+            tension_frac_of_max = tension_sum/max_tension; 
+            color_idx = ceil(tension_frac_of_max * n_colors);
+
+            if color_idx == 0
+                color_idx = 1; 
+            end 
+
+            if color_idx > n_colors
+                %warning('max color at free edge')
+                color_idx = n_colors; 
+            end 
+            
+            colors(j,k,:) = cmap(color_idx,:); 
+            
 
             % current node has a chordae connection
             if chordae_idx(j,k).tree_idx
@@ -351,6 +402,40 @@ for j=j_range
     end 
 end
 
+
+
+
+
+
+% plot the actual surface 
+X_copy      = leaflet.X; 
+% j_max       = leaflet.j_max; 
+% k_max       = leaflet.k_max; 
+% is_internal = leaflet.is_internal; 
+% is_bc       = leaflet.is_bc; 
+% 
+% j_range_anterior   = leaflet.j_range_anterior; 
+% j_range_right_comm = leaflet.j_range_right_comm; 
+% j_range_posterior  = leaflet.j_range_posterior; 
+% j_range_left_comm  = leaflet.j_range_left_comm; 
+
+% NaN mask in the copy 
+for j=1:j_max
+    for k=1:k_max
+        if ~(is_internal(j,k) || is_bc(j,k))
+           X_copy(:,j,k) = NaN;  
+        end
+    end 
+end
+        
+x_component = squeeze(X_copy(1,j_range,:)); 
+y_component = squeeze(X_copy(2,j_range,:)); 
+z_component = squeeze(X_copy(3,j_range,:)); 
+colors_local = colors(j_range,:,:); 
+width = 1.0; 
+surf(x_component, y_component, z_component, colors_local, 'edgecolor', 'none');
+
+    
 
 % chordae internal terms 
 for tree_idx = tree_range
