@@ -173,7 +173,7 @@ end
 
 
 
-tension_plots = false; 
+tension_plots = true; 
 if tension_plots
 
     debug = true; 
@@ -284,7 +284,7 @@ if tension_plots
     % set to be largest window on all four head-on plots
     % also need to make sure that all are evenly zoomed 
     
-    figure(fig_anterior_circ);
+
 
     % figure out and manually set the figure output size in pixels 
     lims = axis; 
@@ -293,37 +293,43 @@ if tension_plots
     x_pixels = floor(100 * x_size); 
     y_pixels = floor(100 * y_size);
     
-    
+    figure(fig_anterior_circ);
     axis(limits_horiz_view); 
     set(fig_anterior_circ, 'Position', [100, 100, x_pixels, y_pixels])
-    set(fig_anterior_circ, 'PaperPosition', [100, 100, x_pixels, y_pixels])
+    % set(fig_anterior_circ, 'PaperPosition', [100, 100, x_pixels, y_pixels])
     %set(fig_anterior_circ,'PaperPositionMode','auto')
     axis off; 
     % printfig(fig_anterior_circ, 'anterior_tension_plot_circ')
     % print -f1 -dpsc2 anterior_tension_plot_circ.eps
-    print(fig_anterior_circ, '-dpsc2', 'anterior_tension_plot_circ');
+    print(fig_anterior_circ, '-depsc', 'anterior_tension_plot_circ_uncropped');
     
     figure(fig_anterior_rad); 
     axis(limits_horiz_view);
     set(fig_anterior_rad, 'Position', [100, 100, x_pixels, y_pixels])
-    set(fig_anterior_rad, 'PaperPosition', [100, 100, x_pixels, y_pixels])
+    % set(fig_anterior_rad, 'PaperPosition', [100, 100, x_pixels, y_pixels])
     %set(fig_anterior_rad,'PaperPositionMode','auto')
     axis off; 
-    printfig(fig_anterior_rad, 'anterior_tension_plot_radial')
+    % printfig(fig_anterior_rad, 'anterior_tension_plot_radial')
     % print -f1 -dpsc2 anterior_tension_plot_radial.eps
-    % print(fig_anterior_rad, '-dpsc2', 'anterior_tension_plot_radial');
+    print(fig_anterior_rad, '-depsc', 'anterior_tension_plot_radial_uncropped');
     
     
 
     % printfig(fig_anterior_both, 'anterior_tension_plot_both')
 
     figure(fig_posterior_circ); 
-    axis(limits_horiz_view); 
-    printfig(fig_posterior_circ, 'posterior_tension_plot_circ')
+    axis(limits_horiz_view);
+    set(fig_posterior_circ, 'Position', [100, 100, x_pixels, y_pixels])
+    % set(fig_posterior_circ, 'PaperPosition', [100, 100, x_pixels, y_pixels])
+    axis off 
+    printfig(fig_posterior_circ, 'posterior_tension_plot_circ_uncropped')
 
     figure(fig_posterior_rad); 
-    axis(limits_horiz_view); 
-    printfig(fig_posterior_rad, 'posterior_tension_plot_radial')
+    axis(limits_horiz_view);
+    set(fig_posterior_rad, 'Position', [100, 100, x_pixels, y_pixels])
+    % set(fig_posterior_rad, 'PaperPosition', [100, 100, x_pixels, y_pixels])
+    axis off
+    printfig(fig_posterior_rad, 'posterior_tension_plot_radial_uncropped')
 
     % printfig(fig_posterior_both, 'posterior_tension_plot_both')
     
@@ -353,7 +359,7 @@ end
 
 
 
-total_tension_plots = true; 
+total_tension_plots = false; 
 if total_tension_plots
 
     debug = false; 
@@ -372,14 +378,54 @@ if total_tension_plots
     total_tension_fig_anterior = total_tension_surf_plot(valve.leaflets(1), anterior); 
     axis equal; 
     axis off; 
-    printfig(total_tension_fig_anterior, 'total_tension_fig_anterior'); 
+    axis tight; 
+%     limits_anterior = axis; 
+%     lims          = axis; 
     
+    pos = get(gcf, 'Position');
+    x_pixels_anterior = pos(3); 
+    y_pixels_anterior = pos(4); 
+
     anterior = false; 
     total_tension_fig_posterior = total_tension_surf_plot(valve.leaflets(1), anterior); 
     axis equal;
+    % axis off; 
+    axis tight; 
+%     limits_posterior = axis; 
+%     lims = update_axes(lims, limits_posterior); 
+    
+    pos = get(gcf, 'Position');
+    x_pixels_posterior = pos(3); 
+    y_pixels_posterior = pos(4); 
+    
+%     x_size = lims(2)-lims(1); 
+%     y_size = lims(4)-lims(3); 
+%     x_pixels = floor(100 * x_size); 
+%     y_pixels = floor(100 * y_size);
+    
+    x_pixels = max(x_pixels_anterior, x_pixels_posterior); 
+    y_pixels = max(y_pixels_anterior, y_pixels_posterior); 
+    
+    fprintf('passed initial calls\n')
+    
+    figure(total_tension_fig_anterior)
     axis off; 
-    printfig(total_tension_fig_posterior, 'total_tension_fig_posterior'); 
-
+    set(total_tension_fig_anterior, 'Position', [100, 100, x_pixels, y_pixels])   
+    % set(total_tension_fig_anterior,'paperpositionmode','auto')
+    % print(total_tension_fig_anterior, '-depsc', '-loose', 'total_tension_fig_anterior'); 
+    printfig(total_tension_fig_anterior, 'total_tension_fig_anterior_uncropped'); 
+    % export_fig total_tension_fig_anterior -eps -transparent
+	% export_fig(total_tension_fig_anterior, '-eps', 'total_tension_fig_anterior'); 
+    
+    fprintf('passed anterior write\n')
+    
+    figure(total_tension_fig_posterior)
+    axis off; 
+    set(total_tension_fig_posterior, 'Position', [100, 100, x_pixels, y_pixels])
+    printfig(total_tension_fig_posterior, 'total_tension_fig_posterior_uncropped'); 
+    % export_fig total_tension_fig_posterior -eps -transparent
+    fprintf('passed posterior write\n')
+    
 end 
 
 
