@@ -183,8 +183,6 @@ if tension_plots
         n = 512;
     end 
     
-    all = false; 
-    
     base_dir  = '/Users/alex/mitral_fully_discrete/valve_generator/meshes/plot_meshes/two_leaflet_8_connector_b7a6aed/'
     file_name = ['mitral_tree_', int2str(n), '_final_data.mat']
     
@@ -200,7 +198,7 @@ if tension_plots
     anterior_axes_radial = gca
     limits_horiz_view = axis 
 
-    if all 
+    if ~debug 
         circ = true; 
         radial = false; 
         fig_anterior_circ = fiber_tension_surf_plot(valve.leaflets(1), anterior, circ, radial); 
@@ -239,35 +237,34 @@ if tension_plots
     
     figure(fig_anterior_rad); 
     axis(limits_horiz_view);
-    set(fig_anterior_rad, 'Position', [100, 100, x_pixels, y_pixels])
-    set(fig_anterior_rad,'PaperPositionMode','auto')
+    %set(fig_anterior_rad, 'Position', [100, 100, x_pixels, y_pixels])
+    %set(fig_anterior_rad,'PaperPositionMode','auto')
     axis off; 
     print(fig_anterior_rad, '-depsc', 'anterior_tension_plot_radial_uncropped');
     % export_fig anterior_tension_plot_radial_export_uncropped -eps 
     
-    if all 
+    if ~debug 
 
         figure(fig_anterior_circ);
         axis(limits_horiz_view); 
-        set(fig_anterior_circ, 'Position', [100, 100, x_pixels, y_pixels])
-        set(fig_anterior_circ,'PaperPositionMode','auto')
+        %set(fig_anterior_circ, 'Position', [100, 100, x_pixels, y_pixels])
+        %set(fig_anterior_circ,'PaperPositionMode','auto')
         axis off; 
-        fig_anterior_circ = tightfig(fig_anterior_circ); 
         print(fig_anterior_circ, '-depsc', 'anterior_tension_plot_circ_uncropped');
         % export_fig anterior_tension_plot_circ_export_uncropped -eps -transparent
     
         figure(fig_posterior_circ); 
         axis(limits_horiz_view);
-        set(fig_posterior_circ, 'Position', [100, 100, x_pixels, y_pixels])
-        set(fig_anterior_rad,'PaperPositionMode','auto')
+        %set(fig_posterior_circ, 'Position', [100, 100, x_pixels, y_pixels])
+        %set(fig_anterior_rad,'PaperPositionMode','auto')
         axis off 
         printfig(fig_posterior_circ, 'posterior_tension_plot_circ_uncropped')
         % export_fig posterior_tension_plot_circ_export_uncropped -eps -transparent
 
         figure(fig_posterior_rad); 
         axis(limits_horiz_view);
-        set(fig_posterior_rad, 'Position', [100, 100, x_pixels, y_pixels])
-        set(fig_anterior_rad,'PaperPositionMode','auto')
+        %set(fig_posterior_rad, 'Position', [100, 100, x_pixels, y_pixels])
+        %set(fig_anterior_rad,'PaperPositionMode','auto')
         axis off
         printfig(fig_posterior_rad, 'posterior_tension_plot_radial_uncropped')
         % export_fig posterior_tension_plot_radial_export_uncropped -eps -transparent 

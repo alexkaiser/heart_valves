@@ -22,6 +22,15 @@ def update_bounding_box(file_name, box = None):
 			ymax = int(split[4])
 			break 
 
+	xwidth  = xmax - xmin
+	xcenter = xmin + xwidth/2
+	ywidth  = ymax - ymin
+	ycenter = ymin + ywidth/2
+	print 'File ', file_name 
+	print 'box = ', box
+	print 'xwidth, ywidth = ', xwidth, ', ', ywidth
+	print 'xcenter, ycenter = ', xcenter, ', ', ycenter
+
 	file.close()
 
 	assert found 
@@ -38,7 +47,7 @@ def update_bounding_box(file_name, box = None):
 	return box_new
 
 
-def crop(file_name, box, file_name_new = None):
+def crop(file_name, box, zero_box=False, file_name_new=None):
 	'''
 	Manually crop eps to specified 
 	'''
@@ -50,6 +59,13 @@ def crop(file_name, box, file_name_new = None):
 		else:
 			assert False  
 
+	if zero_box:
+		'set box to zero outside'
+		box[2] -= box[0]
+		box[3] -= box[1]
+		box[0]  = 0
+		box[1]  = 0
+	
 	file = open(file_name, 'r')
 	new_file = open(file_name_new, 'w')
 	
@@ -77,6 +93,20 @@ if __name__ == '__main__':
 
 	for plot in one_family_plots:
 		crop(plot, box)
+
+	'''
+	one_family_plots_export = ['anterior_tension_plot_circ_export_uncropped.eps',
+							   'posterior_tension_plot_circ_export_uncropped.eps',
+                               'anterior_tension_plot_radial_export_uncropped.eps',	
+                               'posterior_tension_plot_radial_export_uncropped.eps']
+
+	box = None
+	for plot in one_family_plots_export:
+		box = update_bounding_box(plot, box)
+
+	for plot in one_family_plots_export:
+		crop(plot, box)
+	'''
 
 
 
