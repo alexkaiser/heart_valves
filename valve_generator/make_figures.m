@@ -176,12 +176,14 @@ end
 tension_plots = true; 
 if tension_plots
 
-    debug = true; 
+    debug = false; 
     if debug
         n = 32; 
     else
         n = 512;
     end 
+    
+    all = false; 
     
     base_dir  = '/Users/alex/mitral_fully_discrete/valve_generator/meshes/plot_meshes/two_leaflet_8_connector_b7a6aed/'
     file_name = ['mitral_tree_', int2str(n), '_final_data.mat']
@@ -193,98 +195,40 @@ if tension_plots
     circ = false; 
     radial = true; 
     fig_anterior_rad = fiber_tension_surf_plot(valve.leaflets(1), anterior, circ, radial); 
-    % savefig(fig_anterior_rad, 'anterior_tension_plot_radial')
-    % close(fig_anterior)
     view(90,0)
     axis equal; 
-    % axis off; 
     anterior_axes_radial = gca
-    limits_horiz_view = axis; 
-    
-    
-    
-    
-    circ = true; 
-    radial = false; 
-    fig_anterior_circ = fiber_tension_surf_plot(valve.leaflets(1), anterior, circ, radial); 
-    % savefig(fig_anterior_circ, 'anterior_tension_plot_circ')
-    view(90,0)
-    axis equal; 
-    % axis off; 
-    anterior_axes_circ = gca 
-    limits_horiz_tmp = axis; 
-    limits_horiz_view = update_axes(limits_horiz_view, limits_horiz_tmp); 
-    % close(fig_anterior)
-    
-    
-%     circ = true; 
-%     radial = true; 
-%     fig_anterior_both = fiber_tension_surf_plot(valve.leaflets(1), anterior, circ, radial); 
-%     % savefig(fig_anterior_both, 'anterior_tension_plot_both')
-%     % close(fig_anterior)
-%     axis equal; 
-%     axis off; 
-%     anterior_axes_both = gca; 
+    limits_horiz_view = axis 
 
-    
-%     grid off 
-%     view(-118,20)
-%     axis([-2.5 0.0 .3 .7 -2.1 -1.9]);
-%     zoom(2)
-%     axis off 
-%     printfig(fig_anterior_both, 'anterior_tension_tree_detail')
-%     
-%     grid off 
-%     view(90,0)
-%     axis equal
-%     axis([-2.5 0.0 -2 2 -2.8 -1.6]);
-%     zoom(2)
-%     axis off 
-%     printfig(fig_anterior_both, 'anterior_tension_free_edge_detail')
-    
-    anterior = false; 
-    circ = true; 
-    radial = false; 
-    fig_posterior_circ = fiber_tension_surf_plot(valve.leaflets(1), anterior, circ, radial); 
-    % savefig(fig_posterior, 'posterior_tension_plot_circ')
-    % close(fig_posterior)
-    view(90,0)
-    axis equal;
-    axis off; 
-    posterior_axes_circ = gca 
-    limits_horiz_tmp = axis; 
-    limits_horiz_view = update_axes(limits_horiz_view, limits_horiz_tmp); 
+    if all 
+        circ = true; 
+        radial = false; 
+        fig_anterior_circ = fiber_tension_surf_plot(valve.leaflets(1), anterior, circ, radial); 
+        view(90,0)
+        axis equal; 
+        anterior_axes_circ = gca 
+        limits_horiz_tmp = axis 
+        limits_horiz_view = update_axes(limits_horiz_view, limits_horiz_tmp); 
 
-    circ = false; 
-    radial = true; 
-    fig_posterior_rad = fiber_tension_surf_plot(valve.leaflets(1), anterior, circ, radial); 
-    % savefig(fig_posterior, 'posterior_tension_plot_radial')
-    % close(fig_posterior)
-    view(90,0)
-    axis equal;
-    axis off; 
-    posterior_axes_rad = gca
-    limits_horiz_tmp = axis; 
-    limits_horiz_view = update_axes(limits_horiz_view, limits_horiz_tmp); 
-    
+        anterior = false; 
+        circ = true; 
+        radial = false; 
+        fig_posterior_circ = fiber_tension_surf_plot(valve.leaflets(1), anterior, circ, radial); 
+        view(90,0)
+        axis equal;
+        posterior_axes_circ = gca 
+        limits_horiz_tmp = axis 
+        limits_horiz_view = update_axes(limits_horiz_view, limits_horiz_tmp); 
 
-%     circ = true; 
-%     radial = true; 
-%     fig_posterior_both = fiber_tension_surf_plot(valve.leaflets(1), anterior, circ, radial); 
-%     % savefig(fig_posterior, 'posterior_tension_plot_both')
-%     % close(fig_posterior)
-%     axis equal;
-%     axis off; 
-%     posterior_axes_both = gca; 
-%     limits_horiz_tmp = axis; 
-%     limits_horiz_view = update_axes(limits_horiz_view, limits_horiz_tmp); 
-
-    % figure out the min and max of each axis
-    % y_mins = anterior_axes_circ.Ymin;
-    % set to be largest window on all four head-on plots
-    % also need to make sure that all are evenly zoomed 
-    
-
+        circ = false; 
+        radial = true; 
+        fig_posterior_rad = fiber_tension_surf_plot(valve.leaflets(1), anterior, circ, radial); 
+        view(90,0)
+        axis equal;
+        posterior_axes_rad = gca
+        limits_horiz_tmp = axis 
+        limits_horiz_view = update_axes(limits_horiz_view, limits_horiz_tmp); 
+    end 
 
     % figure out and manually set the figure output size in pixels 
     lims = axis; 
@@ -293,45 +237,41 @@ if tension_plots
     x_pixels = floor(100 * x_size); 
     y_pixels = floor(100 * y_size);
     
-    figure(fig_anterior_circ);
-    axis(limits_horiz_view); 
-    set(fig_anterior_circ, 'Position', [100, 100, x_pixels, y_pixels])
-    % set(fig_anterior_circ, 'PaperPosition', [100, 100, x_pixels, y_pixels])
-    %set(fig_anterior_circ,'PaperPositionMode','auto')
-    axis off; 
-    % printfig(fig_anterior_circ, 'anterior_tension_plot_circ')
-    % print -f1 -dpsc2 anterior_tension_plot_circ.eps
-    print(fig_anterior_circ, '-depsc', 'anterior_tension_plot_circ_uncropped');
-    
     figure(fig_anterior_rad); 
     axis(limits_horiz_view);
     set(fig_anterior_rad, 'Position', [100, 100, x_pixels, y_pixels])
-    % set(fig_anterior_rad, 'PaperPosition', [100, 100, x_pixels, y_pixels])
-    %set(fig_anterior_rad,'PaperPositionMode','auto')
+    set(fig_anterior_rad,'PaperPositionMode','auto')
     axis off; 
-    % printfig(fig_anterior_rad, 'anterior_tension_plot_radial')
-    % print -f1 -dpsc2 anterior_tension_plot_radial.eps
     print(fig_anterior_rad, '-depsc', 'anterior_tension_plot_radial_uncropped');
+    % export_fig anterior_tension_plot_radial_export_uncropped -eps 
     
+    if all 
+
+        figure(fig_anterior_circ);
+        axis(limits_horiz_view); 
+        set(fig_anterior_circ, 'Position', [100, 100, x_pixels, y_pixels])
+        set(fig_anterior_circ,'PaperPositionMode','auto')
+        axis off; 
+        fig_anterior_circ = tightfig(fig_anterior_circ); 
+        print(fig_anterior_circ, '-depsc', 'anterior_tension_plot_circ_uncropped');
+        % export_fig anterior_tension_plot_circ_export_uncropped -eps -transparent
     
+        figure(fig_posterior_circ); 
+        axis(limits_horiz_view);
+        set(fig_posterior_circ, 'Position', [100, 100, x_pixels, y_pixels])
+        set(fig_anterior_rad,'PaperPositionMode','auto')
+        axis off 
+        printfig(fig_posterior_circ, 'posterior_tension_plot_circ_uncropped')
+        % export_fig posterior_tension_plot_circ_export_uncropped -eps -transparent
 
-    % printfig(fig_anterior_both, 'anterior_tension_plot_both')
-
-    figure(fig_posterior_circ); 
-    axis(limits_horiz_view);
-    set(fig_posterior_circ, 'Position', [100, 100, x_pixels, y_pixels])
-    % set(fig_posterior_circ, 'PaperPosition', [100, 100, x_pixels, y_pixels])
-    axis off 
-    printfig(fig_posterior_circ, 'posterior_tension_plot_circ_uncropped')
-
-    figure(fig_posterior_rad); 
-    axis(limits_horiz_view);
-    set(fig_posterior_rad, 'Position', [100, 100, x_pixels, y_pixels])
-    % set(fig_posterior_rad, 'PaperPosition', [100, 100, x_pixels, y_pixels])
-    axis off
-    printfig(fig_posterior_rad, 'posterior_tension_plot_radial_uncropped')
-
-    % printfig(fig_posterior_both, 'posterior_tension_plot_both')
+        figure(fig_posterior_rad); 
+        axis(limits_horiz_view);
+        set(fig_posterior_rad, 'Position', [100, 100, x_pixels, y_pixels])
+        set(fig_anterior_rad,'PaperPositionMode','auto')
+        axis off
+        printfig(fig_posterior_rad, 'posterior_tension_plot_radial_uncropped')
+        % export_fig posterior_tension_plot_radial_export_uncropped -eps -transparent 
+    end 
     
     
     
