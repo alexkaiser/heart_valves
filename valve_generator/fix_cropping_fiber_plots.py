@@ -47,7 +47,7 @@ def update_bounding_box(file_name, box = None):
 	return box_new
 
 
-def crop(file_name, box, zero_box=False, file_name_new=None):
+def crop(file_name, box, file_name_new=None):
 	'''
 	Manually crop eps to specified 
 	'''
@@ -59,13 +59,15 @@ def crop(file_name, box, zero_box=False, file_name_new=None):
 		else:
 			assert False  
 
+	'''
 	if zero_box:
 		'set box to zero outside'
 		box[2] -= box[0]
 		box[3] -= box[1]
 		box[0]  = 0
 		box[1]  = 0
-	
+	''' 
+
 	file = open(file_name, 'r')
 	new_file = open(file_name_new, 'w')
 	
@@ -82,17 +84,20 @@ def crop(file_name, box, zero_box=False, file_name_new=None):
 
 if __name__ == '__main__':
 
-	one_family_plots = ['anterior_tension_plot_circ_uncropped.eps',
-						'anterior_tension_plot_radial_uncropped.eps',
-						'posterior_tension_plot_circ_uncropped.eps',
-						'posterior_tension_plot_radial_uncropped.eps']
+	do_one_family = False 
+	if do_one_family:
 
-	box = None
-	for plot in one_family_plots:
-		box = update_bounding_box(plot, box)
+		one_family_plots = ['anterior_tension_plot_circ_uncropped.eps',
+							'anterior_tension_plot_radial_uncropped.eps',
+							'posterior_tension_plot_circ_uncropped.eps',
+							'posterior_tension_plot_radial_uncropped.eps']
 
-	for plot in one_family_plots:
-		crop(plot, box)
+		box = None
+		for plot in one_family_plots:
+			box = update_bounding_box(plot, box)
+
+		for plot in one_family_plots:
+			crop(plot, box)
 
 	'''
 	one_family_plots_export = ['anterior_tension_plot_circ_export_uncropped.eps',
@@ -108,8 +113,30 @@ if __name__ == '__main__':
 		crop(plot, box)
 	'''
 
+	do_two_family_surf_test = False
+	if do_two_family_surf_test:
+		surf_plots = ['COARSE_total_tension_fig_posterior_uncropped.eps',
+					  'COARSE_total_tension_fig_anterior_uncropped.eps']
+
+		box = None
+		for plot in surf_plots:
+			box = update_bounding_box(plot, box)
+
+		for plot in surf_plots:
+			crop(plot, box)
+
+		print 'Final box = ', box
 
 
+	do_two_family_surf = True
+	if do_two_family_surf:
 
+		box = [162, 66, 457, 390]
+
+		surf_plots = ['total_tension_fig_posterior_uncropped.eps',
+					  'total_tension_fig_anterior_uncropped.eps']
+
+		for plot in surf_plots:
+			crop(plot, box)
 
 

@@ -173,7 +173,7 @@ end
 
 
 
-tension_plots = true; 
+tension_plots = false; 
 if tension_plots
 
     debug = false; 
@@ -296,7 +296,7 @@ end
 
 
 
-total_tension_plots = false; 
+total_tension_plots = true; 
 if total_tension_plots
 
     debug = false; 
@@ -306,13 +306,16 @@ if total_tension_plots
         n = 512;
     end 
     
+    fiber_output    = true; 
+    fiber_stride    = 16; 
+    stride_offset_j = 4; 
     base_dir  = '/Users/alex/mitral_fully_discrete/valve_generator/meshes/plot_meshes/two_leaflet_8_connector_b7a6aed/'
     file_name = ['mitral_tree_', int2str(n), '_final_data.mat']
     
     load([base_dir, file_name])
   
     anterior = true; 
-    total_tension_fig_anterior = total_tension_surf_plot(valve.leaflets(1), anterior); 
+    total_tension_fig_anterior = total_tension_surf_plot(valve.leaflets(1), anterior, fiber_output, fiber_stride, stride_offset_j); 
     axis equal; 
     axis off; 
     axis tight; 
@@ -324,9 +327,9 @@ if total_tension_plots
     y_pixels_anterior = pos(4); 
 
     anterior = false; 
-    total_tension_fig_posterior = total_tension_surf_plot(valve.leaflets(1), anterior); 
+    total_tension_fig_posterior = total_tension_surf_plot(valve.leaflets(1), anterior, fiber_output, fiber_stride, stride_offset_j); 
     axis equal;
-    % axis off; 
+    axis off; 
     axis tight; 
 %     limits_posterior = axis; 
 %     lims = update_axes(lims, limits_posterior); 

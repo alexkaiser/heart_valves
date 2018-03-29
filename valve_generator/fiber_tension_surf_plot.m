@@ -129,7 +129,7 @@ hold on;
 % end 
 % colormap(jet_wide_range); 
 
-n_colors = 100; 
+n_colors = 500; 
 colormap(make_colormap(n_colors)); 
 
 

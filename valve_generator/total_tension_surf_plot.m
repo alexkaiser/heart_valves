@@ -1,4 +1,4 @@
-function [fig] = total_tension_surf_plot(leaflet, anterior, fig)
+function [fig] = total_tension_surf_plot(leaflet, anterior, fiber_output, fiber_stride, stride_offset_j, fig)
 % 
 % Plots leaflet with fibers 
 % 
@@ -106,6 +106,18 @@ if ~exist('fig', 'var')
     fig = figure;  
 end 
 
+if exist('fiber_output', 'var') && fiber_output    
+    if ~exist('fiber_stride', 'var')
+        fprintf('Using default fiber stride of 1')
+        fiber_stride = 1; 
+    end 
+    
+    if ~exist('stride_offset_j', 'var')
+        stride_offset_j = 0; 
+    end 
+    
+end 
+
 % x_tmp = X_current(1,:,:)
 plot3(0,0,0,'linestyle','none'); 
 hold on; 
@@ -129,7 +141,7 @@ hold on;
 % end 
 % colormap(jet_wide_range); 
 
-n_colors = 100; 
+n_colors = 500; 
 colormap(make_colormap(n_colors)); 
 
 
@@ -163,7 +175,7 @@ if colorbar_figure
     cbar.Label.String = 'Tension (K Dyne)';
     grid off 
     axis off 
-    printfig(fig_colorbar, 'colorbar_only'); 
+    printfig(fig_colorbar, 'colorbar_only_total_tension'); 
     close(fig_colorbar); 
     
     % reset current figure 
@@ -184,6 +196,19 @@ num_nbrs_rad  =  zeros(j_max,k_max);
 for j=j_range
     for k=1:k_max
         if is_internal(j,k) 
+            
+            if fiber_output && ((mod(j,fiber_stride) == 1) || (fiber_stride == 1))
+                output_tmp_k = true; 
+            else 
+                output_tmp_k = false; 
+            end 
+
+            if fiber_output && ((mod(k,fiber_stride) == (1 + stride_offset_j)) || (fiber_stride == 1))
+                output_tmp_j = true; 
+            else 
+                output_tmp_j = false; 
+            end     
+            
 
             X = X_current(:,j,k); 
 
@@ -244,6 +269,10 @@ for j=j_range
 %                         plot3(x_vals,y_vals,z_vals,'color',cmap(color_idx,:)); 
 %                     end 
                     
+                    if output_tmp_j
+                        plot3(x_vals,y_vals,z_vals,'k'); 
+                    end 
+
                     F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
 
                 end 
@@ -300,6 +329,12 @@ for j=j_range
 %                     if radial 
 %                         plot3(x_vals,y_vals,z_vals,'color',cmap(color_idx,:)); 
 %                     end 
+
+                    % plot local fiber if included 
+                    if output_tmp_k
+                        plot3(x_vals,y_vals,z_vals,'k'); 
+                    end 
+                    
                 end 
 
             end 
