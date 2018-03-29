@@ -173,7 +173,7 @@ end
 
 
 
-tension_plots = false; 
+tension_plots = true; 
 if tension_plots
 
     debug = false; 
@@ -296,7 +296,7 @@ end
 
 
 
-total_tension_plots = true; 
+total_tension_plots = false; 
 if total_tension_plots
 
     debug = false; 

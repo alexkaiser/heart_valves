@@ -84,7 +84,7 @@ def crop(file_name, box, file_name_new=None):
 
 if __name__ == '__main__':
 
-	do_one_family = False 
+	do_one_family = True 
 	if do_one_family:
 
 		one_family_plots = ['anterior_tension_plot_circ_uncropped.eps',
@@ -128,7 +128,7 @@ if __name__ == '__main__':
 		print 'Final box = ', box
 
 
-	do_two_family_surf = True
+	do_two_family_surf = False
 	if do_two_family_surf:
 
 		box = [162, 66, 457, 390]
