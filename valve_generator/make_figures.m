@@ -173,7 +173,7 @@ end
 
 
 
-tension_plots = true; 
+tension_plots = false; 
 if tension_plots
 
     debug = false; 
@@ -296,7 +296,7 @@ end
 
 
 
-total_tension_plots = false; 
+total_tension_plots = true; 
 if total_tension_plots
 
     debug = false; 
@@ -353,6 +353,7 @@ if total_tension_plots
     set(total_tension_fig_anterior, 'Position', [100, 100, x_pixels, y_pixels])   
     % set(total_tension_fig_anterior,'paperpositionmode','auto')
     % print(total_tension_fig_anterior, '-depsc', '-loose', 'total_tension_fig_anterior'); 
+    set(total_tension_fig_anterior, 'Renderer', 'Painters');
     printfig(total_tension_fig_anterior, 'total_tension_fig_anterior_uncropped'); 
     % export_fig total_tension_fig_anterior -eps -transparent
 	% export_fig(total_tension_fig_anterior, '-eps', 'total_tension_fig_anterior'); 
@@ -362,6 +363,7 @@ if total_tension_plots
     figure(total_tension_fig_posterior)
     axis off; 
     set(total_tension_fig_posterior, 'Position', [100, 100, x_pixels, y_pixels])
+    set(total_tension_fig_posterior, 'Renderer', 'Painters');
     printfig(total_tension_fig_posterior, 'total_tension_fig_posterior_uncropped'); 
     % export_fig total_tension_fig_posterior -eps -transparent
     fprintf('passed posterior write\n')
@@ -369,6 +371,73 @@ if total_tension_plots
 end 
 
 
+
+
+total_tension_tree_detail = false; 
+if total_tension_tree_detail
+
+    debug = false; 
+    if debug
+        n = 32; 
+    else
+        n = 512;
+    end 
+    
+    fiber_output    = false; 
+    fiber_stride    = 1; 
+    stride_offset_j = 0; 
+    base_dir  = '/Users/alex/mitral_fully_discrete/valve_generator/meshes/plot_meshes/two_leaflet_8_connector_b7a6aed/'
+    file_name = ['mitral_tree_', int2str(n), '_final_data.mat']
+    
+    load([base_dir, file_name])
+  
+    anterior = true; 
+    tree_detail_tension_fig_anterior = total_tension_surf_plot(valve.leaflets(1), anterior, fiber_output, fiber_stride, stride_offset_j); 
+        
+    axis equal;
+    view(-118,20)
+    xlabel('x')
+    ylabel('y')
+    zlabel('z')
+
+    axis([-2.5 0.0 .2 1.2 -2.2 -1.5]);
+    axis off
+    
+    % saveas(tree_detail_tension_fig_anterior, 'tree_detail_tension_fig_anterior_uncropped.fig'); 
+    
+%     x_min = -2.5; 
+%     x_max = 0; 
+%     
+%     y_center = .6; 
+%     y_radius = .5;
+%     
+%     y_min = y_center - y_radius; 
+%     y_max = y_center + y_radius; 
+%     
+%     z_center = -2.0; 
+%     z_radius = .2; 
+%     
+%     z_min = z_center - z_radius; 
+%     z_max = z_center + z_radius; 
+%     
+%     axis([x_min x_max y_min y_max z_min z_max]);
+%     
+
+%     % zoom(2) 
+%     axis off 
+    
+    output_from_figure = false; 
+    if output_from_figure
+        tree_detail_tension_fig_anterior = openfig('tree_detail_tension_fig_anterior.fig')
+    end
+    
+    set(tree_detail_tension_fig_anterior, 'Position', [100, 100, 500, 500])
+    set(tree_detail_tension_fig_anterior,'PaperPositionMode','auto')
+    set(tree_detail_tension_fig_anterior, 'Renderer', 'Painters');
+
+    printfig(tree_detail_tension_fig_anterior, 'tree_detail_tension_fig_anterior_uncropped'); 
+    
+end 
 
 
 

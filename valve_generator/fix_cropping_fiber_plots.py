@@ -131,7 +131,7 @@ if __name__ == '__main__':
 	do_two_family_surf = False
 	if do_two_family_surf:
 
-		box = [162, 66, 457, 390]
+		# box = [162, 66, 457, 390]
 
 		surf_plots = ['total_tension_fig_posterior_uncropped.eps',
 					  'total_tension_fig_anterior_uncropped.eps']
