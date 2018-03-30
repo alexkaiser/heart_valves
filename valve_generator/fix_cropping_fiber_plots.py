@@ -84,7 +84,7 @@ def crop(file_name, box, file_name_new=None):
 
 if __name__ == '__main__':
 
-	do_one_family = True 
+	do_one_family = False 
 	if do_one_family:
 
 		one_family_plots = ['anterior_tension_plot_circ_uncropped.eps',
@@ -136,7 +136,23 @@ if __name__ == '__main__':
 		surf_plots = ['total_tension_fig_posterior_uncropped.eps',
 					  'total_tension_fig_anterior_uncropped.eps']
 
+		box = None
+		for plot in surf_plots:
+			box = update_bounding_box(plot, box)
+
 		for plot in surf_plots:
 			crop(plot, box)
+
+	do_tree_detail = True
+	if do_tree_detail:
+		# 266   239   797   732 
+		box = [370, 239, 770, 530] 
+
+		tree_detail = ['tree_detail_tension_fig_anterior_uncropped.eps']
+
+		for plot in tree_detail:
+			crop(plot, box)
+
+
 
 

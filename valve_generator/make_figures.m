@@ -240,6 +240,7 @@ if tension_plots
     %set(fig_anterior_rad, 'Position', [100, 100, x_pixels, y_pixels])
     %set(fig_anterior_rad,'PaperPositionMode','auto')
     axis off; 
+    set(fig_anterior_rad, 'Renderer', 'Painters');
     print(fig_anterior_rad, '-depsc', 'anterior_tension_plot_radial_uncropped');
     % export_fig anterior_tension_plot_radial_export_uncropped -eps 
     
@@ -250,6 +251,7 @@ if tension_plots
         %set(fig_anterior_circ, 'Position', [100, 100, x_pixels, y_pixels])
         %set(fig_anterior_circ,'PaperPositionMode','auto')
         axis off; 
+        set(fig_anterior_circ, 'Renderer', 'Painters');
         print(fig_anterior_circ, '-depsc', 'anterior_tension_plot_circ_uncropped');
         % export_fig anterior_tension_plot_circ_export_uncropped -eps -transparent
     
@@ -258,6 +260,7 @@ if tension_plots
         %set(fig_posterior_circ, 'Position', [100, 100, x_pixels, y_pixels])
         %set(fig_anterior_rad,'PaperPositionMode','auto')
         axis off 
+        set(fig_posterior_circ, 'Renderer', 'Painters');
         printfig(fig_posterior_circ, 'posterior_tension_plot_circ_uncropped')
         % export_fig posterior_tension_plot_circ_export_uncropped -eps -transparent
 
@@ -266,6 +269,7 @@ if tension_plots
         %set(fig_posterior_rad, 'Position', [100, 100, x_pixels, y_pixels])
         %set(fig_anterior_rad,'PaperPositionMode','auto')
         axis off
+        set(fig_posterior_rad, 'Renderer', 'Painters');
         printfig(fig_posterior_rad, 'posterior_tension_plot_radial_uncropped')
         % export_fig posterior_tension_plot_radial_export_uncropped -eps -transparent 
     end 
@@ -296,7 +300,7 @@ end
 
 
 
-total_tension_plots = true; 
+total_tension_plots = false; 
 if total_tension_plots
 
     debug = false; 
@@ -373,7 +377,7 @@ end
 
 
 
-total_tension_tree_detail = false; 
+total_tension_tree_detail = true; 
 if total_tension_tree_detail
 
     debug = false; 
@@ -393,14 +397,15 @@ if total_tension_tree_detail
   
     anterior = true; 
     tree_detail_tension_fig_anterior = total_tension_surf_plot(valve.leaflets(1), anterior, fiber_output, fiber_stride, stride_offset_j); 
-        
+    set(tree_detail_tension_fig_anterior, 'Renderer', 'Painters');
+    
     axis equal;
     view(-118,20)
     xlabel('x')
     ylabel('y')
     zlabel('z')
 
-    axis([-2.5 0.0 .2 1.2 -2.2 -1.5]);
+    axis([-2.5 0.0 .2 1.4 -2.25 -1.0]);
     axis off
     
     % saveas(tree_detail_tension_fig_anterior, 'tree_detail_tension_fig_anterior_uncropped.fig'); 
@@ -431,9 +436,9 @@ if total_tension_tree_detail
         tree_detail_tension_fig_anterior = openfig('tree_detail_tension_fig_anterior.fig')
     end
     
-    set(tree_detail_tension_fig_anterior, 'Position', [100, 100, 500, 500])
+    set(tree_detail_tension_fig_anterior, 'Position', [100, 100, 1000, 1000])
     set(tree_detail_tension_fig_anterior,'PaperPositionMode','auto')
-    set(tree_detail_tension_fig_anterior, 'Renderer', 'Painters');
+    
 
     printfig(tree_detail_tension_fig_anterior, 'tree_detail_tension_fig_anterior_uncropped'); 
     
