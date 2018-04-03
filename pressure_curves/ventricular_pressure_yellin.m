@@ -61,22 +61,22 @@ set(fig,'PaperPositionMode','auto')
 printfig(fig, strcat('both_pressure_yellin', suffix))
 
 
-t = 0:dt:(3*cycle_length); 
-vals_ventricle_series = Series_ventricle(t); 
-fig = figure; 
-plot(t, vals_ventricle_series, 'k'); 
-title('Pressures')
-xlabel('t')
-ylabel('p (mmHg)')
-hold on 
-vals_atrium_series = Series_atrium(t); 
-plot(t, vals_atrium_series, '--k');
-axis([0 2.4 -10 140])
-set(fig, 'Position', [100, 100, 1000, 500])
-set(fig,'PaperPositionMode','auto')
-legend('Left Ventricle', 'Left Atrium', 'Location', 'NorthWest')
-printfig(fig, 'both_pressure_yellin_three_cycles')
-
+% t = 0:dt:(3*cycle_length); 
+% vals_ventricle_series = Series_ventricle(t); 
+% fig = figure; 
+% plot(t, vals_ventricle_series, 'k'); 
+% title('Pressures')
+% xlabel('t')
+% ylabel('p (mmHg)')
+% hold on 
+% vals_atrium_series = Series_atrium(t); 
+% plot(t, vals_atrium_series, '--k');
+% axis([0 2.4 -10 140])
+% set(fig, 'Position', [100, 100, 1000, 500])
+% set(fig,'PaperPositionMode','auto')
+% legend('Left Ventricle', 'Left Atrium', 'Location', 'NorthWest')
+% printfig(fig, 'both_pressure_yellin_three_cycles')
+% 
 
 
 

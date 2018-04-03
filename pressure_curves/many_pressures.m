@@ -15,7 +15,7 @@ plots = true;
 base_name = 'fourier_coeffs';
 
 
-basic = true; 
+basic = false; 
 if basic 
 
     points_one_cycle_ventricle = [0.0,   0; 
@@ -53,15 +53,27 @@ if low
     0.75, 130*.5; 
     cycle_length, 8]; 
 
-    points_one_cycle_atrium = [0.0, 12.5; 
-    0.06, 4; 
-    0.40, 7; 
-    0.47, 20; 
-    0.53, 5; 
-    0.58, 7; 
-    0.7,  8; 
-    cycle_length, 12.5]; 
-
+    depressed_low_pressure = false; 
+    if depressed_low_pressure
+        points_one_cycle_atrium = [0.0, 12.5; 
+        0.06, 4; 
+        0.40, 7; 
+        0.47, 20; 
+        0.53, 5; 
+        0.58, 7; 
+        0.7,  8; 
+        cycle_length, 12.5];
+    else 
+        points_one_cycle_atrium = [0.0, 24.555; 
+        0.06, 4; 
+        0.40, 7; 
+        0.47, 20; 
+        0.53, 5; 
+        0.58, 7; 
+        0.7,  10; 
+        cycle_length, 24.555]; 
+    end 
+    
     suffix = '_low'; 
 
     ventricular_pressure_yellin(cycle_length, dt, points_one_cycle_ventricle, points_one_cycle_atrium, base_name, suffix); 
@@ -69,7 +81,7 @@ if low
 end 
 
 
-high = true; 
+high = false; 
 if high 
 
     points_one_cycle_ventricle = [0.0,   -4; 
@@ -96,7 +108,7 @@ if high
 end 
 
 
-no_atrial_systole = true; 
+no_atrial_systole = false; 
 if no_atrial_systole
 
     points_one_cycle_ventricle = [0.0,   0; 
