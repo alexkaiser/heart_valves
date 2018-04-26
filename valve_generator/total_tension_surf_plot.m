@@ -150,7 +150,7 @@ n_colors = size(cmap,1);
 
 max_tension_circ = du * max(alpha(:)); 
 max_tension_radial = du * max(beta(:)); 
-max_tension = 1.5 * 0.7 * max(max_tension_circ, max_tension_radial); 
+max_tension = 1.7 * 0.7 * max(max_tension_circ, max_tension_radial); 
 
 % cbar = colorbar; 
 
@@ -166,7 +166,7 @@ end
 % cbar = colorbar('Ticks', tick_array, 'TickLabels', tick_labels); 
 % cbar.Label.String = 'Tension (K Dyne)'; 
 
-colorbar_figure = false; 
+colorbar_figure = true; 
 if colorbar_figure 
     fig_colorbar = figure; 
     
@@ -354,9 +354,9 @@ for j=j_range
             end    
             
             if num_nbrs_rad(j,k) == 1
-                tension_sum = tension_sum +       tension_circ(j,k); 
+                tension_sum = tension_sum +       tension_rad(j,k); 
             elseif num_nbrs_rad(j,k) == 2
-                tension_sum = tension_sum + 0.5 * tension_circ(j,k); 
+                tension_sum = tension_sum + 0.5 * tension_rad(j,k); 
             else 
                 error('Improper number of radial tension nodes'); 
             end    

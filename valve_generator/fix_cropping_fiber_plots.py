@@ -128,7 +128,7 @@ if __name__ == '__main__':
 		print 'Final box = ', box
 
 
-	do_two_family_surf = False
+	do_two_family_surf = True
 	if do_two_family_surf:
 
 		# box = [162, 66, 457, 390]
@@ -146,7 +146,12 @@ if __name__ == '__main__':
 	do_tree_detail = True
 	if do_tree_detail:
 		# 266   239   797   732 
-		box = [370, 239, 770, 530] 
+		
+		# good values on left tree 
+		# box = [370, 239, 770, 530] 
+
+		# for right tree
+		box = [340, 300, 590, 500] 
 
 		tree_detail = ['tree_detail_tension_fig_anterior_uncropped.eps']
 

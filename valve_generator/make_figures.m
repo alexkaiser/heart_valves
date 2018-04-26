@@ -300,7 +300,7 @@ end
 
 
 
-total_tension_plots = false; 
+total_tension_plots = true; 
 if total_tension_plots
 
     debug = false; 
@@ -400,12 +400,28 @@ if total_tension_tree_detail
     set(tree_detail_tension_fig_anterior, 'Renderer', 'Painters');
     
     axis equal;
-    view(-118,20)
-    xlabel('x')
-    ylabel('y')
-    zlabel('z')
+    
+    left_view = false;  
+    
+    if left_view 
+        view(-118,20)
+        xlabel('x')
+        ylabel('y')
+        zlabel('z')
 
-    axis([-2.5 0.0 .2 1.4 -2.25 -1.0]);
+        axis([-2.5 0.0 .2 1.4 -2.25 -1.0]);
+    else 
+        
+        % 'pause'
+        
+        % axis([-2.1 -0.3 -1.7  1.1 -2.8 -1.0])
+        axis([-2.5 0.0 -1.4 .2 -2.25 -1.0]);
+        
+    end
+    
+    
+    
+    
     axis off
     
     % saveas(tree_detail_tension_fig_anterior, 'tree_detail_tension_fig_anterior_uncropped.fig'); 
