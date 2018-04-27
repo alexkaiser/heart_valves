@@ -173,7 +173,7 @@ end
 
 
 
-tension_plots = false; 
+tension_plots = true; 
 if tension_plots
 
     debug = false; 
@@ -198,7 +198,7 @@ if tension_plots
     anterior_axes_radial = gca
     limits_horiz_view = axis 
 
-    if ~debug 
+    if true % ~debug 
         circ = true; 
         radial = false; 
         fig_anterior_circ = fiber_tension_surf_plot(valve.leaflets(1), anterior, circ, radial); 
@@ -244,7 +244,7 @@ if tension_plots
     print(fig_anterior_rad, '-depsc', 'anterior_tension_plot_radial_uncropped');
     % export_fig anterior_tension_plot_radial_export_uncropped -eps 
     
-    if ~debug 
+    if true % ~debug 
 
         figure(fig_anterior_circ);
         axis(limits_horiz_view); 
@@ -387,7 +387,7 @@ if total_tension_tree_detail
         n = 512;
     end 
     
-    fiber_output    = false; 
+    fiber_output    = true; 
     fiber_stride    = 1; 
     stride_offset_j = 0; 
     base_dir  = '/Users/alex/mitral_fully_discrete/valve_generator/meshes/plot_meshes/two_leaflet_8_connector_b7a6aed/'

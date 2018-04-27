@@ -142,7 +142,8 @@ hold on;
 % colormap(jet_wide_range); 
 
 n_colors = 500; 
-colormap(make_colormap(n_colors)); 
+extended = true; 
+colormap(make_colormap(n_colors, extended)); 
 
 
 cmap = colormap;
@@ -150,7 +151,7 @@ n_colors = size(cmap,1);
 
 max_tension_circ = du * max(alpha(:)); 
 max_tension_radial = du * max(beta(:)); 
-max_tension = 1.7 * 0.7 * max(max_tension_circ, max_tension_radial); 
+max_tension = max_tension_circ + max_tension_radial; % 1.7 * 0.7 * max(max_tension_circ, max_tension_radial); 
 
 % cbar = colorbar; 
 
@@ -170,7 +171,7 @@ colorbar_figure = true;
 if colorbar_figure 
     fig_colorbar = figure; 
     
-    colormap(make_colormap(n_colors)); 
+    colormap(make_colormap(n_colors, extended)); 
     cbar = colorbar('Ticks', tick_array, 'TickLabels', tick_labels); 
     cbar.Label.String = 'Tension (K Dyne)';
     grid off 

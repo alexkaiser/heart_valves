@@ -1,4 +1,4 @@
-function cmap = make_colormap(len)
+function cmap = make_colormap(len, extended)
 % 
 % returns a custom color map of length len 
 % 
@@ -56,13 +56,28 @@ else
     % value is one, then linearly to zero 
     % bright at first, then darker 
     
-    linear_hue_frac = .85; 
-    max_hue = 4/6; 
+    if exist('extended', 'var') && extended 
+        
+        % put some dark colors at the top to ignore
+        % linear things go up earlier to get reds closer to middle
+        
+        linear_hue_frac = .65; 
+        max_hue = 4/6; 
     
-    linear_saturation_frac = .6; 
+        linear_saturation_frac = .6; 
     
-    value_flat_frac = .84;     
+        value_flat_frac = .84;     
 
+    else 
+    
+        linear_hue_frac = .85; 
+        max_hue = 4/6; 
+
+        linear_saturation_frac = .6; 
+
+        value_flat_frac = .84;     
+    end 
+    
     sloped_hue_length = floor(linear_hue_frac * len); 
     hue = linspace(max_hue,0,sloped_hue_length)'; 
     hue = [hue; zeros(len - sloped_hue_length,1)]; 
