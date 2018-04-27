@@ -300,7 +300,7 @@ end
 
 
 
-total_tension_plots = true; 
+total_tension_plots = false; 
 if total_tension_plots
 
     debug = false; 
@@ -377,7 +377,7 @@ end
 
 
 
-total_tension_tree_detail = true; 
+total_tension_tree_detail = false; 
 if total_tension_tree_detail
 
     debug = false; 

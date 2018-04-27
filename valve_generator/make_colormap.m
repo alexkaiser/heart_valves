@@ -66,7 +66,7 @@ else
     
         linear_saturation_frac = .6; 
     
-        value_flat_frac = .84;     
+        value_flat_frac = .5; % .84;     
 
     else 
     
