@@ -173,7 +173,7 @@ end
 
 
 
-tension_plots = true; 
+tension_plots = false; 
 if tension_plots
 
     debug = false; 
@@ -377,7 +377,7 @@ end
 
 
 
-total_tension_tree_detail = false; 
+total_tension_tree_detail = true; 
 if total_tension_tree_detail
 
     debug = false; 
@@ -387,7 +387,7 @@ if total_tension_tree_detail
         n = 512;
     end 
     
-    fiber_output    = true; 
+    fiber_output    = false; 
     fiber_stride    = 1; 
     stride_offset_j = 0; 
     base_dir  = '/Users/alex/mitral_fully_discrete/valve_generator/meshes/plot_meshes/two_leaflet_8_connector_b7a6aed/'
@@ -455,9 +455,11 @@ if total_tension_tree_detail
     set(tree_detail_tension_fig_anterior, 'Position', [100, 100, 1000, 1000])
     set(tree_detail_tension_fig_anterior,'PaperPositionMode','auto')
     
-
-    printfig(tree_detail_tension_fig_anterior, 'tree_detail_tension_fig_anterior_uncropped'); 
-    
+    if fiber_output
+        printfig(tree_detail_tension_fig_anterior, 'tree_detail_tension_fig_anterior_WITH_FIBERS_uncropped'); 
+    else 
+        printfig(tree_detail_tension_fig_anterior, 'tree_detail_tension_fig_anterior_uncropped'); 
+    end 
 end 
 
 

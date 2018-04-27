@@ -153,6 +153,9 @@ max_tension_circ = du * max(alpha(:));
 max_tension_radial = du * max(beta(:)); 
 max_tension = max_tension_circ + max_tension_radial; % 1.7 * 0.7 * max(max_tension_circ, max_tension_radial); 
 
+% doesn't make any difference here 
+% max_tension_sum = du * max(alpha(:) + beta(:)); 
+
 % cbar = colorbar; 
 
 n_ticks = 5; 
