@@ -35,16 +35,23 @@ function [] = output_mesh_schematic(valve)
     for j=1:j_max
         for k=1:k_max
             if is_internal(j, k) || is_bc(j,k)
-                X_schematic(:,j,k) = du * [j;k;nan]; 
-                
+                % X_schematic(:,j,k) = du * [j;k;nan]; 
+                u = du * j;  
                 if j > wrap_idx
-                    X_schematic(1,j,k) = X_schematic(1,j,k) - 1; 
-                end 
+                    % X_schematic(1,j,k) = X_schematic(1,j,k) - 1; 
+                    u = u - 1;
+                end
                 
+                v = 1 - (k_max - k) * du;
+                X_schematic(:,j,k) = [u,v,nan];
             end 
         end 
     end 
 
+    % undoing periodic wraps 
+    min_x = min(min(X_schematic(1,:,:))); 
+    X_schematic(1,:,:) = X_schematic(1,:,:) - min_x; 
+    
     if valve.commissural_leaflets
         
         X_schematic(1,:,:) = X_schematic(1,:,:) - min(min(X_schematic(1,:,:))) + du/2; 
@@ -76,8 +83,12 @@ function [] = output_mesh_schematic(valve)
     papillary_x = [papillary_x, papillary_right_x]; 
     papillary_x = [papillary_x, papillary_left_x(1 : (end - trees_anterior_left) )]; 
     
+    % update for min_x translation
+    papillary_x = papillary_x - min_x; 
+    
+    y_offset_trees = .45; 
     for tree_idx = 1:leaflet_schematic.num_trees
-        leaflet_schematic.papillary(:,tree_idx) = [papillary_x(tree_idx); 0; nan]; 
+        leaflet_schematic.papillary(:,tree_idx) = [papillary_x(tree_idx); y_offset_trees; nan]; 
     end 
     
     for tree_idx = 1:leaflet_schematic.num_trees
@@ -216,7 +227,8 @@ function [] = output_mesh_schematic(valve)
         m(1) = m(1) - 2*du    % xmin
         m(3) = m(3) - 2*du    % ymin
         m 
-        axis([-0.2656    0.7578   -0.0156    0.5234]); 
+        % axis([-0.2656    0.7578   -0.0156    0.5234]); 
+        axis(m)
         
         % pos_orig = get(gca, 'Position'); 
         % this approach fails, because setting 
