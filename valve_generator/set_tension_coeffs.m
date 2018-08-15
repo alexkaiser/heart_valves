@@ -92,8 +92,8 @@ end
 
 if isfield(leaflet, 'n_edge_connectors') && (leaflet.n_edge_connectors > 0)
     alpha_edge_connector       = tension_coeffs.alpha_edge_connector      * tension_base; 
-    beta_edge_connector        = tension_coeffs.beta_edge_connector       * tension_base; 
-    c_circ_dec_edge_connector  = tension_coeffs.c_circ_dec_edge_connector * dec_tension_coeff_base; 
+    beta_edge_connector        = tension_coeffs.beta_edge_connector       * tension_base;
+    c_circ_dec_edge_connector  = tension_coeffs.c_circ_dec_edge_connector * dec_tension_coeff_base;
     c_rad_dec_edge_connector   = tension_coeffs.c_rad_dec_edge_connector  * dec_tension_coeff_base;   
 end 
 
@@ -280,19 +280,23 @@ if isfield(leaflet, 'n_edge_connectors') && (leaflet.n_edge_connectors > 0)
 end 
 
 
+k_root_unscaled                = tension_coeffs.k_root * root_tension_base * tree_tension_multiplier; 
+k_0_1_unscaled                 = tension_coeffs.k_0_1  * leaf_tension_base * tree_tension_multiplier;
+c_dec_chordae_leaf_unscaled    = tension_coeffs.c_dec_chordae_leaf;
+c_dec_chordae_root_unscaled    = tension_coeffs.c_dec_chordae_root;
 
 % set chordae tensions 
-k_root                = tension_coeffs.k_root * tension_base * root_tension_base * tree_tension_multiplier; 
+k_root                = tension_coeffs.k_root * tension_base * root_tension_base * tree_tension_multiplier;
 k_0_1                 = tension_coeffs.k_0_1  * tension_base * leaf_tension_base * tree_tension_multiplier;
 chordae               = leaflet.chordae; 
 c_dec_chordae_leaf    = tension_coeffs.c_dec_chordae_leaf * dec_tension_coeff_base; 
-c_dec_chordae_root    = tension_coeffs.c_dec_chordae_root * dec_tension_coeff_base; 
+c_dec_chordae_root    = tension_coeffs.c_dec_chordae_root * dec_tension_coeff_base;
 
 for tree_idx = 1:leaflet.num_trees    
 
     free_edge_idx       = chordae(tree_idx).free_edge_idx; 
     
-    n_leaves = size(free_edge_idx,1);  
+    n_leaves = size(free_edge_idx,1); 
 
     if (length(k_0_1) == 1) && (length(k_root) == 1)
         k_0_1_tmp   = k_0_1; 

@@ -26,15 +26,8 @@ it = 0;
 
 fprintf('Global iteration = %d, \tnorm %e\n', it, err)
 
-% some versions use an energy in addition to difference equations 
-use_energy = false; 
-
-
-% Get function handles for energy, diff eqns and Jacobian 
-% if use_energy
-%     energy   = leaflet.energy; 
-% end 
-diff_eqns = leaflet.diff_eqns; %@(leaflet) diff_eqns_and_linearize(leaflet, leaflet.diff_eqns); 
+% Get function handles for diff eqns and Jacobian 
+diff_eqns = leaflet.diff_eqns; 
 jacobian  = leaflet.jacobian; 
 
 
@@ -46,10 +39,26 @@ max_back_tracking_it = 20;
 % call 1D optimiazation routine if true 
 optimization = false; 
 
-
-
 consecutive_fails = 0; 
 total_fails = 0; 
+
+% will run a single iteration 
+% residual computed by converting previous solution to sybolic datatype
+% generally ineffective 
+iterative_refinement = false; 
+
+% if true, will continue to run iterations of Newton's method 
+% until the error fails to decrease 
+extra_iterations = true; 
+
+% solves linear system with optional advanpix package 
+advanpix_multiprecision = true; 
+
+% summary of current iteration information is printed as a format that goes
+% into a latex table if true
+% human-friendly format if false 
+latex_table = false; 
+
 
 if ~exist('max_consecutive_fails', 'var')
     max_consecutive_fails = inf; 
@@ -58,7 +67,6 @@ end
 if ~exist('max_total_fails', 'var')
     max_total_fails = inf; 
 end
-
 
 
 
@@ -94,17 +102,34 @@ if isfield(leaflet, 'iteration_movie') && leaflet.iteration_movie
     close(fig_movie); 
 end 
 
+converged = false; 
+error_out = false;
 
 % newton step loop 
-while err > tol
+while true
+    
+    if err < tol 
+        if ~converged
+            fprintf(' -- Newton: Solve converged to tolerance. Running extra iterations until error stops decreasing\n'); 
+        end 
+        
+        converged = true; 
+        leaflet_on_loop_entry = leaflet; 
+        pass_on_loop_entry = pass; 
+        err_on_loop_entry = err; 
+    end 
+    
+    if converged && (~extra_iterations)
+        break
+    end 
     
     tic 
 
     J = jacobian(leaflet); 
 
-    jacobian_cond_info = false; 
+    jacobian_cond_info = true; 
     if jacobian_cond_info
-        condition_num = cond(J)
+        condition_num = condest(J); 
     end 
 
     jacobian_det_info = false;  
@@ -130,17 +155,54 @@ while err > tol
     
     F_linearized = diff_eqns(leaflet); 
     X_linearized_prev = linearize_internal_points(leaflet); 
-    
-    
+       
     err_prev = err; 
+ 
+
     
-    if use_energy 
-        E_prev = E; 
+    if advanpix_multiprecision 
+        digits = 34; 
+        mp.Digits(digits);
+        
+        J_extended_prec = mp(J); 
+        F_linearized_extended_prec = mp(F_linearized); 
+        soln_extended_prec = J_extended_prec \ (-F_linearized_extended_prec); 
+        
+%         err_abs = norm(soln_extended_prec - soln); 
+%         err_rel = norm(soln_extended_prec - soln) / norm(soln_extended_prec); 
+%         
+%         fprintf('err_rel = %.20e\t', err_rel)
+%         fprintf('err_abs = %.20e\n', err_abs)
+        
+        use_soln_cast_to_double = true; 
+        if use_soln_cast_to_double
+            soln = double(soln_extended_prec); 
+        else
+            fprintf(' -- Newton: NO multiprecision used\n')
+        end
+        
+    else 
+        % default precision 
+        % solve the system,
+        soln = J \ (-F_linearized); 
     end 
     
-    % solve the system,
-    soln = J \ (-F_linearized); 
-
+    
+    if iterative_refinement
+        % see
+        % https://blogs.mathworks.com/cleve/2015/02/16/iterative-refinement-for-solutions-to-linear-systems/ 
+        
+        % simple triple precision residual 
+        % residual = residual3p(J,soln,-F_linearized); 
+        % redidual with double to sym to double 
+        residual = double(J*sym(soln,'f') - (-F_linearized)); 
+        correction = J \ residual; 
+        
+        soln = soln - correction; 
+        
+        check_iterative_refinement(J)
+    end 
+    
     % add in to get the next iterate 
     X_linearized = X_linearized_prev + soln; 
 
@@ -157,6 +219,7 @@ while err > tol
            
             % pass
             if (err < err_prev) 
+                % convergence on basic Newton step, no line search 
                 % fprintf('Line search passed with alpha = %f, \t ||F|| = %e\n', alpha, err); 
                 consecutive_fails = 0; 
                 break; 
@@ -175,18 +238,29 @@ while err > tol
             back_tracking_it = back_tracking_it + 1; 
             
             if back_tracking_it > max_back_tracking_it
-                warning('Failed to find a descent guess in allowed number of iterations.'); 
+                warning(' -- Warning:  Failed to find a descent guess in allowed number of iterations.'); 
+                
+                fprintf(' -- Newton: Difference in no descent guess with previous guess = %.20e\n', norm(X_linearized - X_linearized_prev)); 
+                
                 consecutive_fails = consecutive_fails + 1; 
                 total_fails = total_fails + 1; 
                 
                 % After search, if error has grown by an order or magnitude, return control
                 if err > (10 * err_prev)
-                    error('Error growth by over one order of magnitude. Return control to parent.'); 
+                    error_out = true; 
+                    warning('Error growth by over one order of magnitude. Return control to parent.'); 
+                    break; 
                 end 
                 
                 % Move along with this guess 
                 break; 
             end 
+            
+            % double break if error_out has been set to true 
+            if error_out 
+                break; 
+            end 
+            
         end 
         
     elseif back_tracking && optimization
@@ -211,100 +285,47 @@ while err > tol
         leaflet = internal_points_to_2d(X_linearized, leaflet); 
 
     end 
-    
-    
-    
-%     
-%     if back_tracking && use_energy
-%         
-%         % first order term in Taylor series, no coefficients
-%         F_J_inv_F = F_linearized' * soln;  
-%         
-%         if F_J_inv_F <= 0.0
-%            warning('Hessian has not made positive definite quadratic form');  
-%         end 
-%         
-%         E = energy(leaflet); 
-%         
-%         alpha = 1.0; 
-%         back_tracking_it = 0; 
-%         while (E >= E_prev - c_backtrack * alpha * F_J_inv_F) 
-%            
-%             alpha = alpha / 2.0; 
-%             
-%             % add in to get the next iterate 
-%             X_linearized = X_linearized_prev + alpha * soln; 
-% 
-%             % copy data back to 2d 
-%             leaflet = internal_points_to_2d(X_linearized, leaflet); 
-% 
-%             E = energy(leaflet); 
-%         
-%             back_tracking_it = back_tracking_it + 1; 
-%             
-%             if back_tracking_it > max_back_tracking_it
-%                 warning('failed to find a descent guess in allowed number of iterations'); 
-%                 break; 
-%             end 
-%         end 
-%         
-%         err = total_global_err(leaflet); 
-%     end 
-%     
-%     
-%     if line_search && use_energy
-%         
-%         energy_gradient_hessian_handle = @(alpha) energy_gradient_hessian(X_linearized_prev + alpha*soln, leaflet); 
-%         
-%         min_alpha = 0.0; 
-%         max_alpha = 1.0; 
-%         
-%         options = optimset('TolX', 1e2*tol, 'Display', 'off'); 
-%         
-%         [alpha_opt, E, exitflag, output] = fminbnd(energy_gradient_hessian_handle, min_alpha, max_alpha, options); 
-%         
-%         if exitflag == 1
-%             fprintf('One D optimization passed with alpha = %e, \t E = %f\n', alpha_opt, E); 
-%         else
-%             error('One dimensional optimization failed'); 
-%         end 
-%         
-%         X_linearized = X_linearized_prev + alpha_opt * soln; 
-%         leaflet = internal_points_to_2d(X_linearized, leaflet); 
-%     end 
-%     
-%     
-    
-    
+        
     it = it + 1; 
     if it > max_it
-        warning('Global solve failed to converge in %d iterations\n', it);
-        pass = false; 
+        error_out = true; 
+        fprintf(' -- Warning: Global solve failed to converge in %d iterations. Return control to parent.\n', it);
         break; 
     end  
     
     if isnan(err)
-        error('NaN failure in solve. Return control to parent.'); 
+        error_out = true; 
+        fprintf(' -- Warning: NaN failure in solve. Return control to parent.\n'); 
+        break; 
     end 
     
     if consecutive_fails > max_consecutive_fails
-        error('Too many consecutive failures on line search. Return control to parent.'); 
+        error_out = true; 
+        fprintf(' -- Warning: Too many consecutive failures on line search. Return control to parent.\n'); 
+        break; 
     end 
     
     if total_fails > max_total_fails
-        error('Too many total failures on line search. Return control to parent.'); 
+        error_out = true; 
+        fprintf(' -- Warning: Too many total failures on line search. Return control to parent.\n'); 
+        break; 
     end 
     
-    
-    if use_energy
-        fprintf('Global iteration = %d, \tnorm %e, \tE = %e, \telapsed = %f\n', it, err, E, toc)
+
+    % Summary of current iteration information 
+    if latex_table
+        fprintf('%d & %.2e & %f & %.2f \\\\ \n \\hline \n', it, err, alpha, toc); 
     else
         fprintf('Global iteration = %d, \tnorm %e, \telapsed = %f', it, err, toc); 
         if exist('alpha', 'var')
             fprintf(', \talpha = %f', alpha); 
+        end
+        if jacobian_cond_info 
+            fprintf(', \tcond = %.1e', condition_num); 
         end 
         fprintf('\n'); 
     end 
+        
     
     if plots && mod(it, plot_freq) == 0 
         surf_plot(leaflet, fig); 
@@ -338,4 +359,52 @@ while err > tol
         close(fig_movie); 
     end    
 end 
+
+if converged && ~(error_out)
+    % all is well, no cleanup needed
+    return; 
+
+elseif error_out && converged 
+    % left after extra iterations
+    % solver converged then took a bad step
+    % set previous good step to return values 
+    
+    fprintf(' -- Newton: In final step, err_rejected = %.20e, err_on_loop_entry = %.20e\n', err, err_on_loop_entry); 
+    fprintf(' -- Newton: In final step, err_differences = %.20e\n', err - err_on_loop_entry); 
+    
+    fprintf(' -- Newton: Before taking old entry, ')
+    if all(all(all( (leaflet_on_loop_entry.X == leaflet.X) | isnan(leaflet.X) )))
+        fprintf('all equal in leaflets or nan masked\n')
+    else 
+        fprintf('NOT all equal in leaflets\n')
+    end 
+    
+    leaflet = leaflet_on_loop_entry; 
+    pass = pass_on_loop_entry; 
+    err = err_on_loop_entry; 
+    
+    fprintf(' -- Newton: After taking old entry, ')
+    if all(all(all( (leaflet_on_loop_entry.X == leaflet.X) | isnan(leaflet.X) )))
+        fprintf('all equal or nan masked\n') 
+    else 
+        fpritnf('NOT all equal in leaflets\n')
+    end 
+    
+elseif error_out && (~converged)
+    % this is an actual failure for nonconvergence 
+    error('Solver failed to converge');     
+else     
+    error('Should be impossible, check control flow'); 
+end 
+
+
+
+fprintf('Final iteration       \tnorm %e, \telapsed = %f', err, toc); 
+if jacobian_cond_info 
+    fprintf(', \tcond = %.1e', condition_num); 
+end 
+fprintf('\n'); 
+
+
+
 
