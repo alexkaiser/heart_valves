@@ -323,7 +323,7 @@ function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, 
     
     strain = (L - rest_len) / rest_len; 
     
-    fprintf('strain = %e, idx = %d, nbr = %d\n', strain, idx, nbr_idx)
+    % fprintf('strain = %e, idx = %d, nbr = %d\n', strain, idx, nbr_idx)
     
 %     if strain > max_strain 
 %         warning(sprintf('strain = %e, idx = %d, nbr = %d\n', strain, idx, nbr_idx)); 

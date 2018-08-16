@@ -51,8 +51,12 @@ iterative_refinement = false;
 % until the error fails to decrease 
 extra_iterations = true; 
 
+% maximum number of extra iterations 
+max_extra_iterations = 10; 
+n_extra_it = 0; 
+
 % solves linear system with optional advanpix package 
-advanpix_multiprecision = true; 
+advanpix_multiprecision = false; 
 
 % summary of current iteration information is printed as a format that goes
 % into a latex table if true
@@ -117,6 +121,15 @@ while true
         leaflet_on_loop_entry = leaflet; 
         pass_on_loop_entry = pass; 
         err_on_loop_entry = err; 
+        
+        n_extra_it = n_extra_it + 1; 
+        
+        if n_extra_it > max_extra_iterations
+            fprintf(' -- Newton: Max extra iterations reached'); 
+            error_out = true; 
+            break; 
+        end 
+        
     end 
     
     if converged && (~extra_iterations)
