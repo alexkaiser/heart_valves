@@ -4,110 +4,116 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N = 64; 
+N_range = 2.^(6:10); 
 
-% Show some output 
-plots = false; 
+for N = N_range
 
-% Initialize structures 
-% Many parameters are in this script 
+    clearvars -except N
+    
+    N
+    
+    % Show some output 
+    plots = false; 
 
-radial       = true; 
-bead_slip    = true; 
-attached     = false; 
-leaflet_only = false; 
-optimization = false; 
-decreasing_tension = true; 
+    % Initialize structures 
+    % Many parameters are in this script 
+
+    radial       = true; 
+    bead_slip    = true; 
+    attached     = false; 
+    leaflet_only = false; 
+    optimization = false; 
+    decreasing_tension = true; 
 
 
-if radial
-    
-    if bead_slip 
-        valve = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization, decreasing_tension); 
-    else        
-        valve = initialize_valve_data_structures_radial(N); 
-    end 
-        
-else 
-    
-    if bead_slip || attached || leaflet_only 
-        error('diagonal fibers not implemented for closed bead slip or attached'); 
-    end 
-    
-    valve = initialize_valve_data_structures(N); 
-end 
-    
-    
-if plots 
-    fig = surf_plot(valve.posterior); 
-    title('Reference configuration of posterior surface'); 
-    fig = surf_plot(valve.anterior, fig); 
-    title('Reference configuration of anterior surface'); 
-    
-    valve_plot(valve)
     if radial
-        title('Refernece configuration radial fibers')
-    else
-        title('Refernece configuration diagonal fibers')
+
+        if bead_slip 
+            valve = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization, decreasing_tension); 
+        else        
+            valve = initialize_valve_data_structures_radial(N); 
+        end 
+
+    else 
+
+        if bead_slip || attached || leaflet_only 
+            error('diagonal fibers not implemented for closed bead slip or attached'); 
+        end 
+
+        valve = initialize_valve_data_structures(N); 
     end 
-    
-end
 
 
-iteration_movie = false; 
-if iteration_movie
-    valve.leaflets(1).iteration_movie = true;
-    valve.leaflets(1).movie_name = 'const_tension_newton'; 
-    
-    valve.leaflets(1).movie_name = 'iteration_newtons';
+    if plots 
+        fig = surf_plot(valve.posterior); 
+        title('Reference configuration of posterior surface'); 
+        fig = surf_plot(valve.anterior, fig); 
+        title('Reference configuration of anterior surface'); 
 
-end 
+        valve_plot(valve)
+        if radial
+            title('Refernece configuration radial fibers')
+        else
+            title('Refernece configuration diagonal fibers')
+        end 
+
+    end
 
 
-interactive = false; 
+    iteration_movie = false; 
+    if iteration_movie
+        valve.leaflets(1).iteration_movie = true;
+        % valve.leaflets(1).movie_name = 'const_tension_newton'; 
 
-from_history = false; 
-if from_history 
-    history_name = 'mitral_tree_64_tension_history_2017_5_30_20.47.28.mat'; 
-    load(history_name); 
-    valve.tension_coeff_history = history_tmp; 
-end 
+        valve.leaflets(1).movie_name = 'iteration_newtons';
 
-% if radial && bead_slip && attached
-%     valve = newton_solve_valve_attached(valve, valve.tol_global, valve.max_it); 
-% else 
-% %     valve = solve_valve(valve, p_range, repulsive_coeff_range); 
+    end 
 
-[valve valve_with_reference pass_all] = solve_valve(valve, interactive, from_history); 
-% end 
 
-fig = figure; 
-fig = valve_plot(valve, fig); 
+    interactive = false; 
 
-title('Pressurized configuration fibers'); 
-saveas(fig, strcat(valve.base_name, '_pressurized'), 'fig'); 
+    from_history = false; 
+    if from_history 
+        history_name = 'mitral_tree_64_tension_history_2017_5_30_20.47.28.mat'; 
+        load(history_name); 
+        valve.tension_coeff_history = history_tmp; 
+    end 
 
-if ~isempty(valve_with_reference)
+    % if radial && bead_slip && attached
+    %     valve = newton_solve_valve_attached(valve, valve.tol_global, valve.max_it); 
+    % else 
+    % %     valve = solve_valve(valve, p_range, repulsive_coeff_range); 
+
+    [valve valve_with_reference pass_all] = solve_valve(valve, interactive, from_history); 
+    % end 
+
     fig = figure; 
-    fig = valve_plot(valve_with_reference, fig); 
-    title('Relaxed configuration radial fibers, reference config based constitutive law'); 
-    saveas(fig, strcat(valve.base_name, '_relaxed'), 'fig'); 
+    fig = valve_plot(valve, fig); 
+
+    title('Pressurized configuration fibers'); 
+    saveas(fig, strcat(valve.base_name, '_pressurized'), 'fig'); 
+
+    if ~isempty(valve_with_reference)
+        fig = figure; 
+        fig = valve_plot(valve_with_reference, fig); 
+        title('Relaxed configuration radial fibers, reference config based constitutive law'); 
+        saveas(fig, strcat(valve.base_name, '_relaxed'), 'fig'); 
+    end 
+
+    if pass_all 
+        fprintf('Final solve passed.\n'); 
+    else 
+        fprintf('Final solve failed.\n'); 
+    end 
+
+
+    % Save current data 
+    save(strcat(valve.base_name, '_final_data')); 
+
+    % Write to simulation files 
+    if ~isempty(valve_with_reference)
+        output_to_ibamr_format(valve_with_reference); 
+    end 
+
 end 
-
-if pass_all 
-    fprintf('Final solve passed.\n'); 
-else 
-    fprintf('Final solve failed.\n'); 
-end 
-
-
-% Save current data 
-save(strcat(valve.base_name, '_final_data')); 
-
-% Write to simulation files 
-if ~isempty(valve_with_reference)
-    output_to_ibamr_format(valve_with_reference); 
-end 
-
-
 

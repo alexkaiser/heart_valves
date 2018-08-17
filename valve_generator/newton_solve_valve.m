@@ -78,8 +78,8 @@ plots = false;
 if plots 
     plot_freq = 1; 
     fig = figure; 
-   
-    surf_plot(leaflet, fig); 
+    surf_plot(leaflet, fig);
+    title('Initial');  
     view(74,6); 
     hold off;  
 end 
@@ -95,14 +95,14 @@ if isfield(leaflet, 'iteration_movie') && leaflet.iteration_movie
     axis off 
     set(fig_movie, 'Position', [100, 100, 1000, 1000])
     set(fig_movie,'PaperPositionMode','auto')
-    title = sprintf('%s_diagonal_%d', movie_name, it); 
-    printfig(fig_movie, title); 
+    title_str = sprintf('%s_diagonal_%d', movie_name, it); 
+    printfig(fig_movie, title_str); 
     view(90,0)
-    title = sprintf('%s_front_%d', movie_name, it); 
-    printfig(fig_movie, title); 
+    title_str = sprintf('%s_front_%d', movie_name, it); 
+    printfig(fig_movie, title_str); 
     view(0,90)
-    title = sprintf('%s_top_%d', movie_name, it);
-    printfig(fig_movie, title); 
+    title_str = sprintf('%s_top_%d', movie_name, it);
+    printfig(fig_movie, title_str); 
     close(fig_movie); 
 end 
 
@@ -251,8 +251,7 @@ while true
             back_tracking_it = back_tracking_it + 1; 
             
             if back_tracking_it > max_back_tracking_it
-                warning(' -- Warning:  Failed to find a descent guess in allowed number of iterations.'); 
-                
+                fprintf(' -- Warning:  Failed to find a descent guess in allowed number of iterations.\n');                 
                 fprintf(' -- Newton: Difference in no descent guess with previous guess = %.20e\n', norm(X_linearized - X_linearized_prev)); 
                 
                 consecutive_fails = consecutive_fails + 1; 
@@ -299,6 +298,7 @@ while true
 
     end 
         
+    % various ways to leave the main loop 
     it = it + 1; 
     if it > max_it
         error_out = true; 
@@ -341,6 +341,7 @@ while true
         
     
     if plots && mod(it, plot_freq) == 0 
+        fig = figure; 
         surf_plot(leaflet, fig); 
         view(74,6); 
         title(sprintf('it = %d', it));         
@@ -361,14 +362,14 @@ while true
         axis off 
         set(fig_movie, 'Position', [100, 100, 1000, 1000])
         set(fig_movie,'PaperPositionMode','auto')
-        title = sprintf('%s_diagonal_%d', movie_name, it); 
-        printfig(fig_movie, title); 
+        title_str = sprintf('%s_diagonal_%d', movie_name, it); 
+        printfig(fig_movie, title_str); 
         view(90,0)
-        title = sprintf('%s_front_%d', movie_name, it); 
-        printfig(fig_movie, title); 
+        title_str = sprintf('%s_front_%d', movie_name, it); 
+        printfig(fig_movie, title_str); 
         view(0,90)
-        title = sprintf('%s_top_%d', movie_name, it);
-        printfig(fig_movie, title); 
+        title_str = sprintf('%s_top_%d', movie_name, it);
+        printfig(fig_movie, title_str); 
         close(fig_movie); 
     end    
 end 
