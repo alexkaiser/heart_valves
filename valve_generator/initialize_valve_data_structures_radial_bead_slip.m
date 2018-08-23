@@ -193,7 +193,7 @@ if ~explicit_comm_leaflets
 
     % places circumferential fibers this many below hoops 
     % if the location is not already covered by leaflet
-    n_edge_connectors = 0; max(1,N/64);  
+    n_edge_connectors = max(1,N/64);  
 
     % No explicit commissural leaflet here 
     N_anterior = N/2; 
@@ -320,7 +320,7 @@ if ~explicit_comm_leaflets
                                               
     % root constants do not scale, because the root 
     % should maintain a consistent length when mesh is changed 
-    tension_coeffs.c_dec_chordae_root = (2/N) * [1.0; 1.0; ...       % (1/256) * [1.0; 1.0; ...       % anterior  
+    tension_coeffs.c_dec_chordae_root = (1/256) * [1.0; 1.0; ...       % anterior  
                                                    1.0; 1.0; ...       % comm
                                                    1.0; 1.0; ...       % posterior
                                                    1.0; 1.0];          % comm 
