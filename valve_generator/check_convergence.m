@@ -14,8 +14,17 @@ N_values = 2.^(6:10);
 % N_values = 2.^[8:10]; 
 
 % no edge connectors, ratio slightly down 
-path = 'meshes/plot_meshes/two_leaflet_zero_connector_ratio_down_2f5200f'
-suffix_name = '_no_edge_connectors_2f5200f'; 
+% path = 'meshes/plot_meshes/two_leaflet_zero_connector_ratio_down_2f5200f'
+% suffix_name = '_no_edge_connectors_2f5200f'; 
+
+% path = 'meshes/plot_meshes/two_leaflet_8_connector_new_root_scaling_be020ffc'
+% suffix_name = 'new_root_scaling_be020ffc'
+
+% path = 'meshes/plot_meshes/two_leaflet_8_connector_new_root_fixed_ratio_edge_connectors_off_f4f0a94'
+% suffix_name = '_new_root_fixed_ratio_edge_connectors_off_f4f0a94'
+
+path = 'meshes/plot_meshes/two_leaflet_8_connector_new_root_scaling_fixed_ratio_789d69c' 
+suffix_name = '_new_root_scaling_fixed_ratio_789d69c'
 
 % commissural leaflet version, generally terrible 
 % path = 'meshes/plot_meshes/comm_leaflets_d599cccee'

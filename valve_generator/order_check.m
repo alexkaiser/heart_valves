@@ -5,7 +5,7 @@ function order_check(path, N_values, suffix_name)
     % 
 
     ring_convergence_sanity_check = false; 
-    front_view_plots = false; 
+    front_view_plots = true; 
 
     iterations = length(N_values) - 1; 
 
