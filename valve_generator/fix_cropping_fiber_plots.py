@@ -143,7 +143,7 @@ if __name__ == '__main__':
 		for plot in surf_plots:
 			crop(plot, box)
 
-	do_tree_detail = False
+	do_tree_detail = True
 	if do_tree_detail:
 		# 266   239   797   732 
 		
@@ -154,14 +154,14 @@ if __name__ == '__main__':
 		# box = [340, 300, 590, 500] 
 
 		# something funny with monitors/screen resolution and 
-		box = [360, 170, 580, 360] 
+		box = [360, 180, 580, 340] 
 
 		tree_detail = ['tree_detail_tension_fig_anterior_uncropped.eps']
 
 		for plot in tree_detail:
 			crop(plot, box)
 
-	do_free_edge_detail = True
+	do_free_edge_detail = False
 	if do_free_edge_detail:
 		# orig box 
 		# 109    85   471   349
