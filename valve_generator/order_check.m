@@ -1,10 +1,11 @@
-function order_check(path, N_values)
+function order_check(path, N_values, suffix_name)
     % 
     % 
     % 
     % 
 
-
+    ring_convergence_sanity_check = false; 
+    front_view_plots = false; 
 
     iterations = length(N_values) - 1; 
 
@@ -12,24 +13,34 @@ function order_check(path, N_values)
     diff_2    = zeros(iterations,1); 
     diff_inf  = zeros(iterations,1); 
 
+    diff_1_anterior     = zeros(iterations,1); 
+    diff_2_anterior     = zeros(iterations,1); 
+    diff_inf_anterior   = zeros(iterations,1);
+    
+    diff_1_posterior    = zeros(iterations,1); 
+    diff_2_posterior    = zeros(iterations,1); 
+    diff_inf_posterior  = zeros(iterations,1);
+    
     diff_1_ring    = zeros(iterations,1); 
     diff_2_ring    = zeros(iterations,1); 
     diff_inf_ring  = zeros(iterations,1); 
     
+    newton_error_difference_equations = zeros(length(N_values),1); 
+    
     bilinear_interp = true; 
 
     if bilinear_interp 
-        'bilinear interpolation (subject to interpolation error)'
+        fprintf('bilinear interpolation (subject to interpolation error)\n'); 
     else 
-        'injection interpolation (off by up to O(dx))'
+        fprintf('injection interpolation (off by up to O(dx))\n'); 
     end 
 
 
     for i = 1:iterations 
 
-        N_coarse = N_values(i); 
+        N_coarse = N_values(i)
         data_coarse = sprintf('%s/mitral_tree_%d_final_data', path, N_coarse); 
-        load(data_coarse)
+        load(data_coarse, 'valve'); 
 
         valve_coarse       = valve; 
         leaflet_coarse     = valve_coarse.leaflets(1); 
@@ -40,6 +51,44 @@ function order_check(path, N_values)
         du_coarse          = leaflet_coarse.du; 
         is_internal_coarse = leaflet_coarse.is_internal; 
 
+        newton_error_difference_equations(i) = total_global_err(leaflet_coarse); 
+        
+        if front_view_plots 
+            
+            fig = figure; 
+            leaflet_coarse_anterior_only = leaflet_coarse; 
+            
+            % nan mask posterior 
+            leaflet_coarse_anterior_only.X(:,leaflet_coarse.j_range_posterior,:) = nan; 
+            
+            % junk hack, say there are only two trees 
+            leaflet_coarse_anterior_only.num_trees = 2; 
+            
+            surf_plot(leaflet_coarse_anterior_only, fig); 
+            axis equal; 
+            printfig(fig, sprintf('diag_view_anterior_%d_%s.eps', N_coarse, suffix_name));
+            
+            fig = figure; 
+            leaflet_coarse_posterior_only = leaflet_coarse; 
+            
+            % nan mask posterior 
+            leaflet_coarse_posterior_only.X(:,leaflet_coarse.j_range_anterior,:) = nan; 
+            
+            % junk hack, say there are only two trees 
+            leaflet_coarse_posterior_only.num_trees = 6; 
+            leaflet_coarse_posterior_only.chordae = leaflet_coarse_posterior_only.chordae(3:8); 
+            
+            surf_plot(leaflet_coarse_posterior_only, fig); 
+            axis equal; 
+            printfig(fig, sprintf('diag_view_posterior_%d_%s.eps',N_coarse, suffix_name));
+            
+        end 
+        
+        if (~isempty(leaflet_coarse.j_range_left_comm)) || ...
+           (~isempty(leaflet_coarse.j_range_right_comm))
+            error('Order check not implemented with commissural leaflets'); 
+        end 
+        
 %         if i == 1
 %             fig = figure; 
 %             valve_plot(valve_coarse, fig);
@@ -47,7 +96,7 @@ function order_check(path, N_values)
         
         N_fine = 2*N_coarse; 
         data_fine = sprintf('%s/mitral_tree_%d_final_data', path, N_fine); 
-        load (data_fine) 
+        load (data_fine, 'valve') 
 
 
         valve_fine       = valve; 
@@ -60,6 +109,43 @@ function order_check(path, N_values)
         is_internal_fine = leaflet_fine.is_internal; 
         is_bc_fine       = leaflet_fine.is_bc;    
 
+        % final iteration 
+        if (i==iterations)
+            N_fine
+            newton_error_difference_equations(i+1) = total_global_err(leaflet_fine); 
+            
+            if front_view_plots 
+                fig = figure; 
+                leaflet_fine_anterior_only = leaflet_fine; 
+
+                % nan mask posterior 
+                leaflet_fine_anterior_only.X(:,leaflet_fine.j_range_posterior,:) = nan; 
+
+                % junk hack, say there are only two trees 
+                leaflet_fine_anterior_only.num_trees = 2; 
+
+                surf_plot(leaflet_fine_anterior_only, fig); 
+                axis equal; 
+                printfig(fig, sprintf('diag_view__anterior_%d_%s.eps',N_fine, suffix_name));
+                
+                fig = figure; 
+                leaflet_fine_posterior_only = leaflet_fine; 
+
+                % nan mask posterior 
+                leaflet_fine_posterior_only.X(:,leaflet_fine.j_range_anterior,:) = nan; 
+
+                % junk hack, say there are only two trees 
+                leaflet_fine_posterior_only.num_trees = 6; 
+                leaflet_fine_posterior_only.chordae = leaflet_fine_posterior_only.chordae(3:8); 
+                
+                surf_plot(leaflet_fine_posterior_only, fig); 
+                axis equal; 
+                printfig(fig, sprintf('diag_view_posterior_%d_%s.eps',N_fine, suffix_name));
+                
+            end 
+            
+        end 
+        
 %         fig = figure; 
 %         valve_plot(valve_fine, fig);
         
@@ -236,7 +322,7 @@ function order_check(path, N_values)
                 end 
                 
                 if j==16 && (k == k_max_coarse)
-                    'stop'
+                    'stop'; 
                 end 
                 
                 % check at the ring to make sure checker gets desired order 
@@ -244,11 +330,11 @@ function order_check(path, N_values)
                 % should give secon order on ring 
                 if (0 < j_fine_below) && (j_fine_below <= j_max_fine) && (k == k_max_coarse) 
                     
-                    fprintf('j = %d, j_fine_below = %d, u = %f, s = %f\n', j, j_fine_below, u, s); 
+                    % fprintf('j = %d, j_fine_below = %d, u = %f, s = %f\n', j, j_fine_below, u, s); 
                     X_ring_coarse(:,j) = X_coarse(:,j,k); 
 
                     if s == 0
-                        % edge case, s==0 may be the last point (and there is no point aboce to be read)
+                        % edge case, s==0 may be the last point (and there is no point above to be read)
                         X_ring_interp(:,j) = X_fine(:,j_fine_below,k_max_fine); 
                     else 
                         X_ring_interp(:,j) = (1-s) * X_fine(:,j_fine_below,k_max_fine) + s*X_fine(:,j_fine_above,k_max_fine); 
@@ -334,7 +420,7 @@ function order_check(path, N_values)
 %         xlabel('u')
 %         ylabel('v')
 
-        if N_fine == 512
+        if N_fine == 1024
 
             fig = figure; 
             set(gcf,'Renderer','Zbuffer')
@@ -349,10 +435,12 @@ function order_check(path, N_values)
             ylabel('v')
             cb = colorbar('SouthOutside'); 
             set(cb,'position',[0.13   0.16   0.35   0.02])
+            
+            cb.Label.String = 'cm'; 
             %set(cb,'position',[0.13   0.22   0.78   0.02])
 
             
-            printfig(fig,'static_convergence_psuedocolor_difference'); 
+            printfig(fig,sprintf('static_convergence_psuedocolor_difference_%s', suffix_name)); 
             
             
             fig = figure; 
@@ -369,7 +457,7 @@ function order_check(path, N_values)
             %set(cb,'position',[0.8    0.38    0.0446    0.3])
             %xlabel('u')
             %ylabel('v')
-            printfig(fig, 'static_convergence_surface_difference'); 
+            printfig(fig, sprintf('static_convergence_surface_difference_%s', suffix_name)); 
         
         end 
 
@@ -396,31 +484,63 @@ function order_check(path, N_values)
         % no weight on sup norm version 
         diff_inf(i)  =                       norm(differences, 'inf'); 
 
+        % anterior only for diagnosting problems 
+        differences_anterior = X_coarse_valid(:,leaflet_coarse.j_range_anterior,:) - X_fine_interp(:,leaflet_coarse.j_range_anterior,:);  
+        differences_anterior = differences_anterior(:); 
+
+        % du^2 measure for double integral 
+        diff_1_anterior(i)    = du_coarse*du_coarse * norm(differences_anterior, 1); 
+
+        % on 2 norm gets a root on the measure 
+        diff_2_anterior(i)    = du_coarse           * norm(differences_anterior, 2); 
+
+        % no weight on sup norm version 
+        diff_inf_anterior(i)  =                       norm(differences_anterior, 'inf'); 
+        
+        % posterior only for diagnosting problems 
+        differences_posterior = X_coarse_valid(:,leaflet_coarse.j_range_posterior,:) - X_fine_interp(:,leaflet_coarse.j_range_posterior,:);  
+        differences_posterior = differences_posterior(:); 
+
+        % du^2 measure for double integral 
+        diff_1_posterior(i)    = du_coarse*du_coarse * norm(differences_posterior, 1); 
+
+        % on 2 norm gets a root on the measure 
+        diff_2_posterior(i)    = du_coarse           * norm(differences_posterior, 2); 
+
+        % no weight on sup norm version 
+        diff_inf_posterior(i)  =                       norm(differences_posterior, 'inf'); 
     end
     
-    diff_1_ring 
-    diff_2_ring
-    diff_inf_ring 
+    if ring_convergence_sanity_check
+        diff_1_ring 
+        diff_2_ring
+        diff_inf_ring 
 
 
-    fprintf('Comparisons of N,2N and 2N,4N points\n'); 
+        fprintf('Comparisons of N,2N and 2N,4N points\n'); 
+        N = N_values(1); 
+        for i = 1:iterations-1
+
+            order_1    = diff_1_ring(i) / diff_1_ring(i+1); 
+            order_2    = diff_2_ring(i) / diff_2_ring(i+1);  
+            order_inf  = diff_inf_ring(i) / diff_inf_ring(i+1);  
+
+            fprintf('%d,%d,%d & %f & %f  &  %f    \\\\  \n \\hline \n ',  N, 2*N, 4*N, order_1, order_2, order_inf);
+
+            N = 2*N;
+        end
+    end 
+    
+
+    fprintf('Difference equations 2 norm (i.e. Newton solve two norm error):\n')
     N = N_values(1); 
-    for i = 1:iterations-1
-
-        order_1    = diff_1_ring(i) / diff_1_ring(i+1); 
-        order_2    = diff_2_ring(i) / diff_2_ring(i+1);  
-        order_inf  = diff_inf_ring(i) / diff_inf_ring(i+1);  
-
-        fprintf('%d,%d,%d & %f & %f  &  %f    \\\\  \n \\hline \n ',  N, 2*N, 4*N, order_1, order_2, order_inf);
-
+    for i=1:length(N_values)
+        fprintf('%d &  %e \\\\  \n \\hline \n ', N, newton_error_difference_equations(i)); 
         N = 2*N;
-    end
+    end 
     
-    diff_1
-    diff_2 
-    diff_inf 
-
-
+    
+    
     fprintf('Comparisons of N,2N points\n'); 
     N = N_values(1); 
     for i = 1:iterations
@@ -431,11 +551,6 @@ function order_check(path, N_values)
     end
     
     
-    diff_1
-    diff_2 
-    diff_inf 
-
-
     fprintf('Comparisons of N,2N and 2N,4N points\n'); 
     N = N_values(1); 
     for i = 1:iterations-1
@@ -451,6 +566,53 @@ function order_check(path, N_values)
 
     
     
+    fprintf('Anterior, Comparisons of N,2N points\n'); 
+    N = N_values(1); 
+    for i = 1:iterations
+
+        fprintf('%d,%d & %.2e & %.2e  &  %.2e    \\\\  \n \\hline \n ',  N, 2*N,   diff_1_anterior(i), diff_2_anterior(i), diff_inf_anterior(i));
+
+        N = 2*N;
+    end
+    
+    
+    fprintf('Anterior, Comparisons of N,2N and 2N,4N points\n'); 
+    N = N_values(1); 
+    for i = 1:iterations-1
+
+        order_1    = diff_1_anterior(i) / diff_1_anterior(i+1); 
+        order_2    = diff_2_anterior(i) / diff_2_anterior(i+1);  
+        order_inf  = diff_inf_anterior(i) / diff_inf_anterior(i+1);  
+
+        fprintf('%d,%d,%d & %.2f & %.2f  &  %.2f    \\\\  \n \\hline \n ',  N, 2*N, 4*N,   order_1, order_2, order_inf);
+
+        N = 2*N;
+    end
+
+    
+    
+    fprintf('posterior, Comparisons of N,2N points\n'); 
+    N = N_values(1); 
+    for i = 1:iterations
+
+        fprintf('%d,%d & %.2e & %.2e  &  %.2e    \\\\  \n \\hline \n ',  N, 2*N,   diff_1_posterior(i), diff_2_posterior(i), diff_inf_posterior(i));
+
+        N = 2*N;
+    end
+    
+    
+    fprintf('Posterior, Comparisons of N,2N and 2N,4N points\n'); 
+    N = N_values(1); 
+    for i = 1:iterations-1
+
+        order_1    = diff_1_posterior(i) / diff_1_posterior(i+1); 
+        order_2    = diff_2_posterior(i) / diff_2_posterior(i+1);  
+        order_inf  = diff_inf_posterior(i) / diff_inf_posterior(i+1);  
+
+        fprintf('%d,%d,%d & %.2f & %.2f  &  %.2f    \\\\  \n \\hline \n ',  N, 2*N, 4*N,   order_1, order_2, order_inf);
+
+        N = 2*N;
+    end
     
 end 
 
