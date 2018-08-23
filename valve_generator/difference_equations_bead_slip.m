@@ -44,6 +44,7 @@ function F = difference_equations_bead_slip(leaflet)
         tension_debug = false; 
     end 
     
+    tension_debug_chordae = false; 
     
     F_leaflet = zeros(size(X_current)); 
     
@@ -152,9 +153,12 @@ function F = difference_equations_bead_slip(leaflet)
                         tension = tension + kappa * tension_decreasing(X, X_nbr, du_chordae, c_dec_tension_chordae); 
                     end
                     
-                    if tension_debug
-                        dec = tension_decreasing(X, X_nbr, du, c_dec_tension_chordae); 
-                        fprintf('tension = %e, dec_tension = %f, (j,k) = (%d, %d) free edge\n', tension, dec, j, k); 
+                    if tension_debug || tension_debug_chordae 
+                        if (chordae_idx(j,k).tree_idx == 1) || (chordae_idx(j,k).tree_idx == 5)
+                            L = norm(X - X_nbr);  
+                            dec = tension_decreasing(X, X_nbr, du_chordae, c_dec_tension_chordae); 
+                            fprintf('tension = %e, dec_tension = %f, len = %f, (j,k) = (%d, %d) free edge\n', tension, dec, L, j, k); 
+                        end 
                     end 
 
                     F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
@@ -197,9 +201,12 @@ function F = difference_equations_bead_slip(leaflet)
                     tension = tension + k_val * tension_decreasing(C(:,i), nbr, du_chordae, c_dec_tension_chordae) ; 
                 end
                 
-                if tension_debug
-                    dec = tension_decreasing(C(:,i), nbr, du, c_dec_tension_chordae) ; 
-                    fprintf('tension = %e, dec_tension = %f, (i, nbr_idx, tree_idx) = (%d, %d, %d) chordae\n', tension, dec, i, nbr_idx, tree_idx); 
+                if tension_debug || tension_debug_chordae
+                    if (tree_idx == 1) || (tree_idx == 5) 
+                        L = norm(C(:,i) - nbr,2); 
+                        dec = tension_decreasing(C(:,i), nbr, du_chordae, c_dec_tension_chordae) ; 
+                        fprintf('tension = %e, dec_tension = %f, length = %f, (i, nbr_idx, tree_idx) = (%d, %d, %d) chordae\n', tension, dec, L, i, nbr_idx, tree_idx); 
+                    end 
                 end 
 
                 tension_by_tangent = tension * (nbr - C(:,i)) / norm(nbr - C(:,i));  
