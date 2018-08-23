@@ -1,9 +1,31 @@
 
-path = '/Users/alex/Dropbox/NYU/research/mitral_fully_discrete/valve_generator/meshes/plot_meshes/two_leaflet_8_connector_b7a6aed'
+N_values = 2.^(6:10); 
 
-N_values = 2.^[6:10]; 
 
-order_check(path, N_values)
+% basic, from thesis 
+% path = 'meshes/plot_meshes/two_leaflet_8_connector_b7a6aed'
+
+% with enhanced convergence on thesis model 
+% path = 'meshes/plot_meshes/two_leaflet_8_connector_extra_newton_it_double_prec_917ce58ab'
+% suffix_name = '_thesis_917ce58ab'; 
+
+% no edge connectors 
+% path = 'meshes/plot_meshes/two_leaflet_zero_connector_01e2fb6'
+% N_values = 2.^[8:10]; 
+
+% no edge connectors, ratio slightly down 
+path = 'meshes/plot_meshes/two_leaflet_zero_connector_ratio_down_2f5200f'
+suffix_name = '_no_edge_connectors_2f5200f'; 
+
+% commissural leaflet version, generally terrible 
+% path = 'meshes/plot_meshes/comm_leaflets_d599cccee'
+% N_values = 2.^[6:9]; 
+
+% initial conditions only to check the check script 
+% path = 'initial_meshes'
+
+
+order_check(path, N_values, suffix_name)
 
 
 
