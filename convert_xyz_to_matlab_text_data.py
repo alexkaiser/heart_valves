@@ -35,7 +35,7 @@ def read_springs(spring_name):
     spring_list = []
 
     
-    for i in range(n_springs/10): 
+    for i in range(n_springs): 
         line_split = (spring.readline()).split()
         
         include = True 
@@ -213,7 +213,7 @@ def write_comet_tail_data(matlab_data_file, frame_number, n_vertices, n_particle
             # particles are out of range of the simulation 
             particle_vertices.append(nans)
 
-    
+    # for centered velocity at PRESENT time step     
     if (frame_number+1) < n_steps:
         future_file_name = get_full_xyz_name(xyz_base_name, frame_number+1)
         with open(future_file_name) as xyz_file:
@@ -222,6 +222,7 @@ def write_comet_tail_data(matlab_data_file, frame_number, n_vertices, n_particle
         assert False 
         future_coords = nans
 
+    # for centered velocity at the end of the comet tail 
     if (frame_number - comet_tail_len) > 0:
         past_file_name = get_full_xyz_name(xyz_base_name, frame_number - comet_tail_len)
         with open(past_file_name) as xyz_file:
@@ -307,8 +308,9 @@ if __name__ == '__main__':
     base_name = 'mitral_tree_512'
     xyz_base_name = 'mitral_tree_512_lines3d_'
     xyz_fill_len = 10
-    frame_number = 1005
-    comet_tail_len = 20
+    # frame_number = 1005
+    frames = [0] # [1005, 1267, 1382]
+    comet_tail_len = 0 #20
     dt_sim = 1.5e-6
     output_frequency = 1111 
     dt = dt_sim * output_frequency
@@ -319,9 +321,6 @@ if __name__ == '__main__':
 
     spring_name = base_name + '.spring'
     spring_list = read_springs(spring_name)
-
-    matlab_data_file_name  = base_name + '_' + str(frame_number).zfill(6) + '.m'
-    matlab_data_file       = open(matlab_data_file_name, 'w')
         
     # find out how many particles there are
     # particles are always placed last 
@@ -333,41 +332,45 @@ if __name__ == '__main__':
     except: 
         n_particles = None
 
-    n_vertices = None
-    n_frames = 0 
-    valid_loop_count = 0
+    for frame_number in frames:
 
-    '''
-    # for all the sorted files... 
-    for f_name in sorted(os.listdir(os.getcwd())): 
-        if f_name.startswith(base_name) and f_name.endswith('.xyz'):
-            if (valid_loop_count % frame_stride) == 0:                
-                print 'printing frame', str(valid_loop_count), '\n'
-                        
-                # have a valid file 
-                n_frames += 1 
-    
-                temp_file = open(f_name, 'r')
-            
-                vertex_strings, n_vertices = xyz_to_string_array(temp_file, lines3d_file, spring_list, n_vertices)
-                write_vertices(lines3d_file, vertex_strings, spring_list, n_particles)             
-                temp_file.close()
-            valid_loop_count += 1 
-    '''
+        matlab_data_file_name  = base_name + '_' + str(frame_number).zfill(6) + '.m'
+        matlab_data_file       = open(matlab_data_file_name, 'w')
 
-    xyz_file_name = get_full_xyz_name(xyz_base_name, frame_number, data_dir, xyz_fill_len)
-    with open(xyz_file_name) as xyz_file:
-        vertex_coords, n_vertices = xyz_to_vertices_list(xyz_file, spring_list)
-        # print 'vertex_coords = ', vertex_coords
-        print 'len(vertex_coords) = ', len(vertex_coords)
-        print 'n_vertices = ', n_vertices
-        write_spring_vertices(matlab_data_file, vertex_coords, spring_list) 
+        n_vertices = None
+        n_frames = 0 
+        valid_loop_count = 0
+
+        '''
+        # for all the sorted files... 
+        for f_name in sorted(os.listdir(os.getcwd())): 
+            if f_name.startswith(base_name) and f_name.endswith('.xyz'):
+                if (valid_loop_count % frame_stride) == 0:                
+                    print 'printing frame', str(valid_loop_count), '\n'
+                            
+                    # have a valid file 
+                    n_frames += 1 
+        
+                    temp_file = open(f_name, 'r')
+                
+                    vertex_strings, n_vertices = xyz_to_string_array(temp_file, lines3d_file, spring_list, n_vertices)
+                    write_vertices(lines3d_file, vertex_strings, spring_list, n_particles)             
+                    temp_file.close()
+                valid_loop_count += 1 
+        '''
+
+        xyz_file_name = get_full_xyz_name(xyz_base_name, frame_number, data_dir, xyz_fill_len)
+        with open(xyz_file_name) as xyz_file:
+            vertex_coords, n_vertices = xyz_to_vertices_list(xyz_file, spring_list)
+            # print 'vertex_coords = ', vertex_coords
+            print 'len(vertex_coords) = ', len(vertex_coords)
+            print 'n_vertices = ', n_vertices
+            write_spring_vertices(matlab_data_file, vertex_coords, spring_list) 
 
 
-    write_comet_tail_data(matlab_data_file, frame_number, n_vertices, n_particles, xyz_base_name, comet_tail_len, dt, min_step, n_steps)
-
- 
-    matlab_data_file.close()
+        write_comet_tail_data(matlab_data_file, frame_number, n_vertices, n_particles, xyz_base_name, comet_tail_len, dt, min_step, n_steps)
+     
+        matlab_data_file.close()
 
     print 'but we out here'
 

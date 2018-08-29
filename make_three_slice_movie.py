@@ -48,12 +48,12 @@ if (cwd_split[0]   == '') and (cwd_split[1]   == 'scratch') and (cwd_split[2]   
 else:
     base_name = 'frames'
 
-s = SaveWindowAttributes()
+s = GetSaveWindowAttributes()
 s.fileName = base_name
 s.outputDirectory = cwd
-s.format = s.JPEG
-s.saveTiled = 1
-s.width = 1920*4
+#s.format = s.JPEG
+#s.saveTiled = 1
+#s.width = 1920*4
 SetSaveWindowAttributes(s)
 
 
