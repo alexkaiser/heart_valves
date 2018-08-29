@@ -320,7 +320,7 @@ if ~explicit_comm_leaflets
                                               
     % root constants do not scale, because the root 
     % should maintain a consistent length when mesh is changed 
-    tension_coeffs.c_dec_chordae_root = (8/N) * [1.0; 1.0; ...       % anterior  
+    tension_coeffs.c_dec_chordae_root = (16/N) * [1.0; 1.0; ...       % anterior  
                                                    1.0; 1.0; ...       % comm
                                                    1.0; 1.0; ...       % posterior
                                                    1.0; 1.0];          % comm 
