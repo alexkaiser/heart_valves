@@ -209,7 +209,8 @@ end
 
 
 % constitutive law version 
-valve_with_reference = valve; 
+valve_with_reference = []; %valve; 
+return; 
 
 % kill off the old leaflet structure, new one has different fields, 
 % which makes matlab complain about assigning it to a structure array 
