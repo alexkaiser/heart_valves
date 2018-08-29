@@ -313,7 +313,7 @@ if ~explicit_comm_leaflets
                       2.0; 2.0];                    % posterior and comm, comm and anterior
                   
                                          
-    tension_coeffs.c_dec_chordae_leaf = (1/256)  * [1.0; 1.0; ...       % anterior  
+    tension_coeffs.c_dec_chordae_leaf = (1/512)  * [1.0; 1.0; ...       % anterior  
                                                   1.0; 1.0; ...       % comm
                                                   1.0; 1.0; ...       % posterior
                                                   1.0; 1.0];          % comm 
