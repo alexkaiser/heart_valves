@@ -23,8 +23,26 @@ N_values = 2.^(6:10);
 % path = 'meshes/plot_meshes/two_leaflet_8_connector_new_root_fixed_ratio_edge_connectors_off_f4f0a94'
 % suffix_name = '_new_root_fixed_ratio_edge_connectors_off_f4f0a94'
 
-path = 'meshes/plot_meshes/two_leaflet_8_connector_new_root_scaling_fixed_ratio_789d69c' 
-suffix_name = '_new_root_scaling_fixed_ratio_789d69c'
+% path = 'meshes/convergence_checks_8_23_18/two_leaflet_8_connector_new_root_scaling_fixed_ratio_789d69c' 
+% suffix_name = '_new_root_scaling_fixed_ratio_789d69c'
+% N_values = 2.^[5:11]; 
+% 
+
+% path = 'meshes/convergence_checks_8_23_18/cleaf_const_c_root_const_371196f'
+% suffix_name = 'cleaf_const_c_root_const_371196f'
+% N_values = 2.^[5:10]; 
+
+% path = 'meshes/convergence_checks_8_23_18/cleaf_sqrt_512_over_N_croot_2_on_N_618881d'
+% suffix_name = 'cleaf_sqrt_512_over_N_croot_2_on_N_618881d'
+% N_values = 2.^(5:11); 
+
+% path = 'meshes/convergence_checks_8_23_18/cleaf_sqrt_N_on_512_16b8f31'; 
+% suffix_name = 'cleaf_sqrt_N_on_512_16b8f31'; 
+% N_values = 2.^[5:10]; 
+
+% path = 'meshes/convergence_checks_8_23_18/leaf_sqrt_N_on_512_root_2_on_N_cbe9366'
+% suffix_name = 'leaf_sqrt_N_on_512_root_2_on_N_cbe9366'
+% N_values = 2.^[5:10]; 
 
 % commissural leaflet version, generally terrible 
 % path = 'meshes/plot_meshes/comm_leaflets_d599cccee'
@@ -32,6 +50,40 @@ suffix_name = '_new_root_scaling_fixed_ratio_789d69c'
 
 % initial conditions only to check the check script 
 % path = 'initial_meshes'
+
+
+% path = 'meshes/convergence_checks_8_23_18/cleaf_sqrt_512_over_N_2314694'; 
+% suffix_name = 'cleaf_sqrt_512_over_N_2314694'
+
+% path = 'meshes/convergence_checks_8_23_18/cleaf_512_over_N_9d24e2b'
+% suffix_name = 'cleaf_512_over_N_9d24e2b'
+
+% path = 'meshes/convergence_checks_8_23_18/cleaf_down_2_b53cd6f'
+% suffix_name = 'cleaf_down_2_b53cd6f'
+
+% path = 'meshes/convergence_checks_8_23_18/croot_1_on_n_aaed88b'
+% suffix_name = 'croot_1_on_n_aaed88b'
+
+% path = 'meshes/convergence_checks_8_23_18/croot_4_on_n_c6c07c9'
+% suffix_name = 'croot_4_on_n_c6c07c9'
+% N_values = 2.^(5:11); 
+
+
+% path = 'meshes/convergence_checks_8_23_18/cleaf_1_on_N_croot_1_on_512_sqrt_N_on_512'; 
+% suffix_name = 'cleaf_1_on_N_croot_1_on_512_sqrt_N_on_512'; 
+% N_values = 2.^(5:10); 
+
+% path = 'meshes/convergence_checks_8_23_18/cleaf_1_on_N_croot_1_on_512_N_on_512'; 
+% suffix_name = 'cleaf_1_on_N_croot_1_on_512_N_on_512'; 
+% N_values = 2.^(5:10); 
+
+path = 'meshes/convergence_checks_8_23_18/const_cleaf_1_on_256_croot_1_on_512'; 
+suffix_name = 'const_cleaf_1_on_256_croot_1_on_512'; 
+N_values = 2.^(5:10); 
+
+
+
+
 
 
 order_check(path, N_values, suffix_name)
