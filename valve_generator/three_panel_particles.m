@@ -40,7 +40,7 @@ for i=1:length(names)
     
     file_name = strcat(data_dir, '/', file_name)
 
-    fig = figure; % figure('visible','off'); 
+    fig = figure('visible','off'); 
     set(fig, 'Renderer', 'Painters');
     % 4x HD resolution 
     set(fig, 'Position', [0 0 2160 4320])
@@ -55,7 +55,7 @@ for i=1:length(names)
     axis off 
 
     ax = gca;
-    ax.Position = [0.05 0.05 .9 .9]; 
+    ax.Position = [0.01 0.01 .98 .98]; 
     
     print(fig, '-djpeg', strcat(output_base_name, '_side'), '-r0')
     
@@ -66,7 +66,7 @@ for i=1:length(names)
     axis off 
         
     ax = gca;
-    ax.Position = [0.05 0.05 .9 .9]; 
+    ax.Position = [0.01 0.01 .98 .98]; 
     
     print(fig, '-djpeg', strcat(output_base_name, '_front'), '-r0')
 
@@ -81,8 +81,8 @@ for i=1:length(names)
     % set(fig, 'Position', [100, 100, 500, floor(500*(1 + frac_to_right)/2)])
     set(fig, 'Position', [0 0 2916 4320])
     
-    ax = gca;
-    ax.Position = [0.05 0.05 .9 .9]; 
+   ax = gca;
+   ax.Position = [0.00 0.00 1 1]; 
     
     print(fig, '-djpeg', strcat(output_base_name, '_top'), '-r0')
     
