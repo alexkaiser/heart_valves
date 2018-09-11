@@ -1,4 +1,4 @@
-function [fig] = total_tension_surf_plot(leaflet, anterior, fiber_output, fiber_stride, stride_offset_j, fig)
+function [fig] = total_tension_surf_plot(leaflet, anterior, fiber_output, fiber_stride, stride_offset_j, circ, rad, fig)
 % 
 % Plots leaflet with fibers 
 % 
@@ -106,6 +106,14 @@ if ~exist('fig', 'var')
     fig = figure;  
 end 
 
+if ~exist('circ', 'var')
+    circ = true;  
+end 
+
+if ~exist('rad', 'var')
+    rad = true;  
+end 
+
 if exist('fiber_output', 'var') && fiber_output    
     if ~exist('fiber_stride', 'var')
         fprintf('Using default fiber stride of 1')
@@ -116,6 +124,10 @@ if exist('fiber_output', 'var') && fiber_output
         stride_offset_j = 0; 
     end 
     
+end 
+
+if (~circ) && (~rad)
+    error('Have to plot at least one fiber family for this function to do anything')
 end 
 
 % x_tmp = X_current(1,:,:)
@@ -151,9 +163,13 @@ n_colors = size(cmap,1);
 
 max_tension_circ = du * max(alpha(:)); 
 max_tension_radial = du * max(beta(:)); 
-max_tension = max_tension_circ + max_tension_radial; % 1.7 * 0.7 * max(max_tension_circ, max_tension_radial); 
+if circ && rad 
+    max_tension = max_tension_circ + max_tension_radial; % 1.7 * 0.7 * max(max_tension_circ, max_tension_radial); 
+else 
+    max_tension = max(max_tension_circ, max_tension_radial); 
+end
 
-% doesn't make any difference here 
+% doesn't make any difference here
 % max_tension_sum = du * max(alpha(:) + beta(:)); 
 
 % cbar = colorbar; 
@@ -179,9 +195,12 @@ if colorbar_figure
     cbar.Label.String = 'Tension (K Dyne)';
     grid off 
     axis off 
-    printfig(fig_colorbar, 'colorbar_only_total_tension'); 
-    close(fig_colorbar); 
-    
+    if circ && rad 
+        printfig(fig_colorbar, 'colorbar_only_total_tension'); 
+    else
+        printfig(fig_colorbar, 'colorbar_only_surf_one_family_tension'); 
+    end
+    close(fig_colorbar);    
     % reset current figure 
     figure(fig); 
 end 
@@ -273,7 +292,7 @@ for j=j_range
 %                         plot3(x_vals,y_vals,z_vals,'color',cmap(color_idx,:)); 
 %                     end 
                     
-                    if output_tmp_j
+                    if output_tmp_j && circ 
                         plot3(x_vals,y_vals,z_vals,'k'); 
                     end 
 
@@ -335,7 +354,7 @@ for j=j_range
 %                     end 
 
                     % plot local fiber if included 
-                    if output_tmp_k
+                    if output_tmp_k && rad 
                         plot3(x_vals,y_vals,z_vals,'k'); 
                     end 
                     
@@ -349,21 +368,25 @@ for j=j_range
             % or the average on the connecting segments 
             tension_sum = 0; 
 
-            if num_nbrs_circ(j,k) == 1
-                tension_sum = tension_sum + tension_circ(j,k); 
-            elseif num_nbrs_circ(j,k) == 2
-                tension_sum = tension_sum + 0.5 * tension_circ(j,k); 
-            else 
-                error('Improper number of circumferential tension nodes'); 
-            end    
+            if circ 
+                if num_nbrs_circ(j,k) == 1
+                    tension_sum = tension_sum + tension_circ(j,k); 
+                elseif num_nbrs_circ(j,k) == 2
+                    tension_sum = tension_sum + 0.5 * tension_circ(j,k); 
+                else 
+                    error('Improper number of circumferential tension nodes'); 
+                end    
+            end 
             
-            if num_nbrs_rad(j,k) == 1
-                tension_sum = tension_sum +       tension_rad(j,k); 
-            elseif num_nbrs_rad(j,k) == 2
-                tension_sum = tension_sum + 0.5 * tension_rad(j,k); 
-            else 
-                error('Improper number of radial tension nodes'); 
-            end    
+            if rad 
+                if num_nbrs_rad(j,k) == 1
+                    tension_sum = tension_sum +       tension_rad(j,k); 
+                elseif num_nbrs_rad(j,k) == 2
+                    tension_sum = tension_sum + 0.5 * tension_rad(j,k); 
+                else 
+                    error('Improper number of radial tension nodes'); 
+                end    
+            end 
             
             tension_frac_of_max = tension_sum/max_tension; 
             color_idx = ceil(tension_frac_of_max * n_colors);

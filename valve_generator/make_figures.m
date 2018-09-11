@@ -377,7 +377,7 @@ end
 
 
 
-total_tension_tree_detail = true; 
+total_tension_tree_detail = false; 
 if total_tension_tree_detail
 
     debug = false; 
@@ -464,4 +464,102 @@ end
 
 
 
+
+
+tension_plots_surf = true; 
+if tension_plots_surf
+
+    debug = false; 
+    if debug
+        n = 32; 
+    else
+        n = 512;
+    end 
+    
+    fiber_output    = true; 
+    fiber_stride    = 16; 
+    stride_offset_j = -1; 
+    
+    base_dir  = '/Users/alex/mitral_fully_discrete/valve_generator/meshes/plot_meshes/two_leaflet_8_connector_b7a6aed/'
+    file_name = ['mitral_tree_', int2str(n), '_final_data.mat']
+    
+    load([base_dir, file_name])
+  
+    anterior = true; 
+        
+    circ = false; 
+    radial = true; 
+    fig_anterior_rad = total_tension_surf_plot(valve.leaflets(1), anterior, fiber_output, fiber_stride, stride_offset_j, circ, radial); 
+    view(90,0)
+    axis equal; 
+    anterior_axes_radial = gca
+    limits_horiz_view = axis 
+
+    if ~debug 
+        circ = true; 
+        radial = false; 
+        fig_anterior_circ = total_tension_surf_plot(valve.leaflets(1), anterior, fiber_output, fiber_stride, stride_offset_j, circ, radial); 
+        view(90,0)
+        axis equal; 
+        anterior_axes_circ = gca 
+        limits_horiz_tmp = axis 
+        limits_horiz_view = update_axes(limits_horiz_view, limits_horiz_tmp); 
+
+        anterior = false; 
+        circ = true; 
+        radial = false; 
+        fig_posterior_circ = total_tension_surf_plot(valve.leaflets(1), anterior, fiber_output, fiber_stride, stride_offset_j, circ, radial); 
+        view(90,0)
+        axis equal;
+        posterior_axes_circ = gca 
+        limits_horiz_tmp = axis 
+        limits_horiz_view = update_axes(limits_horiz_view, limits_horiz_tmp); 
+
+        circ = false; 
+        radial = true; 
+        fig_posterior_rad = total_tension_surf_plot(valve.leaflets(1), anterior, fiber_output, fiber_stride, stride_offset_j, circ, radial); 
+        view(90,0)
+        axis equal;
+        posterior_axes_rad = gca
+        limits_horiz_tmp = axis 
+        limits_horiz_view = update_axes(limits_horiz_view, limits_horiz_tmp); 
+    end 
+
+    % figure out and manually set the figure output size in pixels 
+    lims = axis; 
+    x_size = lims(2)-lims(1); 
+    y_size = lims(4)-lims(3); 
+    x_pixels = floor(100 * x_size); 
+    y_pixels = floor(100 * y_size);
+    
+    figure(fig_anterior_rad); 
+    axis(limits_horiz_view);
+    axis off; 
+    
+    set(fig_anterior_rad, 'Renderer', 'Painters');
+    print(fig_anterior_rad, '-depsc', 'anterior_tension_plot_radial_surf_uncropped');
+    
+    if ~debug 
+
+        figure(fig_anterior_circ);
+        axis(limits_horiz_view); 
+        axis off; 
+        set(fig_anterior_circ, 'Renderer', 'Painters');
+        print(fig_anterior_circ, '-depsc', 'anterior_tension_plot_circ_surf_uncropped');
+    
+        figure(fig_posterior_circ); 
+        axis(limits_horiz_view);
+        axis off 
+        set(fig_posterior_circ, 'Renderer', 'Painters');
+        printfig(fig_posterior_circ, 'posterior_tension_plot_circ_surf_uncropped')
+
+        figure(fig_posterior_rad); 
+        axis(limits_horiz_view);
+        axis off
+        set(fig_posterior_rad, 'Renderer', 'Painters');
+        printfig(fig_posterior_rad, 'posterior_tension_plot_radial_surf_uncropped')
+        
+    end 
+
+end 
 
