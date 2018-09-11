@@ -143,7 +143,7 @@ if __name__ == '__main__':
 		for plot in surf_plots:
 			crop(plot, box)
 
-	do_tree_detail = True
+	do_tree_detail = False
 	if do_tree_detail:
 		# 266   239   797   732 
 		
@@ -173,4 +173,30 @@ if __name__ == '__main__':
 		crop(ant_circ, box, new_name)
 
 
+	do_one_family_surf = True
+	if do_one_family_surf:
+
+		one_family_plots = ['anterior_tension_plot_circ_surf_uncropped.eps',
+							'anterior_tension_plot_radial_surf_uncropped.eps',
+							'posterior_tension_plot_circ_surf_uncropped.eps',
+							'posterior_tension_plot_radial_surf_uncropped.eps']
+
+		box = None
+		for plot in one_family_plots:
+			box = update_bounding_box(plot, box)
+
+		for plot in one_family_plots:
+			crop(plot, box)
+
+
+	do_free_edge_detail_surf = True
+	if do_free_edge_detail_surf:
+		# orig box 
+		# 109    85   471   349
+		box = [170, 130, 415, 230]	
+
+		ant_circ = 'anterior_tension_plot_circ_surf_uncropped.eps'
+		new_name = 'anterior_tension_free_edge_surf_detail.eps'
+
+		crop(ant_circ, box, new_name)
 
