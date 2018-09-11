@@ -25,15 +25,18 @@ set(fig, 'PaperPositionMode','auto')
 
 colormap(colormap_croppeed); 
 cbar = colorbar('Ticks', tick_array, 'TickLabels', tick_labels, 'fontweight', 'bold', 'fontsize',fontsize); 
-cbar.Label.String = '|u| (cm/s)';
+cbar.Label.String = sprintf('|u|\n(cm/s)');
 cbar.Label.FontSize = fontsize; 
+cbar.Label.Position = [0 1.1]
+cbar.Label.Rotation = 0;
 cbar.Label.FontWeight = 'bold'; 
 cbar.TickDirection = 'out'; 
 cbar.AxisLocation = 'in'
 
+
 % position and sizing of the bar itself relative to the block 
 % does not include labels
-cbar.Position = [0.5 0.4 .4 .5]; 
+cbar.Position = [0.5 0.35 .4 .5]; 
 
 
 grid off 
