@@ -32,7 +32,7 @@ for i=1:length(names)
     file_name = strcat(data_dir, '/', file_name)
 
 
-
+    fig = figure; 
     fig = plot_particles(file_name, max_velocity); 
     % printfig(fig, strcat(output_base_name, '_side_full'))
 
