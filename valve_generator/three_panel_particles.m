@@ -31,54 +31,59 @@ for i=1:length(names)
     bounding_box = true; 
     colorbar_figure = false; 
 
-    extra = .2; 
+    
     L = 3; 
-    horiz_min = -L - extra; 
-    horiz_max =  L + extra; 
-    zmin =  3 - 4*L - extra;
-    zmax =  3 + extra; 
+    horiz_min = -L; 
+    horiz_max =  L; 
+    zmin =  3 - 4*L;
+    zmax =  3; 
     
     file_name = strcat(data_dir, '/', file_name)
 
-    fig_subplots = figure; 
+    fig = figure; % figure('visible','off'); 
+    set(fig, 'Renderer', 'Painters');
     % 4x HD resolution 
-    % set(fig_subplots, 'Position', [100 100 7680 4320])
+    set(fig, 'Position', [0 0 2160 4320])
+    set(fig, 'PaperPositionMode','auto')
     
-    hSub1 = subplot(1,3,1);
-
-%     hSub2 = subplot(1,3,2);
-%     hSub3 = subplot(1,3,3);
-
-    fig_subplots = plot_particles(file_name, max_velocity, fig_subplots, colorbar_figure); 
+    fig = plot_particles(file_name, max_velocity, fig, bounding_box, colorbar_figure); 
     
     % side view, anterior leaflet to the right 
     view(0,0)
 
     axis([horiz_min horiz_max horiz_min horiz_max zmin zmax])
     axis off 
-    width  = horiz_max - horiz_min; 
-    height = zmax - zmin; 
+
+    ax = gca;
+    ax.Position = [0.05 0.05 .9 .9]; 
+    
+    print(fig, '-djpeg', strcat(output_base_name, '_side'), '-r0')
     
     % front view 
     
-    hSub2 = subplot(1,3,2);
-    fig_subplots = plot_particles(file_name, max_velocity, fig_subplots, colorbar_figure); 
     view(90,0)
     axis([horiz_min horiz_max horiz_min horiz_max zmin zmax])
     axis off 
+        
+    ax = gca;
+    ax.Position = [0.05 0.05 .9 .9]; 
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    % unclear what this does, but consider if there are problems 
-    % set(fig,'PaperPositionMode','auto')
-    
-    print(fig_subplots, '-djpeg', strcat(output_base_name, '_three_panel'))
+    print(fig, '-djpeg', strcat(output_base_name, '_front'), '-r0')
 
+    % top view
+    r = 0.1 * 21.885241; 
+    view(0,90)
+
+    frac_to_right = .35; 
+
+    axis([-r frac_to_right*r -r r -4 2])
+
+    % set(fig, 'Position', [100, 100, 500, floor(500*(1 + frac_to_right)/2)])
+    set(fig, 'Position', [0 0 2916 4320])
+    
+    ax = gca;
+    ax.Position = [0.05 0.05 .9 .9]; 
+    
+    print(fig, '-djpeg', strcat(output_base_name, '_top'), '-r0')
+    
 end 
