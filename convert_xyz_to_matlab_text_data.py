@@ -228,7 +228,7 @@ def write_comet_tail_data(matlab_data_file, frame_number, n_vertices, n_particle
         with open(past_file_name) as xyz_file:
             past_coords = xyz_to_particle_vertices_only(xyz_file, n_vertices, n_particles)
     else: 
-        assert False 
+        # assert False 
         past_coords = nans
 
 
@@ -309,8 +309,9 @@ if __name__ == '__main__':
     xyz_base_name = 'mitral_tree_512_lines3d_'
     xyz_fill_len = 10
     # frame_number = 1005
-    frames = [0] # [1005, 1267, 1382]
-    comet_tail_len = 0 #20
+    frames = range(1441) 
+    # frames = [1005, 1267, 1382]
+    comet_tail_len = 20
     dt_sim = 1.5e-6
     output_frequency = 1111 
     dt = dt_sim * output_frequency
