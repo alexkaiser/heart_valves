@@ -6,8 +6,9 @@ N_values = 2.^(6:10);
 % path = 'meshes/plot_meshes/two_leaflet_8_connector_b7a6aed'
 
 % with enhanced convergence on thesis model 
-% path = 'meshes/plot_meshes/two_leaflet_8_connector_extra_newton_it_double_prec_917ce58ab'
-% suffix_name = '_thesis_917ce58ab'; 
+path = 'meshes/convergence_checks_8_23_18/two_leaflet_8_connector_extra_newton_it_double_prec_917ce58ab'
+suffix_name = '_thesis_917ce58ab'; 
+N_values = 2.^(5:10); 
 
 % no edge connectors 
 % path = 'meshes/plot_meshes/two_leaflet_zero_connector_01e2fb6'
@@ -77,9 +78,9 @@ N_values = 2.^(6:10);
 % suffix_name = 'cleaf_1_on_N_croot_1_on_512_N_on_512'; 
 % N_values = 2.^(5:10); 
 
-path = 'meshes/convergence_checks_8_23_18/const_cleaf_1_on_256_croot_1_on_512'; 
-suffix_name = 'const_cleaf_1_on_256_croot_1_on_512'; 
-N_values = 2.^(5:10); 
+% path = 'meshes/convergence_checks_8_23_18/const_cleaf_1_on_256_croot_1_on_512'; 
+% suffix_name = 'const_cleaf_1_on_256_croot_1_on_512'; 
+% N_values = 2.^(5:10); 
 
 
 
