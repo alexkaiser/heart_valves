@@ -1,4 +1,4 @@
-function [fig graphics_handle] = plot_particles(file_name, max_velocity, fig, bounding_box, colorbar_figure)
+function fig = plot_particles(file_name, max_velocity, fig, bounding_box, colorbar_figure, line_width_leaflet, line_width_tails, dot_size)
 
 if ~exist('fig', 'var')
     fig = figure;     
@@ -11,11 +11,29 @@ end
 
 if ~exist('colorbar_figure', 'var')
     colorbar_figure = false;     
+end
+
+if ~exist('colorbar_for_movie', 'var')
+    colorbar_for_movie = false;     
+end 
+
+if ~exist('line_width_leaflet', 'var')
+    line_width_leaflet = 0.5; 
+end 
+
+if ~exist('line_width_tails', 'var')
+    line_width_tails = 0.5; 
+end 
+
+if ~exist('dot_size', 'var')
+    dot_size = 1.0; 
 end 
 
 run(file_name); 
 
-graphics_handle = plot3(x_coords_springs, y_coords_springs, z_coords_springs, '-k'); 
+
+plot3(x_coords_springs, y_coords_springs, z_coords_springs, '-k', 'LineWidth', line_width_leaflet); 
+% plot3(x_coords_springs(1:40:end), y_coords_springs(1:40:end), z_coords_springs(1:40:end), '-k'); 
 view(0,0)
 
 hold on 
@@ -94,7 +112,7 @@ if bounding_box
 end 
 
 
-comet_tails = false; 
+comet_tails = true; 
 if comet_tails 
     velocity_frac_of_max = particle_velocity/max_velocity;
     color_idx = floor(velocity_frac_of_max * n_colors);
@@ -114,7 +132,7 @@ if comet_tails
 
     for k = 1:n_particles
         for j = 1:(comet_tail_length-1) 
-            plot3(x_comet_coords(j:j+1,k), y_comet_coords(j:j+1,k), z_comet_coords(j:j+1,k), '-', 'color', cmap(color_idx(j,k),:)); 
+            plot3(x_comet_coords(j:j+1,k), y_comet_coords(j:j+1,k), z_comet_coords(j:j+1,k), '-', 'color', cmap(color_idx(j,k),:), 'LineWidth', line_width_tails); 
         end 
     end 
 
@@ -126,9 +144,9 @@ if comet_tails
 
         colored_heads = false; 
         if colored_heads
-            scatter3(x_comet_coords(1,:), y_comet_coords(1,:), z_comet_coords(1,:), 1, cmap(color_idx(1,:),:), 'filled') % weird behavior on 'filled option here'
+            scatter3(x_comet_coords(1,:), y_comet_coords(1,:), z_comet_coords(1,:), dot_size, cmap(color_idx(1,:),:), 'filled') % weird behavior on 'filled option here'
         else
-            scatter3(x_comet_coords(1,:), y_comet_coords(1,:), z_comet_coords(1,:), 1, 'k', 'filled') % weird behavior on 'filled option here'
+            scatter3(x_comet_coords(1,:), y_comet_coords(1,:), z_comet_coords(1,:), dot_size, 'k', 'filled') % weird behavior on 'filled option here'
         end 
     else 
         % this is realllllllly slow and makes 

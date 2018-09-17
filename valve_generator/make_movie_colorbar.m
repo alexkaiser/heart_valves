@@ -1,4 +1,4 @@
-function make_movie_colorbar(max_velocity)
+function make_movie_colorbar(max_velocity, format_extension, format_string)
 
 % process speeds to colormap 
 n_colors = 500;
@@ -36,12 +36,12 @@ cbar.AxisLocation = 'in'
 
 % position and sizing of the bar itself relative to the block 
 % does not include labels
-cbar.Position = [0.5 0.35 .4 .5]; 
+cbar.Position = [0.6 0.35 .4 .5]; 
 
 
 grid off 
 axis off 
 
-print(fig, '-djpeg', 'colorbar_movie', '-r0'); 
+print(fig, format_string, strcat('colorbar_movie', format_extension), '-r0'); 
 
 

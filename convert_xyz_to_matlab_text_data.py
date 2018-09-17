@@ -171,7 +171,7 @@ def write_spring_vertices(matlab_data_file, vertex_coords, spring_list):
 
 
 
-def get_full_xyz_name(xyz_base_name, frame_number, data_dir='data', xyz_fill_len=10):
+def get_full_xyz_name(xyz_base_name, frame_number, data_dir='.', xyz_fill_len=10):
     return data_dir + '/' + xyz_base_name + str(frame_number).zfill(xyz_fill_len) + '.xyz'
 
 
@@ -315,7 +315,7 @@ if __name__ == '__main__':
     dt_sim = 1.5e-6
     output_frequency = 1111 
     dt = dt_sim * output_frequency
-    data_dir = 'data'
+    data_dir = '.'
     min_step = 0
     n_steps  = 1442
 
