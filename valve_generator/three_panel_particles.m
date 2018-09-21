@@ -3,17 +3,13 @@
 data_dir = './' 
 % data_dir =  '/Users/alex/mitral_fully_discrete/plots_and_session_files/mitral_1647284_512_git_5855699_two_leaflet_mean_reverting'; 
 
-names = ["mitral_tree_512_001005.m";]
-
-output_names = ["three_particle_views_001005";]; 
-
 max_velocity = 150; 
 
 
 min_frame = 0; 
 max_frame = 1440; 
 
-colorbar_name = 'colorbar_movie.jpg'; 
+% colorbar_name = 'colorbar_movie.jpg'; 
 
 PATH = getenv('PATH');
 setenv('PATH', [PATH ':/usr/local/bin']);
@@ -27,8 +23,6 @@ else
     format_string = '-djpeg'; 
 end 
 
-make_movie_colorbar(max_velocity, format_extension, format_string); 
-
 if min_frame ~= 0
     error('assumes minimum frame is one'); 
 end
@@ -38,16 +32,20 @@ line_width_tails = 16;
 dot_size = 64; 
 colored_heads = true; 
 
+dt_sim = 1.5e-6; 
+output_frequency = 1111; 
+dt = dt_sim * output_frequency; 
+
+
+
 cleanup = true; 
 
 rng('shuffle');
 
+% range = randperm(max_frame + 1) - 1;
 
+for i=0:max_frame
     
-range = randperm(max_frame + 1) - 1;
-
-for i=range
-
     file_name = sprintf('mitral_tree_512_%.6d.m', i); 
     output_base_name = sprintf('particle_views_%.6d', i); 
 
@@ -56,6 +54,8 @@ for i=range
 
     fprintf('  Checking file_name %s...\n', file_name)
 
+    % short stop to discourage writing same frames twice
+    pause(4 * rand()); 
     if exist(start_name, 'file') || exist(end_name, 'file') 
         fprintf('Start or end file exists, moving on\n')
         continue; 
@@ -70,6 +70,11 @@ for i=range
 
     fprintf('Writing frames assoc with file_name %s\n', file_name)
 
+    time = i * dt; 
+    colorbar_name = strcat(output_base_name, '_colorbar', format_extension); 
+    make_movie_colorbar(max_velocity, format_string, time, colorbar_name); 
+    
+    
     clear_fucntion_cache = false; 
 
     if clear_fucntion_cache 

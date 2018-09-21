@@ -43,10 +43,17 @@ view(0,0)
 hold on 
 
 
+
+
 % process speeds to colormap 
+all_colors = true; 
 n_colors = 500;
 colormap_temp = make_colormap(n_colors); 
-range = 1:floor(.9*length(colormap_temp)); 
+if all_colors 
+    range = 1:floor(   length(colormap_temp)); 
+else 
+    range = 1:floor(.9*length(colormap_temp)); 
+end 
 colormap_croppeed = colormap_temp(range,:); 
 colormap(colormap_croppeed); 
 cmap = colormap;
