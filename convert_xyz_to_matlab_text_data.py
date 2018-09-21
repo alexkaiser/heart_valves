@@ -309,7 +309,7 @@ if __name__ == '__main__':
     xyz_base_name = 'mitral_tree_512_lines3d_'
     xyz_fill_len = 10
     # frame_number = 1005
-    frames = [33] # range(1441) 
+    frames = range(1441) 
     # frames = [1005, 1267, 1382]
     comet_tail_len = 20
     dt_sim = 1.5e-6
