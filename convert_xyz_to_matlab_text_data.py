@@ -259,7 +259,7 @@ def write_comet_tail_data(matlab_data_file, frame_number, n_vertices, n_particle
                     prev     = float(particle_vertices[tail_idx-1][particle_idx][dim])
 
                 # for cropping periodically use absolute distance 
-                norm  += (val - prev)**2
+                norm  += (val - next_pos)**2
 
                 # velocity norm gets a centered difference 
                 velocity += (next_pos - prev)**2
@@ -273,7 +273,7 @@ def write_comet_tail_data(matlab_data_file, frame_number, n_vertices, n_particle
 
             if not tail_valid:
                 particle_vertices[tail_idx][particle_idx] = ('NaN', 'NaN', 'NaN')
-
+                velocity_norms[tail_idx][particle_idx] = 'NaN'
 
 
     # particle_vertices is a 2d list of tuples 
@@ -309,7 +309,7 @@ if __name__ == '__main__':
     xyz_base_name = 'mitral_tree_512_lines3d_'
     xyz_fill_len = 10
     # frame_number = 1005
-    frames = range(1441) 
+    frames = [33] # range(1441) 
     # frames = [1005, 1267, 1382]
     comet_tail_len = 20
     dt_sim = 1.5e-6
