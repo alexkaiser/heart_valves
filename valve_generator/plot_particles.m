@@ -1,4 +1,4 @@
-function fig = plot_particles(file_name, max_velocity, fig, bounding_box, colorbar_figure, line_width_leaflet, line_width_tails, dot_size)
+function fig = plot_particles(file_name, max_velocity, fig, bounding_box, colorbar_figure, line_width_leaflet, line_width_tails, dot_size, colored_heads)
 
 if ~exist('fig', 'var')
     fig = figure;     
@@ -27,6 +27,10 @@ end
 
 if ~exist('dot_size', 'var')
     dot_size = 1.0; 
+end 
+
+if ~exist('colored_heads', 'var') 
+    colored_heads = false; 
 end 
 
 run(file_name); 
@@ -142,7 +146,6 @@ if comet_tails
     if cheap_comet_heads
         % comet heads -- cheap 
 
-        colored_heads = false; 
         if colored_heads
             scatter3(x_comet_coords(1,:), y_comet_coords(1,:), z_comet_coords(1,:), dot_size, cmap(color_idx(1,:),:), 'filled') % weird behavior on 'filled option here'
         else
