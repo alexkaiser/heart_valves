@@ -148,32 +148,32 @@ if comet_tails
     end 
 
 
-
-    cheap_comet_heads = true; 
-    if cheap_comet_heads
-        % comet heads -- cheap 
-
-        if colored_heads
-            scatter3(x_comet_coords(1,:), y_comet_coords(1,:), z_comet_coords(1,:), dot_size, cmap(color_idx(1,:),:), 'filled') % weird behavior on 'filled option here'
-        else
-            scatter3(x_comet_coords(1,:), y_comet_coords(1,:), z_comet_coords(1,:), dot_size, 'k', 'filled') % weird behavior on 'filled option here'
-        end 
-    else 
-        % this is realllllllly slow and makes 
-        % source -- https://www.mathworks.com/matlabcentral/answers/254961-3d-plot-points-as-spheres-instead-of-dots
-        x_heads = x_comet_coords(1,:); 
-        y_heads = y_comet_coords(1,:); 
-        z_heads = z_comet_coords(1,:); 
-
-        R = .02; 
-        NumSphFaces = 15;
-        [SX,SY,SZ] = sphere(NumSphFaces);
-        for K = 1:length(x_heads)
-          surf(SX*R + x_heads(K), SY*R + y_heads(K), SZ*R + z_heads(K));
-        end
-        lighting phong
-
-    end 
+% 
+%     cheap_comet_heads = true; 
+%     if cheap_comet_heads
+%         % comet heads -- cheap 
+% 
+%         if colored_heads
+%             scatter3(x_comet_coords(1,:), y_comet_coords(1,:), z_comet_coords(1,:), dot_size, cmap(color_idx(1,:),:), 'filled') % weird behavior on 'filled option here'
+%         else
+%             scatter3(x_comet_coords(1,:), y_comet_coords(1,:), z_comet_coords(1,:), dot_size, 'k', 'filled') % weird behavior on 'filled option here'
+%         end 
+%     else 
+%         % this is realllllllly slow and makes 
+%         % source -- https://www.mathworks.com/matlabcentral/answers/254961-3d-plot-points-as-spheres-instead-of-dots
+%         x_heads = x_comet_coords(1,:); 
+%         y_heads = y_comet_coords(1,:); 
+%         z_heads = z_comet_coords(1,:); 
+% 
+%         R = .02; 
+%         NumSphFaces = 15;
+%         [SX,SY,SZ] = sphere(NumSphFaces);
+%         for K = 1:length(x_heads)
+%           surf(SX*R + x_heads(K), SY*R + y_heads(K), SZ*R + z_heads(K));
+%         end
+%         lighting phong
+% 
+%     end 
 
 end 
 
