@@ -242,7 +242,8 @@ def write_comet_tail_data(matlab_data_file, frame_number, n_vertices, n_particle
         # set current coords to NaN if not 
         for tail_idx in range(0,comet_tail_len):
 
-            norm = 0.0
+            norm_prev = 0.0
+            norm_next = 0.0
             velocity = 0.0
             for dim in range(dimension):
 
@@ -259,13 +260,15 @@ def write_comet_tail_data(matlab_data_file, frame_number, n_vertices, n_particle
                     prev     = float(particle_vertices[tail_idx-1][particle_idx][dim])
 
                 # for cropping periodically use absolute distance 
-                norm  += (val - next_pos)**2
+                norm_next  += (val - next_pos)**2
+                norm_prev  += (val - prev)**2
 
                 # velocity norm gets a centered difference 
                 velocity += (next_pos - prev)**2
             
-            norm = math.sqrt(norm)
-            if norm >= norm_threshold:
+            norm_prev = math.sqrt(norm_prev)
+            norm_next = math.sqrt(norm_next)
+            if (norm_prev >= norm_threshold) or (norm_next >= norm_threshold):
                 tail_valid = False
 
             velocity = math.sqrt(velocity) / (2.0 * dt)
