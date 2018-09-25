@@ -29,7 +29,7 @@ end
 
 line_width_leaflet = 2; 
 line_width_tails = 16; 
-dot_size = 64; 
+dot_size = 0; 
 colored_heads = true; 
 
 dt_sim = 1.5e-6; 
