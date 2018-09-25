@@ -1,7 +1,7 @@
 
 
 data_dir = './' 
-% data_dir =  '/Users/alex/mitral_fully_discrete/plots_and_session_files/mitral_1647284_512_git_5855699_two_leaflet_mean_reverting'; 
+%data_dir =  '/Users/alex/mitral_fully_discrete/plots_and_session_files/mitral_1647284_512_git_5855699_two_leaflet_mean_reverting'; 
 
 max_velocity = 150; 
 

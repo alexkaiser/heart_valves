@@ -175,7 +175,7 @@ def get_full_xyz_name(xyz_base_name, frame_number, data_dir='.', xyz_fill_len=10
     return data_dir + '/' + xyz_base_name + str(frame_number).zfill(xyz_fill_len) + '.xyz'
 
 
-def write_comet_tail_data(matlab_data_file, frame_number, n_vertices, n_particles, xyz_base_name, comet_tail_len, dt, min_frame, n_steps): 
+def write_comet_tail_data(matlab_data_file, frame_number, n_vertices, n_particles, xyz_base_name, comet_tail_len, dt, min_frame, n_steps, min_velocity_threshold=0.0): 
     '''
     Writes vertex strings according to what is listed 
     in the spring list. 
@@ -274,7 +274,7 @@ def write_comet_tail_data(matlab_data_file, frame_number, n_vertices, n_particle
             velocity = math.sqrt(velocity) / (2.0 * dt)
             velocity_norms[tail_idx][particle_idx] = str(velocity)
 
-            if not tail_valid:
+            if (not tail_valid) or (velocity < min_velocity_threshold):
                 particle_vertices[tail_idx][particle_idx] = ('NaN', 'NaN', 'NaN')
                 velocity_norms[tail_idx][particle_idx] = 'NaN'
 
@@ -321,7 +321,7 @@ if __name__ == '__main__':
     data_dir = '.'
     min_step = 0
     n_steps  = 1442
-
+    min_velocity_threshold = 5.0
 
     spring_name = base_name + '.spring'
     spring_list = read_springs(spring_name)
@@ -372,7 +372,7 @@ if __name__ == '__main__':
             write_spring_vertices(matlab_data_file, vertex_coords, spring_list) 
 
 
-        write_comet_tail_data(matlab_data_file, frame_number, n_vertices, n_particles, xyz_base_name, comet_tail_len, dt, min_step, n_steps)
+        write_comet_tail_data(matlab_data_file, frame_number, n_vertices, n_particles, xyz_base_name, comet_tail_len, dt, min_step, n_steps, min_velocity_threshold)
      
         matlab_data_file.close()
 
