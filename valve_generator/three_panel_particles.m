@@ -1,7 +1,7 @@
 
 
 data_dir = './' 
-data_dir =  '/Users/alex/mitral_fully_discrete/plots_and_session_files/mitral_1647284_512_git_5855699_two_leaflet_mean_reverting'; 
+% data_dir =  '/Users/alex/mitral_fully_discrete/plots_and_session_files/mitral_1647284_512_git_5855699_two_leaflet_mean_reverting'; 
 
 max_velocity = 150; 
 
@@ -115,8 +115,7 @@ for i=0:max_frame
     % side view, anterior leaflet to the right 
     view(0,0)
 
-    % axis([horiz_min horiz_max horiz_min horiz_max zmin zmax])
-    axis([horiz_min horiz_max horiz_min r zmin zmax])
+    axis([horiz_min horiz_max horiz_min horiz_max zmin zmax])
     axis off 
 
     ax = gca;
@@ -129,8 +128,7 @@ for i=0:max_frame
     % front view 
 
     view(90,0)
-    % axis([horiz_min horiz_max horiz_min horiz_max zmin zmax])
-    axis([horiz_min frac_to_right*r horiz_min horiz_max zmin zmax])
+    axis([horiz_min horiz_max horiz_min horiz_max zmin zmax])
     axis off 
 
     ax = gca;
