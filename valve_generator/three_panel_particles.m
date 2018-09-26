@@ -1,7 +1,7 @@
 
 
-data_dir = './' 
-%data_dir =  '/Users/alex/mitral_fully_discrete/plots_and_session_files/mitral_1647284_512_git_5855699_two_leaflet_mean_reverting'; 
+data_dir = './' ; 
+% data_dir =  '/Users/alex/mitral_fully_discrete/plots_and_session_files/mitral_1647284_512_git_5855699_two_leaflet_mean_reverting'; 
 
 max_velocity = 150; 
 
@@ -105,6 +105,7 @@ for i=0:max_frame
     file_name = strcat(data_dir, '/', file_name); 
 
     fig = figure('visible','off'); 
+    %fig = figure; 
     set(fig, 'Renderer', 'painters');
     % 4x HD resolution 
     set(fig, 'Position', [0 0 2160 4320])
@@ -156,15 +157,15 @@ for i=0:max_frame
     close(fig); 
 
     % append the existing panels 
-    all_name = strcat(output_base_name, '_panels', format_extension); 
+    all_name = strcat(output_base_name, '_panels.jpg'); 
     command = sprintf('convert %s %s %s %s +append %s', colorbar_name, side_name, front_name, top_name, all_name);  
     system(command,'-echo') 
 
-    if eps_format
-        all_name_eps = strcat(output_base_name, '_panels', '.eps');
-        command = sprintf('convert %s %s', all_name, all_name_eps);  
-        system(command,'-echo')
-    end 
+%     if eps_format
+%         all_name_eps = strcat(output_base_name, '_panels', '.eps');
+%         command = sprintf('convert %s %s', all_name, all_name_eps);  
+%         system(command,'-echo')
+%     end 
 
     system(sprintf('touch %s', end_name)); 
     system(sprintf('rm %s', start_name)); 

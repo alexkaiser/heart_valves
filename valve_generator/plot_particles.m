@@ -132,9 +132,6 @@ if comet_tails
     color_idx(color_idx == 0)       = 1; 
     color_idx(color_idx > n_colors) = n_colors; 
 
-    color_idx(isnan(color_idx))     = 1; 
-
-
     % plot comet tails 
     % plot3(x_comet_coords, y_comet_coords, z_comet_coords, '-')
 
@@ -143,7 +140,9 @@ if comet_tails
 
     for k = 1:n_particles
         for j = 1:(comet_tail_length-1) 
-            plot3(x_comet_coords(j:j+1,k), y_comet_coords(j:j+1,k), z_comet_coords(j:j+1,k), '-', 'color', cmap(color_idx(j,k),:), 'LineWidth', line_width_tails); 
+            if ~isnan(color_idx(j,k))
+                plot3(x_comet_coords(j:j+1,k), y_comet_coords(j:j+1,k), z_comet_coords(j:j+1,k), '-', 'color', cmap(color_idx(j,k),:), 'LineWidth', line_width_tails); 
+            end 
         end 
     end 
 

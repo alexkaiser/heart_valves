@@ -31,7 +31,13 @@ set(fig, 'PaperPositionMode','auto')
 
 colormap(colormap_croppeed); 
 cbar = colorbar('Ticks', tick_array, 'TickLabels', tick_labels, 'fontweight', 'bold', 'fontsize',fontsize); 
-cbar.Label.String = sprintf('t (s)\n%.2f\n\n\n|u|\n(cm/s)', time);
+
+if strcmp(format_string, '.eps')
+    cbar.Label.String = sprintf('\n\nt (s)\n%.2f\n\n\n|u|\n(cm/s)', time);
+else
+    cbar.Label.String = sprintf('t (s)\n%.2f\n\n\n|u|\n(cm/s)', time);
+end 
+
 cbar.Label.FontSize = fontsize; 
 cbar.Label.Position = [0 1.05]; 
 cbar.Label.Rotation = 0;
