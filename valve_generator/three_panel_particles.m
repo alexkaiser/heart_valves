@@ -1,7 +1,8 @@
 
+set(0, 'DefaultFigureRenderer', 'painters');
 
 data_dir = './' ; 
-% data_dir =  '/Users/alex/mitral_fully_discrete/plots_and_session_files/mitral_1647284_512_git_5855699_two_leaflet_mean_reverting'; 
+%data_dir =  '/Users/alex/mitral_fully_discrete/plots_and_session_files/mitral_1647284_512_git_5855699_two_leaflet_mean_reverting'; 
 
 max_velocity = 150; 
 
@@ -105,7 +106,7 @@ for i=0:max_frame
     file_name = strcat(data_dir, '/', file_name); 
 
     fig = figure('visible','off'); 
-    %fig = figure; 
+    % fig = figure; 
     set(fig, 'Renderer', 'painters');
     % 4x HD resolution 
     set(fig, 'Position', [0 0 2160 4320])
@@ -117,7 +118,7 @@ for i=0:max_frame
     view(0,0)
 
     axis([horiz_min horiz_max horiz_min horiz_max zmin zmax])
-    axis off 
+    % axis off 
 
     ax = gca;
     ax.Position = [0.01 0.01 .98 .98]; 
@@ -130,7 +131,7 @@ for i=0:max_frame
 
     view(90,0)
     axis([horiz_min horiz_max horiz_min horiz_max zmin zmax])
-    axis off 
+    % axis off 
 
     ax = gca;
     ax.Position = [0.01 0.01 .98 .98]; 

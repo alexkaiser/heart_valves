@@ -499,6 +499,15 @@ if tension_plots_surf
         circ = true; 
         radial = false; 
         fig_anterior_circ = total_tension_surf_plot(valve.leaflets(1), anterior, fiber_output, fiber_stride, stride_offset_j, circ, radial); 
+        
+        diag_view_extra = true; 
+        if diag_view_extra 
+            axis equal
+            axis off 
+            set(fig_anterior_circ, 'Renderer', 'Painters');
+            print(fig_anterior_circ, '-depsc', 'anterior_tension_plot_circ_surf_diag_view');
+        end 
+        
         view(90,0)
         axis equal; 
         anterior_axes_circ = gca 
@@ -509,6 +518,16 @@ if tension_plots_surf
         circ = true; 
         radial = false; 
         fig_posterior_circ = total_tension_surf_plot(valve.leaflets(1), anterior, fiber_output, fiber_stride, stride_offset_j, circ, radial); 
+        
+        diag_view_extra_posterior = true; 
+        if diag_view_extra_posterior 
+            axis equal
+            axis off 
+            set(fig_posterior_circ, 'Renderer', 'Painters');
+            print(fig_posterior_circ, '-depsc', 'posterior_tension_plot_circ_surf_diag_view');
+        end 
+        
+        
         view(90,0)
         axis equal;
         posterior_axes_circ = gca 

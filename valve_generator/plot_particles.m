@@ -1,5 +1,7 @@
 function fig = plot_particles(file_name, max_velocity, fig, bounding_box, colorbar_figure, line_width_leaflet, line_width_tails, dot_size, colored_heads)
 
+debug = false; 
+
 if ~exist('fig', 'var')
     fig = figure;     
 end 
@@ -35,11 +37,13 @@ end
 
 run(file_name); 
 
+if ~debug 
+    plot3(x_coords_springs, y_coords_springs, z_coords_springs, '-k', 'LineWidth', line_width_leaflet); 
+else
+    plot3(x_coords_springs(1:100:end), y_coords_springs(1:100:end), z_coords_springs(1:100:end), '-k');
+end
 
-plot3(x_coords_springs, y_coords_springs, z_coords_springs, '-k', 'LineWidth', line_width_leaflet); 
-% plot3(x_coords_springs(1:40:end), y_coords_springs(1:40:end), z_coords_springs(1:40:end), '-k'); 
 view(0,0)
-
 hold on 
 
 
@@ -123,6 +127,7 @@ if bounding_box
 end 
 
 
+
 comet_tails = true; 
 if comet_tails 
     velocity_frac_of_max = particle_velocity/max_velocity;
@@ -137,46 +142,85 @@ if comet_tails
 
     comet_tail_length = size(particle_velocity,1); 
     n_particles       = size(particle_velocity,2); 
-
+    
+    if debug 
+        final_row = (n_particles):n_particles; 
+        x_comet_coords(:,final_row)
+        y_comet_coords(:,final_row)
+        z_comet_coords(:,final_row)
+        color_idx(:,final_row)
+    end 
+    
     for k = 1:n_particles
+    %for k = final_row
         for j = 1:(comet_tail_length-1) 
-            if ~isnan(color_idx(j,k))
+        %for j = 1
+            if (~isnan(color_idx(j,k))) && ... 
+               (~isnan(any(x_comet_coords(j:j+1,k)))) && ...
+               (~isnan(any(y_comet_coords(j:j+1,k)))) && ...
+               (~isnan(any(z_comet_coords(j:j+1,k)))) 
+           
+                if debug 
+                    if color_idx(j,k) == n_colors
+                        'pause'
+                    end 
+                    j 
+                    k 
+
+                    'coords'
+                    x_comet_coords(j:j+1,k)
+                    y_comet_coords(j:j+1,k)
+                    z_comet_coords(j:j+1,k)
+
+                    'color idx'
+                    color_idx(j,k)
+
+                    'rgb color'
+                    cmap(color_idx(j,k),:)
+                end 
+                
                 plot3(x_comet_coords(j:j+1,k), y_comet_coords(j:j+1,k), z_comet_coords(j:j+1,k), '-', 'color', cmap(color_idx(j,k),:), 'LineWidth', line_width_tails); 
             end 
         end 
     end 
 
 
-    if dot_size > 0
-        cheap_comet_heads = true; 
-        if cheap_comet_heads
-            % comet heads -- cheap 
-
-            if colored_heads
-                scatter3(x_comet_coords(1,:), y_comet_coords(1,:), z_comet_coords(1,:), dot_size, cmap(color_idx(1,:),:), 'filled') % weird behavior on 'filled option here'
-            else
-                scatter3(x_comet_coords(1,:), y_comet_coords(1,:), z_comet_coords(1,:), dot_size, 'k', 'filled') % weird behavior on 'filled option here'
-            end 
-        else 
-            % this is realllllllly slow and makes 
-            % source -- https://www.mathworks.com/matlabcentral/answers/254961-3d-plot-points-as-spheres-instead-of-dots
-            x_heads = x_comet_coords(1,:); 
-            y_heads = y_comet_coords(1,:); 
-            z_heads = z_comet_coords(1,:); 
-
-            R = .02; 
-            NumSphFaces = 15;
-            [SX,SY,SZ] = sphere(NumSphFaces);
-            for K = 1:length(x_heads)
-              surf(SX*R + x_heads(K), SY*R + y_heads(K), SZ*R + z_heads(K));
-            end
-            lighting phong
-
-        end 
-    end 
+%     if dot_size > 0
+%         cheap_comet_heads = true; 
+%         if cheap_comet_heads
+%             % comet heads -- cheap 
+% 
+%             if colored_heads
+%                 scatter3(x_comet_coords(1,:), y_comet_coords(1,:), z_comet_coords(1,:), dot_size, cmap(color_idx(1,:),:), 'filled') % weird behavior on 'filled option here'
+%             else
+%                 scatter3(x_comet_coords(1,:), y_comet_coords(1,:), z_comet_coords(1,:), dot_size, 'k', 'filled') % weird behavior on 'filled option here'
+%             end 
+%         else 
+%             % this is realllllllly slow and makes 
+%             % source -- https://www.mathworks.com/matlabcentral/answers/254961-3d-plot-points-as-spheres-instead-of-dots
+%             x_heads = x_comet_coords(1,:); 
+%             y_heads = y_comet_coords(1,:); 
+%             z_heads = z_comet_coords(1,:); 
+% 
+%             R = .02; 
+%             NumSphFaces = 15;
+%             [SX,SY,SZ] = sphere(NumSphFaces);
+%             for K = 1:length(x_heads)
+%               surf(SX*R + x_heads(K), SY*R + y_heads(K), SZ*R + z_heads(K));
+%             end
+%             lighting phong
+% 
+%         end 
+%     end 
     
 end 
 
 axis equal; 
-axis tight; 
-axis off; 
+axis tight;
+set(gca,'xticklabel',[])
+set(gca,'xtick',[])
+set(gca,'yticklabel',[])
+set(gca,'ytick',[])
+set(gca,'zticklabel',[])
+set(gca,'ztick',[])
+% axis off; 
