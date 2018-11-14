@@ -4,7 +4,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N_range = 2.^(5:11); 
+N_range = 2^5; % 2.^(5:11); 
 
 for N = N_range
 
@@ -25,11 +25,16 @@ for N = N_range
     optimization = false; 
     decreasing_tension = true; 
 
+    hocm_d_valve = true; 
 
     if radial
 
         if bead_slip 
-            valve = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization, decreasing_tension); 
+            if ~hocm_d_valve
+                valve = initialize_valve_data_structures_radial_bead_slip(N, attached, leaflet_only, optimization, decreasing_tension); 
+            else 
+                valve = initialize_valve_data_structures_hocm_d(N, attached, leaflet_only, optimization, decreasing_tension); 
+            end 
         else        
             valve = initialize_valve_data_structures_radial(N); 
         end 

@@ -68,16 +68,28 @@ if leaflet.radial_and_circumferential
             mesh = [mesh_anterior mesh_posterior];
         end 
         
-        if isfield(valve, 'dip_anterior_systole') && valve.dip_anterior_systole 
-            x_coord_extra = @(t) cos_bump(t, valve.total_angle_dip, valve.r_dip); 
-        else 
-            x_coord_extra = @(t) 0 .* t; 
-        end     
+        if isfield(valve.skeleton, 'valve_ring_pts')
+            % use whatever points are measured for valve ring 
+            for j=1:j_max
+                X(:,j,ring_k_idx(j)) = interpolate_valve_ring_points(valve, mesh(j)); 
+                % [r*(cos(mesh(j)) + x_coord_extra(mesh(j))); r*sin(mesh(j)); 0.0]; 
+            end 
+
+        else
+            
+            % simple analytic shape for valve ring 
+            if isfield(valve, 'dip_anterior_systole') && valve.dip_anterior_systole 
+                x_coord_extra = @(t) cos_bump(t, valve.total_angle_dip, valve.r_dip); 
+            else 
+                x_coord_extra = @(t) 0 .* t; 
+            end     
+
+
+            for j=1:j_max
+                X(:,j,ring_k_idx(j)) = [r*(cos(mesh(j)) + x_coord_extra(mesh(j))); r*sin(mesh(j)); 0.0]; 
+            end 
         
-        
-        for j=1:j_max
-            X(:,j,ring_k_idx(j)) = [r*(cos(mesh(j)) + x_coord_extra(mesh(j))); r*sin(mesh(j)); 0.0]; 
-        end 
+        end
         
         % very rough physical mesh spacing
         % should be unimportant since this is just for an initial guess 
@@ -178,6 +190,11 @@ if leaflet.radial_and_circumferential
     
     end 
     
+%     % translate solution if center of the ring is not the origin
+%     % as it would be in the general case 
+%     if isfield(valve.skeleton, 'ring_center')
+%         X = X + valve.skeleton.ring_center; 
+%     end 
     
     if debug 
         figure; 
