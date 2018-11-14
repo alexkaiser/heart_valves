@@ -24,18 +24,24 @@ end
 x = skeleton.valve_ring_pts(1,:) - ring_center(1); 
 y = skeleton.valve_ring_pts(2,:) - ring_center(2); 
 
-% periodic wrap 
-% x = [x, x(1)]; 
-% y = [y, y(1)]; 
-
 theta = atan2(y,x); 
 
 % center mesh on zero, because atan2 returns results on this interval 
 mesh = mod(mesh, 2*pi) - pi; 
 
-pts_x = interp1(theta, skeleton.valve_ring_pts(1,:), mesh)'; 
-pts_y = interp1(theta, skeleton.valve_ring_pts(2,:), mesh)'; 
-pts_z = interp1(theta, skeleton.valve_ring_pts(3,:), mesh)'; 
+theta_three_period = [theta - 2*pi, theta, theta + 2*pi]; 
+
+x_table = [skeleton.valve_ring_pts(1,:), skeleton.valve_ring_pts(1,:), skeleton.valve_ring_pts(1,:)]; 
+y_table = [skeleton.valve_ring_pts(2,:), skeleton.valve_ring_pts(2,:), skeleton.valve_ring_pts(2,:)]; 
+z_table = [skeleton.valve_ring_pts(3,:), skeleton.valve_ring_pts(3,:), skeleton.valve_ring_pts(3,:)]; 
+
+pts_x = interp1(theta_three_period, x_table, mesh, 'spline')'; 
+pts_y = interp1(theta_three_period, y_table, mesh, 'spline')'; 
+pts_z = interp1(theta_three_period, z_table, mesh, 'spline')'; 
+
+% pts_x = interp1(theta, skeleton.valve_ring_pts(1,:), mesh, 'spline')'; 
+% pts_y = interp1(theta, skeleton.valve_ring_pts(2,:), mesh, 'spline')'; 
+% pts_z = interp1(theta, skeleton.valve_ring_pts(3,:), mesh, 'spline')'; 
 
 pts = [pts_x, pts_y, pts_z]; 
 
