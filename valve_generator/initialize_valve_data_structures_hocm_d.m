@@ -102,7 +102,7 @@ name = 'leaflet';
 % commissural tree version 
 % but without explicit commissural leaflets 
 
-valve.p_physical = 100 * MMHG_TO_CGS; 
+valve.p_physical = 120 * MMHG_TO_CGS; 
 
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
@@ -135,7 +135,7 @@ end
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
 % valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
-tension_coeffs.pressure_tension_ratio = 0.055; 
+tension_coeffs.pressure_tension_ratio = 0.12; 
 
 tension_coeffs.dec_tension_coeff_base = 4.6; 
 
@@ -146,14 +146,14 @@ tension_coeffs.beta_anterior        = 1.1;  % radial
 tension_coeffs.alpha_posterior      = 1.0;  % circumferential 
 tension_coeffs.beta_posterior       = 1.0;  % radial
 tension_coeffs.alpha_hoops          = 0.5;  % circumferential hoops     
-tension_coeffs.alpha_edge_connector = 1.0;  % circumferential free edge connector 
+tension_coeffs.alpha_edge_connector = 1.75;  % circumferential free edge connector 
 tension_coeffs.beta_edge_connector  = 0.01;  % circumferential free edge connector
 
 
 % decreasing tension coefficients 
 tension_coeffs.c_circ_dec_anterior       = 2.5;  % circumferential 
 tension_coeffs.c_rad_dec_anterior        = 1.5;  % radial
-tension_coeffs.c_circ_dec_posterior      = 1.0;  % circumferential 
+tension_coeffs.c_circ_dec_posterior      = 1.5;  % circumferential 
 tension_coeffs.c_rad_dec_posterior       = 1.5;  % radial
 tension_coeffs.c_circ_dec_hoops          = 2.0;  % circumferential hoops
 tension_coeffs.c_rad_dec_hoops_anterior  = 0.5;  % radial hoops, anterior part 
@@ -173,7 +173,7 @@ n_edge_connectors = max(1,N/64);
 % No explicit commissural leaflet here 
 N_anterior = N/2; 
 
-angles.anterior = 5*pi/6; 
+angles.anterior = 4*pi/6; 
 
 % Posterior takes whatever is left 
 N_posterior = N - N_anterior; 
@@ -200,70 +200,12 @@ leaflet_N_start = 0;
 tension_coeffs.tree_tension_multiplier = 1.0; 
 
 % Leaf tensions are all modified 
-tension_coeffs.leaf_tension_base = .9; 
+tension_coeffs.leaf_tension_base = .6; 
 
 % Base total root tension 
 % The value 0.5905 works well on each tree when using separate solves and two leaflets 
 % Controls constant tension at the root of the tree 
-tension_coeffs.root_tension_base = .9 * 0.5905; 
-
-
-n_trees_anterior = 2; 
-
-%     k_0_1_anterior  = 1.1 / n_trees_anterior; 
-%     k_0_1_anterior  = k_0_1_anterior * [1; 1]; 
-%     k_root_anterior = 1.1 / n_trees_anterior; 
-%     k_root_anterior = k_root_anterior * [1; 1]; 
-
-%    n_leaves_anterior  = N_anterior/n_trees_anterior * ones(n_trees_anterior, 1); 
-
-
-% posterior and included commissural trees 
-n_trees_posterior_and_comm  = 6;
-%    n_trees_posterior           = 2; 
-%    n_trees_commissure          = 4; 
-%    n_trees_commissure_per_side = n_trees_commissure/2; 
-%     
-%     % include commissural trees in posterior leaflet 
-%     n_posterior_tree_total   = N_posterior / 2; 
-%     n_commissural_tree_total = N_posterior / 2;
-%     
-%     n_tree_posterior         = n_posterior_tree_total   / n_trees_posterior; 
-%     n_tree_commissure        = n_commissural_tree_total / n_trees_commissure; 
-%     
-%     k_0_1_posterior          = 0.4 / n_trees_posterior; 
-%     k_root_posterior         = 0.4 / n_trees_posterior; 
-%     
-%     k_0_1_commissure         = 0.5 / n_trees_commissure; 
-%     k_root_commissure        = 0.5 / n_trees_commissure; 
-% 
-%     
-%     k_0_1_posterior_and_comm    = zeros(n_trees_posterior_and_comm, 1);
-%     k_root_posterior_and_comm   = zeros(n_trees_posterior_and_comm, 1);
-%     n_leaves_posterior_and_comm = zeros(n_trees_posterior_and_comm, 1); 
-%     
-%     
-%     j = 1; 
-%     for tmp=1:n_trees_commissure_per_side
-%         k_0_1_posterior_and_comm(j)    = k_0_1_commissure; 
-%         k_root_posterior_and_comm(j)   = k_root_commissure; 
-%         n_leaves_posterior_and_comm(j) = n_tree_commissure; 
-%         j = j+1; 
-%     end 
-%     
-%     for tmp=1:n_trees_posterior
-%         k_0_1_posterior_and_comm(j)    = k_0_1_posterior; 
-%         k_root_posterior_and_comm(j)   = k_root_posterior; 
-%         n_leaves_posterior_and_comm(j) = n_tree_posterior; 
-%         j = j+1; 
-%     end    
-%     
-%     for tmp=1:n_trees_commissure_per_side
-%         k_0_1_posterior_and_comm(j)    = k_0_1_commissure; 
-%         k_root_posterior_and_comm(j)   = k_root_commissure; 
-%         n_leaves_posterior_and_comm(j) = n_tree_commissure; 
-%         j = j+1; 
-%     end
+tension_coeffs.root_tension_base = .4; 
 
 % this array determines the fraction of N_orig which each tree takes up 
 % this allows us to determine initial fractions of constants that go to each tree 
@@ -282,20 +224,20 @@ k_0_1_coeff    = frac_of_n_orig .*    ...
                   2.0; 2.0];                    % posterior and comm, comm and anterior
 
 k_root_coeff   = frac_of_n_orig .*    ... 
-                [ 2.2; 2.2;           ...       % anterior  
+                [ 1.8; 1.8;           ...      % anterior  
                   2.0; 2.0;           ...       % anterior and comm, comm and posterior       
                   1.6; 1.6;           ...       % posterior
                   2.0; 2.0];                    % posterior and comm, comm and anterior
 
 
-tension_coeffs.c_dec_chordae_leaf = (1/N)  * [1.0; 1.0; ...       % anterior  
+tension_coeffs.c_dec_chordae_leaf = .5 * (1/N)  * [1.0; 1.0; ...       % anterior  
                                               1.0; 1.0; ...       % comm
                                               1.0; 1.0; ...       % posterior
                                               1.0; 1.0];          % comm 
 
 % root constants do not scale, because the root 
 % should maintain a consistent length when mesh is changed 
-tension_coeffs.c_dec_chordae_root = (1/256) * [1.0; 1.0; ...       % anterior  
+tension_coeffs.c_dec_chordae_root = (1/8) * (1/256) * [1.0; 1.0; ...       % anterior  
                                                1.0; 1.0; ...       % comm
                                                1.0; 1.0; ...       % posterior
                                                1.0; 1.0];          % comm 
