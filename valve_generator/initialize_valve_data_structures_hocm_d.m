@@ -143,7 +143,7 @@ tension_coeffs.dec_tension_coeff_base = 4.6;
 % max tensions in leaflets 
 tension_coeffs.alpha_anterior       = 1.75;  % circumferential 
 tension_coeffs.beta_anterior        = 1.1;  % radial
-tension_coeffs.alpha_posterior      = 1.0;  % circumferential 
+tension_coeffs.alpha_posterior      = 1.75;  % circumferential 
 tension_coeffs.beta_posterior       = 1.0;  % radial
 tension_coeffs.alpha_hoops          = 0.5;  % circumferential hoops     
 tension_coeffs.alpha_edge_connector = 1.75;  % circumferential free edge connector 
@@ -153,14 +153,14 @@ tension_coeffs.beta_edge_connector  = 0.01;  % circumferential free edge connect
 % decreasing tension coefficients 
 tension_coeffs.c_circ_dec_anterior       = 3.5;  % circumferential 
 tension_coeffs.c_rad_dec_anterior        = 1.5;  % radial
-tension_coeffs.c_circ_dec_posterior      = 2.5;  % circumferential 
+tension_coeffs.c_circ_dec_posterior      = 3.5;  % circumferential 
 tension_coeffs.c_rad_dec_posterior       = 1.5;  % radial
 tension_coeffs.c_circ_dec_hoops          = 2.0;  % circumferential hoops
 tension_coeffs.c_rad_dec_hoops_anterior  = 0.5;  % radial hoops, anterior part 
 tension_coeffs.c_rad_dec_hoops_posterior = 0.5;  % radial hoops, posterior part 
 tension_coeffs.c_dec_tension_chordae     = 1.0;  % chordae
 
-tension_coeffs.c_circ_dec_edge_connector  = 1.0;  % circumferential hoops
+tension_coeffs.c_circ_dec_edge_connector  = 3.5;  % circumferential hoops
 tension_coeffs.c_rad_dec_edge_connector   = 2.0;  % circumferential hoops
 
 % places this many periodic rings above 
@@ -168,7 +168,7 @@ n_rings_periodic = 0; max(1,N/64);
 
 % places circumferential fibers this many below hoops 
 % if the location is not already covered by leaflet
-n_edge_connectors = max(1,N/32)% max(1,N/64);  
+n_edge_connectors = max(1,N/8)% max(1,N/64);  
 
 % No explicit commissural leaflet here 
 N_anterior = N/2; 
