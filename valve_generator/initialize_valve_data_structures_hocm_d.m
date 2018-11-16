@@ -135,16 +135,16 @@ end
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
 % valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
-tension_coeffs.pressure_tension_ratio = 0.12; 
+tension_coeffs.pressure_tension_ratio = 0.11; 
 
-tension_coeffs.dec_tension_coeff_base = 4.6; 
+tension_coeffs.dec_tension_coeff_base = 4.7; 
 
 
 % max tensions in leaflets 
 tension_coeffs.alpha_anterior       = 1.75;  % circumferential 
 tension_coeffs.beta_anterior        = 1.1;  % radial
 tension_coeffs.alpha_posterior      = 1.75;  % circumferential 
-tension_coeffs.beta_posterior       = 1.0;  % radial
+tension_coeffs.beta_posterior       = 1.1;  % radial
 tension_coeffs.alpha_hoops          = 0.5;  % circumferential hoops     
 tension_coeffs.alpha_edge_connector = 1.75;  % circumferential free edge connector 
 tension_coeffs.beta_edge_connector  = 0.01;  % circumferential free edge connector
@@ -160,7 +160,7 @@ tension_coeffs.c_rad_dec_hoops_anterior  = 0.5;  % radial hoops, anterior part
 tension_coeffs.c_rad_dec_hoops_posterior = 0.5;  % radial hoops, posterior part 
 tension_coeffs.c_dec_tension_chordae     = 1.0;  % chordae
 
-tension_coeffs.c_circ_dec_edge_connector  = 3.5;  % circumferential hoops
+tension_coeffs.c_circ_dec_edge_connector  = 2.5;  % circumferential hoops
 tension_coeffs.c_rad_dec_edge_connector   = 2.0;  % circumferential hoops
 
 % places this many periodic rings above 
@@ -168,7 +168,7 @@ n_rings_periodic = 0; max(1,N/64);
 
 % places circumferential fibers this many below hoops 
 % if the location is not already covered by leaflet
-n_edge_connectors = max(1,N/8)% max(1,N/64);  
+n_edge_connectors = max(1,N/16); % max(1,N/64);  
 
 % No explicit commissural leaflet here 
 N_anterior = N/2; 
@@ -197,7 +197,7 @@ leaflet_direction = [leaflet_direction, -1, 1];
 leaflet_N_start = 0; 
 
 % changes entire tree strength by constants 
-tension_coeffs.tree_tension_multiplier = 1.0; 
+tension_coeffs.tree_tension_multiplier = 1.05; 
 
 % Leaf tensions are all modified 
 tension_coeffs.leaf_tension_base = .6; 
@@ -225,9 +225,9 @@ k_0_1_coeff    = frac_of_n_orig .*    ...
 
 k_root_coeff   = frac_of_n_orig .*    ... 
                 [ 1.8; 1.8;           ...      % anterior  
-                  2.5; 2.5;           ...       % anterior and comm, comm and posterior       
-                  1.25; 1.25;           ...       % posterior
-                  2.5; 2.5];                    % posterior and comm, comm and anterior
+                  2.9; 2.9;           ...       % anterior and comm, comm and posterior       
+                  1.45; 1.45;           ...       % posterior
+                  2.9; 2.9];                    % posterior and comm, comm and anterior
 
 
 tension_coeffs.c_dec_chordae_leaf = (1/N)  * [1.0; 1.0; ...       % anterior  
