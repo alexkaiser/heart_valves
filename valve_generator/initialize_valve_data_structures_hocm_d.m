@@ -151,16 +151,16 @@ tension_coeffs.beta_edge_connector  = 0.01;  % circumferential free edge connect
 
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec_anterior       = 2.5;  % circumferential 
+tension_coeffs.c_circ_dec_anterior       = 3.5;  % circumferential 
 tension_coeffs.c_rad_dec_anterior        = 1.5;  % radial
-tension_coeffs.c_circ_dec_posterior      = 1.5;  % circumferential 
+tension_coeffs.c_circ_dec_posterior      = 2.5;  % circumferential 
 tension_coeffs.c_rad_dec_posterior       = 1.5;  % radial
 tension_coeffs.c_circ_dec_hoops          = 2.0;  % circumferential hoops
 tension_coeffs.c_rad_dec_hoops_anterior  = 0.5;  % radial hoops, anterior part 
 tension_coeffs.c_rad_dec_hoops_posterior = 0.5;  % radial hoops, posterior part 
 tension_coeffs.c_dec_tension_chordae     = 1.0;  % chordae
 
-tension_coeffs.c_circ_dec_edge_connector  = 2.0;  % circumferential hoops
+tension_coeffs.c_circ_dec_edge_connector  = 1.0;  % circumferential hoops
 tension_coeffs.c_rad_dec_edge_connector   = 2.0;  % circumferential hoops
 
 % places this many periodic rings above 
@@ -168,12 +168,12 @@ n_rings_periodic = max(1,N/64);
 
 % places circumferential fibers this many below hoops 
 % if the location is not already covered by leaflet
-n_edge_connectors = max(1,N/64);  
+n_edge_connectors = max(1,N/32)% max(1,N/64);  
 
 % No explicit commissural leaflet here 
 N_anterior = N/2; 
 
-angles.anterior = 4*pi/6; 
+angles.anterior = 5*pi/6; 
 
 % Posterior takes whatever is left 
 N_posterior = N - N_anterior; 
@@ -225,19 +225,19 @@ k_0_1_coeff    = frac_of_n_orig .*    ...
 
 k_root_coeff   = frac_of_n_orig .*    ... 
                 [ 1.8; 1.8;           ...      % anterior  
-                  2.0; 2.0;           ...       % anterior and comm, comm and posterior       
-                  1.6; 1.6;           ...       % posterior
-                  2.0; 2.0];                    % posterior and comm, comm and anterior
+                  2.5; 2.5;           ...       % anterior and comm, comm and posterior       
+                  1.25; 1.25;           ...       % posterior
+                  2.5; 2.5];                    % posterior and comm, comm and anterior
 
 
-tension_coeffs.c_dec_chordae_leaf = .5 * (1/N)  * [1.0; 1.0; ...       % anterior  
+tension_coeffs.c_dec_chordae_leaf = (1/N)  * [1.0; 1.0; ...       % anterior  
                                               1.0; 1.0; ...       % comm
                                               1.0; 1.0; ...       % posterior
                                               1.0; 1.0];          % comm 
 
 % root constants do not scale, because the root 
 % should maintain a consistent length when mesh is changed 
-tension_coeffs.c_dec_chordae_root = (1/8) * (1/256) * [1.0; 1.0; ...       % anterior  
+tension_coeffs.c_dec_chordae_root = (1/256) * [1.0; 1.0; ...       % anterior  
                                                1.0; 1.0; ...       % comm
                                                1.0; 1.0; ...       % posterior
                                                1.0; 1.0];          % comm 
