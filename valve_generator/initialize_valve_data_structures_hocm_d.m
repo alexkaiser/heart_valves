@@ -135,25 +135,25 @@ end
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
 % valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
-tension_coeffs.pressure_tension_ratio = 0.11; 
+tension_coeffs.pressure_tension_ratio = 0.10; 
 
-tension_coeffs.dec_tension_coeff_base = 4.7; 
+tension_coeffs.dec_tension_coeff_base = 5.2; 
 
 
 % max tensions in leaflets 
 tension_coeffs.alpha_anterior       = 1.75;  % circumferential 
 tension_coeffs.beta_anterior        = 1.1;  % radial
-tension_coeffs.alpha_posterior      = 1.75;  % circumferential 
+tension_coeffs.alpha_posterior      = 2.0;  % circumferential 
 tension_coeffs.beta_posterior       = 1.1;  % radial
 tension_coeffs.alpha_hoops          = 0.5;  % circumferential hoops     
 tension_coeffs.alpha_edge_connector = 1.75;  % circumferential free edge connector 
-tension_coeffs.beta_edge_connector  = 0.01;  % circumferential free edge connector
+tension_coeffs.beta_edge_connector  = 0.1;  % circumferential free edge connector
 
 
 % decreasing tension coefficients 
 tension_coeffs.c_circ_dec_anterior       = 3.5;  % circumferential 
 tension_coeffs.c_rad_dec_anterior        = 1.5;  % radial
-tension_coeffs.c_circ_dec_posterior      = 3.5;  % circumferential 
+tension_coeffs.c_circ_dec_posterior      = 5.0;  % circumferential 
 tension_coeffs.c_rad_dec_posterior       = 1.5;  % radial
 tension_coeffs.c_circ_dec_hoops          = 2.0;  % circumferential hoops
 tension_coeffs.c_rad_dec_hoops_anterior  = 0.5;  % radial hoops, anterior part 
@@ -168,7 +168,7 @@ n_rings_periodic = 0; max(1,N/64);
 
 % places circumferential fibers this many below hoops 
 % if the location is not already covered by leaflet
-n_edge_connectors = max(1,N/16); % max(1,N/64);  
+n_edge_connectors = (3/2) * max(1,N/16); % max(1,N/64);  
 
 % No explicit commissural leaflet here 
 N_anterior = N/2; 
@@ -219,9 +219,9 @@ frac_of_n_orig = [1/ 4; 1/ 4;  ...   % anterior
 % note that these are scaled by the fraction of the leaflet that they take up 
 k_0_1_coeff    = frac_of_n_orig .*    ... 
                  [2.2; 2.2;           ...       % anterior  
-                  2.0; 2.0;           ...       % anterior and comm, comm and posterior       
+                  2.4; 2.4;           ...       % anterior and comm, comm and posterior       
                   1.6; 1.6;           ...       % posterior
-                  2.0; 2.0];                    % posterior and comm, comm and anterior
+                  2.4; 2.4];                    % posterior and comm, comm and anterior
 
 k_root_coeff   = frac_of_n_orig .*    ... 
                 [ 1.8; 1.8;           ...      % anterior  
