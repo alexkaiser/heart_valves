@@ -137,7 +137,7 @@ end
 % valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
 tension_coeffs.pressure_tension_ratio = 0.10; 
 
-tension_coeffs.dec_tension_coeff_base = 5.2; 
+tension_coeffs.dec_tension_coeff_base = 5.1; 
 
 
 % max tensions in leaflets 
