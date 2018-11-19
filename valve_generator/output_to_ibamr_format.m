@@ -72,6 +72,19 @@ function [] = output_to_ibamr_format(valve)
     params.z_min =  3.0 - 4*L; 
     params.z_max =  3.0; 
     
+    if isfield(valve.skeleton, 'ring_center')
+        ring_center = valve.skeleton.ring_center
+        params.x_min = params.x_min + valve.skeleton.ring_center(1); 
+        params.x_max = params.x_max + valve.skeleton.ring_center(1); 
+        params.y_min = params.y_min + valve.skeleton.ring_center(2); 
+        params.y_max = params.y_max + valve.skeleton.ring_center(2); 
+        params.z_min = params.z_min + valve.skeleton.ring_center(3); 
+        params.z_max = params.z_max + valve.skeleton.ring_center(3); 
+    else
+        valve.skeleton.ring_center = zeros(3,1); 
+    end 
+    params.ring_center = valve.skeleton.ring_center; 
+    
     % parameters for scaling of other constants 
     params.num_copies = valve.num_copies; 
     params.eta_multiplier_linear   = valve.eta_multiplier_linear; 
@@ -208,7 +221,7 @@ function [] = output_to_ibamr_format(valve)
         params.vertices(3,first_idx:last_idx) = params.vertices(3,first_idx:last_idx) + params.z_offset; 
         
     end 
-                                            
+
     if n_lagrangian_tracers > 0
         double_z = true; 
         [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_lagrangian_tracers, double_z); 
@@ -216,7 +229,7 @@ function [] = output_to_ibamr_format(valve)
         fprintf(particles, '%d\n', total_lagrangian_placed); 
         fclose(particles); 
     end 
-
+    
     % finally, write all vertices 
     params = write_all_vertices(params); 
 
@@ -246,7 +259,17 @@ function params = write_all_vertices(params)
     % writes all vertices to file 
 
     max_idx = params.global_idx; 
-
+    
+    debug = true; 
+    if debug 
+        min_x = min(params.vertices(1,1:max_idx)) 
+        max_x = max(params.vertices(1,1:max_idx)) 
+        min_y = min(params.vertices(2,1:max_idx)) 
+        max_y = max(params.vertices(2,1:max_idx)) 
+        min_z = min(params.vertices(3,1:max_idx)) 
+        max_z = max(params.vertices(3,1:max_idx)) 
+    end 
+    
     for i=1:max_idx
         params = vertex_string(params, params.vertices(:,i)); 
     end 
@@ -807,14 +830,28 @@ function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac
         for j=1:j_max
             
             % valve ring points from leaflet 
-            ring_pt = X(1:2,j,k_max); 
-            increment  = ds * ring_pt / norm(ring_pt); 
+            ring_pt = X(1:2,j,k_max);
+
+            increment = ring_pt - params.ring_center(1:2); 
+            increment = ds * increment / norm(increment); 
             
+            % expand in the direction of a vector from venter of ring to
+            % current point 
             coords_horiz = ring_pt + (k-1)*increment; 
+              
+            % alternative, just scalar mutiply the point 
+            % coords_horiz = (1 + (k-1)*ds) * ring_pt; 
+                        
+            % these might be the same... 
             
             % if one norm is less than L, then the point is within the domain  
-            if norm(coords_horiz, inf) < L 
-                points(:,j,k) = [coords_horiz; 0]; 
+            %if norm(coords_horiz, inf) < L 
+            if (params.x_min    <= coords_horiz(1)) && ...   
+               (coords_horiz(1) <= params.x_max   ) && ...   
+               (params.y_min    <= coords_horiz(2)) && ...   
+               (coords_horiz(2) <= params.y_max   ) 
+                
+                points(:,j,k) = [coords_horiz; params.ring_center(3)]; 
                 indices_global(j,k) = params.global_idx; 
                 params.vertices(:,params.global_idx + 1) = points(:,j,k); 
                 
@@ -1001,7 +1038,7 @@ function params = place_rays(params, leaflet, ds, L, k_rel, k_target, ref_frac, 
                     ring_nbr_plus  = X(:, j_plus__1, k); 
                     ring_nbr_minus = X(:, j_minus_1, k); 
                     
-                    val = get_geodesic_continued_point(x, pt_ring, ring_nbr_minus, ring_nbr_plus); 
+                    val = get_geodesic_continued_point(x, pt_ring, ring_nbr_minus, ring_nbr_plus, params.ring_center); 
 
                     % each point moves by this much from the initial point 
                     increment = val - x; 
@@ -1025,7 +1062,7 @@ function params = place_rays(params, leaflet, ds, L, k_rel, k_target, ref_frac, 
                         idx = params.global_idx;
 
                         % place point 
-                        params.vertices(:,params.global_idx + 1) = point; 
+                        params.vertices(:,params.global_idx + 1) = point + params.ring_center; 
                         
                         % it's a target too 
                         if exist('eta', 'var')
@@ -1052,7 +1089,7 @@ function params = place_rays(params, leaflet, ds, L, k_rel, k_target, ref_frac, 
 end 
 
 
-function [val] = get_geodesic_continued_point(x, pt_ring, ring_nbr_minus, ring_nbr_plus)
+function [val] = get_geodesic_continued_point(x, pt_ring, ring_nbr_minus, ring_nbr_plus, ring_center)
     %
     % Takes a point inside the the valve ring
     % Returns a point which allows a geodesic continuation 
@@ -1067,16 +1104,16 @@ function [val] = get_geodesic_continued_point(x, pt_ring, ring_nbr_minus, ring_n
 
     tol = 1e5 * eps; 
     
-    if abs(pt_ring(3)) > eps 
-        error('Initial ring point is not near z=0 plane'); 
+    if abs(pt_ring(3) - ring_center(3)) > tol
+        error('Initial ring point is not near z ring plane'); 
     end 
     
-    if abs(ring_nbr_plus(3)) > eps
-        error('Initial ring point is not near z=0 plane'); 
+    if abs(ring_nbr_plus(3) - ring_center(3)) > tol
+        error('Initial ring point is not near z ring plane'); 
     end 
     
-    if abs(ring_nbr_minus(3)) > eps 
-        error('Initial ring point is not near z=0 plane'); 
+    if abs(ring_nbr_minus(3) - ring_center(3)) > tol
+        error('Initial ring point is not near z ring plane'); 
     end 
     
     % local tangent implies local normal 
@@ -1183,7 +1220,7 @@ function params = place_cartesian_net(params, leaflet, r_extra, L, ds, k_rel, k_
                 
                 points(:,j,k) = [coords_horiz; 0]; 
                 indices_global(j,k) = params.global_idx; 
-                params.vertices(:,params.global_idx + 1) = points(:,j,k);
+                params.vertices(:,params.global_idx + 1) = points(:,j,k) + params.ring_center;
 
                 % every valid vertex is a target point here 
                 if exist('eta', 'var')
@@ -1326,6 +1363,8 @@ function [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_
         return; 
     end 
     
+    % includes ring_center
+    % do not need to update this for nonzero ring_center
     x_min = params.x_min; 
     x_max = params.x_max; 
     y_min = params.y_min; 
@@ -1346,7 +1385,7 @@ function [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_
     
     for i = 1:n_lagrangian_tracers
         for j = 1:n_lagrangian_tracers
-            for k = 1:n_z_dir; 
+            for k = 1:n_z_dir 
                 
                 x = (i - .5)*dx + x_min; 
                 y = (j - .5)*dy + y_min; 

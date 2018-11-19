@@ -102,7 +102,7 @@ name = 'leaflet';
 % commissural tree version 
 % but without explicit commissural leaflets 
 
-valve.p_physical = 120 * MMHG_TO_CGS; 
+valve.p_physical = 100 * MMHG_TO_CGS; 
 
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
@@ -135,7 +135,7 @@ end
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
 % valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
-tension_coeffs.pressure_tension_ratio = 0.09; 
+tension_coeffs.pressure_tension_ratio = 0.086; 
 
 tension_coeffs.dec_tension_coeff_base = 5.4; 
 
