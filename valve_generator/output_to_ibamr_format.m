@@ -208,7 +208,7 @@ function [] = output_to_ibamr_format(valve)
             if length(valve.leaflets) ~= 1 
                 error('Only one leaflet version currently supported'); 
             end 
-        params = place_cartesian_net(params, valve.leaflets(i), r_extra, L, ds, k_rel, k_target_net, ref_frac_net, eta_net); 
+            params = place_cartesian_net(params, valve.leaflets(i), r_extra, L, ds, k_rel, k_target_net, ref_frac_net, eta_net); 
         end 
         
         % first time through, count all included indices 
@@ -1056,13 +1056,17 @@ function params = place_rays(params, leaflet, ds, L, k_rel, k_target, ref_frac, 
                     nbr_idx = leaflet.indices_global(j,k); 
 
                     % just keep adding until points leave the domain 
-                    while norm(point(1:2), inf) < L   
-
+                    % while norm(point(1:2), inf) < L   
+                    if (params.x_min <= point(1))      && ...   
+                       (point(1)     <= params.x_max)  && ...   
+                       (params.y_min <= point(2))      && ...   
+                       (point(2)     <= params.y_max) 
+           
                         % grab the index 
                         idx = params.global_idx;
 
                         % place point 
-                        params.vertices(:,params.global_idx + 1) = point + params.ring_center; 
+                        params.vertices(:,params.global_idx + 1) = point; 
                         
                         % it's a target too 
                         if exist('eta', 'var')
@@ -1188,10 +1192,21 @@ function params = place_cartesian_net(params, leaflet, r_extra, L, ds, k_rel, k_
     
     for j=1:j_max
         % valve ring points from leaflet 
-        ring_pt    = X(1:2,j,k_max); 
-        increment  = r_extra * ring_pt / norm(ring_pt); 
+%         ring_pt    = X(1:2,j,k_max); 
+%         increment  = r_extra * ring_pt / norm(ring_pt); 
+% 
+%         ring_expanded(:,j) = ring_pt + increment; 
 
+        % valve ring points from leaflet 
+        ring_pt = X(1:2,j,k_max);
+
+        increment = ring_pt - params.ring_center(1:2); 
+        increment = r_extra * increment / norm(increment); 
+
+        % expand in the direction of a vector from venter of ring to
+        % current point 
         ring_expanded(:,j) = ring_pt + increment; 
+
     end 
     
     % output flag information 
@@ -1213,14 +1228,20 @@ function params = place_cartesian_net(params, leaflet, r_extra, L, ds, k_rel, k_
     for k=1:N
         for j=1:N
                         
-            coords_horiz = [ (j-1)*ds - L + ds/2; (k-1)*ds - L + ds/2]; 
+            % coords_horiz = [ (j-1)*ds - L + ds/2; (k-1)*ds - L + ds/2]; 
+            coords_horiz = [ (j-1)*ds + params.x_min + ds/2; (k-1)*ds + params.y_min + ds/2]; 
             
             % if one norm is less than L, then the point is within the domain  
-            if (norm(coords_horiz, inf) < L) && point_out_of_polygon(ring_expanded, coords_horiz)
+            % if (norm(coords_horiz, inf) < L) && point_out_of_polygon(ring_expanded, coords_horiz)
+            if (params.x_min    <= coords_horiz(1)) && ...   
+               (coords_horiz(1) <= params.x_max   ) && ...   
+               (params.y_min    <= coords_horiz(2)) && ...   
+               (coords_horiz(2) <= params.y_max   ) && ... 
+               point_out_of_polygon(ring_expanded, coords_horiz)
                 
-                points(:,j,k) = [coords_horiz; 0]; 
+                points(:,j,k) = [coords_horiz; params.ring_center(3)]; 
                 indices_global(j,k) = params.global_idx; 
-                params.vertices(:,params.global_idx + 1) = points(:,j,k) + params.ring_center;
+                params.vertices(:,params.global_idx + 1) = points(:,j,k);
 
                 % every valid vertex is a target point here 
                 if exist('eta', 'var')
