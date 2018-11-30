@@ -116,7 +116,7 @@ valve.L = 3.0;
 valve.skeleton = get_skeleton_hcm_d(); 
 valve.r = valve.skeleton.r; 
 
-valve.diastolic_increment = [1.25; 0.0; 0.25]; 
+valve.diastolic_increment = [0.0; 0.0; 0.0]; 
 
 
 % Base constants, individual pieces are tuned relative to these values
@@ -135,25 +135,25 @@ end
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
 % valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
-tension_coeffs.pressure_tension_ratio = 0.086; 
+tension_coeffs.pressure_tension_ratio = 0.055; 
 
-tension_coeffs.dec_tension_coeff_base = 5.4; 
+tension_coeffs.dec_tension_coeff_base = 4.6; 
 
 
 % max tensions in leaflets 
 tension_coeffs.alpha_anterior       = 1.75;  % circumferential 
 tension_coeffs.beta_anterior        = 1.1;  % radial
-tension_coeffs.alpha_posterior      = 2.0;  % circumferential 
-tension_coeffs.beta_posterior       = 1.1;  % radial
+tension_coeffs.alpha_posterior      = 1.75;  % circumferential 
+tension_coeffs.beta_posterior       = 1.0;  % radial
 tension_coeffs.alpha_hoops          = 0.5;  % circumferential hoops     
 tension_coeffs.alpha_edge_connector = 1.75;  % circumferential free edge connector 
-tension_coeffs.beta_edge_connector  = 0.1;  % circumferential free edge connector
+tension_coeffs.beta_edge_connector  = 0.01;  % circumferential free edge connector
 
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec_anterior       = 3.5;  % circumferential 
+tension_coeffs.c_circ_dec_anterior       = 2.5;  % circumferential 
 tension_coeffs.c_rad_dec_anterior        = 1.5;  % radial
-tension_coeffs.c_circ_dec_posterior      = 5.0;  % circumferential 
+tension_coeffs.c_circ_dec_posterior      = 2.5;  % circumferential 
 tension_coeffs.c_rad_dec_posterior       = 1.5;  % radial
 tension_coeffs.c_circ_dec_hoops          = 2.0;  % circumferential hoops
 tension_coeffs.c_rad_dec_hoops_anterior  = 0.5;  % radial hoops, anterior part 
@@ -168,7 +168,7 @@ n_rings_periodic = 0; max(1,N/64);
 
 % places circumferential fibers this many below hoops 
 % if the location is not already covered by leaflet
-n_edge_connectors = (3/2) * max(1,N/16); % max(1,N/64);  
+n_edge_connectors = max(1,N/64);  
 
 % No explicit commissural leaflet here 
 N_anterior = N/2; 
@@ -197,15 +197,15 @@ leaflet_direction = [leaflet_direction, -1, 1];
 leaflet_N_start = 0; 
 
 % changes entire tree strength by constants 
-tension_coeffs.tree_tension_multiplier = 1.05; 
+tension_coeffs.tree_tension_multiplier = 1.0; 
 
 % Leaf tensions are all modified 
-tension_coeffs.leaf_tension_base = .6; 
+tension_coeffs.leaf_tension_base = .9; 
 
 % Base total root tension 
 % The value 0.5905 works well on each tree when using separate solves and two leaflets 
 % Controls constant tension at the root of the tree 
-tension_coeffs.root_tension_base = .4; 
+tension_coeffs.root_tension_base = .9 * 0.5905; 
 
 % this array determines the fraction of N_orig which each tree takes up 
 % this allows us to determine initial fractions of constants that go to each tree 
@@ -219,15 +219,15 @@ frac_of_n_orig = [1/ 4; 1/ 4;  ...   % anterior
 % note that these are scaled by the fraction of the leaflet that they take up 
 k_0_1_coeff    = frac_of_n_orig .*    ... 
                  [2.2; 2.2;           ...       % anterior  
-                  2.4; 2.4;           ...       % anterior and comm, comm and posterior       
+                  2.0; 2.0;           ...       % anterior and comm, comm and posterior       
                   1.6; 1.6;           ...       % posterior
-                  2.4; 2.4];                    % posterior and comm, comm and anterior
+                  2.0; 2.0];                    % posterior and comm, comm and anterior
 
 k_root_coeff   = frac_of_n_orig .*    ... 
-                [ 1.8; 1.8;           ...      % anterior  
-                  2.9; 2.9;           ...       % anterior and comm, comm and posterior       
-                  1.45; 1.45;           ...       % posterior
-                  2.9; 2.9];                    % posterior and comm, comm and anterior
+                [ 2.2; 2.2;           ...       % anterior  
+                  2.0; 2.0;           ...       % anterior and comm, comm and posterior       
+                  1.6; 1.6;           ...       % posterior
+                  2.0; 2.0];                    % posterior and comm, comm and anterior
 
 
 tension_coeffs.c_dec_chordae_leaf = (1/N)  * [1.0; 1.0; ...       % anterior  
@@ -241,7 +241,6 @@ tension_coeffs.c_dec_chordae_root = (1/256) * [1.0; 1.0; ...       % anterior
                                                1.0; 1.0; ...       % comm
                                                1.0; 1.0; ...       % posterior
                                                1.0; 1.0];          % comm 
-
 
 n_leaves = N * frac_of_n_orig; 
 

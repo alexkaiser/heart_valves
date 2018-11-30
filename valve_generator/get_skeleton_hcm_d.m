@@ -456,16 +456,23 @@ end
 
 skeleton.r = mean(radii); 
 
+papillary_1 = false; 
+if papillary_1
+    % NB: points are in mm 
+    papillary_raw = 0.1 * [86.1627 360.974 242.215 80.0723 359.194 240.021 76.3977 342.69 241.79 89.1854 357.894 240.64 82.0624 341.068 244.127 82.9452 362.81 242.147 78.759 341.052 243.556 85.1885 341.384 242.839]; 
 
-% NB: points are in mm 
-papillary_raw = 0.1 * [86.1627 360.974 242.215 80.0723 359.194 240.021 76.3977 342.69 241.79 89.1854 357.894 240.64 82.0624 341.068 244.127 82.9452 362.81 242.147 78.759 341.052 243.556 85.1885 341.384 242.839]; 
+    % this currently has got to be exactly 8 3d vectors 
+    skeleton.papillary = reshape(papillary_raw, [3 8]); 
 
-% this currently has got to be exactly 8 3d vectors 
-skeleton.papillary = reshape(papillary_raw, [3 8]); 
+    % manually observed ordering, because paraview stores this in seemingly
+    % random order 
+    indices = [1 2 6 4 7 3 0 5] + 1; 
+else 
+    papillary_raw = 0.1 * [85.8746 361.433 242.218 77.8223 341.293 242.888 83.634 362.834 242.202 80.5244 341.195 244.174 82.8805 341.673 244.175 87.6973 359.791 242.049 82.0276 362.158 242.171 78.759 341.052 243.556]; 
+    skeleton.papillary = reshape(papillary_raw, [3 8]); 
+    indices = [6 1 7 3 4 5 0 2] + 1; 
+end 
 
-% manually observed ordering, because paraview stores this in seemingly
-% random order 
-indices = [1 2 6 4 7 3 0 5] + 1; 
 
 skeleton.papillary = skeleton.papillary(:,indices); 
 
