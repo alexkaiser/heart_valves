@@ -102,7 +102,7 @@ name = 'leaflet';
 % commissural tree version 
 % but without explicit commissural leaflets 
 
-valve.p_physical = 100 * MMHG_TO_CGS; 
+valve.p_physical = 120 * MMHG_TO_CGS; 
 
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
@@ -121,21 +121,12 @@ valve.diastolic_increment = [0.0; 0.0; 0.0];
 
 % Base constants, individual pieces are tuned relative to these values
 
-if decreasing_tension
-    dec_tension_coeff_base       = 4.6;  
-    valve.dec_tension_coeff_base = dec_tension_coeff_base; 
-else 
-    valve.dec_tension  = 0.0; 
-end 
-
-
-
 % tension coefficients structure 
 
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
 % valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
-tension_coeffs.pressure_tension_ratio = 0.055; 
+tension_coeffs.pressure_tension_ratio = 0.109; 
 
 tension_coeffs.dec_tension_coeff_base = 4.6; 
 
@@ -152,10 +143,10 @@ tension_coeffs.beta_edge_connector  = 0.01;  % circumferential free edge connect
 
 % decreasing tension coefficients 
 tension_coeffs.c_circ_dec_anterior       = 2.5;  % circumferential 
-tension_coeffs.c_rad_dec_anterior        = 1.5;  % radial
+tension_coeffs.c_rad_dec_anterior        = 1.4;  % radial
 tension_coeffs.c_circ_dec_posterior      = 2.5;  % circumferential 
 tension_coeffs.c_rad_dec_posterior       = 1.5;  % radial
-tension_coeffs.c_circ_dec_hoops          = 2.0;  % circumferential hoops
+tension_coeffs.c_circ_dec_hoops          = 2.5;  % circumferential hoops
 tension_coeffs.c_rad_dec_hoops_anterior  = 0.5;  % radial hoops, anterior part 
 tension_coeffs.c_rad_dec_hoops_posterior = 0.5;  % radial hoops, posterior part 
 tension_coeffs.c_dec_tension_chordae     = 1.0;  % chordae
@@ -164,7 +155,7 @@ tension_coeffs.c_circ_dec_edge_connector  = 2.5;  % circumferential hoops
 tension_coeffs.c_rad_dec_edge_connector   = 2.0;  % circumferential hoops
 
 % places this many periodic rings above 
-n_rings_periodic = 0; max(1,N/64); 
+n_rings_periodic = max(1,N/64); 
 
 % places circumferential fibers this many below hoops 
 % if the location is not already covered by leaflet
@@ -197,7 +188,7 @@ leaflet_direction = [leaflet_direction, -1, 1];
 leaflet_N_start = 0; 
 
 % changes entire tree strength by constants 
-tension_coeffs.tree_tension_multiplier = 1.0; 
+tension_coeffs.tree_tension_multiplier = 0.85; 
 
 % Leaf tensions are all modified 
 tension_coeffs.leaf_tension_base = .9; 
