@@ -133,6 +133,183 @@ VelocityBcCoefs::numberOfExtensionsFillable() const
 
 
 
+
+
+/////////////////////////////// NAMESPACE ////////////////////////////////////
+
+/////////////////////////////// STATIC ///////////////////////////////////////
+
+/////////////////////////////// PUBLIC ///////////////////////////////////////
+
+VelocityBcCoefs_lv_aorta::VelocityBcCoefs_lv_aorta(const fourier_series_data *fourier_aorta, 
+                                                   const fourier_series_data *fourier_atrium, 
+                                                   const double  radius_aorta,
+                                                   const double  radius_atrium,
+                                                   const double *center_aorta,
+                                                   const double *center_atrium, 
+                                                   const int comp_idx)
+    : d_fourier_aorta (fourier_aorta), 
+      d_fourier_atrium(fourier_atrium), 
+      d_radius_aorta  (radius_aorta),
+      d_radius_atrium (radius_atrium),
+      d_center_aorta  (center_aorta),
+      d_center_atrium (center_atrium), 
+      d_comp_idx      (comp_idx)
+{
+    // intentionally blank
+    return;
+} // VelocityBcCoefs_lv_aorta
+
+VelocityBcCoefs_lv_aorta::~VelocityBcCoefs_lv_aorta()
+{
+    // intentionally blank
+    return;
+} // ~VelocityBcCoefs_lv_aorta
+
+void
+VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_data,
+                            Pointer<ArrayData<NDIM, double> >& bcoef_data,
+                            Pointer<ArrayData<NDIM, double> >& gcoef_data,
+                            const Pointer<Variable<NDIM> >& /*variable*/,
+                            const Patch<NDIM>& patch,
+                            const BoundaryBox<NDIM>& bdry_box,
+                            double fill_time) const {
+    
+    const int location_index = bdry_box.getLocationIndex();
+    const int axis = location_index / 2;
+    const int side = location_index % 2;
+    
+    // std::cout << "location_index = " << location_index << "\n"; 
+    
+    #if !defined(NDEBUG)
+        TBOX_ASSERT(!acoef_data.isNull());
+    #endif
+        const Box<NDIM>& bc_coef_box = acoef_data->getBox();
+    #if !defined(NDEBUG)
+        TBOX_ASSERT(bcoef_data.isNull() || bc_coef_box == bcoef_data->getBox());
+        TBOX_ASSERT(gcoef_data.isNull() || bc_coef_box == gcoef_data->getBox());
+    #endif
+
+    const Box<NDIM>& patch_box = patch.getBox();
+    const Index<NDIM>& patch_lower = patch_box.lower();
+    Pointer<CartesianPatchGeometry<NDIM> > pgeom = patch.getPatchGeometry();
+    const double* const dx = pgeom->getDx();
+    const double* const x_lower = pgeom->getXLower();
+    for (Box<NDIM>::Iterator bc(bc_coef_box); bc; bc++)
+    {
+        const Index<NDIM>& i = bc();
+        
+        double dummy;
+        double& a = (!acoef_data.isNull() ? (*acoef_data)(i, 0) : dummy);
+        double& b = (!bcoef_data.isNull() ? (*bcoef_data)(i, 0) : dummy);
+        double& g = (!gcoef_data.isNull() ? (*gcoef_data)(i, 0) : dummy);
+        
+        if ((d_comp_idx == 0) || (d_comp_idx == 1)){
+            // no slip on x,y components 
+            a = 1.0;
+            b = 0.0;
+            g = 0.0;
+        }
+        else if ((axis != 2) || (side == 0)){
+            // no slip z on sides and bottom             
+            a = 1.0;
+            b = 0.0;
+            g = 0.0;
+        }
+        else if ((axis == 2) && (side == 1)){
+            
+            // z axis top has all possible interesting boundary conditions 
+
+            // Fourier data here
+            
+            // index without periodicity 
+            // unsigned int k = (unsigned int) floor(fill_time / (d_fourier->dt));
+            
+            // // take periodic reduction                         
+            // unsigned int idx = k % (d_fourier->N_times);
+            
+            // a = 0.0; 
+            // b = 1.0;
+            
+            // // sign for negative in stress tensor
+            // g = -MMHG_TO_CGS * d_fourier->values[idx];
+
+            //std::cout << "fourier pressure data on location " << location_index << " with value " << g << " or " << fourier->values[idx] << " mmHg\n";
+
+            double X[NDIM];
+            double dist_sq_aorta = 0.0;
+            double dist_sq_atrium = 0.0;
+            for (int d = 0; d < NDIM; ++d)
+            {
+                X[d] = x_lower[d] + dx[d] * (double(i(d) - patch_lower(d)) + (d == axis ? 0.0 : 0.5));
+                if (d != axis){
+                    dist_sq_aorta  += pow(X[d] - d_center_aorta[d],  2.0);
+                    dist_sq_atrium += pow(X[d] - d_center_atrium[d], 2.0);
+                }
+            }
+            const double dist_aorta  = sqrt(dist_sq_aorta);
+            const double dist_atrium = sqrt(dist_sq_atrium);
+
+            if ((dist_aorta < d_radius_aorta) && (dist_atrium < d_radius_atrium)){
+                TBOX_ERROR("Position is within both aorta and atrium, should be impossible\n"); 
+            }
+
+            if (dist_aorta < d_radius_aorta){
+
+                // Fourier data here
+                // index without periodicity 
+                unsigned int k = (unsigned int) floor(fill_time / (d_fourier_aorta->dt));
+            
+                // // take periodic reduction
+                unsigned int idx = k % (d_fourier_aorta->N_times);
+            
+                // // sign for negative in stress tensor
+                a = 0.0; 
+                b = 1.0; 
+                g = -MMHG_TO_CGS * d_fourier_aorta->values[idx];
+
+            }
+            else if (dist_atrium < d_radius_atrium){
+
+                // Fourier data here
+                // index without periodicity 
+                unsigned int k = (unsigned int) floor(fill_time / (d_fourier_atrium->dt));
+            
+                // // take periodic reduction
+                unsigned int idx = k % (d_fourier_atrium->N_times);
+            
+                // // sign for negative in stress tensor
+                a = 0.0; 
+                b = 1.0; 
+                g = -MMHG_TO_CGS * d_fourier_atrium->values[idx];
+
+            }
+            else{
+                // no slip outside inlets and outlets 
+                a = 1.0;
+                b = 0.0;
+                g = 0.0;
+            }
+
+        }
+        else{
+            TBOX_ERROR("Supposedly impossible combination of boundary conditions and sides reached."); 
+        }
+    }
+     
+    return;
+} // setBcCoefs
+
+
+IntVector<NDIM>
+VelocityBcCoefs_lv_aorta::numberOfExtensionsFillable() const
+{
+    return 128;
+} // numberOfExtensionsFillable
+
+
+
+
 fourier_series_data::fourier_series_data(string file_name, double dt_input){
     /*
     Constructor 

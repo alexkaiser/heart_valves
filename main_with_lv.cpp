@@ -72,13 +72,6 @@
 // #include <FeedbackForcer.h>
 #include <FourierBodyForce.h>
 
-
-// #define IMPLICIT_SOLVER
-#ifdef IMPLICIT_SOLVER
-     #include <ibamr/IBImplicitStaggeredHierarchyIntegrator.h>
-#endif
-
-
 #if defined(IBAMR_HAVE_SILO)
 #include <silo.h>
 #endif
@@ -115,20 +108,12 @@ typedef struct{
     
 } papillary_info; 
 
-
-papillary_info* initialize_moving_papillary_info(string structure_name, 
-                                                 fourier_series_data *fourier_series,
-                                                 LDataManager *l_data_manager); 
-
-void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, 
-                                   LDataManager* const l_data_manager, 
-                                   const double current_time, 
-                                   const double dt, 
-                                   fourier_series_data *fourier_series, 
-                                   papillary_info *papillary);
-
 inline double spring_function_collagen(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
 inline double deriv_spring_collagen(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
+
+papillary_info* initialize_moving_papillary_info(string structure_name, 
+                                                 fourier_series_data *fourier_series, 
+                                                 LDataManager *l_data_manager); 
 
 #define DEBUG_OUTPUT 0 
 #define ENABLE_INSTRUMENTS
@@ -140,19 +125,8 @@ inline double deriv_spring_collagen(double R, const double* params, int lag_mast
 #define CGS_TO_MMHG 0.000750061683
 #define MPa_TO_CGS 1.0e7
 
-#define SOURCE_ON_TIME       0.1
-#define CONST_SRC_TIME       0.3
-#define CONST_SRC_STRENGTH  93.0
-
-#define MAX_STEP_FOR_CHANGE 1000
-
 #define SIM_WITH_LV
 
-#ifndef SIM_WITH_LV
-    #define MOVING_PAPILLARY
-#endif 
-
-// #define C1_MOVEMENT
 
 
 namespace{
@@ -218,20 +192,6 @@ int main(int argc, char* argv[])
             }
         }
 
-    
-        #ifdef IMPLICIT_SOLVER
-            // Read default Petsc options
-            if (input_db->keyExists("petsc_options_file"))
-            {
-                std::string PetscOptionsFile = input_db->getString("petsc_options_file");
-                #if (!PETSC_VERSION_RELEASE)
-                    PetscOptionsInsertFile(PETSC_COMM_WORLD, NULL, PetscOptionsFile.c_str(), PETSC_TRUE);
-                #else
-                    PetscOptionsInsertFile(PETSC_COMM_WORLD, PetscOptionsFile.c_str(), PETSC_TRUE);
-                #endif
-            }
-        #endif
-
         int n_restarts_written = 0;
         int max_restart_to_write = 20;
         if (input_db->keyExists("MAX_RESTART_TO_WRITE")){
@@ -276,20 +236,11 @@ int main(int argc, char* argv[])
         Pointer<IBMethod> ib_method_ops = new IBMethod("IBMethod", app_initializer->getComponentDatabase("IBMethod"));
         
         
-        #ifdef IMPLICIT_SOLVER
-            Pointer<IBHierarchyIntegrator> time_integrator =
-                new IBImplicitStaggeredHierarchyIntegrator("IBHierarchyIntegrator",
-                                                            app_initializer->getComponentDatabase("IBHierarchyIntegrator"),
-                                                            ib_method_ops,
-                                                            navier_stokes_integrator);
-        #else
-            Pointer<IBHierarchyIntegrator> time_integrator =
-                new IBExplicitHierarchyIntegrator("IBHierarchyIntegrator",
-                                                    app_initializer->getComponentDatabase("IBHierarchyIntegrator"),
-                                                    ib_method_ops,
-                                                    navier_stokes_integrator);
-        #endif
-        
+        Pointer<IBHierarchyIntegrator> time_integrator =
+            new IBExplicitHierarchyIntegrator("IBHierarchyIntegrator",
+                                                app_initializer->getComponentDatabase("IBHierarchyIntegrator"),
+                                                ib_method_ops,
+                                                navier_stokes_integrator);
         
         Pointer<CartesianGridGeometry<NDIM> > grid_geometry = new CartesianGridGeometry<NDIM>(
             "CartesianGeometry", app_initializer->getComponentDatabase("CartesianGeometry"));
@@ -358,109 +309,49 @@ int main(int argc, char* argv[])
         }
 
         // Create Eulerian boundary condition specification objects (when necessary).
-        vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM, static_cast<RobinBcCoefStrategy<NDIM>*>(NULL));
+        // Fourier series first below 
+        // vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM, static_cast<RobinBcCoefStrategy<NDIM>*>(NULL));
                 
         // This is needed to pull variables later
         VariableDatabase<NDIM>* var_db = VariableDatabase<NDIM>::getDatabase();
-        
-        const bool periodic_domain = grid_geometry->getPeriodicShift().min() > 0;
-        if (!periodic_domain)
-        {        
-            pout << "Using b.c. from file, no series for boundary conditions (body force may still have series).\n";
-            for (unsigned int d = 0; d < NDIM; ++d)
-            {
-                ostringstream bc_coefs_name_stream;
-                bc_coefs_name_stream << "u_bc_coefs_" << d;
-                const string bc_coefs_name = bc_coefs_name_stream.str();
-                ostringstream bc_coefs_db_name_stream;
-                bc_coefs_db_name_stream << "VelocityBcCoefs_" << d;
-                const string bc_coefs_db_name = bc_coefs_db_name_stream.str();
-                u_bc_coefs[d] = new muParserRobinBcCoefs(
-                    bc_coefs_name, app_initializer->getComponentDatabase(bc_coefs_db_name), grid_geometry);
-            }
 
-            navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
-            if (solver_type == "STAGGERED" && input_db->keyExists("BoundaryStabilization"))
-            {
-                time_integrator->registerBodyForceFunction(new StaggeredStokesOpenBoundaryStabilizer(
-                    "BoundaryStabilization",
-                    app_initializer->getComponentDatabase("BoundaryStabilization"),
-                    navier_stokes_integrator,
-                    grid_geometry));
-            }
-        }
-
-        // generic body force
-        // Create Eulerian body force function specification objects.
-        if (input_db->keyExists("ForcingFunction"))
-        {
-            if (input_db->keyExists("BoundaryStabilization"))
-            {
-                TBOX_ERROR("Cannot currently use boundary stabilization with additional body forcing");
-            }
-            Pointer<CartGridFunction> f_fcn = new muParserCartGridFunction(
-                "f_fcn", app_initializer->getComponentDatabase("ForcingFunction"), grid_geometry);
-            time_integrator->registerBodyForceFunction(f_fcn);
-        }
-
-        const bool z_periodic = (grid_geometry->getPeriodicShift())[2];
-        if (!z_periodic){
-            pout << "Current implementation requires periodic z. Exiting.\n";
-            SAMRAI_MPI::abort();
-        }
-
-
-        #ifdef FOURIER_SERIES_BODY_FORCE
-
-            pout << "To Fourier series creation with body force\n";
-        
-            dt = input_db->getDouble("DT");
-        
-            #ifdef USE_CIRC_MODEL
-                bool restart_circ_model = true;
-        
-                double start = input_db->getDouble("START_TIME");
-        
-                // End systolic / beginning diastolic PA pressure
-                double P_PA_0 = 24.0;
-        
-                // Beginningg pressure equal to ventricular pressure 
-                // Note that circ model has units of mmHg
-                // As does Fourier series 
-                double P_LA_0 = 13.0; //21.051427137375203;
-        
-                const bool use_circ_model = true; 
-                CirculationModel *circ_model   = new CirculationModel("circ_model", P_PA_0, P_LA_0, start, restart_circ_model);
-                pout << "To constructor\n";
-                fourier_series_data *fourier_series = new fourier_series_data("fourier_coeffs_ventricle.txt", dt);
-                pout << "Series data successfully built\n";
-            #else
-                const bool use_circ_model    = false; 
-                CirculationModel *circ_model = NULL; 
-                pout << "To constructor\n";
-                fourier_series_data *fourier_series = new fourier_series_data("fourier_coeffs.txt", dt);
-                pout << "Series data successfully built\n";
-            #endif
+        pout << "To Fourier series creation\n";
     
-            Pointer<FourierBodyForce> body_force = new FourierBodyForce(fourier_series, use_circ_model, circ_model, navier_stokes_integrator, patch_hierarchy);
-            time_integrator->registerBodyForceFunction(body_force);
-            
-        #endif
+        dt = input_db->getDouble("DT");
+        bool restart_circ_model = true;
+        double start = input_db->getDouble("START_TIME");
 
+        const bool use_circ_model = true; 
+        // CirculationModel *circ_model   = new CirculationModel("circ_model", P_PA_0, P_LA_0, start, restart_circ_model);
+        pout << "To constructor\n";
 
-        #ifdef MOVING_PAPILLARY
-            #ifdef FOURIER_SERIES_BODY_FORCE
+        // prescribing LV values at aorta outlet for now 
+        fourier_series_data *fourier_aorta  = new fourier_series_data("fourier_coeffs_ventricle.txt", dt);
+        fourier_series_data *fourier_atrium = new fourier_series_data("fourier_coeffs_atrium.txt", dt);
+        pout << "Series data successfully built\n";
+    
+        std::string structure_name = input_db->getString("NAME"); 
                 
-                // get base name and 
-                std::string structure_name = input_db->getString("NAME"); 
-                
-                papillary_info* papillary = initialize_moving_papillary_info(structure_name, fourier_series, l_data_manager); 
-                
-            #else
-                pout << "other papillary movement not implemented, must use periodic with fourier series for now\n";
-                SAMRAI_MPI::abort();
-            #endif
-        #endif
+        // this just sets necessary data structures to zero in this code 
+        papillary_info* papillary = initialize_moving_papillary_info(structure_name, fourier_atrium, l_data_manager); 
+
+        const double radius_aorta     = 1.1; 
+        const double radius_atrium    = 1.1; 
+        const double center_aorta[3]  = {4.6, 34.76, 27.6552};
+        const double center_atrium[3] = {7.8, 35.58, 27.6552};
+
+        // Create Eulerian boundary condition specification objects.
+        vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM);
+        for (int d = 0; d < NDIM; ++d){
+            u_bc_coefs[d] = new VelocityBcCoefs_lv_aorta(fourier_aorta, 
+                                                         fourier_atrium, 
+                                                         radius_aorta,
+                                                         radius_atrium,
+                                                         center_aorta,
+                                                         center_atrium, 
+                                                         d);
+        }
+        navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
 
 
         // Set up visualization plot file writers.
@@ -591,18 +482,7 @@ int main(int argc, char* argv[])
                     prev_step_initialized = true;
             }
             
-            // update target locations if they are moving
-            #ifdef MOVING_PAPILLARY
-                #ifdef FOURIER_SERIES_BODY_FORCE
-                    if (z_periodic){
-                        update_target_point_positions(patch_hierarchy, l_data_manager, loop_time, dt, fourier_series, papillary);
-                    }
-                #else
-                    pout << "other papillary movement not implemented, must use periodic with fourier series for now\n";
-                    SAMRAI_MPI::abort();
-                #endif
-            #endif
-                        
+
             // step the whole thing
             time_integrator->advanceHierarchy(dt);
             loop_time += dt;
@@ -651,24 +531,13 @@ int main(int argc, char* argv[])
                     flux_output_stream.flush(); 
                 }                
             
-                body_force->d_flux_z = flux_valve_ring[0]; 
+                // body_force->d_flux_z = flux_valve_ring[0]; 
             
             #endif
             
             // Update the circulation model if used 
             #ifdef USE_CIRC_MODEL
-                {
-/*              Pointer<hier::Variable<NDIM> > U_var = navier_stokes_integrator->getVelocityVariable();
-                Pointer<hier::Variable<NDIM> > P_var = navier_stokes_integrator->getPressureVariable();
-                Pointer<VariableContext> current_ctx = navier_stokes_integrator->getCurrentContext();
-                const int U_current_idx = var_db->mapVariableAndContextToIndex(U_var, current_ctx);
-                const int P_current_idx = var_db->mapVariableAndContextToIndex(P_var, current_ctx);
-                Pointer<HierarchyMathOps> hier_math_ops = navier_stokes_integrator->getHierarchyMathOps();
-                const int wgt_cc_idx = hier_math_ops->getCellWeightPatchDescriptorIndex();
-                const int wgt_sc_idx = hier_math_ops->getSideWeightPatchDescriptorIndex(); 
-                circ_model->advanceTimeDependentData(
-                    dt, patch_hierarchy, U_current_idx, P_current_idx, wgt_cc_idx, wgt_sc_idx);*/ 
-                    
+                {                    
                 // remember that instruments read 
                 circ_model->advanceTimeDependentData(dt, -flux_valve_ring[0]); 
                     
@@ -692,19 +561,6 @@ int main(int argc, char* argv[])
                     }
                     SAMRAI_MPI::barrier();
                     SAMRAI_MPI::abort();
-                }
-            }
-            
-            
-            if (iteration_num > MAX_STEP_FOR_CHANGE){
-                // if there is a change 
-                if (dt != dt_prev){
-                    // ignore the first and last steps  
-                    if (!last_step){
-                        pout << "Timestep change encountered (manual, after max change step).\n" ;
-                        pout << "dt = " << dt << ",\tdt_prev = " << dt_prev << "\n";
-                        SAMRAI_MPI::abort();
-                    }
                 }
             }
                         
