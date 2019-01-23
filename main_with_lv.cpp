@@ -108,6 +108,27 @@ typedef struct{
     
 } papillary_info; 
 
+typedef struct{
+
+    // number of target points that move  
+    int dimension; 
+    int N_vertices;      
+    int N_times; 
+    double dt_registration; 
+
+    double *displacements; 
+
+    // if these are valid, then the corresponding index of position_initialized is true 
+    double *initial_position; 
+
+    // whether displacement have been read from file 
+    bool displacement_initialized; 
+
+    bool position_initialized*; 
+    
+} prescribed_motion_info; 
+
+
 inline double spring_function_collagen(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
 inline double deriv_spring_collagen(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
 
@@ -683,6 +704,150 @@ papillary_info* initialize_moving_papillary_info(string structure_name,
         
     return papillary; 
 }  
+
+prescribed_motion_info* initialize_prescribed_motion_info(string structure_name){
+
+    prescribed_motion_info* motion_info = new prescribed_motion_info; 
+    string full_name = structure_name + string(".displacement"); 
+    ifstream prescribed_motion_file(full_name.c_str());
+    
+    prescribed_motion_file >> motion_info->dimension; 
+    prescribed_motion_file >> motion_info->N_vertices;      
+    prescribed_motion_file >> motion_info->N_times; 
+    prescribed_motion_file >> motion_info->dt_registration; 
+
+    if (motion_info->dimension != 3){
+        std::cout << "Must use three dimensional data.\n"; 
+        SAMRAI_MPI::abort();   
+    }
+
+    int total_scalars = motion_info->dimension * motion_info->N_vertices * motion_info->N_times; 
+
+    motion_info->displacements = new double[total_scalars]; 
+
+    for (int i=0; i<total_scalars; i++){
+        prescribed_motion_file >> motion_info->displacements[i];  
+    }
+    motion_info->displacement_initialized = true; 
+
+    int scalars_per_time = motion_info->dimension * motion_info->N_vertices; 
+    motion_info->initial_position = new double[total_scalars]; 
+
+    motion_info->position_initialized = new bool[motion_info->N_vertices]; 
+
+    return motion_info; 
+}
+
+void initialize_positions_motion_info(Pointer<PatchHierarchy<NDIM> > hierarchy, 
+                                      LDataManager* const l_data_manager, 
+                                      prescribed_motion_info* motion_info){
+
+    // reads the data and initializes the positions for nodes that are owned 
+    // this should have a commincation call, probably, but for now we'll add a boolean array 
+
+    // We require that the structures are associated with the finest level of
+    // the patch hierarchy.
+    const int level_num = hierarchy->getFinestLevelNumber();
+
+    // Get the Lagrangian mesh.
+    Pointer<LMesh> l_mesh = l_data_manager->getLMesh(level_num);
+    const std::vector<LNode*>& local_nodes = l_mesh->getLocalNodes();
+    const std::vector<LNode*>& ghost_nodes = l_mesh->getGhostNodes();
+    std::vector<LNode*> nodes = local_nodes;
+    nodes.insert(nodes.end(), ghost_nodes.begin(), ghost_nodes.end());
+
+    // Loop over all Lagrangian mesh nodes and update the target point
+    // positions.
+    for (std::vector<LNode*>::const_iterator it = nodes.begin(); it != nodes.end(); ++it){
+        const LNode* const node = *it;
+        IBTargetPointForceSpec* const force_spec = node->getNodeDataItem<IBTargetPointForceSpec>();
+        if (force_spec){
+            // Here we update the position of the target point.
+            //
+            // NOTES: lag_idx      is the "index" of the Lagrangian point (lag_idx = 0, 1, ..., N-1, where N is the total number of Lagrangian points)
+            //        X_target     is the target position of the target point
+            //        X_target(0)  is the x component of the target position
+            //        X_target(1)  is the y component of the target position
+            
+            Point& X_target = force_spec->getTargetPointPosition();
+            const int lag_idx = node->getLagrangianIndex();
+            
+            motion_info->initial_position[0 + lag_idx*3] = X_target(0);  
+            motion_info->initial_position[1 + lag_idx*3] = X_target(1);  
+            motion_info->initial_position[2 + lag_idx*3] = X_target(2);  
+
+            motion_info->position_initialized[lag_idx] = true; 
+            
+        }
+    }
+
+    bool all_set = true; 
+
+    for (int i=0; i<motion_info->N_vertices; i++){
+        pout << "idx " << i << " = " << motion_info->position_initialized[lag_idx] << "\n"; 
+        all_set &= motion_info->position_initialized[lag_idx]; 
+    }
+
+    if (all_set){
+        pout << "all vertices are marked as set\n"; 
+    }
+    else{
+        pout << "Warning: some vertices not yet set\n"; 
+    }
+
+
+}
+
+
+void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, 
+                                        LDataManager* const l_data_manager, 
+                                        const double current_time, 
+                                        const double dt, 
+                                        fourier_series_data *fourier_series, 
+                                        prescribed_motion_info* motion_info){
+
+
+    // We require that the structures are associated with the finest level of
+    // the patch hierarchy.
+    const int level_num = hierarchy->getFinestLevelNumber();
+
+    // Get the Lagrangian mesh.
+    Pointer<LMesh> l_mesh = l_data_manager->getLMesh(level_num);
+    const std::vector<LNode*>& local_nodes = l_mesh->getLocalNodes();
+    const std::vector<LNode*>& ghost_nodes = l_mesh->getGhostNodes();
+    std::vector<LNode*> nodes = local_nodes;
+    nodes.insert(nodes.end(), ghost_nodes.begin(), ghost_nodes.end());
+
+    double t_reduced = current_time - papillary->t_cycle_length * floor(current_time/ (papillary->t_cycle_length)); 
+
+    // Loop over all Lagrangian mesh nodes and update the target point
+    // positions.
+    for (std::vector<LNode*>::const_iterator it = nodes.begin(); it != nodes.end(); ++it){
+        const LNode* const node = *it;
+        IBTargetPointForceSpec* const force_spec = node->getNodeDataItem<IBTargetPointForceSpec>();
+        if (force_spec){
+            // Here we update the position of the target point.
+            //
+            // NOTES: lag_idx      is the "index" of the Lagrangian point (lag_idx = 0, 1, ..., N-1, where N is the total number of Lagrangian points)
+            //        X_target     is the target position of the target point
+            //        X_target(0)  is the x component of the target position
+            //        X_target(1)  is the y component of the target position
+            
+            Point& X_target = force_spec->getTargetPointPosition();
+            const int lag_idx = node->getLagrangianIndex();
+            
+//            X_target(0) = 
+//            X_target(1) = 
+//            X_target(2) = 
+            
+        }
+    }
+
+
+
+
+
+}
 
 
 void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, 
