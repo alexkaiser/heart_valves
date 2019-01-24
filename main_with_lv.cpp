@@ -71,6 +71,7 @@
 #include <CirculationModel.h>
 // #include <FeedbackForcer.h>
 #include <FourierBodyForce.h>
+#include <cstdio>
 
 #if defined(IBAMR_HAVE_SILO)
 #include <silo.h>
@@ -111,20 +112,13 @@ typedef struct{
 typedef struct{
 
     // number of target points that move  
-    int dimension; 
     int N_vertices;      
     int N_times; 
     double dt_registration; 
 
-    double *displacements; 
-
-    // if these are valid, then the corresponding index of position_initialized is true 
-    double *initial_position; 
-
-    // whether displacement have been read from file 
-    bool displacement_initialized; 
-
-    bool position_initialized*; 
+    // stored as 
+    // positions[i + vertex_idx*3 + time_num*(3*N_vertices)]; 
+    double *position; 
     
 } prescribed_motion_info; 
 
@@ -136,8 +130,18 @@ papillary_info* initialize_moving_papillary_info(string structure_name,
                                                  fourier_series_data *fourier_series, 
                                                  LDataManager *l_data_manager); 
 
+prescribed_motion_info* initialize_prescribed_motion_info(string structure_name, double t_cycle_length); 
+
+void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, 
+                                        LDataManager* const l_data_manager, 
+                                        const double current_time, 
+                                        const double dt, 
+                                        const double t_cycle_length, 
+                                        fourier_series_data *fourier_series, 
+                                        prescribed_motion_info* motion_info); 
+
 #define DEBUG_OUTPUT 0 
-#define ENABLE_INSTRUMENTS
+// #define ENABLE_INSTRUMENTS
 #define FOURIER_SERIES_BODY_FORCE
 
 // #define USE_CIRC_MODEL
@@ -351,10 +355,27 @@ int main(int argc, char* argv[])
         fourier_series_data *fourier_atrium = new fourier_series_data("fourier_coeffs_atrium.txt", dt);
         pout << "Series data successfully built\n";
     
+        // scaled cycle length for this patient 
+        double t_cycle_length = input_db->getDouble("CYCLE_DURATION");
+
+        // start at systole, which is this far into the Fourier series 
+        double t_offset_start_bcs_unscaled = input_db->getDouble("T_OFFSET_START_BCS_UNSCALED"); // starts this 
+
+        // start in physical time with relation to Fourier series 
+        double t_offeset_start = t_offset_start_bcs_unscaled * (t_cycle_length / fourier_atrium->L); 
+
         std::string structure_name = input_db->getString("NAME"); 
                 
         // this just sets necessary data structures to zero in this code 
         papillary_info* papillary = initialize_moving_papillary_info(structure_name, fourier_atrium, l_data_manager); 
+
+        std::string structure_name_LV = input_db->getString("NAME_LV"); 
+
+        pout << "structure_name_LV = " << structure_name_LV << "\n"; 
+
+        // set up the ventricle motion 
+        prescribed_motion_info* motion_info = initialize_prescribed_motion_info(structure_name_LV, t_cycle_length); 
+
 
         const double radius_aorta     = 1.1; 
         const double radius_atrium    = 1.1; 
@@ -518,6 +539,16 @@ int main(int argc, char* argv[])
             pout << "Wallclock time elapsed = " << step_time << "\n";
             pout << "+++++++++++++++++++++++++++++++++++++++++++++++++++\n";
             pout << "\n";
+
+            // LV motion 
+            update_prescribed_motion_positions(patch_hierarchy, 
+                                              l_data_manager, 
+                                              loop_time, 
+                                              dt, 
+                                              t_cycle_length, 
+                                              fourier_atrium, 
+                                              motion_info); 
+
 
             // At specified intervals, write visualization and restart files,
             // print out timer data, and store hierarchy data for post
@@ -705,97 +736,83 @@ papillary_info* initialize_moving_papillary_info(string structure_name,
     return papillary; 
 }  
 
-prescribed_motion_info* initialize_prescribed_motion_info(string structure_name){
+prescribed_motion_info* initialize_prescribed_motion_info(string structure_name, double t_cycle_length){
 
     prescribed_motion_info* motion_info = new prescribed_motion_info; 
-    string full_name = structure_name + string(".displacement"); 
-    ifstream prescribed_motion_file(full_name.c_str());
-    
-    prescribed_motion_file >> motion_info->dimension; 
-    prescribed_motion_file >> motion_info->N_vertices;      
-    prescribed_motion_file >> motion_info->N_times; 
-    prescribed_motion_file >> motion_info->dt_registration; 
 
-    if (motion_info->dimension != 3){
-        std::cout << "Must use three dimensional data.\n"; 
-        SAMRAI_MPI::abort();   
-    }
+    motion_info->N_times = 0; 
 
-    int total_scalars = motion_info->dimension * motion_info->N_vertices * motion_info->N_times; 
+    // find number of files, number of vertices per file and total 
+    for(int file_num=0; ; file_num++){
+        char buffer[100];
+        sprintf(buffer, "%02d", file_num);  
+        string full_name = structure_name + string(buffer) + string(".vertex"); 
 
-    motion_info->displacements = new double[total_scalars]; 
+        pout << "looking for file " << full_name << "\n"; 
 
-    for (int i=0; i<total_scalars; i++){
-        prescribed_motion_file >> motion_info->displacements[i];  
-    }
-    motion_info->displacement_initialized = true; 
+        ifstream current_file(full_name.c_str());        
 
-    int scalars_per_time = motion_info->dimension * motion_info->N_vertices; 
-    motion_info->initial_position = new double[total_scalars]; 
+        if (current_file){
+            pout << "found file\n"; 
+            (motion_info->N_times)++; 
 
-    motion_info->position_initialized = new bool[motion_info->N_vertices]; 
+            if (file_num == 0){
+                current_file >> motion_info->N_vertices; 
+            }
+            else{
+                int N_vertices_tmp; 
+                current_file >> N_vertices_tmp; 
+                if (N_vertices_tmp != motion_info->N_vertices){
+                    pout << "Inconsistent number of vertices.\n"; 
+                    SAMRAI_MPI::abort();
+                }
+            }
+            current_file.close(); 
 
-    return motion_info; 
-}
-
-void initialize_positions_motion_info(Pointer<PatchHierarchy<NDIM> > hierarchy, 
-                                      LDataManager* const l_data_manager, 
-                                      prescribed_motion_info* motion_info){
-
-    // reads the data and initializes the positions for nodes that are owned 
-    // this should have a commincation call, probably, but for now we'll add a boolean array 
-
-    // We require that the structures are associated with the finest level of
-    // the patch hierarchy.
-    const int level_num = hierarchy->getFinestLevelNumber();
-
-    // Get the Lagrangian mesh.
-    Pointer<LMesh> l_mesh = l_data_manager->getLMesh(level_num);
-    const std::vector<LNode*>& local_nodes = l_mesh->getLocalNodes();
-    const std::vector<LNode*>& ghost_nodes = l_mesh->getGhostNodes();
-    std::vector<LNode*> nodes = local_nodes;
-    nodes.insert(nodes.end(), ghost_nodes.begin(), ghost_nodes.end());
-
-    // Loop over all Lagrangian mesh nodes and update the target point
-    // positions.
-    for (std::vector<LNode*>::const_iterator it = nodes.begin(); it != nodes.end(); ++it){
-        const LNode* const node = *it;
-        IBTargetPointForceSpec* const force_spec = node->getNodeDataItem<IBTargetPointForceSpec>();
-        if (force_spec){
-            // Here we update the position of the target point.
-            //
-            // NOTES: lag_idx      is the "index" of the Lagrangian point (lag_idx = 0, 1, ..., N-1, where N is the total number of Lagrangian points)
-            //        X_target     is the target position of the target point
-            //        X_target(0)  is the x component of the target position
-            //        X_target(1)  is the y component of the target position
-            
-            Point& X_target = force_spec->getTargetPointPosition();
-            const int lag_idx = node->getLagrangianIndex();
-            
-            motion_info->initial_position[0 + lag_idx*3] = X_target(0);  
-            motion_info->initial_position[1 + lag_idx*3] = X_target(1);  
-            motion_info->initial_position[2 + lag_idx*3] = X_target(2);  
-
-            motion_info->position_initialized[lag_idx] = true; 
-            
+        }
+        else{
+            // done reading here 
+            pout << "Did not find file, moving on\n"; 
+            break; 
         }
     }
 
-    bool all_set = true; 
+    motion_info->dt_registration = t_cycle_length / motion_info->N_times; 
 
-    for (int i=0; i<motion_info->N_vertices; i++){
-        pout << "idx " << i << " = " << motion_info->position_initialized[lag_idx] << "\n"; 
-        all_set &= motion_info->position_initialized[lag_idx]; 
+    int total_scalars = 3 * motion_info->N_vertices * motion_info->N_times; 
+    motion_info->position = new double[total_scalars]; 
+
+
+    for(int file_num=0; file_num < motion_info->N_times; file_num++){
+        char buffer[100];
+        sprintf(buffer, "%02d", file_num);  
+        string full_name = structure_name + string(buffer) + string(".vertex"); 
+        ifstream current_file(full_name.c_str());        
+
+        if (current_file){
+
+            int N_vertices_tmp; 
+            current_file >> N_vertices_tmp; 
+            if (N_vertices_tmp != motion_info->N_vertices){
+                pout << "Inconsistent number of vertices.\n"; 
+                SAMRAI_MPI::abort();
+            }
+                        
+            for(int vertex_idx=0; vertex_idx<motion_info->N_vertices; vertex_idx++){
+                for(int i=0; i<3; i++){
+                    current_file >> motion_info->position[i + vertex_idx*3 + file_num*(3*motion_info->N_vertices)]; 
+                }
+            }
+            current_file.close(); 
+        }
+        else{
+            pout << "Could not open needed file\n"; 
+            SAMRAI_MPI::abort(); 
+        }
+
     }
 
-    if (all_set){
-        pout << "all vertices are marked as set\n"; 
-    }
-    else{
-        pout << "Warning: some vertices not yet set\n"; 
-    }
-
-
+    return motion_info; 
 }
 
 
@@ -803,6 +820,7 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
                                         LDataManager* const l_data_manager, 
                                         const double current_time, 
                                         const double dt, 
+                                        const double t_cycle_length, 
                                         fourier_series_data *fourier_series, 
                                         prescribed_motion_info* motion_info){
 
@@ -818,7 +836,14 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
     std::vector<LNode*> nodes = local_nodes;
     nodes.insert(nodes.end(), ghost_nodes.begin(), ghost_nodes.end());
 
-    double t_reduced = current_time - papillary->t_cycle_length * floor(current_time/ (papillary->t_cycle_length)); 
+    double t_reduced = current_time - t_cycle_length * floor(current_time / t_cycle_length); 
+
+    unsigned int min_step_motion = floor(t_reduced / motion_info->N_times); 
+    unsigned int next_step_motion = (min_step_motion+1) % motion_info->N_times; 
+
+    double min_step_time = min_step_motion * motion_info->N_times; 
+
+    double fraction_to_next_step = (t_reduced - min_step_time) / motion_info->dt_registration; 
 
     // Loop over all Lagrangian mesh nodes and update the target point
     // positions.
@@ -836,16 +861,15 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
             Point& X_target = force_spec->getTargetPointPosition();
             const int lag_idx = node->getLagrangianIndex();
             
-//            X_target(0) = 
-//            X_target(1) = 
-//            X_target(2) = 
+            X_target(0) = (1.0 - fraction_to_next_step) * motion_info->position[0 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
+                          (      fraction_to_next_step) * motion_info->position[0 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)]; 
+            X_target(1) = (1.0 - fraction_to_next_step) * motion_info->position[1 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
+                          (      fraction_to_next_step) * motion_info->position[1 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)];
+            X_target(2) = (1.0 - fraction_to_next_step) * motion_info->position[2 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
+                          (      fraction_to_next_step) * motion_info->position[2 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)];
             
         }
     }
-
-
-
-
 
 }
 
