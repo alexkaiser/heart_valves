@@ -204,19 +204,7 @@ VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_da
         double& b = (!bcoef_data.isNull() ? (*bcoef_data)(i, 0) : dummy);
         double& g = (!gcoef_data.isNull() ? (*gcoef_data)(i, 0) : dummy);
         
-        if ((d_comp_idx == 0) || (d_comp_idx == 1)){
-            // no slip on x,y components 
-            a = 1.0;
-            b = 0.0;
-            g = 0.0;
-        }
-        else if ((axis != 2) || (side == 0)){
-            // no slip z on sides and bottom             
-            a = 1.0;
-            b = 0.0;
-            g = 0.0;
-        }
-        else if ((axis == 2) && (side == 1)){
+        if ((axis == 2) && (side == 1)){
             
             // z axis top has all possible interesting boundary conditions 
 
@@ -266,7 +254,7 @@ VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_da
                 // // sign for negative in stress tensor
                 a = 0.0; 
                 b = 1.0; 
-                g = -MMHG_TO_CGS * d_fourier_aorta->values[idx];
+                g = 0; //-MMHG_TO_CGS * d_fourier_aorta->values[idx];
 
             }
             else if (dist_atrium < d_radius_atrium){
@@ -281,7 +269,7 @@ VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_da
                 // // sign for negative in stress tensor
                 a = 0.0; 
                 b = 1.0; 
-                g = -MMHG_TO_CGS * d_fourier_atrium->values[idx];
+                g = 0; //-MMHG_TO_CGS * d_fourier_atrium->values[idx];
 
             }
             else{
@@ -293,8 +281,21 @@ VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_da
 
         }
         else{
-            TBOX_ERROR("Supposedly impossible combination of boundary conditions and sides reached."); 
+            // all other faces are zero pressure 
+            // normal component gets zero neumann 
+            // tangential component zero dirichlet 
+            if (axis == d_comp_idx){
+                a = 0.0;
+                b = 1.0; // full neumann conditon 
+                g = 0.0; // thoracic / background pressure goes here                 
+            }
+            else{
+                a = 1.0; // no tangengial slip 
+                b = 0.0;
+                g = 0.0; 
+            }
         }
+
     }
      
     return;
