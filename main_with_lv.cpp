@@ -140,6 +140,9 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
                                         fourier_series_data *fourier_series, 
                                         prescribed_motion_info* motion_info); 
 
+void print_prescribed_motion_summary(prescribed_motion_info *motion_info); 
+
+
 #define DEBUG_OUTPUT 0 
 // #define ENABLE_INSTRUMENTS
 #define FOURIER_SERIES_BODY_FORCE
@@ -812,7 +815,33 @@ prescribed_motion_info* initialize_prescribed_motion_info(string structure_name,
 
     }
 
+    print_prescribed_motion_summary(motion_info); 
+
     return motion_info; 
+}
+
+void print_prescribed_motion_summary(prescribed_motion_info *motion_info){
+
+    pout << "\n\n"; 
+    pout << "N_vertices = " << motion_info->N_vertices << "\n";       
+    pout << " N_times = " << motion_info->N_times << "\n"; 
+    pout << " dt_registration = " << motion_info->dt_registration << "\n";  
+
+    pout << "First few vertices at a few time steps:\n\n"; 
+
+    for (int time_num=0; time_num<motion_info->N_times; time_num++){
+        pout << "time_num = " << time_num << " time (s) = " << time_num * motion_info->dt_registration << "\n"; 
+
+        for (int vertex_idx=0; vertex_idx<5; vertex_idx++){
+            pout << "vertex_idx = " << vertex_idx << ", pos = ("; 
+
+            for (int i=0; i<3; i++){
+                pout << motion_info->position[i + vertex_idx*3 + time_num*(3*motion_info->N_vertices)] << " ";
+            }
+
+            pout << ")\n"; 
+        }
+    }
 }
 
 
@@ -838,12 +867,27 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
 
     double t_reduced = current_time - t_cycle_length * floor(current_time / t_cycle_length); 
 
-    unsigned int min_step_motion = floor(t_reduced / motion_info->N_times); 
+    unsigned int min_step_motion = floor(t_reduced / motion_info->dt_registration); 
     unsigned int next_step_motion = (min_step_motion+1) % motion_info->N_times; 
 
-    double min_step_time = min_step_motion * motion_info->N_times; 
+    double min_step_time = min_step_motion * motion_info->dt_registration; 
 
     double fraction_to_next_step = (t_reduced - min_step_time) / motion_info->dt_registration; 
+
+    bool print_summary = false; 
+    if (print_summary){
+        pout << "motion update debug summary:\n"; 
+        pout << "t_reduced = " << t_reduced << "\n"; 
+        pout << "min_step_motion = " << min_step_motion << "\n"; 
+        pout << "next_step_motion = " << next_step_motion << "\n"; 
+        pout << "min_step_time = " << min_step_time << "\n"; 
+        pout << "fraction_to_next_step = " << fraction_to_next_step << "\n"; 
+    }
+
+    if ((fraction_to_next_step < 0.0) || (fraction_to_next_step > 1.0)){
+        pout << "fraction_to_next_step is not in allowable range\n";  
+        SAMRAI_MPI::abort(); 
+    }
 
     // Loop over all Lagrangian mesh nodes and update the target point
     // positions.
@@ -867,6 +911,13 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
                           (      fraction_to_next_step) * motion_info->position[1 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)];
             X_target(2) = (1.0 - fraction_to_next_step) * motion_info->position[2 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
                           (      fraction_to_next_step) * motion_info->position[2 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)];
+
+            if(print_summary){
+                if(lag_idx < 6){
+                    pout << "lag idx = " << lag_idx << ", pos = (" << X_target(0) << " " << X_target(1) << " " << X_target(2) << "\n"; 
+                }
+            }
+
             
         }
     }
