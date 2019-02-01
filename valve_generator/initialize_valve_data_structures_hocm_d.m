@@ -43,9 +43,16 @@ valve.jacobian  = @build_jacobian_bead_slip;
 
 % general solve parameters
 
-% name 
-valve.base_name = sprintf('mitral_tree_%d', N); 
+% does not place partition
+% mitral ring and papillary are still target points 
+valve.in_heart = true; 
 
+% name 
+if valve.in_heart
+    valve.base_name = sprintf('mitral_no_partition_%d', N); 
+else 
+    valve.base_name = sprintf('mitral_tree_%d', N); 
+end 
 MMHG_TO_CGS     = 1333.22368;
 
 
@@ -306,7 +313,6 @@ valve.leaflets(1) = leaflet;
 % and these are tuned manually to make the dashpot constants equal order of magnitude
 valve.eta_multiplier_linear   = 0; 
 valve.eta_multiplier_collagen = 0; 
-
 
 valve_plot(valve); 
 pause(.1); 

@@ -180,7 +180,7 @@ tick_labels = {};
 for i=1:length(tick_array)
     tick=tick_array(i); 
     tension = tick * max_tension * 1e-3; 
-    tick_labels{i} = sprintf('%.2f', tension); 
+    tick_labels{i} = sprintf('%.1f', tension); 
 end 
 
 % cbar = colorbar('Ticks', tick_array, 'TickLabels', tick_labels); 
@@ -191,8 +191,19 @@ if colorbar_figure
     fig_colorbar = figure; 
     
     colormap(make_colormap(n_colors, extended)); 
+    
+
     cbar = colorbar('Ticks', tick_array, 'TickLabels', tick_labels); 
-    cbar.Label.String = 'Tension (K Dyne)';
+    
+    cbar.Label.String = {'Tension','(\cdot 10^3 dynes)'};
+    
+    fontsize = 16; 
+    ax = gca; 
+    ax.FontSize = fontsize;
+    cbar.Label.FontSize = fontsize; 
+    cbar.Label.Rotation = 0;
+    cbar.Label.Position = [0.4 1.2];
+   
     grid off 
     axis off 
     if circ && rad 

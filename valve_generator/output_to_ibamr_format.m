@@ -32,6 +32,18 @@ function [] = output_to_ibamr_format(valve)
     n_lagrangian_tracers        = valve.n_lagrangian_tracers; 
     collagen_constitutive       = valve.collagen_constitutive; 
 
+    % if this is true, all partition gets ignored except right at valve
+    % ring 
+    if ~isfield(valve, 'in_heart')
+        in_heart = false; 
+    else 
+        in_heart = valve.in_heart; 
+    end 
+    
+    if in_heart 
+        n_lagrangian_tracers = 0; 
+    end 
+    
     if ~valve.split_papillary
         error('Must have split papillary locations in current implementation.'); 
     end
@@ -189,27 +201,37 @@ function [] = output_to_ibamr_format(valve)
         r = valve.r; 
         ref_frac_net = 1.0;
 
-        for i=1:length(valve.leaflets)
-            if length(valve.leaflets) ~= 1 
-                error('Only one leaflet version currently supported'); 
+        if ~in_heart
+            for i=1:length(valve.leaflets)
+                if length(valve.leaflets) ~= 1 
+                    error('Only one leaflet version currently supported'); 
+                end 
+                params = place_net(params, valve.leaflets(i), ds, r, L, k_rel, k_target_net, ref_frac_net, eta_net); 
             end 
-            params = place_net(params, valve.leaflets(i), ds, r, L, k_rel, k_target_net, ref_frac_net, eta_net); 
+
+            % approximate geodesic continutations of fibers 
+            for i=1:length(valve.leaflets)
+                params = place_rays(params, valve.leaflets(i), ds, L, k_rel, k_target_net, ref_frac_net, eta_net);
+            end 
+
+            % flat part of mesh with Cartesian coordinates
+            % inner radius, stop mesh here 
+            r_extra = 4*ds; 
+            for i=1:length(valve.leaflets)
+                if length(valve.leaflets) ~= 1 
+                    error('Only one leaflet version currently supported'); 
+                end 
+                params = place_cartesian_net(params, valve.leaflets(i), r_extra, L, ds, k_rel, k_target_net, ref_frac_net, eta_net); 
+            end 
+            
+        else 
+            
+            % pass L=r to get only one ring placed 
+            params = place_net(params, valve.leaflets(i), ds, r, r, k_rel, k_target_net, ref_frac_net, eta_net); 
+            
         end 
         
-        % approximate geodesic continutations of fibers 
-        for i=1:length(valve.leaflets)
-            params = place_rays(params, valve.leaflets(i), ds, L, k_rel, k_target_net, ref_frac_net, eta_net);
-        end 
-
-        % flat part of mesh with Cartesian coordinates
-        % inner radius, stop mesh here 
-        r_extra = 4*ds; 
-        for i=1:length(valve.leaflets)
-            if length(valve.leaflets) ~= 1 
-                error('Only one leaflet version currently supported'); 
-            end 
-            params = place_cartesian_net(params, valve.leaflets(i), r_extra, L, ds, k_rel, k_target_net, ref_frac_net, eta_net); 
-        end 
+        
         
         % first time through, count all included indices 
         if params.cross_layer_on && (copy == 1)
