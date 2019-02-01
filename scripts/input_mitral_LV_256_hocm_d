@@ -12,7 +12,8 @@ N_FLUID = N/4 // fluid mesh width, base
 MAX_LEVELS = 1                            // maximum number of levels in locally refined grid
 REF_RATIO  = 4                            // refinement ratio between levels
 
-NAME = "mitral_tree_256"
+NAME = "mitral_no_partition_256"
+NAME_LV = "LV_pt05cm_hocm_d_"
 
 ORIGIN_X = 7.678500000000005
 ORIGIN_Y = 35.495345292620861
@@ -26,11 +27,14 @@ Z_MIN =  15.6552000 + .01 // Z_MAX - 12
 Z_MAX =  27.6552000 + .01 // Others are a solid distance from the existing setup, this is exactly on the inlets and outlets 
                           // It is complaining about points that are exactly on the boundary, move .01cm up
 
+CYCLE_DURATION = 0.857142857142857
+T_OFFSET_START_BCS_UNSCALED = 0.5 // this is a bad hack and should be improved
+
 // solver parameters
 DELTA_FUNCTION      = "IB_5"
 SOLVER_TYPE         = "STAGGERED"         // the fluid solver to use (STAGGERED or COLLOCATED)
 START_TIME          = 0.0e0               // initial simulation time
-END_TIME            = 0.8                 // final simulation time
+END_TIME            = CYCLE_DURATION      // final simulation time
 GROW_DT             = 2.0e0               // growth factor for timesteps
 NUM_CYCLES          = 1                   // number of cycles of fixed-point iteration
 CONVECTIVE_TS_TYPE  = "ADAMS_BASHFORTH"   // convective time stepping type
@@ -38,7 +42,7 @@ CONVECTIVE_OP_TYPE  = "PPM"               // convective differencing discretizat
 CONVECTIVE_FORM     = "ADVECTIVE"         // how to compute the convective terms
 NORMALIZE_PRESSURE  = FALSE               // whether to explicitly force the pressure to have mean zero
 CFL_MAX             = 0.3                 // maximum CFL number
-DT                  = 2.5e-5              // maximum timestep size
+DT                  = 5.0e-6              // maximum timestep size
 ERROR_ON_DT_CHANGE  = TRUE                // whether to emit an error message if the time step size changes
 VORTICITY_TAGGING   = TRUE                // whether to tag cells for refinement based on vorticity thresholds
 TAG_BUFFER          = 2                   // size of tag buffer used by grid generation algorithm
@@ -178,11 +182,11 @@ IBMethod {
 
 IBStandardInitializer {
    max_levels      = MAX_LEVELS
-   structure_names = "mitral_no_partition_256","LV_pt05cm_hocm_d"
-   mitral_no_partition_256 {
+   structure_names = "LV_pt05cm_hocm_d","mitral_no_partition_256"
+   LV_pt05cm_hocm_d {
       level_number = MAX_LEVELS - 1
    }
-   LV_pt05cm_hocm_d {
+   mitral_no_partition_256 {
       level_number = MAX_LEVELS - 1
    }
 }
@@ -220,7 +224,7 @@ Main {
 
 // visualization dump parameters
    viz_writer                  = "VisIt","Silo" //"VisIt"
-   viz_dump_interval           = int(1.0/(DT*600.0))       // output at 600 fps, 10x slow motion at 60 fps
+   viz_dump_interval           = 1 //int(1.0/(DT*600.0))       // output at 600 fps, 10x slow motion at 60 fps
    viz_dump_dirname            = "viz_IB3d_tree_cycle_256"
    visit_number_procs_per_file = 1
 

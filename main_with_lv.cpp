@@ -394,6 +394,8 @@ int main(int argc, char* argv[])
                                                          radius_atrium,
                                                          center_aorta,
                                                          center_atrium, 
+                                                         t_cycle_length,
+                                                         t_offset_start_bcs_unscaled,
                                                          d);
         }
         navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
@@ -543,6 +545,7 @@ int main(int argc, char* argv[])
             pout << "+++++++++++++++++++++++++++++++++++++++++++++++++++\n";
             pout << "\n";
 
+             
             // LV motion 
             update_prescribed_motion_positions(patch_hierarchy, 
                                               l_data_manager, 
@@ -551,7 +554,7 @@ int main(int argc, char* argv[])
                                               t_cycle_length, 
                                               fourier_atrium, 
                                               motion_info); 
-
+             
 
             // At specified intervals, write visualization and restart files,
             // print out timer data, and store hierarchy data for post
