@@ -12,7 +12,7 @@ if ~exist('bounding_box', 'var')
 end 
 
 if ~exist('colorbar_figure', 'var')
-    colorbar_figure = false;     
+    colorbar_figure = true;     
 end
 
 if ~exist('colorbar_for_movie', 'var')
@@ -73,14 +73,23 @@ if colorbar_figure
     for i=1:length(tick_array)
         tick=tick_array(i); 
         v = tick * max_velocity; 
-        tick_labels{i} = sprintf('%.2f', v); 
+        tick_labels{i} = sprintf('%.0f', v); 
     end 
 
     fig_colorbar = figure; 
     
     colormap(colormap_croppeed); 
     cbar = colorbar('Ticks', tick_array, 'TickLabels', tick_labels); 
-    cbar.Label.String = 'Velocity magnitude (cm/s)';
+
+    cbar.Label.String = {'|u|','(cm/s)'};
+    
+    fontsize = 16; 
+    ax = gca; 
+    ax.FontSize = fontsize;
+    cbar.Label.FontSize = fontsize; 
+    cbar.Label.Rotation = 0;
+    cbar.Label.Position = [0.5 1.15];
+    
     grid off 
     axis off 
     printfig(fig_colorbar, 'colorbar_only_comet_tails'); 
