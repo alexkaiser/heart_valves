@@ -874,7 +874,7 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
 
     double fraction_to_next_step = (t_reduced - min_step_time) / motion_info->dt_registration; 
 
-    bool print_summary = false; 
+    bool print_summary = true; 
     if (print_summary){
         pout << "motion update debug summary:\n"; 
         pout << "t_reduced = " << t_reduced << "\n"; 
@@ -914,7 +914,7 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
 
             if(print_summary){
                 if(lag_idx < 6){
-                    pout << "lag idx = " << lag_idx << ", pos = (" << X_target(0) << " " << X_target(1) << " " << X_target(2) << "\n"; 
+                    std::cout << "lag idx = " << lag_idx << ", pos = (" << X_target(0) << " " << X_target(1) << " " << X_target(2) << "\n"; 
                 }
             }
 
