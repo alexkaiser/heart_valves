@@ -147,8 +147,6 @@ VelocityBcCoefs_lv_aorta::VelocityBcCoefs_lv_aorta(const fourier_series_data *fo
                                                    const double  radius_atrium,
                                                    const double *center_aorta,
                                                    const double *center_atrium, 
-                                                   const double cycle_duration,
-                                                   const double t_offset_bcs_unscaled,
                                                    const int comp_idx)
     : d_fourier_aorta (fourier_aorta), 
       d_fourier_atrium(fourier_atrium), 
@@ -156,8 +154,6 @@ VelocityBcCoefs_lv_aorta::VelocityBcCoefs_lv_aorta(const fourier_series_data *fo
       d_radius_atrium (radius_atrium),
       d_center_aorta  (center_aorta),
       d_center_atrium (center_atrium), 
-      d_cycle_duration(cycle_duration),
-      d_t_offset_bcs_unscaled(t_offset_bcs_unscaled),
       d_comp_idx      (comp_idx)
 {
     // intentionally blank
@@ -183,8 +179,6 @@ VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_da
     const int axis = location_index / 2;
     const int side = location_index % 2;
     
-    static double last_time_output = 0.0; 
-
     // std::cout << "location_index = " << location_index << "\n"; 
     
     #if !defined(NDEBUG)
@@ -210,9 +204,37 @@ VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_da
         double& b = (!bcoef_data.isNull() ? (*bcoef_data)(i, 0) : dummy);
         double& g = (!gcoef_data.isNull() ? (*gcoef_data)(i, 0) : dummy);
         
-        if ((axis == 2) && (side == 1)){
+        if ((d_comp_idx == 0) || (d_comp_idx == 1)){
+            // no slip on x,y components 
+            a = 1.0;
+            b = 0.0;
+            g = 0.0;
+        }
+        else if ((axis != 2) || (side == 0)){
+            // no slip z on sides and bottom             
+            a = 1.0;
+            b = 0.0;
+            g = 0.0;
+        }
+        else if ((axis == 2) && (side == 1)){
             
             // z axis top has all possible interesting boundary conditions 
+
+            // Fourier data here
+            
+            // index without periodicity 
+            // unsigned int k = (unsigned int) floor(fill_time / (d_fourier->dt));
+            
+            // // take periodic reduction                         
+            // unsigned int idx = k % (d_fourier->N_times);
+            
+            // a = 0.0; 
+            // b = 1.0;
+            
+            // // sign for negative in stress tensor
+            // g = -MMHG_TO_CGS * d_fourier->values[idx];
+
+            //std::cout << "fourier pressure data on location " << location_index << " with value " << g << " or " << fourier->values[idx] << " mmHg\n";
 
             double X[NDIM];
             double dist_sq_aorta = 0.0;
@@ -232,42 +254,34 @@ VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_da
                 TBOX_ERROR("Position is within both aorta and atrium, should be impossible\n"); 
             }
 
-            // always use a time in current cycle 
-            double t_reduced = fill_time - d_cycle_duration * floor(fill_time/d_cycle_duration); 
-
-            // fourier series has its own period, scale to that 
-            double t_scaled = t_reduced * (d_fourier_aorta->L  / d_cycle_duration); 
-
-            // start offset some arbitrary time in the cardiac cycle, but this is relative to the series length 
-            double t_scaled_offset = t_scaled + d_t_offset_bcs_unscaled; 
-
-            // Fourier data here
-            // index without periodicity 
-            unsigned int k = (unsigned int) floor(t_scaled_offset / (d_fourier_aorta->dt));
-            
-            // // take periodic reduction
-            unsigned int idx = k % (d_fourier_aorta->N_times);
-
             if (dist_aorta < d_radius_aorta){
+
+                // Fourier data here
+                // index without periodicity 
+                unsigned int k = (unsigned int) floor(fill_time / (d_fourier_aorta->dt));
             
-                // sign for negative in stress tensor
+                // // take periodic reduction
+                unsigned int idx = k % (d_fourier_aorta->N_times);
+            
+                // // sign for negative in stress tensor
                 a = 0.0; 
                 b = 1.0; 
                 g = -MMHG_TO_CGS * d_fourier_aorta->values[idx];
 
             }
             else if (dist_atrium < d_radius_atrium){
+
+                // Fourier data here
+                // index without periodicity 
+                unsigned int k = (unsigned int) floor(fill_time / (d_fourier_atrium->dt));
             
-                // sign for negative in stress tensor
+                // // take periodic reduction
+                unsigned int idx = k % (d_fourier_atrium->N_times);
+            
+                // // sign for negative in stress tensor
                 a = 0.0; 
                 b = 1.0; 
                 g = -MMHG_TO_CGS * d_fourier_atrium->values[idx];
-
-                if (fill_time > last_time_output){
-                    pout << "p (dynes/cm^2) aorta = " << MMHG_TO_CGS * d_fourier_aorta->values[idx] << "\n";
-                    pout << "p (dynes/cm^2) atrium = " << MMHG_TO_CGS * d_fourier_atrium->values[idx] << "\n";
-                    last_time_output = fill_time; 
-                }
 
             }
             else{
@@ -279,19 +293,7 @@ VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_da
 
         }
         else{
-            // all other faces are zero pressure 
-            // normal component gets zero neumann 
-            // tangential component zero dirichlet 
-            if (axis == d_comp_idx){
-                a = 0.0;
-                b = 1.0; // full neumann conditon 
-                g = 0.0; // thoracic / background pressure goes here                 
-            }
-            else{
-                a = 1.0; // no tangengial slip 
-                b = 0.0;
-                g = 0.0; 
-            }
+            TBOX_ERROR("Supposedly impossible combination of boundary conditions and sides reached."); 
         }
     }
      

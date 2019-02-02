@@ -152,8 +152,6 @@ public:
                              const double  radius_atrium,
                              const double *center_aorta,
                              const double *center_atrium, 
-                             const double cycle_duration,
-                             const double t_offset_bcs_unscaled,
                              const int comp_idx);
 
     /*!
@@ -190,8 +188,6 @@ public:
     const double d_radius_atrium;
     const double *d_center_aorta;
     const double *d_center_atrium;
-    const double d_cycle_duration;
-    const double d_t_offset_bcs_unscaled; 
     const int d_comp_idx; 
 
     //\}
