@@ -554,7 +554,7 @@ int main(int argc, char* argv[])
                                               t_cycle_length, 
                                               fourier_atrium, 
                                               motion_info); 
-             
+            
 
             // At specified intervals, write visualization and restart files,
             // print out timer data, and store hierarchy data for post
@@ -908,12 +908,14 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
             Point& X_target = force_spec->getTargetPointPosition();
             const int lag_idx = node->getLagrangianIndex();
             
-            X_target(0) = (1.0 - fraction_to_next_step) * motion_info->position[0 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
-                          (      fraction_to_next_step) * motion_info->position[0 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)]; 
-            X_target(1) = (1.0 - fraction_to_next_step) * motion_info->position[1 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
-                          (      fraction_to_next_step) * motion_info->position[1 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)];
-            X_target(2) = (1.0 - fraction_to_next_step) * motion_info->position[2 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
-                          (      fraction_to_next_step) * motion_info->position[2 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)];
+            if (lag_idx < motion_info->N_vertices){
+                X_target(0) = (1.0 - fraction_to_next_step) * motion_info->position[0 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
+                              (      fraction_to_next_step) * motion_info->position[0 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)]; 
+                X_target(1) = (1.0 - fraction_to_next_step) * motion_info->position[1 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
+                              (      fraction_to_next_step) * motion_info->position[1 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)];
+                X_target(2) = (1.0 - fraction_to_next_step) * motion_info->position[2 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
+                              (      fraction_to_next_step) * motion_info->position[2 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)];
+            }
 
             if(print_summary){
                 if(lag_idx < 6){
