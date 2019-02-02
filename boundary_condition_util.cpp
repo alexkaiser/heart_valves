@@ -205,16 +205,23 @@ VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_da
         double& g = (!gcoef_data.isNull() ? (*gcoef_data)(i, 0) : dummy);
         
         if ((d_comp_idx == 0) || (d_comp_idx == 1)){
-            // no slip on x,y components 
+            // no slip on x,y components everywhere 
             a = 1.0;
             b = 0.0;
             g = 0.0;
         }
-        else if ((axis != 2) || (side == 0)){
-            // no slip z on sides and bottom             
+        // note that d_comp_idx = 2, so now these are z component boundary conditions here 
+        else if (axis != 2){
+            // no slip z on sides, for total no slip sides 
             a = 1.0;
             b = 0.0;
             g = 0.0;
+        }
+        else if ((axis == 2) && (side == 0)){
+            // zero pressure on bottom means zero neumann z component for bottom
+            a = 0.0;
+            b = 1.0;
+            g = 0.0; 
         }
         else if ((axis == 2) && (side == 1)){
             
