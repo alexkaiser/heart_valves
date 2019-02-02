@@ -394,6 +394,8 @@ int main(int argc, char* argv[])
                                                          radius_atrium,
                                                          center_aorta,
                                                          center_atrium,
+                                                         t_cycle_length,
+                                                         t_offset_start_bcs_unscaled,
                                                          d);
         }
         navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);

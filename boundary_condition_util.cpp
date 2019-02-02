@@ -147,13 +147,17 @@ VelocityBcCoefs_lv_aorta::VelocityBcCoefs_lv_aorta(const fourier_series_data *fo
                                                    const double  radius_atrium,
                                                    const double *center_aorta,
                                                    const double *center_atrium, 
+                                                   const double cycle_duration,
+                                                   const double t_offset_bcs_unscaled,
                                                    const int comp_idx)
     : d_fourier_aorta (fourier_aorta), 
       d_fourier_atrium(fourier_atrium), 
       d_radius_aorta  (radius_aorta),
       d_radius_atrium (radius_atrium),
       d_center_aorta  (center_aorta),
-      d_center_atrium (center_atrium), 
+      d_center_atrium (center_atrium),       
+      d_cycle_duration(cycle_duration),
+      d_t_offset_bcs_unscaled(t_offset_bcs_unscaled),
       d_comp_idx      (comp_idx)
 {
     // intentionally blank
@@ -204,44 +208,26 @@ VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_da
         double& b = (!bcoef_data.isNull() ? (*bcoef_data)(i, 0) : dummy);
         double& g = (!gcoef_data.isNull() ? (*gcoef_data)(i, 0) : dummy);
         
-        if ((d_comp_idx == 0) || (d_comp_idx == 1)){
-            // no slip on x,y components everywhere 
-            a = 1.0;
-            b = 0.0;
-            g = 0.0;
-        }
-        // note that d_comp_idx = 2, so now these are z component boundary conditions here 
-        else if (axis != 2){
-            // no slip z on sides, for total no slip sides 
-            a = 1.0;
-            b = 0.0;
-            g = 0.0;
-        }
-        else if ((axis == 2) && (side == 0)){
-            // zero pressure on bottom means zero neumann z component for bottom
-            a = 0.0;
-            b = 1.0;
-            g = 0.0; 
-        }
-        else if ((axis == 2) && (side == 1)){
+        if ((axis == 2) && (side == 1) && (d_comp_idx==2)){
             
             // z axis top has all possible interesting boundary conditions 
+            // and they all apply to the z component, which has comp_idx 2
+
+            // always use a time in current cycle 
+            double t_reduced = fill_time - d_cycle_duration * floor(fill_time/d_cycle_duration); 
+
+            // fourier series has its own period, scale to that 
+            double t_scaled = t_reduced * (d_fourier_aorta->L  / d_cycle_duration); 
+
+            // start offset some arbitrary time in the cardiac cycle, but this is relative to the series length 
+            double t_scaled_offset = t_scaled + d_t_offset_bcs_unscaled; 
 
             // Fourier data here
-            
             // index without periodicity 
-            // unsigned int k = (unsigned int) floor(fill_time / (d_fourier->dt));
+            unsigned int k = (unsigned int) floor(t_scaled_offset / (d_fourier_aorta->dt));
             
-            // // take periodic reduction                         
-            // unsigned int idx = k % (d_fourier->N_times);
-            
-            // a = 0.0; 
-            // b = 1.0;
-            
-            // // sign for negative in stress tensor
-            // g = -MMHG_TO_CGS * d_fourier->values[idx];
-
-            //std::cout << "fourier pressure data on location " << location_index << " with value " << g << " or " << fourier->values[idx] << " mmHg\n";
+            // // take periodic reduction
+            unsigned int idx = k % (d_fourier_aorta->N_times);
 
             double X[NDIM];
             double dist_sq_aorta = 0.0;
@@ -300,7 +286,23 @@ VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_da
 
         }
         else{
-            TBOX_ERROR("Supposedly impossible combination of boundary conditions and sides reached."); 
+            
+            // not the z component of the top box 
+            // zero tangential slip 
+            // zero normal traction 
+            if (axis == d_comp_idx){
+                // no normal traction for zero pressure 
+                a = 0.0;
+                b = 1.0;
+                g = 0.0;
+            }
+            else{
+                // no tangential slip 
+                a = 1.0;
+                b = 0.0;
+                g = 0.0;
+            }
+
         }
     }
      
@@ -397,20 +399,5 @@ void fourier_series_data::print_values(){
         std::cout << values[j] << "\n" ; 
     }    
 } 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
