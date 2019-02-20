@@ -69,7 +69,7 @@
 #include <timing.h>
 #include <boundary_condition_util.h>
 #include <CirculationModel.h>
-// #include <FeedbackForcer.h>
+#include <FeedbackForcer.h>
 #include <FourierBodyForce.h>
 #include <cstdio>
 
@@ -144,8 +144,7 @@ void print_prescribed_motion_summary(prescribed_motion_info *motion_info);
 
 
 #define DEBUG_OUTPUT 0 
-// #define ENABLE_INSTRUMENTS
-#define FOURIER_SERIES_BODY_FORCE
+#define ENABLE_INSTRUMENTS
 
 // #define USE_CIRC_MODEL
 
@@ -221,7 +220,7 @@ int main(int argc, char* argv[])
         }
 
         int n_restarts_written = 0;
-        int max_restart_to_write = 20;
+        int max_restart_to_write = 15;
         if (input_db->keyExists("MAX_RESTART_TO_WRITE")){
             max_restart_to_write = input_db->getInteger("MAX_RESTART_TO_WRITE");
         }
@@ -400,6 +399,9 @@ int main(int argc, char* argv[])
         }
         navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
 
+        // flow straightener at boundary 
+        Pointer<FeedbackForcer> feedback_forcer = new FeedbackForcer(navier_stokes_integrator, patch_hierarchy);
+        time_integrator->registerBodyForceFunction(feedback_forcer);
 
         // Set up visualization plot file writers.
         Pointer<VisItDataWriter<NDIM> > visit_data_writer = app_initializer->getVisItDataWriter();

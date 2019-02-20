@@ -34,9 +34,8 @@ class FeedbackForcer : public CartGridFunction
   /*!
    * \brief Constructor
    */
-  FeedbackForcer(const VelocityBcCoefs* velocity_bc,
-		 const INSHierarchyIntegrator* fluid_solver,
-		 Pointer<PatchHierarchy<NDIM> > patch_hierarchy);
+  FeedbackForcer(const INSHierarchyIntegrator* fluid_solver,
+            		 Pointer<PatchHierarchy<NDIM> > patch_hierarchy);
 
   /*!
    * \brief Destructor.
@@ -96,7 +95,6 @@ class FeedbackForcer : public CartGridFunction
    */
   FeedbackForcer& operator=(const FeedbackForcer& that);
 
-  const VelocityBcCoefs* d_velocity_bc;
 
   const INSHierarchyIntegrator* const d_fluid_solver;
   Pointer<PatchHierarchy<NDIM> > d_patch_hierarchy;
