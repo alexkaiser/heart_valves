@@ -182,6 +182,8 @@ VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_da
     const int location_index = bdry_box.getLocationIndex();
     const int axis = location_index / 2;
     const int side = location_index % 2;
+
+    //static double last_debug_out = 0.0;  
     
     // std::cout << "location_index = " << location_index << "\n"; 
     
@@ -228,6 +230,15 @@ VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_da
             
             // // take periodic reduction
             unsigned int idx = k % (d_fourier_aorta->N_times);
+            
+            /*
+            if (last_debug_out < fill_time){
+                pout << "t_scaled_offset = " << t_scaled_offset << "\n"; 
+                std::cout << "idx (in Fourier values array) = " << idx << "of " << d_fourier_aorta->N_times <<  "\n";
+                std::cout << "MMHG_TO_CGS * d_fourier_aorta->values[idx] = " << MMHG_TO_CGS * d_fourier_aorta->values[idx] << "\n"; 
+                std::cout << "MMHG_TO_CGS * d_fourier_atrium->values[idx] = " << MMHG_TO_CGS * d_fourier_atrium->values[idx] << "\n";                         
+                last_debug_out = fill_time; 
+            } */ 
 
             double X[NDIM];
             double dist_sq_aorta = 0.0;
@@ -248,30 +259,16 @@ VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_da
             }
 
             if (dist_aorta < d_radius_aorta){
-
-                // Fourier data here
-                // index without periodicity 
-                unsigned int k = (unsigned int) floor(fill_time / (d_fourier_aorta->dt));
             
-                // // take periodic reduction
-                unsigned int idx = k % (d_fourier_aorta->N_times);
-            
-                // // sign for negative in stress tensor
+                // sign for negative in stress tensor
                 a = 0.0; 
                 b = 1.0; 
                 g = -MMHG_TO_CGS * d_fourier_aorta->values[idx];
 
             }
             else if (dist_atrium < d_radius_atrium){
-
-                // Fourier data here
-                // index without periodicity 
-                unsigned int k = (unsigned int) floor(fill_time / (d_fourier_atrium->dt));
             
-                // // take periodic reduction
-                unsigned int idx = k % (d_fourier_atrium->N_times);
-            
-                // // sign for negative in stress tensor
+                // sign for negative in stress tensor
                 a = 0.0; 
                 b = 1.0; 
                 g = -MMHG_TO_CGS * d_fourier_atrium->values[idx];

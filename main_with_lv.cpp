@@ -899,33 +899,35 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
     for (std::vector<LNode*>::const_iterator it = nodes.begin(); it != nodes.end(); ++it){
         const LNode* const node = *it;
         IBTargetPointForceSpec* const force_spec = node->getNodeDataItem<IBTargetPointForceSpec>();
+        
         if (force_spec){
-            // Here we update the position of the target point.
-            //
-            // NOTES: lag_idx      is the "index" of the Lagrangian point (lag_idx = 0, 1, ..., N-1, where N is the total number of Lagrangian points)
-            //        X_target     is the target position of the target point
-            //        X_target(0)  is the x component of the target position
-            //        X_target(1)  is the y component of the target position
-            
-            Point& X_target = force_spec->getTargetPointPosition();
-            const int lag_idx = node->getLagrangianIndex();
-            
-            if (lag_idx < motion_info->N_vertices){
-                X_target(0) = (1.0 - fraction_to_next_step) * motion_info->position[0 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
-                              (      fraction_to_next_step) * motion_info->position[0 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)]; 
-                X_target(1) = (1.0 - fraction_to_next_step) * motion_info->position[1 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
-                              (      fraction_to_next_step) * motion_info->position[1 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)];
-                X_target(2) = (1.0 - fraction_to_next_step) * motion_info->position[2 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
-                              (      fraction_to_next_step) * motion_info->position[2 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)];
-            }
-
-            if(print_summary){
-                if(lag_idx < 6){
-                    std::cout << "lag idx = " << lag_idx << ", pos = (" << X_target(0) << " " << X_target(1) << " " << X_target(2) << "\n"; 
+            if (force_spec->getStiffness() > 0.0){ 
+                // Here we update the position of the target point.
+                //
+                // NOTES: lag_idx      is the "index" of the Lagrangian point (lag_idx = 0, 1, ..., N-1, where N is the total number of Lagrangian points)
+                //        X_target     is the target position of the target point
+                //        X_target(0)  is the x component of the target position
+                //        X_target(1)  is the y component of the target position
+                
+                Point& X_target = force_spec->getTargetPointPosition();
+                const int lag_idx = node->getLagrangianIndex();
+                
+                if (lag_idx < motion_info->N_vertices){
+                    X_target(0) = (1.0 - fraction_to_next_step) * motion_info->position[0 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
+                                  (      fraction_to_next_step) * motion_info->position[0 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)]; 
+                    X_target(1) = (1.0 - fraction_to_next_step) * motion_info->position[1 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
+                                  (      fraction_to_next_step) * motion_info->position[1 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)];
+                    X_target(2) = (1.0 - fraction_to_next_step) * motion_info->position[2 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
+                                  (      fraction_to_next_step) * motion_info->position[2 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)];
                 }
-            }
 
-            
+                if(print_summary){
+                    if(lag_idx < 6){
+                        std::cout << "lag idx = " << lag_idx << ", pos = (" << X_target(0) << " " << X_target(1) << " " << X_target(2) << "\n"; 
+                    }
+                }
+
+            }            
         }
     }
 
