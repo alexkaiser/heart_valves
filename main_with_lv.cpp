@@ -399,8 +399,17 @@ int main(int argc, char* argv[])
         }
         navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
 
+        CirculationModel_with_lv * circ_model_with_lv = new CirculationModel_with_lv(fourier_aorta, 
+                                                                                     fourier_atrium, 
+                                                                                     radius_aorta,
+                                                                                     radius_atrium,
+                                                                                     center_aorta,
+                                                                                     center_atrium,
+                                                                                     t_cycle_length,
+                                                                                     t_offset_start_bcs_unscaled);
+
         // flow straightener at boundary 
-        Pointer<FeedbackForcer> feedback_forcer = new FeedbackForcer(navier_stokes_integrator, patch_hierarchy);
+        Pointer<FeedbackForcer> feedback_forcer = new FeedbackForcer(navier_stokes_integrator, patch_hierarchy, circ_model_with_lv);
         time_integrator->registerBodyForceFunction(feedback_forcer);
 
         // Set up visualization plot file writers.
@@ -531,6 +540,18 @@ int main(int argc, char* argv[])
                     prev_step_initialized = true;
             }
             
+            // update circ model  
+            {
+                Pointer<hier::Variable<NDIM> > U_var = navier_stokes_integrator->getVelocityVariable();
+                Pointer<hier::Variable<NDIM> > P_var = navier_stokes_integrator->getPressureVariable();
+                Pointer<VariableContext> current_ctx = navier_stokes_integrator->getCurrentContext();
+                const int U_current_idx = var_db->mapVariableAndContextToIndex(U_var, current_ctx);
+                const int P_current_idx = var_db->mapVariableAndContextToIndex(P_var, current_ctx);
+                Pointer<HierarchyMathOps> hier_math_ops = navier_stokes_integrator->getHierarchyMathOps();
+                const int wgt_cc_idx = hier_math_ops->getCellWeightPatchDescriptorIndex();
+                const int wgt_sc_idx = hier_math_ops->getSideWeightPatchDescriptorIndex();
+                circ_model_with_lv->advanceTimeDependentData(dt, patch_hierarchy, U_current_idx, P_current_idx, wgt_cc_idx, wgt_sc_idx);
+            }
 
             // step the whole thing
             time_integrator->advanceHierarchy(dt);
@@ -594,16 +615,7 @@ int main(int argc, char* argv[])
                 // body_force->d_flux_z = flux_valve_ring[0]; 
             
             #endif
-            
-            // Update the circulation model if used 
-            #ifdef USE_CIRC_MODEL
-                {                    
-                // remember that instruments read 
-                circ_model->advanceTimeDependentData(dt, -flux_valve_ring[0]); 
-                    
-                }
-            #endif 
-            
+                        
             
             if (dump_restart_data && (iteration_num % restart_dump_interval == 0 || last_step))
             {

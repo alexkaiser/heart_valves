@@ -24,7 +24,7 @@
 
 
 #define FLOW_STRAIGHTENER
-// #define OPEN_BOUNDARY_STABILIZATION
+#define OPEN_BOUNDARY_STABILIZATION
 
 /////////////////////////////// NAMESPACE ////////////////////////////////////
 
@@ -42,8 +42,11 @@ smooth_kernel(const double r)
 ////////////////////////////// PUBLIC ///////////////////////////////////////
 
 FeedbackForcer::FeedbackForcer(const INSHierarchyIntegrator* fluid_solver,
-                               const Pointer<PatchHierarchy<NDIM> > patch_hierarchy)
-  : d_fluid_solver(fluid_solver), d_patch_hierarchy(patch_hierarchy)
+                               const Pointer<PatchHierarchy<NDIM> > patch_hierarchy,
+                               CirculationModel_with_lv* circ_model_with_lv) 
+  : d_fluid_solver(fluid_solver), 
+    d_patch_hierarchy(patch_hierarchy),
+    d_circ_model_with_lv(circ_model_with_lv)
 {
   // intentionally blank
   return;
@@ -103,16 +106,16 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
     Pointer<CartesianPatchGeometry<NDIM> > pgeom = patch->getPatchGeometry();
     const double* const dx = pgeom->getDx();
     const double* const x_lower = pgeom->getXLower();
-//    const double* const x_upper = pgeom->getXUpper();
+    const double* const x_upper = pgeom->getXUpper();
     Pointer<CartesianGridGeometry<NDIM> > grid_geometry = d_patch_hierarchy->getGridGeometry();
-//    const double* const dx_coarsest = grid_geometry->getDx();
-//    double dx_finest[NDIM];
-//    const int finest_ln = d_patch_hierarchy->getFinestLevelNumber();
-//    const IntVector<NDIM>& finest_ratio = d_patch_hierarchy->getPatchLevel(finest_ln)->getRatio();
-/*    for (int d = 0; d < NDIM; ++d)
+    const double* const dx_coarsest = grid_geometry->getDx();
+    double dx_finest[NDIM];
+    const int finest_ln = d_patch_hierarchy->getFinestLevelNumber();
+    const IntVector<NDIM>& finest_ratio = d_patch_hierarchy->getPatchLevel(finest_ln)->getRatio();
+    for (int d = 0; d < NDIM; ++d)
     {
         dx_finest[d] = dx_coarsest[d] / static_cast<double>(finest_ratio(d));
-    }*/ 
+    } 
     const Box<NDIM> domain_box = Box<NDIM>::refine(grid_geometry->getPhysicalDomain()[0], pgeom->getRatio());
     
     
@@ -160,6 +163,83 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
     #endif
     
     #ifdef OPEN_BOUNDARY_STABILIZATION
+
+        // Attempt to prevent flow reversal points near the domain boundary.
+
+        // hardcoded z axis top here 
+        // static const int axis = 2;
+        int side = 1; 
+
+        const double L = max(dx_coarsest[axis], 2.0 * dx_finest[axis]);
+        const int offset = static_cast<int>(L / dx[axis]);
+        
+        const bool is_lower = side == 0;
+
+        const bool inflow_bdry_aorta        = (d_circ_model_with_lv->d_Q_aorta < 0.0);
+        const bool outflow_bdry_aorta       = !(inflow_bdry_aorta);
+        const bool inflow_bdry_left_atrium  = (d_circ_model_with_lv->d_Q_left_atrium < 0.0);
+        const bool outflow_bdry_left_atrium = !(inflow_bdry_left_atrium);
+
+        if (pgeom->getTouchesRegularBoundary(axis, side)){
+            Box<NDIM> bdry_box = domain_box;
+            if (side == 0){
+                bdry_box.upper(axis) = domain_box.lower(axis) + offset;
+            }
+            else{
+                bdry_box.lower(axis) = domain_box.upper(axis) - offset;
+            }
+            bdry_box = bdry_box * patch_box;
+            for (int component = 0; component < NDIM; ++component){
+                for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(bdry_box, component)); b; b++){
+
+                    const Index<NDIM>& i = b();
+                    const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
+                    const double U_current = U_current_data ? (*U_current_data)(i_s) : 0.0;
+                    const double U_new = U_new_data ? (*U_new_data)(i_s) : 0.0;
+                    const double U = (cycle_num > 0) ? 0.5 * (U_new + U_current) : U_current;
+                    
+                    double X[NDIM];
+                    double dist_sq_aorta = 0.0;
+                    double dist_sq_atrium = 0.0;
+
+                    for (int d = 0; d < NDIM; ++d){
+                        X[d] = x_lower[d] + dx[d] * (double(i(d) - patch_box.lower(d)) + (d == component ? 0.0 : 0.5));
+                        if (d != axis){
+                            dist_sq_aorta  += pow(X[d] - d_circ_model_with_lv->d_center_aorta[d],  2.0);
+                            dist_sq_atrium += pow(X[d] - d_circ_model_with_lv->d_center_atrium[d], 2.0);
+                        }
+                    }
+
+                    const double dist_aorta  = sqrt(dist_sq_aorta);
+                    const double dist_atrium = sqrt(dist_sq_atrium);
+
+                    double mask = (component == axis ? 0.0 : 1.0);
+
+                    if (component == axis && (dist_aorta < d_circ_model_with_lv->d_radius_aorta)){
+                        const double n = is_lower ? -1.0 : +1.0;
+                        const double U_dot_n = U * n;
+                        if ((inflow_bdry_aorta && U_dot_n > 0.0) || (outflow_bdry_aorta && U_dot_n < 0.0)){
+                            mask = 1.0;
+                        }
+                    }
+
+                    if (component == axis && (dist_atrium < d_circ_model_with_lv->d_radius_atrium)){
+                        const double n = is_lower ? -1.0 : +1.0;
+                        const double U_dot_n = U * n;
+                        if ((inflow_bdry_left_atrium && U_dot_n > 0.0) || (outflow_bdry_left_atrium && U_dot_n < 0.0)){
+                            mask = 1.0;
+                        }
+                    }
+
+                    const double x_bdry = (is_lower ? x_lower[axis] : x_upper[axis]);
+                    mask *= smooth_kernel((X[axis] - x_bdry) / L);
+                    (*F_data)(i_s) += mask * (-kappa * U);
+                }
+            }
+        }
+        
+
+
         // Open boundary stabilization
 /*        double width[NDIM];
         for(int i=0; i<NDIM; i++){

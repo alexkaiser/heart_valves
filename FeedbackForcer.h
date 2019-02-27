@@ -19,6 +19,7 @@
 // NAMESPACE
 #include <ibamr/app_namespaces.h>
 
+#include "CirculationModel_with_lv.h"
 
 
 /////////////////////////////// CLASS DEFINITION /////////////////////////////
@@ -35,7 +36,8 @@ class FeedbackForcer : public CartGridFunction
    * \brief Constructor
    */
   FeedbackForcer(const INSHierarchyIntegrator* fluid_solver,
-            		 Pointer<PatchHierarchy<NDIM> > patch_hierarchy);
+            		 Pointer<PatchHierarchy<NDIM> > patch_hierarchy,
+                 CirculationModel_with_lv* circ_model_with_lv);
 
   /*!
    * \brief Destructor.
@@ -65,7 +67,7 @@ class FeedbackForcer : public CartGridFunction
 
   //\}
 
-
+  CirculationModel_with_lv* d_circ_model_with_lv; 
 
  private:
   /*!
