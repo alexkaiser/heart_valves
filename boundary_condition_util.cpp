@@ -143,6 +143,7 @@ VelocityBcCoefs::numberOfExtensionsFillable() const
 
 VelocityBcCoefs_lv_aorta::VelocityBcCoefs_lv_aorta(const fourier_series_data *fourier_aorta, 
                                                    const fourier_series_data *fourier_atrium, 
+                                                   const fourier_series_data *fourier_ventricle, 
                                                    const double  radius_aorta,
                                                    const double  radius_atrium,
                                                    const double *center_aorta,
@@ -150,15 +151,16 @@ VelocityBcCoefs_lv_aorta::VelocityBcCoefs_lv_aorta(const fourier_series_data *fo
                                                    const double cycle_duration,
                                                    const double t_offset_bcs_unscaled,
                                                    const int comp_idx)
-    : d_fourier_aorta (fourier_aorta), 
-      d_fourier_atrium(fourier_atrium), 
-      d_radius_aorta  (radius_aorta),
-      d_radius_atrium (radius_atrium),
-      d_center_aorta  (center_aorta),
-      d_center_atrium (center_atrium),       
-      d_cycle_duration(cycle_duration),
+    : d_fourier_aorta    (fourier_aorta), 
+      d_fourier_atrium   (fourier_atrium), 
+      d_fourier_ventricle(fourier_ventricle), 
+      d_radius_aorta     (radius_aorta),
+      d_radius_atrium    (radius_atrium),
+      d_center_aorta     (center_aorta),
+      d_center_atrium    (center_atrium),       
+      d_cycle_duration   (cycle_duration),
       d_t_offset_bcs_unscaled(t_offset_bcs_unscaled),
-      d_comp_idx      (comp_idx)
+      d_comp_idx         (comp_idx)
 {
     // intentionally blank
     return;
@@ -260,10 +262,26 @@ VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_da
 
             if (dist_aorta < d_radius_aorta){
             
-                // sign for negative in stress tensor
-                a = 0.0; 
-                b = 1.0; 
-                g = -MMHG_TO_CGS * d_fourier_aorta->values[idx];
+
+                if (d_fourier_aorta->values[idx] < d_fourier_ventricle->values[idx]){
+
+                    // super simple dirichlet boundary condition based BC on aorta 
+                    // if aorta pressure is less than ventricular pressure 
+                    // valve is open and pressure is aorta pressure 
+
+                    // sign for negative in stress tensor
+                    a = 0.0; 
+                    b = 1.0; 
+                    g = -MMHG_TO_CGS * d_fourier_aorta->values[idx];
+                }
+                else{
+
+                    // if aorta pressure is greater than ventricular pressure
+                    // then valve is closed and the outlet gets a zero dirichlet boundary condition 
+                    a = 1.0;
+                    b = 0.0;
+                    g = 0.0;
+                }
 
             }
             else if (dist_atrium < d_radius_atrium){

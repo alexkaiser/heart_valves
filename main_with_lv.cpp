@@ -353,8 +353,9 @@ int main(int argc, char* argv[])
         pout << "To constructor\n";
 
         // prescribing LV values at aorta outlet for now 
-        fourier_series_data *fourier_aorta  = new fourier_series_data("fourier_coeffs_ventricle.txt", dt);
-        fourier_series_data *fourier_atrium = new fourier_series_data("fourier_coeffs_atrium.txt", dt);
+        fourier_series_data *fourier_aorta      = new fourier_series_data("fourier_coeffs_aorta.txt", dt);
+        fourier_series_data *fourier_atrium     = new fourier_series_data("fourier_coeffs_atrium.txt", dt);
+        fourier_series_data *fourier_ventricle  = new fourier_series_data("fourier_coeffs_ventricle.txt", dt);
         pout << "Series data successfully built\n";
     
         // scaled cycle length for this patient 
@@ -389,6 +390,7 @@ int main(int argc, char* argv[])
         for (int d = 0; d < NDIM; ++d){
             u_bc_coefs[d] = new VelocityBcCoefs_lv_aorta(fourier_aorta, 
                                                          fourier_atrium, 
+                                                         fourier_ventricle,
                                                          radius_aorta,
                                                          radius_atrium,
                                                          center_aorta,

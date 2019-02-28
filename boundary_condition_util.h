@@ -148,6 +148,7 @@ public:
      */
     VelocityBcCoefs_lv_aorta(const fourier_series_data *fourier_aorta, 
                              const fourier_series_data *fourier_atrium, 
+                             const fourier_series_data *fourier_ventricle, 
                              const double  radius_aorta,
                              const double  radius_atrium,
                              const double *center_aorta,
@@ -186,6 +187,7 @@ public:
 
     const fourier_series_data *d_fourier_aorta;
     const fourier_series_data *d_fourier_atrium;
+    const fourier_series_data *d_fourier_ventricle;
     const double d_radius_aorta; 
     const double d_radius_atrium;
     const double *d_center_aorta;
