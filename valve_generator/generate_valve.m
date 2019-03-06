@@ -52,7 +52,7 @@ for N = N_range
     optimization = false; 
     decreasing_tension = true; 
 
-    hocm_d_valve = true; 
+    hocm_d_valve = false; 
 
     if radial
 
