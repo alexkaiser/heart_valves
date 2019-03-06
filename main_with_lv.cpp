@@ -27,6 +27,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+// Modified 2019, Alexander D. Kaiser
+
 // Config files
 #include <IBAMR_config.h>
 #include <IBTK_config.h>

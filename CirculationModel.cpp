@@ -1,7 +1,7 @@
 // Filename: CirculationModel.cpp
 // Created on 20 Aug 2007 by Boyce Griffith
 
-// Modified by Alex Kaiser, 7/2016
+// Modified 2019, Alexander D. Kaiser
 
 #include "CirculationModel.h"
 

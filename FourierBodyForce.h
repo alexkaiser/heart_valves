@@ -1,6 +1,6 @@
 
 // FourierBodyForce.cpp
-// Created Alex Kaiser, 6/2016
+// Created Alexander D. Kaiser, 6/2016
 
 // Modified from:
 // Filename: FeedbackForcer.h

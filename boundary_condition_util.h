@@ -2,7 +2,7 @@
 // Created on 04 May 2007 by Boyce Griffith
 
 // Modified for Fourier series input data 
-// 5/2016, Alex Kaiser 
+// 5/2016, Alexander D. Kaiser 
 
 
 

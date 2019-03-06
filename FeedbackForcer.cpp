@@ -1,6 +1,8 @@
 // Filename: FeedbackForcer.cpp
 // Created on 04 May 2007 by Boyce Griffith
 
+// Modified 2019, Alexander D. Kaiser
+
 #include "FeedbackForcer.h"
 
 /////////////////////////////// INCLUDES /////////////////////////////////////

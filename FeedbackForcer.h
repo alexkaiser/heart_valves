@@ -1,6 +1,9 @@
 // Filename: FeedbackForcer.h
 // Created on 08 Sep 2007 by Boyce Griffith
 
+// Modified 2019, Alexander D. Kaiser
+
+
 #ifndef included_FeedbackForcer
 #define included_FeedbackForcer
 
