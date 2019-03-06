@@ -1,4 +1,6 @@
 
+// Modified 2019, Alexander D. Kaiser
+
 // physical parameters
 MU  = 0.04                            // viscosity
 RHO = 1.0

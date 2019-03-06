@@ -1,3 +1,31 @@
+% Copyright (c) 2019, Alexander D. Kaiser
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are met:
+% 
+% 1. Redistributions of source code must retain the above copyright notice, this
+%    list of conditions and the following disclaimer.
+% 
+% 2. Redistributions in binary form must reproduce the above copyright notice,
+%    this list of conditions and the following disclaimer in the documentation
+%    and/or other materials provided with the distribution.
+% 
+% 3. Neither the name of the copyright holder nor the names of its
+%    contributors may be used to endorse or promote products derived from
+%    this software without specific prior written permission.
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+% DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+% FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+% DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+% SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+% CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+% OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+% OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 
 curve_spec_atrium = [ -8.766 -0.108 -16.498 -0.198 -22.344 -0.198 -24.104 0 -31.518 -9.888 -35.226 -9.888 -5.56 0 -66.744 15.452 -90.228 15.452 -27.368 0 -32.136 -13.596 -39.552 -13.596 -8.034 0 -12.362 14.028 -20.238 14.028 -10.044 0 -16.224 -20.826 -37.856 -20.826 -15.138 0 -25.122 11.854 -44.152 14.004 -19.03 2.15 -85.606 0.828 -110.034 0.828 -24.102 0 -31.518 -9.888 -35.226 -9.888 -5.562 0 -66.746 15.452 -90.23 15.452 -27.368 0 -32.136 -13.596 -39.552 -13.596 -8.034 0 -12.36 14.028 -20.238 14.028 -10.044 0 -16.224 -20.826 -37.856 -20.826 -18.31 0 -40.946 18.362 -62.576 12.798];
 
