@@ -257,7 +257,7 @@ CirculationModel_with_lv::writeDataFile() const
         if (!from_restart && !file_initialized)
         {
             ofstream fout(DATA_FILE_NAME.c_str(), ios::out);
-            fout << "% time \t P_aorta (mmHg)\t P_atrium (mmHg)\t P_ventricle (mmHg)\t Q_P (ml/s)\t Q_mi (ml/s)"
+            fout << "% time \t P_aorta (mmHg)\t P_atrium (mmHg)\t P_ventricle (mmHg)\t Q_Aorta (ml/s)\t d_Q_left_atrium (ml/s)\tQ_mitral (ml/s)"
                  << "\n"
                  << "bc_vals = [";
             file_initialized = true;
@@ -270,9 +270,9 @@ CirculationModel_with_lv::writeDataFile() const
         fout.setf(ios_base::showpos);
         fout.precision(10);
 
-        double P_aorta     = MMHG_TO_CGS * d_fourier_aorta->values[d_current_idx_series]; 
-        double P_atrium    = MMHG_TO_CGS * d_fourier_atrium->values[d_current_idx_series];
-        double P_ventricle = MMHG_TO_CGS * d_fourier_ventricle->values[d_current_idx_series];
+        double P_aorta     = d_fourier_aorta->values[d_current_idx_series]; 
+        double P_atrium    = d_fourier_atrium->values[d_current_idx_series];
+        double P_ventricle = d_fourier_ventricle->values[d_current_idx_series];
         fout << " " << P_aorta <<  " " << P_atrium << " " << P_ventricle << " " << d_Q_aorta << " " << d_Q_left_atrium << " " << d_Q_mitral << "; \n";
 
     }
