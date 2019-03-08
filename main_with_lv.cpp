@@ -70,7 +70,7 @@
 #include <cmath>
 #include <timing.h>
 #include <boundary_condition_util.h>
-#include <CirculationModel.h>
+#include <CirculationModel_with_lv.h>
 #include <FeedbackForcer.h>
 #include <FourierBodyForce.h>
 #include <cstdio>
@@ -360,6 +360,20 @@ int main(int argc, char* argv[])
         fourier_series_data *fourier_ventricle  = new fourier_series_data("fourier_coeffs_ventricle.txt", dt);
         pout << "Series data successfully built\n";
     
+        bool debug_series_values = false; 
+        if (debug_series_values){
+            pout << "fourier_aorta = [\n"; 
+            fourier_aorta->print_values(); 
+            pout << "];\n"; 
+            pout << "fourier_atrium = [\n"; 
+            fourier_atrium->print_values(); 
+            pout << "];\n";
+            pout << "fourier_ventricle = [\n"; 
+            fourier_ventricle->print_values(); 
+            pout << "];\n";
+        }
+
+
         // scaled cycle length for this patient 
         double t_cycle_length = input_db->getDouble("CYCLE_DURATION");
 
@@ -387,30 +401,24 @@ int main(int argc, char* argv[])
         const double center_aorta[3]  = {4.6, 34.76, 27.6552};
         const double center_atrium[3] = {7.8, 35.58, 27.6552};
 
-        // Create Eulerian boundary condition specification objects.
-        vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM);
-        for (int d = 0; d < NDIM; ++d){
-            u_bc_coefs[d] = new VelocityBcCoefs_lv_aorta(fourier_aorta, 
-                                                         fourier_atrium, 
-                                                         fourier_ventricle,
-                                                         radius_aorta,
-                                                         radius_atrium,
-                                                         center_aorta,
-                                                         center_atrium,
-                                                         t_cycle_length,
-                                                         t_offset_start_bcs_unscaled,
-                                                         d);
-        }
-        navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
 
         CirculationModel_with_lv * circ_model_with_lv = new CirculationModel_with_lv(fourier_aorta, 
                                                                                      fourier_atrium, 
+                                                                                     fourier_ventricle,
                                                                                      radius_aorta,
                                                                                      radius_atrium,
                                                                                      center_aorta,
                                                                                      center_atrium,
                                                                                      t_cycle_length,
-                                                                                     t_offset_start_bcs_unscaled);
+                                                                                     t_offset_start_bcs_unscaled,
+                                                                                     time_integrator->getIntegratorTime()); // current time here 
+
+        // Create Eulerian boundary condition specification objects.
+        vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM);
+        for (int d = 0; d < NDIM; ++d){
+            u_bc_coefs[d] = new VelocityBcCoefs_lv_aorta(d, circ_model_with_lv);
+        }
+        navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
 
         // flow straightener at boundary 
         Pointer<FeedbackForcer> feedback_forcer = new FeedbackForcer(navier_stokes_integrator, patch_hierarchy, circ_model_with_lv);

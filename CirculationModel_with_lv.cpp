@@ -32,6 +32,13 @@
 #include <Eigen/Dense>
 using namespace Eigen;
 
+namespace
+{
+// Name of output file.
+static const string DATA_FILE_NAME = "bc_data.m";
+
+} 
+
 /////////////////////////////// NAMESPACE ////////////////////////////////////
 
 /////////////////////////////// STATIC ///////////////////////////////////////
@@ -40,24 +47,43 @@ using namespace Eigen;
 
 CirculationModel_with_lv::CirculationModel_with_lv(const fourier_series_data *fourier_aorta, 
                                                    const fourier_series_data *fourier_atrium, 
+                                                   const fourier_series_data *fourier_ventricle, 
                                                    const double  radius_aorta,
                                                    const double  radius_atrium,
-                                                   const double *center_aorta,
-                                                   const double *center_atrium, 
-                                                   const double cycle_duration,
-                                                   const double t_offset_bcs_unscaled)
+                                                   const double* center_aorta,
+                                                   const double* center_atrium, 
+                                                   const double  cycle_duration,
+                                                   const double  t_offset_bcs_unscaled, 
+                                                   const double  initial_time)
     : d_fourier_aorta (fourier_aorta), 
-      d_fourier_atrium(fourier_atrium), 
+      d_fourier_atrium(fourier_atrium),       
+      d_fourier_ventricle(fourier_ventricle), 
       d_radius_aorta  (radius_aorta),
       d_radius_atrium (radius_atrium),
       d_center_aorta  (center_aorta),
       d_center_atrium (center_atrium),       
       d_cycle_duration(cycle_duration),
       d_t_offset_bcs_unscaled(t_offset_bcs_unscaled),
-      d_Q_aorta       (0.0), 
-      d_Q_left_atrium (0.0)
+      d_current_idx_series(0),
+      d_Q_aorta      (0.0), 
+      d_Q_left_atrium(0.0),
+      d_Q_mitral     (0.0),
+      d_time(initial_time),
+      d_object_name("circ_model_with_lv")  // constant name here 
 {
-    // intentionally blank
+    
+    if (d_registered_for_restart)
+    {
+        RestartManager::getManager()->registerRestartItem(d_object_name, this);
+    }
+
+    // Initialize object with data read from the input and restart databases.
+    const bool from_restart = RestartManager::getManager()->isFromRestart();
+    if (from_restart)
+    {
+        getFromRestart();
+    }
+    
     return;
 } // CirculationModel
 
@@ -176,12 +202,43 @@ void CirculationModel_with_lv::advanceTimeDependentData(const double dt,
     d_Q_aorta       = SAMRAI_MPI::sumReduction(Q_aorta_local);
     d_Q_left_atrium = SAMRAI_MPI::sumReduction(Q_left_atrium_local);
 
+    d_time += dt; 
+
+    // compute which index in the Fourier series we need here 
+    // always use a time in current cycle 
+    double t_reduced = d_time - d_cycle_duration * floor(d_time/d_cycle_duration); 
+
+    // fourier series has its own period, scale to that 
+    double t_scaled = t_reduced * (d_fourier_aorta->L  / d_cycle_duration); 
+
+    // start offset some arbitrary time in the cardiac cycle, but this is relative to the series length 
+    double t_scaled_offset = t_scaled + d_t_offset_bcs_unscaled; 
+
+    // Fourier data here
+    // index without periodicity 
+    unsigned int k = (unsigned int) floor(t_scaled_offset / (d_fourier_aorta->dt));
+    
+    // // take periodic reduction
+    unsigned int d_current_idx_series = k % (d_fourier_aorta->N_times);
+
+    writeDataFile(); 
+
 } // advanceTimeDependentData
+
+void CirculationModel_with_lv::set_Q_mitral(double Q_mitral){
+    d_Q_mitral = Q_mitral; 
+}
 
 
 void
 CirculationModel_with_lv::putToDatabase(Pointer<Database> db)
 {
+
+    db->putInteger("d_current_idx_series", d_current_idx_series); 
+    db->putDouble("d_Q_aorta", d_Q_aorta); 
+    db->putDouble("d_Q_left_atrium", d_Q_left_atrium);
+    db->putDouble("d_Q_mitral", d_Q_mitral);
+    db->putDouble("d_time", d_time); 
     return; 
 } // putToDatabase
 
@@ -192,12 +249,57 @@ CirculationModel_with_lv::putToDatabase(Pointer<Database> db)
 void
 CirculationModel_with_lv::writeDataFile() const
 {
+    static const int mpi_root = 0;
+    if (SAMRAI_MPI::getRank() == mpi_root)
+    {
+        static bool file_initialized = false;
+        const bool from_restart = RestartManager::getManager()->isFromRestart();
+        if (!from_restart && !file_initialized)
+        {
+            ofstream fout(DATA_FILE_NAME.c_str(), ios::out);
+            fout << "% time \t P_aorta (mmHg)\t P_atrium (mmHg)\t P_ventricle (mmHg)\t Q_P (ml/s)\t Q_mi (ml/s)"
+                 << "\n"
+                 << "bc_vals = [";
+            file_initialized = true;
+        }
+
+        ofstream fout(DATA_FILE_NAME.c_str(), ios::app);
+
+        fout << d_time;
+        fout.setf(ios_base::scientific);
+        fout.setf(ios_base::showpos);
+        fout.precision(10);
+
+        double P_aorta     = MMHG_TO_CGS * d_fourier_aorta->values[d_current_idx_series]; 
+        double P_atrium    = MMHG_TO_CGS * d_fourier_atrium->values[d_current_idx_series];
+        double P_ventricle = MMHG_TO_CGS * d_fourier_ventricle->values[d_current_idx_series];
+        fout << " " << P_aorta <<  " " << P_atrium << " " << P_ventricle << " " << d_Q_aorta << " " << d_Q_left_atrium << " " << d_Q_mitral << "; \n";
+
+    }
+
     return;
 } // writeDataFile
 
 void
 CirculationModel_with_lv::getFromRestart()
 {
+    Pointer<Database> restart_db = RestartManager::getManager()->getRootDatabase();
+    Pointer<Database> db;
+    if (restart_db->isDatabase(d_object_name))
+    {
+        db = restart_db->getDatabase(d_object_name);
+    }
+    else
+    {
+        TBOX_ERROR("Restart database corresponding to " << d_object_name << " not found in restart file.");
+    }
+
+    d_current_idx_series = db->getInteger("d_current_idx_series"); 
+    d_Q_aorta            = db->getDouble("d_Q_aorta"); 
+    d_Q_left_atrium      = db->getDouble("d_Q_left_atrium");
+    d_Q_mitral           = db->getDouble("d_Q_mitral");
+    d_time               = db->getDouble("d_time");
+
     return;
 } // getFromRestart
 

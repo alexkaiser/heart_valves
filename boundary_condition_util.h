@@ -15,7 +15,13 @@
 // NAMESPACE
 #include <ibamr/app_namespaces.h>
 
+// #include "CirculationModel_with_lv.h"
+// forward declare this class rather than include to remove circular references 
+class CirculationModel_with_lv; 
+
+
 #include "CirculationModel.h"
+
 
 
 #define MMHG_TO_CGS 1333.22368
@@ -146,16 +152,8 @@ public:
     /*!
      * \brief Constructor
      */
-    VelocityBcCoefs_lv_aorta(const fourier_series_data *fourier_aorta, 
-                             const fourier_series_data *fourier_atrium, 
-                             const fourier_series_data *fourier_ventricle, 
-                             const double  radius_aorta,
-                             const double  radius_atrium,
-                             const double *center_aorta,
-                             const double *center_atrium, 
-                             const double cycle_duration,
-                             const double t_offset_bcs_unscaled,
-                             const int comp_idx);
+    VelocityBcCoefs_lv_aorta(const int comp_idx,
+                             CirculationModel_with_lv* circ_model_with_lv);
 
     /*!
      * \brief Destructor.
@@ -185,16 +183,8 @@ public:
      */
      IntVector<NDIM> numberOfExtensionsFillable() const;
 
-    const fourier_series_data *d_fourier_aorta;
-    const fourier_series_data *d_fourier_atrium;
-    const fourier_series_data *d_fourier_ventricle;
-    const double d_radius_aorta; 
-    const double d_radius_atrium;
-    const double *d_center_aorta;
-    const double *d_center_atrium;
-    const double d_cycle_duration;
-    const double d_t_offset_bcs_unscaled;
     const int d_comp_idx; 
+    CirculationModel_with_lv* d_circ_model_with_lv; 
 
     //\}
 

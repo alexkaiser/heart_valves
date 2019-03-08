@@ -5,7 +5,8 @@
 // 5/2016, Alexander D. Kaiser 
 
 #include "boundary_condition_util.h"
-#include "CirculationModel.h"
+// #include "CirculationModel.h"
+#include <CirculationModel_with_lv.h>
 
 /////////////////////////////// INCLUDES /////////////////////////////////////
 
@@ -141,30 +142,15 @@ VelocityBcCoefs::numberOfExtensionsFillable() const
 
 /////////////////////////////// PUBLIC ///////////////////////////////////////
 
-VelocityBcCoefs_lv_aorta::VelocityBcCoefs_lv_aorta(const fourier_series_data *fourier_aorta, 
-                                                   const fourier_series_data *fourier_atrium, 
-                                                   const fourier_series_data *fourier_ventricle, 
-                                                   const double  radius_aorta,
-                                                   const double  radius_atrium,
-                                                   const double *center_aorta,
-                                                   const double *center_atrium, 
-                                                   const double cycle_duration,
-                                                   const double t_offset_bcs_unscaled,
-                                                   const int comp_idx)
-    : d_fourier_aorta    (fourier_aorta), 
-      d_fourier_atrium   (fourier_atrium), 
-      d_fourier_ventricle(fourier_ventricle), 
-      d_radius_aorta     (radius_aorta),
-      d_radius_atrium    (radius_atrium),
-      d_center_aorta     (center_aorta),
-      d_center_atrium    (center_atrium),       
-      d_cycle_duration   (cycle_duration),
-      d_t_offset_bcs_unscaled(t_offset_bcs_unscaled),
-      d_comp_idx         (comp_idx)
+VelocityBcCoefs_lv_aorta::VelocityBcCoefs_lv_aorta(const int comp_idx,
+                                                   CirculationModel_with_lv* circ_model_with_lv)
+    : d_comp_idx         (comp_idx), 
+      d_circ_model_with_lv(circ_model_with_lv)
 {
     // intentionally blank
     return;
 } // VelocityBcCoefs_lv_aorta
+
 
 VelocityBcCoefs_lv_aorta::~VelocityBcCoefs_lv_aorta()
 {
@@ -172,14 +158,14 @@ VelocityBcCoefs_lv_aorta::~VelocityBcCoefs_lv_aorta()
     return;
 } // ~VelocityBcCoefs_lv_aorta
 
-void
-VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_data,
-                            Pointer<ArrayData<NDIM, double> >& bcoef_data,
-                            Pointer<ArrayData<NDIM, double> >& gcoef_data,
-                            const Pointer<Variable<NDIM> >& /*variable*/,
-                            const Patch<NDIM>& patch,
-                            const BoundaryBox<NDIM>& bdry_box,
-                            double fill_time) const {
+
+void VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_data,
+                                          Pointer<ArrayData<NDIM, double> >& bcoef_data,
+                                          Pointer<ArrayData<NDIM, double> >& gcoef_data,
+                                          const Pointer<Variable<NDIM> >& /*variable*/,
+                                          const Patch<NDIM>& patch,
+                                          const BoundaryBox<NDIM>& bdry_box,
+                                          double fill_time) const {
     
     const int location_index = bdry_box.getLocationIndex();
     const int axis = location_index / 2;
@@ -217,21 +203,21 @@ VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_da
             // z axis top has all possible interesting boundary conditions 
             // and they all apply to the z component, which has comp_idx 2
 
-            // always use a time in current cycle 
-            double t_reduced = fill_time - d_cycle_duration * floor(fill_time/d_cycle_duration); 
+            // // always use a time in current cycle 
+            // double t_reduced = fill_time - d_cycle_duration * floor(fill_time/d_cycle_duration); 
 
-            // fourier series has its own period, scale to that 
-            double t_scaled = t_reduced * (d_fourier_aorta->L  / d_cycle_duration); 
+            // // fourier series has its own period, scale to that 
+            // double t_scaled = t_reduced * (d_fourier_aorta->L  / d_cycle_duration); 
 
-            // start offset some arbitrary time in the cardiac cycle, but this is relative to the series length 
-            double t_scaled_offset = t_scaled + d_t_offset_bcs_unscaled; 
+            // // start offset some arbitrary time in the cardiac cycle, but this is relative to the series length 
+            // double t_scaled_offset = t_scaled + d_t_offset_bcs_unscaled; 
 
-            // Fourier data here
-            // index without periodicity 
-            unsigned int k = (unsigned int) floor(t_scaled_offset / (d_fourier_aorta->dt));
+            // // Fourier data here
+            // // index without periodicity 
+            // unsigned int k = (unsigned int) floor(t_scaled_offset / (d_fourier_aorta->dt));
             
             // // take periodic reduction
-            unsigned int idx = k % (d_fourier_aorta->N_times);
+            unsigned int idx = d_circ_model_with_lv->d_current_idx_series; 
             
             /*
             if (last_debug_out < fill_time){
@@ -249,21 +235,21 @@ VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_da
             {
                 X[d] = x_lower[d] + dx[d] * (double(i(d) - patch_lower(d)) + (d == axis ? 0.0 : 0.5));
                 if (d != axis){
-                    dist_sq_aorta  += pow(X[d] - d_center_aorta[d],  2.0);
-                    dist_sq_atrium += pow(X[d] - d_center_atrium[d], 2.0);
+                    dist_sq_aorta  += pow(X[d] - d_circ_model_with_lv->d_center_aorta[d],  2.0);
+                    dist_sq_atrium += pow(X[d] - d_circ_model_with_lv->d_center_atrium[d], 2.0);
                 }
             }
             const double dist_aorta  = sqrt(dist_sq_aorta);
             const double dist_atrium = sqrt(dist_sq_atrium);
 
-            if ((dist_aorta < d_radius_aorta) && (dist_atrium < d_radius_atrium)){
+            if ((dist_aorta < d_circ_model_with_lv->d_radius_aorta) && (dist_atrium < d_circ_model_with_lv->d_radius_atrium)){
                 TBOX_ERROR("Position is within both aorta and atrium, should be impossible\n"); 
             }
 
-            if (dist_aorta < d_radius_aorta){
+            if (dist_aorta < d_circ_model_with_lv->d_radius_aorta){
             
 
-                if (d_fourier_aorta->values[idx] < d_fourier_ventricle->values[idx]){
+                if (d_circ_model_with_lv->d_fourier_aorta->values[idx] < d_circ_model_with_lv->d_fourier_ventricle->values[idx]){
 
                     // super simple dirichlet boundary condition based BC on aorta 
                     // if aorta pressure is less than ventricular pressure 
@@ -272,7 +258,7 @@ VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_da
                     // sign for negative in stress tensor
                     a = 0.0; 
                     b = 1.0; 
-                    g = -MMHG_TO_CGS * d_fourier_aorta->values[idx];
+                    g = -MMHG_TO_CGS * d_circ_model_with_lv->d_fourier_aorta->values[idx];
                 }
                 else{
 
@@ -284,12 +270,12 @@ VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_da
                 }
 
             }
-            else if (dist_atrium < d_radius_atrium){
+            else if (dist_atrium < d_circ_model_with_lv->d_radius_atrium){
             
                 // sign for negative in stress tensor
                 a = 0.0; 
                 b = 1.0; 
-                g = -MMHG_TO_CGS * d_fourier_atrium->values[idx];
+                g = -MMHG_TO_CGS * d_circ_model_with_lv->d_fourier_atrium->values[idx];
 
             }
             else{

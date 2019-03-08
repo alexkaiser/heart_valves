@@ -23,7 +23,7 @@
 // NAMESPACE
 #include <ibamr/app_namespaces.h>
 
-#include "boundary_condition_util.h"
+#include <boundary_condition_util.h>
 
 /////////////////////////////// CLASS DEFINITION /////////////////////////////
 
@@ -48,14 +48,18 @@ public:
      */
     const fourier_series_data *d_fourier_aorta;
     const fourier_series_data *d_fourier_atrium;
+    const fourier_series_data *d_fourier_ventricle; 
     const double d_radius_aorta; 
     const double d_radius_atrium;
     const double *d_center_aorta;
     const double *d_center_atrium;
     const double d_cycle_duration;
     const double d_t_offset_bcs_unscaled;
+    unsigned int d_current_idx_series; 
     double d_Q_aorta; 
     double d_Q_left_atrium;
+    double d_Q_mitral;
+    double d_time; 
 
     /*!
      * \brief The level of the patch hierarchy on which the Lagrangian
@@ -67,13 +71,15 @@ public:
      * \brief Constructor
      */
     CirculationModel_with_lv(const fourier_series_data *fourier_aorta, 
-                             const fourier_series_data *fourier_atrium, 
+                             const fourier_series_data *fourier_atrium,
+                             const fourier_series_data *fourier_ventricle,
                              const double  radius_aorta,
                              const double  radius_atrium,
-                             const double *center_aorta,
-                             const double *center_atrium, 
-                             const double cycle_duration,
-                             const double t_offset_bcs_unscaled); 
+                             const double* center_aorta,
+                             const double* center_atrium, 
+                             const double  cycle_duration,
+                             const double  t_offset_bcs_unscaled,
+                             const double  initial_time); 
 
     /*!
      * \brief Destructor.
@@ -89,6 +95,9 @@ public:
                                   const int P_idx,
                                   const int wgt_cc_idx,
                                   const int wgt_sc_idx);
+
+    void set_Q_mitral(double Q_mitral); 
+
 
     /*!
      * \name Implementation of Serializable interface.
