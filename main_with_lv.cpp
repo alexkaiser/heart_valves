@@ -624,6 +624,8 @@ int main(int argc, char* argv[])
                     flux_output_stream.flush(); 
                 }                
             
+                circ_model_with_lv->set_Q_mitral(-flux_valve_ring[0]); 
+
                 // body_force->d_flux_z = flux_valve_ring[0]; 
             
             #endif
