@@ -223,13 +223,6 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                         if ((inflow_bdry_aorta && U_dot_n > 0.0) || (outflow_bdry_aorta && U_dot_n < 0.0)){
                             mask = 1.0;
                         }
-
-                        // if aortic valve should be closed, damp to zero 
-                        const int idx = d_circ_model_with_lv->d_current_idx_series; 
-                        if (d_circ_model_with_lv->d_fourier_aorta->values[idx] > d_circ_model_with_lv->d_fourier_ventricle->values[idx]){
-                            mask = 1.0; 
-                        } 
-
                     }
 
                     if (component == axis && (dist_atrium < d_circ_model_with_lv->d_radius_atrium)){
