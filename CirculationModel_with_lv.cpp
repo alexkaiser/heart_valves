@@ -69,6 +69,7 @@ CirculationModel_with_lv::CirculationModel_with_lv(const fourier_series_data *fo
       d_Q_left_atrium(0.0),
       d_Q_mitral     (0.0),
       d_time(initial_time),
+      d_registered_for_restart(true),      // always true 
       d_object_name("circ_model_with_lv")  // constant name here 
 {
     
