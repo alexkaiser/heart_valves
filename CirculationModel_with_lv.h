@@ -110,6 +110,9 @@ public:
      */
     void putToDatabase(Pointer<Database> db);
 
+    // basic data summary to stdout 
+    void print_summary(); 
+
 private:
     /*!
      * \brief Copy constructor.

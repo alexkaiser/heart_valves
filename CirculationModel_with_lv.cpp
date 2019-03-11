@@ -220,7 +220,15 @@ void CirculationModel_with_lv::advanceTimeDependentData(const double dt,
     unsigned int k = (unsigned int) floor(t_scaled_offset / (d_fourier_aorta->dt));
     
     // // take periodic reduction
-    unsigned int d_current_idx_series = k % (d_fourier_aorta->N_times);
+    d_current_idx_series = k % (d_fourier_aorta->N_times);
+
+    // bool debug_out = false; 
+    // if (debug_out){
+    //     pout << "circ mode: d_time = " << d_time << ", d_current_idx_series = " << d_current_idx_series << "\n"; 
+    //     pout << "t_reduced = " << t_reduced << " t_scaled = " << t_scaled << " t_scaled_offset = " << t_scaled_offset << "\n"; 
+    //     pout << "k (unreduced idx) = " << k << " d_current_idx_series = " << d_current_idx_series << "\n\n"; 
+    // }
+
 
     writeDataFile(); 
 
@@ -242,6 +250,18 @@ CirculationModel_with_lv::putToDatabase(Pointer<Database> db)
     db->putDouble("d_time", d_time); 
     return; 
 } // putToDatabase
+
+void CirculationModel_with_lv::print_summary(){
+
+    double P_aorta     = d_fourier_aorta->values[d_current_idx_series]; 
+    double P_atrium    = d_fourier_atrium->values[d_current_idx_series];
+    double P_ventricle = d_fourier_ventricle->values[d_current_idx_series];
+
+    pout << "% time \t P_aorta (mmHg)\t P_atrium (mmHg)\t P_ventricle (mmHg)\t Q_Aorta (ml/s)\t d_Q_left_atrium (ml/s)\tQ_mitral (ml/s) \t idx\n" ; 
+    pout << d_time << " " << P_aorta <<  " " << P_atrium << " " << P_ventricle << " " << d_Q_aorta << " " << d_Q_left_atrium << " " << d_Q_mitral << " " << d_current_idx_series << "\n";    
+
+}
+
 
 /////////////////////////////// PROTECTED ////////////////////////////////////
 

@@ -218,7 +218,13 @@ void VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& aco
             
             // // take periodic reduction
             unsigned int idx = d_circ_model_with_lv->d_current_idx_series; 
-            
+
+            /*if (last_debug_out < fill_time){
+                pout << "in bc data: t = " << fill_time << ", idx = " << idx << "\n"; 
+                d_circ_model_with_lv->print_summary(); 
+                last_debug_out = fill_time; 
+            }*/ 
+
             /*
             if (last_debug_out < fill_time){
                 pout << "t_scaled_offset = " << t_scaled_offset << "\n"; 
