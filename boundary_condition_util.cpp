@@ -268,11 +268,13 @@ void VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& aco
                 }
                 else{
 
-                    // if aorta pressure is greater than ventricular pressure
-                    // then valve is closed and the outlet gets a zero dirichlet boundary condition 
-                    a = 1.0;
-                    b = 0.0;
-                    g = 0.0;
+                    // BC based aortic valve with damper 
+                    // prescribe ventricular pressure (to mitral valve sees it) 
+                    // But then penalty damp all flow at aorta to zero 
+                    a = 0.0; 
+                    b = 1.0; 
+                    g = -MMHG_TO_CGS * d_circ_model_with_lv->d_fourier_ventricle->values[idx];
+
                 }
 
             }
