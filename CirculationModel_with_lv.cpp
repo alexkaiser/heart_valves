@@ -43,34 +43,69 @@ static const string DATA_FILE_NAME = "bc_data.m";
 
 /////////////////////////////// STATIC ///////////////////////////////////////
 
+int pnpoly(int nvert, double *vertx, double *verty, double testx, double testy){
+
+    // Source: https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html
+    // modified here for double precision 
+
+    // Copyright (c) 1970-2003, Wm. Randolph Franklin
+    //
+    // Permission is hereby granted, free of charge, to any person obtaining a copy of 
+    // this software and associated documentation files (the "Software"), to deal in 
+    // the Software without restriction, including without limitation the rights to use, 
+    // copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the 
+    // Software, and to permit persons to whom the Software is furnished to do so, 
+    // subject to the following conditions:
+    //
+    //
+    // 1. Redistributions of source code must retain the above copyright notice, 
+    // this list of conditions and the following disclaimers.
+    // 2. Redistributions in binary form must reproduce the above copyright notice 
+    // in the documentation and/or other materials provided with the distribution.
+    // 3. The name of W. Randolph Franklin may not be used to endorse or promote 
+    // products derived from this Software without specific prior written permission.
+    //
+    //
+    // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+    // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+    // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+    // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+    // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR 
+    // IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+    int i, j, c = 0;
+    for (i = 0, j = nvert-1; i < nvert; j = i++) {
+        if ( ((verty[i]>testy) != (verty[j]>testy)) &&
+             (testx < (vertx[j]-vertx[i]) * (testy-verty[i]) / (verty[j]-verty[i]) + vertx[i]) )
+            c = !c;
+    }
+    return c;
+}
+
+
 /////////////////////////////// PUBLIC ///////////////////////////////////////
 
 CirculationModel_with_lv::CirculationModel_with_lv(const fourier_series_data *fourier_aorta, 
                                                    const fourier_series_data *fourier_atrium, 
                                                    const fourier_series_data *fourier_ventricle, 
-                                                   const double  radius_aorta,
-                                                   const double  radius_atrium,
-                                                   const double* center_aorta,
-                                                   const double* center_atrium, 
+                                                   string aorta_vertices_file_name,
+                                                   string atrium_vertices_file_name,
                                                    const double  cycle_duration,
                                                    const double  t_offset_bcs_unscaled, 
                                                    const double  initial_time)
-    : d_fourier_aorta (fourier_aorta), 
+    : 
+      d_object_name("circ_model_with_lv"),  // constant name here  
+      d_registered_for_restart(true),      // always true
+      d_fourier_aorta (fourier_aorta), 
       d_fourier_atrium(fourier_atrium),       
       d_fourier_ventricle(fourier_ventricle), 
-      d_radius_aorta  (radius_aorta),
-      d_radius_atrium (radius_atrium),
-      d_center_aorta  (center_aorta),
-      d_center_atrium (center_atrium),       
       d_cycle_duration(cycle_duration),
       d_t_offset_bcs_unscaled(t_offset_bcs_unscaled),
       d_current_idx_series(0),
       d_Q_aorta      (0.0), 
       d_Q_left_atrium(0.0),
       d_Q_mitral     (0.0),
-      d_time(initial_time),
-      d_registered_for_restart(true),      // always true 
-      d_object_name("circ_model_with_lv")  // constant name here 
+      d_time(initial_time)
 {
     
     if (d_registered_for_restart)
@@ -85,6 +120,63 @@ CirculationModel_with_lv::CirculationModel_with_lv(const fourier_series_data *fo
         getFromRestart();
     }
     
+    // read aorta and atrium vertices from file 
+    ifstream aorta_file(aorta_vertices_file_name.c_str(), ios::in);
+
+    if(!aorta_file){
+        TBOX_ERROR("Aorta file not found\n"); 
+    }
+
+    aorta_file >> d_n_pts_aorta; 
+    
+    d_aorta_points_x = new double[d_n_pts_aorta]; 
+    d_aorta_points_y = new double[d_n_pts_aorta]; 
+
+    double z,z_prev; 
+    double tol = 1.0e-2; 
+
+    for (int i=0; i<d_n_pts_aorta; i++){
+        aorta_file >> d_aorta_points_x[i]; 
+        aorta_file >> d_aorta_points_y[i];
+        aorta_file >> z; 
+
+        if (i>0){
+            if (fabs(z_prev - z) > tol){
+                TBOX_ERROR("Z coordinates must be consistent\n"); 
+            }
+        }
+        z_prev = z; 
+
+    }
+    pout << "to aorta file close\n"; 
+    aorta_file.close(); 
+
+    ifstream atrium_file(atrium_vertices_file_name.c_str(), ios::in);
+    if(!atrium_file){
+        TBOX_ERROR("Atrium file not found\n"); 
+    }
+    atrium_file >> d_n_pts_atrium; 
+    
+    d_atrium_points_x = new double[d_n_pts_atrium]; 
+    d_atrium_points_y = new double[d_n_pts_atrium]; 
+
+    for (int i=0; i<d_n_pts_atrium; i++){
+        atrium_file >> d_atrium_points_x[i]; 
+        atrium_file >> d_atrium_points_x[i];
+        atrium_file >> z; 
+
+        if (i>0){
+            if (fabs(z_prev - z) > tol){
+                TBOX_ERROR("Z coordinates must be consistent\n"); 
+            }
+        }
+        z_prev = z; 
+
+    }
+    atrium_file.close();
+
+    pout << "passed contstructor\n"; 
+
     return;
 } // CirculationModel
 
@@ -126,7 +218,6 @@ void CirculationModel_with_lv::advanceTimeDependentData(const double dt,
                 {
                     dV *= dx[d];
                 }
-                double X[NDIM];
 
                 // always looking for z flux here 
                 // side is always 1, top of box 
@@ -135,10 +226,6 @@ void CirculationModel_with_lv::advanceTimeDependentData(const double dt,
                 const bool is_lower = (side == 0);
                 if (pgeom->getTouchesRegularBoundary(axis, side))
                 {
-
-//                    radius and position of sources are handled by input data 
-//                    const double rsrc = d_rsrc[side];
-//                    const Point& posn = d_posn[side];
                     
                     Vector n;
                     for (int d = 0; d < NDIM; ++d)
@@ -161,20 +248,19 @@ void CirculationModel_with_lv::advanceTimeDependentData(const double dt,
                         const Index<NDIM>& i = b();
 
                         double X[NDIM];
-                        double dist_sq_aorta = 0.0;
-                        double dist_sq_atrium = 0.0;
                         for (int d = 0; d < NDIM; ++d)
                         {
                             X[d] = x_lower[d] + dx[d] * (double(i(d) - patch_box.lower(d)) + (d == axis ? 0.0 : 0.5));
-                            if (d != axis){
-                                dist_sq_aorta  += pow(X[d] - d_center_aorta[d],  2.0);
-                                dist_sq_atrium += pow(X[d] - d_center_atrium[d], 2.0);
-                            }
                         }
-                        const double dist_aorta  = sqrt(dist_sq_aorta);
-                        const double dist_atrium = sqrt(dist_sq_atrium);
 
-                        if (dist_aorta < d_radius_aorta)
+                        const int in_aorta  = this->point_in_aorta (X[0],X[1]); 
+                        const int in_atrium = this->point_in_atrium(X[0],X[1]); 
+
+                        if (in_aorta && in_atrium){
+                            TBOX_ERROR("Position is within both aorta and atrium, should be impossible\n"); 
+                        }
+
+                        if (in_aorta)
                         {
                             const SideIndex<NDIM> i_s(i, axis, SideIndex<NDIM>::Lower);
                             if ((*wgt_sc_data)(i_s) > std::numeric_limits<double>::epsilon())
@@ -184,7 +270,7 @@ void CirculationModel_with_lv::advanceTimeDependentData(const double dt,
                             }
                         }
 
-                        if (dist_atrium < d_radius_atrium)
+                        if (in_atrium)
                         {
                             const SideIndex<NDIM> i_s(i, axis, SideIndex<NDIM>::Lower);
                             if ((*wgt_sc_data)(i_s) > std::numeric_limits<double>::epsilon())
@@ -260,6 +346,16 @@ void CirculationModel_with_lv::print_summary(){
     pout << "% time \t P_aorta (mmHg)\t P_atrium (mmHg)\t P_ventricle (mmHg)\t Q_Aorta (ml/s)\t d_Q_left_atrium (ml/s)\tQ_mitral (ml/s) \t idx\n" ; 
     pout << d_time << " " << P_aorta <<  " " << P_atrium << " " << P_ventricle << " " << d_Q_aorta << " " << d_Q_left_atrium << " " << d_Q_mitral << " " << d_current_idx_series << "\n";    
 
+}
+
+int CirculationModel_with_lv::point_in_aorta(double testx, double testy){
+    // checks whether given point is in aorta 
+    return pnpoly(d_n_pts_aorta, d_aorta_points_x, d_aorta_points_y, testx, testy); 
+}
+
+int CirculationModel_with_lv::point_in_atrium(double testx, double testy){
+    // checks whether given point is in atrium
+    return pnpoly(d_n_pts_atrium, d_atrium_points_x, d_atrium_points_y, testx, testy); 
 }
 
 

@@ -240,21 +240,17 @@ void VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& aco
             for (int d = 0; d < NDIM; ++d)
             {
                 X[d] = x_lower[d] + dx[d] * (double(i(d) - patch_lower(d)) + (d == axis ? 0.0 : 0.5));
-                if (d != axis){
-                    dist_sq_aorta  += pow(X[d] - d_circ_model_with_lv->d_center_aorta[d],  2.0);
-                    dist_sq_atrium += pow(X[d] - d_circ_model_with_lv->d_center_atrium[d], 2.0);
-                }
             }
-            const double dist_aorta  = sqrt(dist_sq_aorta);
-            const double dist_atrium = sqrt(dist_sq_atrium);
 
-            if ((dist_aorta < d_circ_model_with_lv->d_radius_aorta) && (dist_atrium < d_circ_model_with_lv->d_radius_atrium)){
+            const int in_aorta  = d_circ_model_with_lv->point_in_aorta(X[0],X[1]); 
+            const int in_atrium = d_circ_model_with_lv->point_in_atrium(X[0],X[1]); 
+
+            if (in_aorta && in_atrium){
                 TBOX_ERROR("Position is within both aorta and atrium, should be impossible\n"); 
             }
 
-            if (dist_aorta < d_circ_model_with_lv->d_radius_aorta){
+            if (in_aorta){
             
-
                 if (d_circ_model_with_lv->d_fourier_aorta->values[idx] < d_circ_model_with_lv->d_fourier_ventricle->values[idx]){
 
                     // super simple dirichlet boundary condition based BC on aorta 
@@ -278,7 +274,7 @@ void VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& aco
                 }
 
             }
-            else if (dist_atrium < d_circ_model_with_lv->d_radius_atrium){
+            else if (in_atrium){
             
                 // sign for negative in stress tensor
                 a = 0.0; 

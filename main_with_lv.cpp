@@ -401,14 +401,14 @@ int main(int argc, char* argv[])
         const double center_aorta[3]  = {4.6, 34.76, 27.6552};
         const double center_atrium[3] = {7.8, 35.58, 27.6552};
 
+        string aorta_vertices_file_name  = "aorta_bdry.vertex"; 
+        string atrium_vertices_file_name = "atrium_bdry.vertex"; 
 
         CirculationModel_with_lv * circ_model_with_lv = new CirculationModel_with_lv(fourier_aorta, 
                                                                                      fourier_atrium, 
                                                                                      fourier_ventricle,
-                                                                                     radius_aorta,
-                                                                                     radius_atrium,
-                                                                                     center_aorta,
-                                                                                     center_atrium,
+                                                                                     aorta_vertices_file_name,
+                                                                                     atrium_vertices_file_name,
                                                                                      t_cycle_length,
                                                                                      t_offset_start_bcs_unscaled,
                                                                                      time_integrator->getIntegratorTime()); // current time here 

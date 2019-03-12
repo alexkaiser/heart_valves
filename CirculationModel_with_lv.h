@@ -25,6 +25,11 @@
 
 #include <boundary_condition_util.h>
 
+
+int pnpoly(int nvert, double *vertx, double *verty, double testx, double testy); 
+
+
+
 /////////////////////////////// CLASS DEFINITION /////////////////////////////
 
 /*!
@@ -49,17 +54,19 @@ public:
     const fourier_series_data *d_fourier_aorta;
     const fourier_series_data *d_fourier_atrium;
     const fourier_series_data *d_fourier_ventricle; 
-    const double d_radius_aorta; 
-    const double d_radius_atrium;
-    const double *d_center_aorta;
-    const double *d_center_atrium;
-    const double d_cycle_duration;
-    const double d_t_offset_bcs_unscaled;
-    unsigned int d_current_idx_series; 
-    double d_Q_aorta; 
-    double d_Q_left_atrium;
-    double d_Q_mitral;
-    double d_time; 
+    int     d_n_pts_aorta;
+    double* d_aorta_points_x;
+    double* d_aorta_points_y;
+    int     d_n_pts_atrium;
+    double* d_atrium_points_x;
+    double* d_atrium_points_y;
+    double  d_cycle_duration;
+    double  d_t_offset_bcs_unscaled;
+    unsigned int  d_current_idx_series; 
+    double        d_Q_aorta; 
+    double        d_Q_left_atrium;
+    double        d_Q_mitral;
+    double        d_time; 
 
     /*!
      * \brief The level of the patch hierarchy on which the Lagrangian
@@ -73,10 +80,8 @@ public:
     CirculationModel_with_lv(const fourier_series_data *fourier_aorta, 
                              const fourier_series_data *fourier_atrium,
                              const fourier_series_data *fourier_ventricle,
-                             const double  radius_aorta,
-                             const double  radius_atrium,
-                             const double* center_aorta,
-                             const double* center_atrium, 
+                             string aorta_vertices_file_name,
+                             string atrium_vertices_file_name,
                              const double  cycle_duration,
                              const double  t_offset_bcs_unscaled,
                              const double  initial_time); 
@@ -112,6 +117,11 @@ public:
 
     // basic data summary to stdout 
     void print_summary(); 
+
+    int point_in_aorta(double testx, double testy); 
+
+    int point_in_atrium(double testx, double testy); 
+
 
 private:
     /*!
