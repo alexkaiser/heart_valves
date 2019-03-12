@@ -162,7 +162,7 @@ CirculationModel_with_lv::CirculationModel_with_lv(const fourier_series_data *fo
 
     for (int i=0; i<d_n_pts_atrium; i++){
         atrium_file >> d_atrium_points_x[i]; 
-        atrium_file >> d_atrium_points_x[i];
+        atrium_file >> d_atrium_points_y[i];
         atrium_file >> z; 
 
         if (i>0){
