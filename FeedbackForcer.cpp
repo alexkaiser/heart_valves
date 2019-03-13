@@ -25,7 +25,7 @@
 
 
 
-#define FLOW_STRAIGHTENER
+// #define FLOW_STRAIGHTENER
 #define OPEN_BOUNDARY_STABILIZATION
 
 /////////////////////////////// NAMESPACE ////////////////////////////////////
