@@ -67,6 +67,9 @@ public:
     double        d_Q_left_atrium;
     double        d_Q_mitral;
     double        d_time; 
+    double        d_area_aorta; 
+    double        d_area_atrium; 
+    bool          d_area_initialized;
 
     /*!
      * \brief The level of the patch hierarchy on which the Lagrangian

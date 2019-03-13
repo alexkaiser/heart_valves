@@ -28,6 +28,8 @@
 // #define FLOW_STRAIGHTENER
 #define OPEN_BOUNDARY_STABILIZATION
 
+#define FLOW_AVERAGER
+
 /////////////////////////////// NAMESPACE ////////////////////////////////////
 
 /////////////////////////////// STATIC ///////////////////////////////////////
@@ -219,7 +221,9 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                 // no bdry stab unless one of the conditionals is met 
                 double mask = 0.0;
 
-                if (component == axis && (in_aorta)){
+                double U_goal = 0.0; 
+
+                if (in_aorta){
                     const double n = is_lower ? -1.0 : +1.0;
                     const double U_dot_n = U * n;
                     if ((inflow_bdry_aorta && U_dot_n > 0.0) || (outflow_bdry_aorta && U_dot_n < 0.0)){
@@ -232,20 +236,35 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                         mask = 1.0; 
                     } 
 
+                    #ifdef FLOW_AVERAGER
+                        // set goal to be equal to average flow 
+                        if (d_circ_model_with_lv->d_area_initialized){
+                            U_goal = d_circ_model_with_lv->d_Q_aorta / d_circ_model_with_lv->d_area_aorta; 
+                        }
+                    #endif
+
                 }
 
-                if (component == axis && (in_atrium)){
+                if (in_atrium){
                     const double n = is_lower ? -1.0 : +1.0;
                     const double U_dot_n = U * n;
                     if ((inflow_bdry_left_atrium && U_dot_n > 0.0) || (outflow_bdry_left_atrium && U_dot_n < 0.0)){
                         mask = 1.0;
                     }
+
+                    #ifdef FLOW_AVERAGER
+                        // set goal to be equal to average flow 
+                        if (d_circ_model_with_lv->d_area_initialized){
+                            U_goal = d_circ_model_with_lv->d_Q_left_atrium / d_circ_model_with_lv->d_area_atrium; 
+                        }
+                    #endif
+
                 }
 
                 if (mask > 0.0){
                     const double x_bdry = (is_lower ? x_lower[axis] : x_upper[axis]);
                     mask *= smooth_kernel((X[axis] - x_bdry) / L);
-                    (*F_data)(i_s) += mask * (-kappa * U);
+                    (*F_data)(i_s) += mask * (-kappa * (U - U_goal));
                 }
             }
             

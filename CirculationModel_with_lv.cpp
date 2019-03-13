@@ -105,7 +105,10 @@ CirculationModel_with_lv::CirculationModel_with_lv(const fourier_series_data *fo
       d_Q_aorta      (0.0), 
       d_Q_left_atrium(0.0),
       d_Q_mitral     (0.0),
-      d_time(initial_time)
+      d_time(initial_time), 
+      d_area_aorta(0.0),
+      d_area_atrium(0.0),
+      d_area_initialized(false)
 {
     
     if (d_registered_for_restart)
@@ -199,6 +202,9 @@ void CirculationModel_with_lv::advanceTimeDependentData(const double dt,
     double Q_aorta_local = 0.0; 
     double Q_left_atrium_local = 0.0; 
 
+    double area_aorta_local = 0.0; 
+    double area_atrium_local = 0.0; 
+
     for (int ln = 0; ln <= hierarchy->getFinestLevelNumber(); ++ln)
     {
         Pointer<PatchLevel<NDIM> > level = hierarchy->getPatchLevel(ln);
@@ -267,6 +273,11 @@ void CirculationModel_with_lv::advanceTimeDependentData(const double dt,
                             {
                                 double dA = n[axis] * dV / dx[axis];
                                 Q_aorta_local += (*U_data)(i_s)*dA;
+
+                                if (!d_area_initialized){
+                                    area_aorta_local += dA;
+                                }
+
                             }
                         }
 
@@ -277,6 +288,10 @@ void CirculationModel_with_lv::advanceTimeDependentData(const double dt,
                             {
                                 double dA = n[axis] * dV / dx[axis];
                                 Q_left_atrium_local += (*U_data)(i_s)*dA;
+
+                                if (!d_area_initialized){
+                                    area_atrium_local += dA;
+                                }
                             }
                         }
                     }
@@ -288,6 +303,12 @@ void CirculationModel_with_lv::advanceTimeDependentData(const double dt,
 
     d_Q_aorta       = SAMRAI_MPI::sumReduction(Q_aorta_local);
     d_Q_left_atrium = SAMRAI_MPI::sumReduction(Q_left_atrium_local);
+
+    if (!d_area_initialized){
+        d_area_aorta  = SAMRAI_MPI::sumReduction(area_aorta_local);
+        d_area_atrium = SAMRAI_MPI::sumReduction(area_atrium_local);  
+        d_area_initialized = true;       
+    }
 
     d_time += dt; 
 
