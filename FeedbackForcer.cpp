@@ -25,7 +25,7 @@
 
 
 
-#define FLOW_STRAIGHTENER
+// #define FLOW_STRAIGHTENER
 #define OPEN_BOUNDARY_STABILIZATION
 
 #define FLOW_AVERAGER
@@ -239,7 +239,9 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                     #ifdef FLOW_AVERAGER
                         // set goal to be equal to average flow 
                         if (d_circ_model_with_lv->d_area_initialized){
-                            U_goal = d_circ_model_with_lv->d_Q_aorta / d_circ_model_with_lv->d_area_aorta; 
+                            U_goal = d_circ_model_with_lv->d_Q_aorta / d_circ_model_with_lv->d_area_aorta;
+                            mask = 1.0;
+                            //pout << "In averager woot, aorta flux = " <<  d_circ_model_with_lv->d_Q_aorta << ", aorta area = " << d_circ_model_with_lv->d_area_aorta << "mean flow aorta = " << U_goal << "\n"; 
                         }
                     #endif
 
@@ -256,6 +258,8 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                         // set goal to be equal to average flow 
                         if (d_circ_model_with_lv->d_area_initialized){
                             U_goal = d_circ_model_with_lv->d_Q_left_atrium / d_circ_model_with_lv->d_area_atrium; 
+                            mask = 1.0;
+                            //pout << "In averager woot, atrium flux = " <<  d_circ_model_with_lv->d_Q_left_atrium << ", atrium area = " << d_circ_model_with_lv->d_area_atrium << "mean flow atrium = " << U_goal << "\n"; 
                         }
                     #endif
 
