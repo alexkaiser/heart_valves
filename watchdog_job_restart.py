@@ -223,7 +223,13 @@ if __name__ == '__main__':
     prev_time = os.path.getmtime('IB3d.log')
     check_number = 0
 
+    time_step_error_string = 'Time step size change encountered'
+    number_crash_restarts = 0
+    max_crash_restarts = 2
+
+
     run_restart = False
+
 
     # wait, check if stopped, restart if needed
     while True:
@@ -247,6 +253,22 @@ if __name__ == '__main__':
                 run_restart = True
                 os.remove('controlled_stop.txt')
             else:
+                if not os.path.isfile('done.txt'):
+                    print 'Did not find controlled_stop.txt, did not find done.txt'
+                    if time_step_error_string not in open('IB3d.log').read():
+                        print 'Time step error string not found but run has stopped'
+
+                        if number_crash_restarts < max_crash_restarts:
+                            print 'Running crash restart'
+                            run_restart = True
+                            number_crash_restarts += 1 
+
+                        else:
+                            print 'Detected crash but out of crash restarts, exiting'
+
+                    else:
+                        print 'Time step error detected in logs, no restart'
+
                 print 'Exit python watchdog loop.'
                 break
 
