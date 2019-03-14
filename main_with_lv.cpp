@@ -118,8 +118,6 @@ typedef struct{
     int N_times; 
     double dt_registration; 
 
-    int t_smoothing; 
-
     // stored as 
     // positions[i + vertex_idx*3 + time_num*(3*N_vertices)]; 
     double *position; 
@@ -134,7 +132,7 @@ papillary_info* initialize_moving_papillary_info(string structure_name,
                                                  fourier_series_data *fourier_series, 
                                                  LDataManager *l_data_manager); 
 
-prescribed_motion_info* initialize_prescribed_motion_info(string structure_name, double t_cycle_length, double t_smoothing); 
+prescribed_motion_info* initialize_prescribed_motion_info(string structure_name, double t_cycle_length); 
 
 void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, 
                                         LDataManager* const l_data_manager, 
@@ -143,12 +141,6 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
                                         const double t_cycle_length, 
                                         fourier_series_data *fourier_series, 
                                         prescribed_motion_info* motion_info); 
-
-void get_linear_interp_position(const double current_time, 
-                                const double t_cycle_length, 
-                                prescribed_motion_info* motion_info,
-                                const int lag_idx,
-                                double *position);
 
 void print_prescribed_motion_summary(prescribed_motion_info *motion_info); 
 
@@ -401,8 +393,7 @@ int main(int argc, char* argv[])
         pout << "structure_name_LV = " << structure_name_LV << "\n"; 
 
         // set up the ventricle motion 
-        double t_smoothing = 1.0e-3; 
-        prescribed_motion_info* motion_info = initialize_prescribed_motion_info(structure_name_LV, t_cycle_length, t_smoothing); 
+        prescribed_motion_info* motion_info = initialize_prescribed_motion_info(structure_name_LV, t_cycle_length); 
 
 
         const double radius_aorta     = 1.1; 
@@ -779,11 +770,9 @@ papillary_info* initialize_moving_papillary_info(string structure_name,
     return papillary; 
 }  
 
-prescribed_motion_info* initialize_prescribed_motion_info(string structure_name, double t_cycle_length, double t_smoothing){
+prescribed_motion_info* initialize_prescribed_motion_info(string structure_name, double t_cycle_length){
 
     prescribed_motion_info* motion_info = new prescribed_motion_info; 
-
-    motion_info->t_smoothing = t_smoothing; 
 
     motion_info->N_times = 0; 
 
@@ -912,32 +901,9 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
     unsigned int min_step_motion = floor(t_reduced / motion_info->dt_registration); 
     unsigned int next_step_motion = (min_step_motion+1) % motion_info->N_times; 
 
-    double min_step_time  = min_step_motion * motion_info->dt_registration; 
-    double next_step_time = next_step_motion * motion_info->dt_registration; 
+    double min_step_time = min_step_motion * motion_info->dt_registration; 
 
     double fraction_to_next_step = (t_reduced - min_step_time) / motion_info->dt_registration; 
-
-    // // for smoothing via averaging 
-    bool smoothing_on = false; 
-    int smoothing_steps_per_side; 
-    int smoothing_steps_total; 
-    if (fabs(min_step_time - current_time) < motion_info->t_smoothing){
-        // if we are right by the minimum time, then smoothing is on with the prevoius value         
-        // do not smooth on initial step, only if we are above 
-        if (current_time > (motion_info->t_smoothing)){
-            smoothing_on = true; 
-        }
-    }
-    else if (fabs(next_step_time - current_time) < motion_info->t_smoothing){
-        // if we are right by the maximum time, then smoothing is on with the next, future value 
-
-        smoothing_on = true; 
-    }
-    if (smoothing_on){
-        smoothing_steps_per_side = floor( (motion_info->t_smoothing/2) / dt); 
-        smoothing_steps_total    = smoothing_steps_per_side*2 + 1; 
-    }
-
 
     bool print_summary = true; 
     if (print_summary){
@@ -960,68 +926,26 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
         const LNode* const node = *it;
         IBTargetPointForceSpec* const force_spec = node->getNodeDataItem<IBTargetPointForceSpec>();
         
-        if (force_spec && (force_spec->getStiffness() > 0.0)){ 
-            // Here we update the position of the target point.
-            //
-            // NOTES: lag_idx      is the "index" of the Lagrangian point (lag_idx = 0, 1, ..., N-1, where N is the total number of Lagrangian points)
-            //        X_target     is the target position of the target point
-            //        X_target(0)  is the x component of the target position
-            //        X_target(1)  is the y component of the target position
-            
-            Point& X_target = force_spec->getTargetPointPosition();
-            const int lag_idx = node->getLagrangianIndex();
-            
-            if (lag_idx < motion_info->N_vertices){
-
-                double position[3]; 
-
-                // X_target(0) = (1.0 - fraction_to_next_step) * motion_info->position[0 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
-                //               (      fraction_to_next_step) * motion_info->position[0 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)]; 
-                // X_target(1) = (1.0 - fraction_to_next_step) * motion_info->position[1 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
-                //               (      fraction_to_next_step) * motion_info->position[1 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)];
-                // X_target(2) = (1.0 - fraction_to_next_step) * motion_info->position[2 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
-                //               (      fraction_to_next_step) * motion_info->position[2 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)];
-
-                if (smoothing_on){
-
-                    // average all relevant positions 
-                    double position_temp[3] = {0.0, 0.0, 0.0};  
-                    double time_temp = current_time - dt*smoothing_steps_per_side; 
-                     
-                    for(int i=0; i<smoothing_steps_total; i++){
-
-                        get_linear_interp_position(time_temp, 
-                                                   t_cycle_length, 
-                                                   motion_info,
-                                                   lag_idx,
-                                                   position_temp);
-
-                        // sum of all of the positions 
-                        for (int component=0; component<3; component++){
-                            position[component] += position_temp[component]; 
-                        }
-
-                        time_temp += dt; 
-                    }
-
-                    // sum to average 
-                    for (int component=0; component<3; component++){
-                        position[component] /= smoothing_steps_per_side; 
-                    }
-
+        if (force_spec){
+            if (force_spec->getStiffness() > 0.0){ 
+                // Here we update the position of the target point.
+                //
+                // NOTES: lag_idx      is the "index" of the Lagrangian point (lag_idx = 0, 1, ..., N-1, where N is the total number of Lagrangian points)
+                //        X_target     is the target position of the target point
+                //        X_target(0)  is the x component of the target position
+                //        X_target(1)  is the y component of the target position
+                
+                Point& X_target = force_spec->getTargetPointPosition();
+                const int lag_idx = node->getLagrangianIndex();
+                
+                if (lag_idx < motion_info->N_vertices){
+                    X_target(0) = (1.0 - fraction_to_next_step) * motion_info->position[0 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
+                                  (      fraction_to_next_step) * motion_info->position[0 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)]; 
+                    X_target(1) = (1.0 - fraction_to_next_step) * motion_info->position[1 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
+                                  (      fraction_to_next_step) * motion_info->position[1 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)];
+                    X_target(2) = (1.0 - fraction_to_next_step) * motion_info->position[2 + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
+                                  (      fraction_to_next_step) * motion_info->position[2 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)];
                 }
-                else{
-                    // take the current position from linear interpolation 
-                    get_linear_interp_position(current_time, 
-                                               t_cycle_length, 
-                                               motion_info,
-                                               lag_idx,
-                                               position); 
-                }
-
-                for (int component=0; component<3; component++){
-                    X_target(component) = position[component]; 
-                } 
 
                 if(print_summary){
                     if(lag_idx < 6){
@@ -1029,32 +953,8 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
                     }
                 }
 
-            }
-            
+            }            
         }
-    }
-
-}
-
-
-void get_linear_interp_position(const double current_time, 
-                                const double t_cycle_length, 
-                                prescribed_motion_info* motion_info,
-                                const int lag_idx,
-                                double *position){
-
-    double t_reduced = current_time - t_cycle_length * floor(current_time / t_cycle_length); 
-
-    unsigned int min_step_motion = floor(t_reduced / motion_info->dt_registration); 
-    unsigned int next_step_motion = (min_step_motion+1) % motion_info->N_times; 
-
-    double min_step_time  = min_step_motion * motion_info->dt_registration; 
-
-    double fraction_to_next_step = (t_reduced - min_step_time) / motion_info->dt_registration; 
-
-    for(int i=0; i<3; i++){
-        position[i] = (1.0 - fraction_to_next_step) * motion_info->position[i + 3*lag_idx + min_step_motion *(3*motion_info->N_vertices)] + 
-                      (      fraction_to_next_step) * motion_info->position[i + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)]; 
     }
 
 }
