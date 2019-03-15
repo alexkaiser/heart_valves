@@ -25,8 +25,13 @@ X_MIN =  2.0
 X_MAX =  11.0
 Y_MIN =  30.5
 Y_MAX =  39.5
-Z_MIN =  15.6552000 + .01 // Z_MAX - 12 
-Z_MAX =  27.6552000 + .01 // Others are a solid distance from the existing setup, this is exactly on the inlets and outlets 
+Z_MIN =  16.6552000 + .001 // Z_MAX - 12 
+Z_MAX =  28.6552000 + .001 // Others are a solid distance from the existing setup, this is exactly on the inlets and outlets 
+                          // It is complaining about points that are exactly on the boundary, move .001cm up
+
+// without extrusion 
+// Z_MIN =  15.6552000 + .01 // Z_MAX - 12 
+// Z_MAX =  27.6552000 + .01 // Others are a solid distance from the existing setup, this is exactly on the inlets and outlets 
                           // It is complaining about points that are exactly on the boundary, move .01cm up
 
 CYCLE_DURATION = 0.857142857142857
