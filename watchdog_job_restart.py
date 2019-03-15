@@ -269,8 +269,9 @@ if __name__ == '__main__':
                     else:
                         print 'Time step error detected in logs, no restart'
 
-                print 'Exit python watchdog loop.'
-                break
+                if not run_restart:
+                    print 'Exit python watchdog loop.'
+                    break
 
         if mod_time == prev_time:
             print 'On check number ', check_number, ', modification time unchanged'
