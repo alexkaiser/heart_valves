@@ -25,7 +25,7 @@
 
 
 
-#define FLOW_STRAIGHTENER
+// #define FLOW_STRAIGHTENER
 #define OPEN_BOUNDARY_STABILIZATION
 
 #define FLOW_AVERAGER
@@ -230,12 +230,6 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                         mask = 1.0;
                     }
 
-                    // if aortic valve should be closed, damp to zero 
-                    const int idx = d_circ_model_with_lv->d_current_idx_series; 
-                    if (d_circ_model_with_lv->d_fourier_aorta->values[idx] > d_circ_model_with_lv->d_fourier_ventricle->values[idx]){
-                        mask = 1.0; 
-                    } 
-
                     #ifdef FLOW_AVERAGER
                         // set goal to be equal to average flow 
                         if (d_circ_model_with_lv->d_area_initialized){
@@ -244,6 +238,13 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                             //pout << "In averager woot, aorta flux = " <<  d_circ_model_with_lv->d_Q_aorta << ", aorta area = " << d_circ_model_with_lv->d_area_aorta << "mean flow aorta = " << U_goal << "\n"; 
                         }
                     #endif
+
+                    // if aortic valve should be closed, damp to zero 
+                    const int idx = d_circ_model_with_lv->d_current_idx_series; 
+                    if (d_circ_model_with_lv->d_fourier_aorta->values[idx] > d_circ_model_with_lv->d_fourier_ventricle->values[idx]){
+                        mask = 1.0; 
+                        U_goal = 0.0; 
+                    } 
 
                 }
 
