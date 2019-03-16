@@ -222,7 +222,7 @@ int main(int argc, char* argv[])
         }
 
         int n_restarts_written = 0;
-        int max_restart_to_write = 25;
+        int max_restart_to_write = 15;
         if (input_db->keyExists("MAX_RESTART_TO_WRITE")){
             max_restart_to_write = input_db->getInteger("MAX_RESTART_TO_WRITE");
         }
