@@ -402,7 +402,7 @@ int main(int argc, char* argv[])
         pout << "structure_name_LV = " << structure_name_LV << "\n"; 
 
         // set up the ventricle motion 
-        double t_smoothing = 1.0e-3; 
+        double t_smoothing = 1.0e-2; 
         prescribed_motion_info* motion_info = initialize_prescribed_motion_info(structure_name_LV, t_cycle_length, t_smoothing); 
 
 
@@ -982,7 +982,7 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
     pout << "current_time = " << current_time << " min_step_time = " << min_step_time; 
     pout << " next_step_time = " << next_step_time << " t_smoothing = " << motion_info->t_smoothing << "\n"; 
 
-    if (fabs(min_step_time - current_time) < motion_info->t_smoothing){
+    if (fabs(min_step_time - t_reduced) < motion_info->t_smoothing){
         // if we are right by the minimum time, then smoothing is on with the prevoius value         
         // do not smooth on initial step, only if we are above 
         if (current_time > (motion_info->t_smoothing)){
@@ -990,8 +990,14 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
             pout << "smoothing on with prev value, current_time = " << current_time << ", min_step_time = " << min_step_time << "\n";  
         }
     }
-    else if (fabs(next_step_time - current_time) < motion_info->t_smoothing){
+    else if (fabs(next_step_time - t_reduced) < motion_info->t_smoothing){
         // if we are right by the maximum time, then smoothing is on with the next, future value 
+        smoothing_on = true; 
+        pout << "smoothing on with next value, current_time = " << current_time << ", next_step_time = " << next_step_time << "\n";  
+    }
+    else if ((next_step_time == 0) && (fabs(next_step_time - (t_reduced - t_cycle_length)) < motion_info->t_smoothing)){
+        // if we are right by the maximum time, counting a periodic wrap
+        // this is when next_step_time has been reduced mod N and 
         smoothing_on = true; 
         pout << "smoothing on with next value, current_time = " << current_time << ", next_step_time = " << next_step_time << "\n";  
     }
