@@ -924,6 +924,7 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
         static int idx_to_write = 0; 
         if (current_time == 0.0){
             plot_motion_debug.open("plot_motion_debug.m", ios_base::out | ios_base::trunc);
+            plot_motion_debug.precision(14);
             plot_motion_debug << "data = [";
         }
     #endif 
@@ -936,6 +937,7 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
             plot_motion_debug << "plot(data(:,1), data(:,2), 'k');\n"; 
             plot_motion_debug << "figure;\n plot(data(:,1), data(:,3), 'k');\n";
             plot_motion_debug << "figure;\n plot(data(:,1), data(:,4), 'k');\n";
+            plot_motion_debug << "figure;\n plot(data(:,1), data(:,5), 'k'); title('fraction to next step');\n";
             plot_motion_debug.close(); 
             return; 
         }
@@ -1008,7 +1010,7 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
 
                 #ifdef DEBUG_PRESCRIBED_MOTION
                     if (lag_idx == idx_to_write){
-                        plot_motion_debug << current_time << ", " << X_target(0) << ", " << X_target(1) << ", " << X_target(2) << "\n";  
+                        plot_motion_debug << current_time << ", " << X_target(0) << ", " << X_target(1) << ", " << X_target(2) << ", " << fraction_to_next_step << "\n";  
                     }
                 #endif 
             }            
