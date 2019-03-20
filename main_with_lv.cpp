@@ -167,14 +167,6 @@ void print_prescribed_motion_summary(prescribed_motion_info *motion_info);
 #define DEBUG_PRESCRIBED_MOTION
 
 
-namespace{
-    inline double smooth_kernel(const double r){
-        return std::abs(r) < 1.0 ? 0.5 * (cos(M_PI * r) + 1.0) : 0.0;
-    } // smooth_kernel
-}
-
-
-
 /*******************************************************************************
  * For each run, the input filename and restart information (if needed) must   *
  * be given on the command line.  For non-restarted case, command line is:     *
@@ -405,11 +397,6 @@ int main(int argc, char* argv[])
         double t_smoothing = 1.0e-2; 
         prescribed_motion_info* motion_info = initialize_prescribed_motion_info(structure_name_LV, t_cycle_length, t_smoothing); 
 
-
-        const double radius_aorta     = 1.1; 
-        const double radius_atrium    = 1.1; 
-        const double center_aorta[3]  = {4.6, 34.76, 27.6552};
-        const double center_atrium[3] = {7.8, 35.58, 27.6552};
 
         string aorta_vertices_file_name  = "aorta_bdry.vertex"; 
         string atrium_vertices_file_name = "atrium_bdry.vertex"; 
@@ -979,36 +966,26 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
     int smoothing_steps_per_side; 
     int smoothing_steps_total; 
 
-    pout << "current_time = " << current_time << " min_step_time = " << min_step_time; 
-    pout << " next_step_time = " << next_step_time << " t_smoothing = " << motion_info->t_smoothing << "\n"; 
-
     if (fabs(min_step_time - t_reduced) < motion_info->t_smoothing){
         // if we are right by the minimum time, then smoothing is on with the prevoius value         
         // do not smooth on initial step, only if we are above 
         if (current_time > (motion_info->t_smoothing)){
             smoothing_on = true; 
-            pout << "smoothing on with prev value, current_time = " << current_time << ", min_step_time = " << min_step_time << "\n";  
         }
     }
     else if (fabs(next_step_time - t_reduced) < motion_info->t_smoothing){
         // if we are right by the maximum time, then smoothing is on with the next, future value 
         smoothing_on = true; 
-        pout << "smoothing on with next value, current_time = " << current_time << ", next_step_time = " << next_step_time << "\n";  
     }
     else if ((next_step_time == 0) && (fabs(next_step_time - (t_reduced - t_cycle_length)) < motion_info->t_smoothing)){
         // if we are right by the maximum time, counting a periodic wrap
         // this is when next_step_time has been reduced mod N and 
         smoothing_on = true; 
-        pout << "smoothing on with next value, current_time = " << current_time << ", next_step_time = " << next_step_time << "\n";  
     }
 
     if (smoothing_on){
         smoothing_steps_per_side = floor( (motion_info->t_smoothing/2) / dt); 
         smoothing_steps_total    = smoothing_steps_per_side*2 + 1; 
-        pout << "smoothing_steps_per_side = " << smoothing_steps_per_side << " smoothing_steps_total = " << smoothing_steps_total << "\n";
-    }
-    else{
-        pout << "smoothing off at current_time = " << current_time << "\n"; 
     }
 
     bool print_summary = false; 
@@ -1059,23 +1036,14 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
                     // average all relevant positions 
                     double position_temp[3] = {0.0, 0.0, 0.0};  
                     double time_temp = current_time - dt*smoothing_steps_per_side; 
-                    
-                    if(lag_idx == 0)
-                        pout << "current_time = " << current_time << "\n"; 
 
                     for(int i=0; i<smoothing_steps_total; i++){
-
-                        if (lag_idx == 0)
-                            pout << "time_temp = " << time_temp << "\n"; 
 
                         get_linear_interp_position(time_temp, 
                                                    t_cycle_length, 
                                                    motion_info,
                                                    lag_idx,
                                                    position_temp);
-
-                        if (lag_idx == 0)
-                            pout << "position_temp = " << position_temp[0] << " " << position_temp[1] << " " << position_temp[2] << "\n"; 
 
                         // sum of all of the positions 
                         for (int component=0; component<3; component++){
@@ -1088,9 +1056,6 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
                     // sum to average 
                     for (int component=0; component<3; component++){
                         position[component] /= smoothing_steps_total; 
-
-                        if (lag_idx == 0)
-                            pout << "position = " << position[0] << " " << position[1] << " " << position[2] << "\n"; 
                     }
 
                 }
