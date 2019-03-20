@@ -156,6 +156,7 @@ void print_prescribed_motion_summary(prescribed_motion_info *motion_info);
 
 #define SIM_WITH_LV
 
+#define DEBUG_PRESCRIBED_MOTION
 
 
 namespace{
@@ -523,6 +524,35 @@ int main(int argc, char* argv[])
         double total_init_time = timestamp_diff_in_seconds(time1_total, time2_total);
         pout << "\n\nTotal initialization time = " << total_init_time << "\n\n"; 
         
+        #ifdef DEBUG_PRESCRIBED_MOTION
+            dt = 1.0e-4; 
+            for(double current_time=0.0; current_time<t_cycle_length; current_time+=dt){
+                update_prescribed_motion_positions(patch_hierarchy, 
+                                                  l_data_manager, 
+                                                  current_time, 
+                                                  dt, 
+                                                  t_cycle_length, 
+                                                  fourier_atrium, 
+                                                  motion_info);
+            }
+
+            // finalize 
+            dt = 0.0; 
+            update_prescribed_motion_positions(patch_hierarchy, 
+                                  l_data_manager, 
+                                  t_cycle_length, 
+                                  dt, 
+                                  t_cycle_length, 
+                                  fourier_atrium, 
+                                  motion_info);
+
+            pout << "Abort after motion debug\n"; 
+            SAMRAI_MPI::abort();
+
+        #endif
+
+
+
         // add some timers         
         get_timestamp(&time1_total); 
         double step_time; 
@@ -889,6 +919,29 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
     // the patch hierarchy.
     const int level_num = hierarchy->getFinestLevelNumber();
 
+    #ifdef DEBUG_PRESCRIBED_MOTION
+        static std::ofstream plot_motion_debug; 
+        static int idx_to_write = 0; 
+        if (current_time == 0.0){
+            plot_motion_debug.open("plot_motion_debug.m", ios_base::out | ios_base::trunc);
+            plot_motion_debug << "data = [";
+        }
+    #endif 
+
+    #ifdef DEBUG_PRESCRIBED_MOTION
+        // pout << "checking dt... dt = " << dt << "\n"; 
+        if (dt == 0.0){
+            pout << "hit finalize in debug motion file output\n"; 
+            plot_motion_debug << "]; figure;\n"; 
+            plot_motion_debug << "plot(data(:,1), data(:,2), 'k');\n"; 
+            plot_motion_debug << "figure;\n plot(data(:,1), data(:,3), 'k');\n";
+            plot_motion_debug << "figure;\n plot(data(:,1), data(:,4), 'k');\n";
+            plot_motion_debug.close(); 
+            return; 
+        }
+    #endif 
+
+
     // Get the Lagrangian mesh.
     Pointer<LMesh> l_mesh = l_data_manager->getLMesh(level_num);
     const std::vector<LNode*>& local_nodes = l_mesh->getLocalNodes();
@@ -905,7 +958,7 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
 
     double fraction_to_next_step = (t_reduced - min_step_time) / motion_info->dt_registration; 
 
-    bool print_summary = true; 
+    bool print_summary = false; 
     if (print_summary){
         pout << "motion update debug summary:\n"; 
         pout << "t_reduced = " << t_reduced << "\n"; 
@@ -953,6 +1006,11 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
                     }
                 }
 
+                #ifdef DEBUG_PRESCRIBED_MOTION
+                    if (lag_idx == idx_to_write){
+                        plot_motion_debug << current_time << ", " << X_target(0) << ", " << X_target(1) << ", " << X_target(2) << "\n";  
+                    }
+                #endif 
             }            
         }
     }
