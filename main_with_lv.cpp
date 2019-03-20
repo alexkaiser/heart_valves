@@ -164,7 +164,7 @@ void print_prescribed_motion_summary(prescribed_motion_info *motion_info);
 
 #define SIM_WITH_LV
 
-#define DEBUG_PRESCRIBED_MOTION
+// #define DEBUG_PRESCRIBED_MOTION
 
 
 /*******************************************************************************
