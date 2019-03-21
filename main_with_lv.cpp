@@ -394,7 +394,7 @@ int main(int argc, char* argv[])
         pout << "structure_name_LV = " << structure_name_LV << "\n"; 
 
         // set up the ventricle motion 
-        double t_smoothing = 1.0e-5; 
+        double t_smoothing = 8.0e-2; 
         prescribed_motion_info* motion_info = initialize_prescribed_motion_info(structure_name_LV, t_cycle_length, t_smoothing); 
 
 
@@ -841,6 +841,11 @@ prescribed_motion_info* initialize_prescribed_motion_info(string structure_name,
     }
 
     motion_info->dt_registration = t_cycle_length / motion_info->N_times; 
+
+    if (motion_info->dt_registration < (motion_info->t_smoothing/2)){
+        pout << "Smoothing too large for existing registration time step\n"; 
+        SAMRAI_MPI::abort();  
+    } 
 
     int total_scalars = 3 * motion_info->N_vertices * motion_info->N_times; 
     motion_info->position = new double[total_scalars]; 
