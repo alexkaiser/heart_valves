@@ -400,7 +400,7 @@ int main(int argc, char* argv[])
         pout << "structure_name_LV = " << structure_name_LV << "\n"; 
 
         // set up the ventricle motion 
-        double t_smoothing = 1.0e-2; 
+        double t_smoothing = 4.0e-2; 
         prescribed_motion_info* motion_info = initialize_prescribed_motion_info(structure_name_LV, t_cycle_length, t_smoothing); 
 
 
@@ -848,7 +848,7 @@ prescribed_motion_info* initialize_prescribed_motion_info(string structure_name,
 
     motion_info->dt_registration = t_cycle_length / motion_info->N_times; 
 
-    if (motion_info->dt_registration < (motion_info->t_smoothing/2)){
+    if (motion_info->dt_registration < (motion_info->t_smoothing)){
         pout << "Smoothing too large for existing registration time step\n"; 
         SAMRAI_MPI::abort();  
     } 
@@ -1043,31 +1043,6 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
                 //               (      fraction_to_next_step) * motion_info->position[2 + 3*lag_idx + next_step_motion*(3*motion_info->N_vertices)];
 
                 if (smoothing_on){
-
-                    // average all relevant positions 
-                    // double position_temp[3] = {0.0, 0.0, 0.0};  
-                    // double time_temp = current_time - dt*smoothing_steps_per_side; 
-
-                    // for(int i=0; i<smoothing_steps_total; i++){
-
-                    //     get_linear_interp_position(time_temp, 
-                    //                                t_cycle_length, 
-                    //                                motion_info,
-                    //                                lag_idx,
-                    //                                position_temp);
-
-                    //     // sum of all of the positions 
-                    //     for (int component=0; component<3; component++){
-                    //         position[component] += position_temp[component]; 
-                    //     }
-
-                    //     time_temp += dt; 
-                    // }
-
-                    // // sum to average 
-                    // for (int component=0; component<3; component++){
-                    //     position[component] /= smoothing_steps_total; 
-                    // }
                     get_smoothed_interp_position(current_time, 
                                                 t_cycle_length, 
                                                 motion_info,
@@ -1147,29 +1122,32 @@ void get_smoothed_interp_position(const double current_time,
     double b = t_reduced + motion_info->t_smoothing/2.0; 
 
     // there is one time point that lies in the domain of integration 
-    unsigned int center_step_motion = floor(b / dt_reg);
+    unsigned int center_step_motion = (unsigned int) floor(b / dt_reg);
     double t_cent = center_step_motion * dt_reg; 
+
+    // idx gets periodic reduction
+    center_step_motion %= motion_info->N_times; 
 
     // this time point is below the domain of integration
     unsigned int prev_step_motion; 
-    double t_prev; 
+    double t_prev = t_cent - dt_reg; 
     // handle periodicity on indices 
     if (center_step_motion == 0){
         // index gets a periodic wrap 
         prev_step_motion   =  motion_info->N_times - 1;  
 
         // actual value is negative in time relative to current position 
-        t_prev = -dt_reg;
+        //t_prev = -dt_reg;
     }
     else{
         prev_step_motion = center_step_motion - 1; 
-        t_prev = prev_step_motion * dt_reg; 
+        //t_prev = prev_step_motion * dt_reg; 
     }
 
     // handle periodicity on indices 
     unsigned int next_step_motion = (center_step_motion+1) % motion_info->N_times; 
     // no periodicity on time 
-    double t_next = (center_step_motion+1) * dt_reg; 
+    double t_next = t_cent + dt_reg; 
 
     // coefficients for each of the three time points 
     // integrate the piece-wise linear interpolant to get the following closed form on the weights 
@@ -1189,15 +1167,15 @@ void get_smoothed_interp_position(const double current_time,
     weight_center /= (dt_reg * motion_info->t_smoothing); 
     weight_next   /= (dt_reg * motion_info->t_smoothing); 
 
-    if (lag_idx == 0){
-        pout << "current_time = "<< current_time << " t_reduced = " << t_reduced << "\n"; 
-        pout << "a,b = " << a << ", " << b << "\n"; 
-        pout << "prev_step_motion = " << prev_step_motion << " t_prev_step = " << t_prev << "\n";
-        pout << "center_step_motion = " << center_step_motion << " t_center = " << t_cent << "\n";
-        pout << "next_step_motion = " << next_step_motion << " t_next_step = " << t_next << "\n";
-        pout << "weights = " << weight_prev << ", " << weight_center << ", " << weight_next << "\n";
-        pout << "\n";  
-    }
+    // if (lag_idx == 0){
+    //     pout << "current_time = "<< current_time << " t_reduced = " << t_reduced << "\n"; 
+    //     pout << "a,b = " << a << ", " << b << "\n"; 
+    //     pout << "prev_step_motion = " << prev_step_motion << " t_prev_step = " << t_prev << "\n";
+    //     pout << "center_step_motion = " << center_step_motion << " t_center = " << t_cent << "\n";
+    //     pout << "next_step_motion = " << next_step_motion << " t_next_step = " << t_next << "\n";
+    //     pout << "weights = " << weight_prev << ", " << weight_center << ", " << weight_next << "\n";
+    //     pout << "\n";  
+    // }
 
 
     for(int i=0; i<3; i++){
