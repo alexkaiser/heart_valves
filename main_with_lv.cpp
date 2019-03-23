@@ -150,6 +150,12 @@ void get_linear_interp_position(const double current_time,
                                 const int lag_idx,
                                 double *position);
 
+void get_smoothed_interp_position(const double current_time, 
+                                  const double t_cycle_length, 
+                                  prescribed_motion_info* motion_info,
+                                  const int lag_idx,
+                                  double *position); 
+
 void print_prescribed_motion_summary(prescribed_motion_info *motion_info); 
 
 
@@ -164,7 +170,7 @@ void print_prescribed_motion_summary(prescribed_motion_info *motion_info);
 
 #define SIM_WITH_LV
 
-// #define DEBUG_PRESCRIBED_MOTION
+#define DEBUG_PRESCRIBED_MOTION
 
 
 /*******************************************************************************
@@ -394,7 +400,7 @@ int main(int argc, char* argv[])
         pout << "structure_name_LV = " << structure_name_LV << "\n"; 
 
         // set up the ventricle motion 
-        double t_smoothing = 8.0e-2; 
+        double t_smoothing = 1.0e-2; 
         prescribed_motion_info* motion_info = initialize_prescribed_motion_info(structure_name_LV, t_cycle_length, t_smoothing); 
 
 
@@ -971,18 +977,18 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
     int smoothing_steps_per_side; 
     int smoothing_steps_total; 
 
-    if (fabs(min_step_time - t_reduced) < motion_info->t_smoothing){
+    if (fabs(min_step_time - t_reduced) < motion_info->t_smoothing/2){
         // if we are right by the minimum time, then smoothing is on with the prevoius value         
         // do not smooth on initial step, only if we are above 
         if (current_time > (motion_info->t_smoothing)){
             smoothing_on = true; 
         }
     }
-    else if (fabs(next_step_time - t_reduced) < motion_info->t_smoothing){
+    else if (fabs(next_step_time - t_reduced) < motion_info->t_smoothing/2){
         // if we are right by the maximum time, then smoothing is on with the next, future value 
         smoothing_on = true; 
     }
-    else if ((next_step_time == 0) && (fabs(next_step_time - (t_reduced - t_cycle_length)) < motion_info->t_smoothing)){
+    else if ((next_step_time == 0) && (fabs(next_step_time - (t_reduced - t_cycle_length)) < motion_info->t_smoothing/2)){
         // if we are right by the maximum time, counting a periodic wrap
         // this is when next_step_time has been reduced mod N and 
         smoothing_on = true; 
@@ -1039,30 +1045,34 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
                 if (smoothing_on){
 
                     // average all relevant positions 
-                    double position_temp[3] = {0.0, 0.0, 0.0};  
-                    double time_temp = current_time - dt*smoothing_steps_per_side; 
+                    // double position_temp[3] = {0.0, 0.0, 0.0};  
+                    // double time_temp = current_time - dt*smoothing_steps_per_side; 
 
-                    for(int i=0; i<smoothing_steps_total; i++){
+                    // for(int i=0; i<smoothing_steps_total; i++){
 
-                        get_linear_interp_position(time_temp, 
-                                                   t_cycle_length, 
-                                                   motion_info,
-                                                   lag_idx,
-                                                   position_temp);
+                    //     get_linear_interp_position(time_temp, 
+                    //                                t_cycle_length, 
+                    //                                motion_info,
+                    //                                lag_idx,
+                    //                                position_temp);
 
-                        // sum of all of the positions 
-                        for (int component=0; component<3; component++){
-                            position[component] += position_temp[component]; 
-                        }
+                    //     // sum of all of the positions 
+                    //     for (int component=0; component<3; component++){
+                    //         position[component] += position_temp[component]; 
+                    //     }
 
-                        time_temp += dt; 
-                    }
+                    //     time_temp += dt; 
+                    // }
 
-                    // sum to average 
-                    for (int component=0; component<3; component++){
-                        position[component] /= smoothing_steps_total; 
-                    }
-
+                    // // sum to average 
+                    // for (int component=0; component<3; component++){
+                    //     position[component] /= smoothing_steps_total; 
+                    // }
+                    get_smoothed_interp_position(current_time, 
+                                                t_cycle_length, 
+                                                motion_info,
+                                                lag_idx,
+                                                position);
                 }
                 else{
                     // take the current position from linear interpolation 
@@ -1116,6 +1126,92 @@ void get_linear_interp_position(const double current_time,
     }
 
 }
+
+
+
+void get_smoothed_interp_position(const double current_time, 
+                                  const double t_cycle_length, 
+                                  prescribed_motion_info* motion_info,
+                                  const int lag_idx,
+                                  double *position){
+
+    // takes convolution over the specified interval with a constant 
+
+    // reduced mod cycles 
+    double t_reduced = current_time - t_cycle_length * floor(current_time / t_cycle_length); 
+
+    double dt_reg = motion_info->dt_registration; 
+
+    // bounds of integral 
+    double a = t_reduced - motion_info->t_smoothing/2.0; 
+    double b = t_reduced + motion_info->t_smoothing/2.0; 
+
+    // there is one time point that lies in the domain of integration 
+    unsigned int center_step_motion = floor(b / dt_reg);
+    double t_cent = center_step_motion * dt_reg; 
+
+    // this time point is below the domain of integration
+    unsigned int prev_step_motion; 
+    double t_prev; 
+    // handle periodicity on indices 
+    if (center_step_motion == 0){
+        // index gets a periodic wrap 
+        prev_step_motion   =  motion_info->N_times - 1;  
+
+        // actual value is negative in time relative to current position 
+        t_prev = -dt_reg;
+    }
+    else{
+        prev_step_motion = center_step_motion - 1; 
+        t_prev = prev_step_motion * dt_reg; 
+    }
+
+    // handle periodicity on indices 
+    unsigned int next_step_motion = (center_step_motion+1) % motion_info->N_times; 
+    // no periodicity on time 
+    double t_next = (center_step_motion+1) * dt_reg; 
+
+    // coefficients for each of the three time points 
+    // integrate the piece-wise linear interpolant to get the following closed form on the weights 
+    // double weight_prev   = t_cent*t_cent/2 - t_cent*a + a*a/2; 
+    // double weight_center = t_cent*t_cent/2 - t_prev*t_cent - a*a/2 + t_prev*a + 
+    //                        t_next*b -b*b/2 - t_next*t_cent + t_cent*t_cent/2; 
+    // double weight_next   = b*b/2 - t_cent*b + t_cent*t_cent/2; 
+
+    double weight_prev   =  pow(t_cent - a     ,2)/2; 
+    double weight_center =  pow(t_cent - t_prev,2)/2 - pow(a      - t_prev,2)/2 + 
+                           -pow(t_next - b     ,2)/2 + pow(t_next - t_cent,2)/2; 
+    double weight_next   =  pow(b      - t_cent,2)/2; 
+
+    // dt_reg comes from coefficients in interpolation function 
+    // t_smoothing comes from that the integral is an average 
+    weight_prev   /= (dt_reg * motion_info->t_smoothing); 
+    weight_center /= (dt_reg * motion_info->t_smoothing); 
+    weight_next   /= (dt_reg * motion_info->t_smoothing); 
+
+    if (lag_idx == 0){
+        pout << "current_time = "<< current_time << " t_reduced = " << t_reduced << "\n"; 
+        pout << "a,b = " << a << ", " << b << "\n"; 
+        pout << "prev_step_motion = " << prev_step_motion << " t_prev_step = " << t_prev << "\n";
+        pout << "center_step_motion = " << center_step_motion << " t_center = " << t_cent << "\n";
+        pout << "next_step_motion = " << next_step_motion << " t_next_step = " << t_next << "\n";
+        pout << "weights = " << weight_prev << ", " << weight_center << ", " << weight_next << "\n";
+        pout << "\n";  
+    }
+
+
+    for(int i=0; i<3; i++){
+        position[i] = weight_prev   * motion_info->position[i + 3*lag_idx + prev_step_motion  *(3*motion_info->N_vertices)] + 
+                      weight_center * motion_info->position[i + 3*lag_idx + center_step_motion*(3*motion_info->N_vertices)] +
+                      weight_next   * motion_info->position[i + 3*lag_idx + next_step_motion  *(3*motion_info->N_vertices)];  
+    }
+
+
+}
+
+
+
+
 
 
 void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, 
