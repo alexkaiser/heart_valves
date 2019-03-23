@@ -170,7 +170,7 @@ void print_prescribed_motion_summary(prescribed_motion_info *motion_info);
 
 #define SIM_WITH_LV
 
-#define DEBUG_PRESCRIBED_MOTION
+//#define DEBUG_PRESCRIBED_MOTION
 
 
 /*******************************************************************************
@@ -400,7 +400,7 @@ int main(int argc, char* argv[])
         pout << "structure_name_LV = " << structure_name_LV << "\n"; 
 
         // set up the ventricle motion 
-        double t_smoothing = 4.0e-2; 
+        double t_smoothing = 2.0e-2; 
         prescribed_motion_info* motion_info = initialize_prescribed_motion_info(structure_name_LV, t_cycle_length, t_smoothing); 
 
 
