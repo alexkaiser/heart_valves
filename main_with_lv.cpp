@@ -136,6 +136,11 @@ papillary_info* initialize_moving_papillary_info(string structure_name,
 
 prescribed_motion_info* initialize_prescribed_motion_info(string structure_name, double t_cycle_length, double t_smoothing); 
 
+void delete_prescribed_motion(prescribed_motion_info *motion_info); 
+
+prescribed_motion_info* combine_prescribe_motion(prescribed_motion_info *motion_1, prescribed_motion_info *motion_2); 
+
+
 void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, 
                                         LDataManager* const l_data_manager, 
                                         const double current_time, 
@@ -399,9 +404,13 @@ int main(int argc, char* argv[])
 
         pout << "structure_name_LV = " << structure_name_LV << "\n"; 
 
-        // set up the ventricle motion 
+        // set up the ventricle and valve skeleton motion 
         double t_smoothing = 1.0e-3; 
-        prescribed_motion_info* motion_info = initialize_prescribed_motion_info(structure_name_LV, t_cycle_length, t_smoothing); 
+        prescribed_motion_info* motion_info_LV     = initialize_prescribed_motion_info(structure_name_LV, t_cycle_length, t_smoothing); 
+        prescribed_motion_info* motion_info_mitral = initialize_prescribed_motion_info(structure_name, t_cycle_length, t_smoothing); 
+        prescribed_motion_info* motion_info        = combine_prescribe_motion(motion_info_LV, motion_info_mitral); 
+        delete_prescribed_motion(motion_info_LV); 
+        delete_prescribed_motion(motion_info_mitral);         
 
 
         string aorta_vertices_file_name  = "aorta_bdry.vertex"; 
@@ -728,6 +737,8 @@ int main(int argc, char* argv[])
             done_stream.close(); 
         }
 
+        delete_prescribed_motion(motion_info); 
+
         // Cleanup Eulerian boundary condition specification objects (when
         // necessary).
         for (unsigned int d = 0; d < NDIM; ++d) delete u_bc_coefs[d];
@@ -916,6 +927,61 @@ void print_prescribed_motion_summary(prescribed_motion_info *motion_info){
     }
 }
 
+void delete_prescribed_motion(prescribed_motion_info *motion_info){
+    delete motion_info->position; 
+    delete motion_info; 
+}
+
+prescribed_motion_info* combine_prescribe_motion(prescribed_motion_info *motion_1, prescribed_motion_info *motion_2){
+    // combine multiple motion info files into one 
+
+    // some light error checking for compatible data structures here 
+
+    if (motion_1->N_times != motion_2->N_times){
+        pout << "Number of time steps not equal while combining struct\n"; 
+        SAMRAI_MPI::abort(); 
+    }
+    if (motion_1->dt_registration != motion_2->dt_registration){
+        pout << "registration time steps not equal while combining struct\n"; 
+        SAMRAI_MPI::abort(); 
+    }
+    if (motion_1->t_smoothing != motion_2->t_smoothing){
+        pout << "smoothing not equal while combining struct\n"; 
+        SAMRAI_MPI::abort(); 
+    }
+
+    prescribed_motion_info* motion_combined = new prescribed_motion_info; 
+
+    motion_combined->N_times         = motion_1->N_times; 
+    motion_combined->dt_registration = motion_1->dt_registration; 
+    motion_combined->t_smoothing     = motion_1->t_smoothing; 
+
+    motion_combined->N_vertices      = motion_1->N_vertices + motion_2->N_vertices; 
+
+    int total_scalars = 3 * motion_combined->N_vertices * motion_combined->N_times; 
+    motion_combined->position = new double[total_scalars]; 
+
+    for(int file_num=0; file_num < motion_1->N_times; file_num++){
+
+        int int_idx_combined = 0; 
+        for(int vertex_idx=0; vertex_idx<motion_1->N_vertices; int_idx_combined++, vertex_idx++){
+            for(int i=0; i<3; i++){
+                motion_combined->position[i + int_idx_combined*3 + file_num*(3*motion_combined->N_vertices)] = motion_1->position[i + vertex_idx*3 + file_num*(3*motion_1->N_vertices)]; 
+            }
+        }
+
+        // no re-init of combined index 
+        for(int vertex_idx=0; vertex_idx<motion_2->N_vertices; int_idx_combined++, vertex_idx++){
+            for(int i=0; i<3; i++){
+                motion_combined->position[i + int_idx_combined*3 + file_num*(3*motion_combined->N_vertices)] = motion_2->position[i + vertex_idx*3 + file_num*(3*motion_2->N_vertices)]; 
+            }
+        }
+
+    }
+
+    return motion_combined; 
+}
+
 
 void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy, 
                                         LDataManager* const l_data_manager, 
@@ -1000,6 +1066,7 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
     }
 
     bool print_summary = false; 
+    int n_valve_printed = 0; 
     if (print_summary){
         pout << "motion update debug summary:\n"; 
         pout << "t_reduced = " << t_reduced << "\n"; 
@@ -1062,9 +1129,12 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
                     X_target(component) = position[component]; 
                 } 
 
-                if(print_summary){
-                    if(lag_idx < 6){
-                        std::cout << "lag idx = " << lag_idx << ", pos = (" << X_target(0) << " " << X_target(1) << " " << X_target(2) << "\n"; 
+                if (print_summary){
+                    if (lag_idx < 6) {
+                        pout << "lag idx = " << lag_idx << ", pos = (" << X_target(0) << " " << X_target(1) << " " << X_target(2) << ")\n"; 
+                    }
+                    if (lag_idx == 78296){
+                        pout << "lag idx = " << lag_idx << "(mitral idx 9624), pos = (" << X_target(0) << " " << X_target(1) << " " << X_target(2) << ")\n"; 
                     }
                 }
 
@@ -1073,7 +1143,17 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
                         plot_motion_debug << current_time << ", " << X_target(0) << ", " << X_target(1) << ", " << X_target(2) << ", " << fraction_to_next_step << "\n";  
                     }
                 #endif 
-            }            
+            }
+
+            // if(print_summary){
+            //     if (lag_idx > motion_info->N_vertices){
+            //         if(n_valve_printed < 6){
+            //             pout << "lag idx = " << lag_idx << "mitral file idx = " << lag_idx - motion_info->N_vertices << ", pos = (" << X_target(0) << " " << X_target(1) << " " << X_target(2) << ")\n";
+            //             n_valve_printed++; 
+            //         } 
+            //     }
+            // }
+
         }
     }
 
