@@ -21,23 +21,13 @@ ORIGIN_X = 7.678500000000005
 ORIGIN_Y = 35.495345292620861
 ORIGIN_Z = 26.479999999999745
 
-X_MIN =  1.0
-X_MAX =  13.0
-Y_MIN =  29.0
-Y_MAX =  41.0
-Z_MIN =  13.6552000 + .001 // Z_MAX - 15 
+X_MIN =  2.0
+X_MAX =  11.0
+Y_MIN =  30.5
+Y_MAX =  39.5
+Z_MIN =  16.6552000 + .001 // Z_MAX - 12 
 Z_MAX =  28.6552000 + .001 // Others are a solid distance from the existing setup, this is exactly on the inlets and outlets 
                           // It is complaining about points that are exactly on the boundary, move .001cm up
-
-//X_MIN =  2.0
-//X_MAX =  11.0
-//Y_MIN =  30.5
-//Y_MAX =  39.5
-//Z_MIN =  16.6552000 + .001 // Z_MAX - 12 
-//Z_MIN =  13.6552000 + .001 // Z_MAX - 15 
-//Z_MAX =  28.6552000 + .001 // Others are a solid distance from the existing setup, this is exactly on the inlets and outlets 
-                          // It is complaining about points that are exactly on the boundary, move .001cm up
-
 
 // without extrusion 
 // Z_MIN =  15.6552000 + .01 // Z_MAX - 12 
@@ -241,7 +231,7 @@ Main {
 
 // visualization dump parameters
    viz_writer                  = "VisIt","Silo" //"VisIt"
-   viz_dump_interval           = int(1.0/(DT*600.0))       // output at 600 fps, 10x slow motion at 60 fps
+   viz_dump_interval           = 1 //int(1.0/(DT*600.0))       // output at 600 fps, 10x slow motion at 60 fps
    viz_dump_dirname            = "viz_IB3d_tree_cycle_256"
    visit_number_procs_per_file = 1
 
@@ -258,7 +248,7 @@ Main {
 }
 
 CartesianGeometry {
-domain_boxes = [ (0,0,0),( 2*N_FLUID - 1,2*N_FLUID - 1, 2*N_FLUID + N_FLUID/2 - 1) ]
+domain_boxes = [ (0,0,0),( 3*N_FLUID/2 - 1,3*N_FLUID/2 - 1, 2*N_FLUID - 1) ]
     x_lo = X_MIN, Y_MIN, Z_MIN 
     x_up = X_MAX, Y_MAX, Z_MAX 
     //x_lo =  -L + ORIGIN_X, -L + ORIGIN_Y,  3.0 - 4*L + ORIGIN_Z 
