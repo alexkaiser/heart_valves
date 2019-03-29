@@ -405,7 +405,7 @@ int main(int argc, char* argv[])
         pout << "structure_name_LV = " << structure_name_LV << "\n"; 
 
         // set up the ventricle and valve skeleton motion 
-        double t_smoothing = 0.0; //4.0e-2; 
+        double t_smoothing = 4.0e-2; 
         prescribed_motion_info* motion_info_LV     = initialize_prescribed_motion_info(structure_name_LV, t_cycle_length, t_smoothing); 
         prescribed_motion_info* motion_info_mitral = initialize_prescribed_motion_info(structure_name, t_cycle_length, t_smoothing); 
         prescribed_motion_info* motion_info        = combine_prescribe_motion(motion_info_LV, motion_info_mitral); 
