@@ -214,6 +214,29 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                 const int in_aorta  = d_circ_model_with_lv->point_in_aorta(X[0],X[1]); 
                 const int in_atrium = d_circ_model_with_lv->point_in_atrium(X[0],X[1]); 
 
+                /* 
+                double x_min_debug = 29.58; 
+                double x_max_debug = 29.74; 
+                double y_min_debug = 43.4; 
+                double y_max_debug = 43.5; 
+
+                if ((x_min_debug < X[0]) && (X[0] < x_max_debug)){
+                    if ((y_min_debug < X[1]) && (X[1] < y_max_debug)){
+                        pout << "(x,y) = " << X[0] << ", " << X[1] << ", in_atrium = " << in_atrium << "\n"; 
+                    }
+                }
+                */ 
+                
+                /*
+                int tmp = 0; 
+                if (in_aorta)
+                    tmp = 1; 
+                if (in_atrium)
+                    tmp = 2; 
+
+                pout << X[0] << ", " << X[1] << ", " << tmp << "\n"; 
+                */ 
+
                 if (in_aorta && in_atrium){
                     TBOX_ERROR("Position is within both aorta and atrium, should be impossible\n"); 
                 }
