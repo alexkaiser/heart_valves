@@ -1,10 +1,10 @@
-function [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr, k_nbr)
-%
-% Returns whether neighbor is a valid point, 
-% If valid retuns neighbor indicies 
-% and incides for spring constants 
-%
+function J = tension_zero_rest_length_linear_by_tangent_jacobian(X_current,X_nbr,k_spr)
 % 
+% Jacobian of tension in linear spring with zero rest length multiplied by tangent 
+% Note that scalar tension is 
+%     k_spr |X_current - X_nbr|
+% and tangent is 
+% (X_current - X_nbr)/|X_current - X_nbr|
 
 % Copyright (c) 2019, Alexander D. Kaiser
 % All rights reserved.
@@ -34,45 +34,4 @@ function [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j,
 % OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-j_max       = leaflet.j_max; 
-k_max       = leaflet.k_max; 
-is_internal = leaflet.is_internal; 
-is_bc       = leaflet.is_bc;
-
-if isfield(leaflet, 'periodic_j')
-    periodic_j = leaflet.periodic_j; 
-else
-    periodic_j = zeros(k_max,1); 
-end
-
-% j spring is minimum, unless zero in which case gets a periodic wrap 
-j_spr = min(j, j_nbr); 
-if j_spr == 0 
-    j_spr = j_max; 
-end 
-
-% j_nbr may need periodic reduction 
-j_nbr = get_j_nbr(j_nbr, k, periodic_j, j_max); 
-
-% k_nbr is always an identity operation, no periodicity in this direction 
-% only include for consistency 
-% k_nbr = k_nbr; 
-
-k_spr = min(k, k_nbr);
-
-target_spring = false; 
-
-% neighbor must be valid 
-if (j_nbr > 0) && (k_nbr > 0) && ...
-   (j_nbr <= j_max) && (k_nbr <= k_max) && ...
-   (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
-    valid = true; 
-    
-    % if boundary conditions are target points, then return flag accordingly 
-    if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs && is_bc(j_nbr,k_nbr)
-        target_spring = true; 
-    end 
-        
-else 
-    valid = false; 
-end 
+J = -k_spr * eye(3); 

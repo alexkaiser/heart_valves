@@ -416,6 +416,11 @@ valve.target_papillary = valve.target_papillary_unscaled * tension_base;
 valve.eta_net          = valve.eta_net_unscaled          * tension_base; 
 valve.eta_papillary    = valve.eta_papillary_unscaled    * tension_base; 
 
+% target coefficients also to leaflet data structure if included as bcs 
+leaflet.target_net       = valve.target_net; 
+leaflet.target_papillary = valve.target_papillary; 
+
+
 % reset everything 
 tension_coeffs.tension_base   = tension_base;
 leaflet.chordae               = chordae;

@@ -88,6 +88,9 @@ leaflet.reflect_pressure    = reflect_x;
 leaflet.diff_eqns = @difference_equations_bead_slip; 
 leaflet.jacobian  = @build_jacobian_bead_slip;
 
+if isfield(valve, 'targets_for_bcs')
+    leaflet.targets_for_bcs = valve.targets_for_bcs; 
+end 
 
 leaflet.total_angle_anterior = angles.anterior; 
 

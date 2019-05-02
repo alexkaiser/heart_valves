@@ -126,7 +126,14 @@ for tree_idx = 1:num_trees
 end 
 
 
-k_max = k_max + 1 + n_rings_periodic; 
+k_max = k_max + 1 + n_rings_periodic;
+
+% if the boundary condition points are target points
+% then add one to k_max for the target locations 
+if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs
+    k_max = k_max + 1; 
+end 
+
 ring_k_idx = k_max * ones(j_max,1); 
 
 % resize and zero pad chordae arrays

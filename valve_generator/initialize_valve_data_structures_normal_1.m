@@ -66,7 +66,9 @@ valve.decreasing_tension = decreasing_tension;
 
 valve.diff_eqns = @difference_equations_bead_slip; 
 valve.jacobian  = @build_jacobian_bead_slip;
-        
+
+valve.targets_for_bcs = true; 
+
 
 % general solve parameters
 
@@ -122,7 +124,7 @@ reflect_x = false;
 
 % Radial and circumferential fibers 
 % Or diagonally oriented fibers 
-% Always true in this version 
+% Always true in this version `
 radial_and_circumferential = true; 
 
 % physical units create a scalar multiple of the old 
@@ -291,7 +293,7 @@ end
 % and scaling for copies is handled by the output routine 
 
 % scales for by mesh width for consistant total mesh force on ring 
-valve.target_net_unscaled       = 8 * 256/(valve.N^2); 
+valve.target_net_unscaled       = 8 * 256/(valve.N); % 8 * 256/(valve.N^2); 
 
 % does not scale since total number of points is constant 
 valve.target_papillary_unscaled = 40/128; 

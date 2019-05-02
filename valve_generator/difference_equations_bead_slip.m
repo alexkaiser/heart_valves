@@ -71,6 +71,13 @@ function F = difference_equations_bead_slip(leaflet)
     else 
         tension_debug = false; 
     end 
+
+    if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs 
+        targets_for_bcs = true; 
+        k_target_net = leaflet.target_net; 
+    else 
+        targets_for_bcs = false; 
+    end 
     
     tension_debug_chordae = false; 
     
@@ -99,9 +106,9 @@ function F = difference_equations_bead_slip(leaflet)
                     
                     k_nbr_tmp = k; 
                     
-                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
                     
-                    if valid 
+                    if valid && (~target_spring)
 
                         X_nbr = X_current(:,j_nbr,k_nbr); 
 
@@ -121,7 +128,19 @@ function F = difference_equations_bead_slip(leaflet)
 
                         F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
                     
+                    elseif valid && target_spring 
+                        if ~targets_for_bcs
+                            error('Cannot ask for targets for bcs without flag set')
+                        end
+                        
+                        X_nbr    = X_current(:,j_nbr,k_nbr);
+                        tension_tangent = tension_zero_rest_length_linear_by_tangent(X, X_nbr, k_target_net); 
+                        F_tmp = F_tmp + du * tension_tangent; 
+                        
                     end 
+                    
+                    
+                    
                 end 
 
                 % v type fibers 
@@ -129,9 +148,9 @@ function F = difference_equations_bead_slip(leaflet)
 
                     j_nbr_tmp = j; 
                     
-                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
                     
-                    if valid
+                    if valid && (~target_spring)
                     
                         X_nbr = X_current(:,j_nbr,k_nbr); 
 
@@ -150,7 +169,19 @@ function F = difference_equations_bead_slip(leaflet)
                         end 
                         
                         F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
-                    
+                        
+                    elseif valid && target_spring 
+                        
+                        if ~targets_for_bcs
+                            error('Cannot ask for targets for bcs without flag set')
+                        end
+                        
+                        X_nbr    = X_current(:,j_nbr,k_nbr);
+               
+                        tension_tangent = tension_zero_rest_length_linear_by_tangent(X, X_nbr, k_target_net); 
+                        
+                        F_tmp = F_tmp + du * tension_tangent; 
+                       
                     end 
 
                 end 
