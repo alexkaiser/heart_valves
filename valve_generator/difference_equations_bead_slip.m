@@ -132,10 +132,12 @@ function F = difference_equations_bead_slip(leaflet)
                         if ~targets_for_bcs
                             error('Cannot ask for targets for bcs without flag set')
                         end
-                        
+                                                
                         X_nbr    = X_current(:,j_nbr,k_nbr);
                         tension_tangent = tension_zero_rest_length_linear_by_tangent(X, X_nbr, k_target_net); 
-                        F_tmp = F_tmp + du * tension_tangent; 
+                        
+                        % targets are absolute forces, no du here 
+                        F_tmp = F_tmp + tension_tangent; 
                         
                     end 
                     
@@ -177,10 +179,10 @@ function F = difference_equations_bead_slip(leaflet)
                         end
                         
                         X_nbr    = X_current(:,j_nbr,k_nbr);
-               
                         tension_tangent = tension_zero_rest_length_linear_by_tangent(X, X_nbr, k_target_net); 
                         
-                        F_tmp = F_tmp + du * tension_tangent; 
+                        % targets are absolute forces, no du here 
+                        F_tmp = F_tmp + tension_tangent; 
                        
                     end 
 

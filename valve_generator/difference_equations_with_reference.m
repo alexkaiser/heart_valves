@@ -60,6 +60,14 @@ function F = difference_equations_with_reference(leaflet)
         periodic_j = zeros(k_max,1); 
     end 
     
+    if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs 
+        targets_for_bcs = true; 
+        k_target_net = leaflet.target_net; 
+    else 
+        targets_for_bcs = false; 
+    end 
+    
+    
     F_leaflet = zeros(size(X_current)); 
 
     % Internal leaflet part 
@@ -85,14 +93,26 @@ function F = difference_equations_with_reference(leaflet)
                     
                     k_nbr_tmp = k; 
                     
-                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
                     
-                    if valid
+                    if valid && (~target_spring)
                         X_nbr = X_current(:,j_nbr,k_nbr); 
 
                         tension = tension_with_reference(X, X_nbr, R_u(j_spr,k_spr), k_u(j_spr,k_spr), leaflet); 
                         F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
                     
+                    elseif valid && target_spring 
+                        
+                        if ~targets_for_bcs
+                            error('Cannot ask for targets for bcs without flag set')
+                        end
+                        
+                        'hit bc target block'
+                        
+                        X_nbr    = X_current(:,j_nbr,k_nbr);
+                        tension_tangent = tension_zero_rest_length_linear_by_tangent(X, X_nbr, k_target_net); 
+                        F_tmp = F_tmp + tension_tangent; 
+                        
                     end 
                     
                 end 
@@ -102,7 +122,7 @@ function F = difference_equations_with_reference(leaflet)
 
                     j_nbr_tmp = j; 
                     
-                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
                     
                     if valid
                         X_nbr = X_current(:,j_nbr,k_nbr); 
@@ -110,6 +130,15 @@ function F = difference_equations_with_reference(leaflet)
                         tension = tension_with_reference(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet); 
                         F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
                     
+                    elseif valid && target_spring 
+                        
+                        if ~targets_for_bcs
+                            error('Cannot ask for targets for bcs without flag set')
+                        end
+                        
+                        X_nbr    = X_current(:,j_nbr,k_nbr);
+                        tension_tangent = tension_zero_rest_length_linear_by_tangent(X, X_nbr, k_target_net); 
+                        F_tmp = F_tmp + tension_tangent; 
                     end 
                 end 
 

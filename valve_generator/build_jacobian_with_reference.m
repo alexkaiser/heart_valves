@@ -59,7 +59,14 @@ function J = build_jacobian_with_reference(leaflet)
         periodic_j = zeros(k_max,1); 
     end
     
-
+    if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs 
+        targets_for_bcs = true; 
+        k_target_net = leaflet.target_net; 
+    else 
+        targets_for_bcs = false; 
+    end 
+    
+    
     % there are fewer than 15 nnz per row
     % if using the redundant features on sparse creation use more 
     capacity = 10 * 15 * total_internal_with_trees; 
@@ -141,15 +148,18 @@ function J = build_jacobian_with_reference(leaflet)
                     
                     k_nbr_tmp = k; 
                     
-                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
                     
                     if valid
                         
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
 
-                        J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, R_u(j_spr,k_spr), k_u(j_spr,k_spr), leaflet);                    
-
+                        if ~target_spring 
+                            J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, R_u(j_spr,k_spr), k_u(j_spr,k_spr), leaflet);                    
+                        else 
+                            J_tmp = tension_zero_rest_length_linear_by_tangent_jacobian(X, X_nbr, k_target_net);
+                        end 
                         % current term is always added in 
                         % this gets no sign 
                         % this is always at the current,current block in the matrix 
@@ -171,16 +181,20 @@ function J = build_jacobian_with_reference(leaflet)
 
                     j_nbr_tmp = j; 
                     
-                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
                     
                     if valid
                         
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
  
-                        J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet);
+                        if ~target_spring 
+                            J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet);
+                        else 
+                            J_tmp = tension_zero_rest_length_linear_by_tangent_jacobian(X, X_nbr, k_target_net);
+                        end
                         
-                        % current term is always added in 
+                        % current term is always added in
                         % this gets no sign  
                         % this is always at the current,current block in the matrix 
                         place_tmp_block(range_current, range_current, J_tmp); 

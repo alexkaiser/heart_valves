@@ -174,7 +174,8 @@ function J = build_jacobian_bead_slip(leaflet)
                         
                         else 
                             % connected to a node by a target spring that is a bc 
-                            J_tmp = du * tension_zero_rest_length_linear_by_tangent_jacobian(X, X_nbr, k_target_net);                             
+                            % targets are absolute forces, no du here 
+                            J_tmp = tension_zero_rest_length_linear_by_tangent_jacobian(X, X_nbr, k_target_net);                             
                         end 
                         
 
@@ -219,7 +220,8 @@ function J = build_jacobian_bead_slip(leaflet)
                             
                         else
                             % connected to a node by a target spring that is a bc 
-                            J_tmp = du * tension_zero_rest_length_linear_by_tangent_jacobian(X, X_nbr, k_target_net);                           
+                            % targets are absolute forces, no du here 
+                            J_tmp = tension_zero_rest_length_linear_by_tangent_jacobian(X, X_nbr, k_target_net);                           
                         end 
                         
                         % current term is always added in 
