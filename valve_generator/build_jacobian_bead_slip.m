@@ -69,6 +69,7 @@ function J = build_jacobian_bead_slip(leaflet)
     if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs 
         targets_for_bcs = true; 
         k_target_net = leaflet.target_net; 
+        k_target_papillary = leaflet.target_papillary; 
     else 
         targets_for_bcs = false; 
     end 
@@ -292,6 +293,53 @@ function J = build_jacobian_bead_slip(leaflet)
         
         % normalize this, no mesh parameters in chordae computations 
         du_chordae = 1; 
+        
+        % root is an unknown because it is being treated as a target point 
+        % hangle this manually 
+        if targets_for_bcs
+
+            root = chordae(tree_idx).root; 
+                        
+            % root index is zero (and is a separate variable)
+            i = 0; 
+            
+            % root always connects to first point 
+            nbr_idx = 1; 
+            
+            % and current range 
+            range_current = range_chordae(chordae, i, tree_idx); 
+            
+            % get the neighbors coordinates, reference coordinate and spring constants
+            [nbr R_nbr k_val j_nbr k_nbr c_dec_tension_chordae] = get_nbr_chordae(leaflet, i, nbr_idx, tree_idx); 
+        
+            % if the neighbor is in the chordae 
+            if isempty(j_nbr) && isempty(k_nbr) 
+                range_nbr = range_chordae(chordae, nbr_idx, tree_idx); 
+            else 
+                error('Root neighbor must exist and be in the chordae'); 
+            end
+            
+            % tension Jacobian for this spring 
+            J_tmp = k_val * tangent_jacobian(root, nbr); 
+
+            if decreasing_tension && (k_val ~= 0.0)
+                J_tmp = J_tmp + k_val * dec_tension_jacobian(root, nbr, du_chordae, c_dec_tension_chordae); 
+            end
+
+            % current always gets a contribution from this spring 
+            place_tmp_block(range_current, range_current, J_tmp); 
+
+            % range may not be empty here
+            place_tmp_block(range_current, range_nbr, -J_tmp); 
+
+            
+            % block for attachment to boundary condition with target spring 
+            J_tmp = tension_zero_rest_length_linear_by_tangent_jacobian(root, chordae(tree_idx).root_target, k_target_papillary);                             
+            place_tmp_block(range_current, range_current, J_tmp); 
+            % neighbor block is, by definition, a bc and gets no block
+            
+        end 
+            
         
         for i=1:N_chordae
 

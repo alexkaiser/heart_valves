@@ -82,7 +82,7 @@ for tree_idx = 1:leaflet.num_trees
     leaflet_Z.chordae(tree_idx).C = rand(size(leaflet_Z.chordae(tree_idx).C)); 
     
     if leaflet.targets_for_bcs
-        leaflet_Z.chordae(tree_idx).root(rand(3,1)); 
+        leaflet_Z.chordae(tree_idx).root = rand(3,1); 
     end 
     
 end 
@@ -185,13 +185,12 @@ for tree_idx = 1:leaflet.num_trees
     
     [m N_chordae] = size(leaflet.chordae(tree_idx).C); 
     
-    for i=1:N_chordae
+    for i=0:N_chordae
 
         tree_idx
         i
 
         errors = zeros(size(epsilon_vals)); 
-
 
         for ep_idx = 1:length(epsilon_vals)
 
@@ -215,13 +214,15 @@ for tree_idx = 1:leaflet.num_trees
 
             diffs = F_perturbed - F - ep*J*Z_linearized; 
 
-            range = range_chordae(leaflet.chordae, i, tree_idx); % leaflet.chordae(tree_idx).min_global_idx + 3*(i-1) + (0:2);
+            range = range_chordae(leaflet.chordae, i, tree_idx);  
             errors(ep_idx) = norm(diffs(range)); 
 
             fprintf('%e\t | %e \n', ep, errors(ep_idx)); 
 
         end 
 
+        range
+        
         fprintf('\n\n\n\n'); 
 
         loglog(epsilon_vals, errors, '-*'); 

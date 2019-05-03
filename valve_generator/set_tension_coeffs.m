@@ -403,7 +403,7 @@ for tree_idx = 1:leaflet.num_trees
     chordae(tree_idx).k_0                   = k_0;
     chordae(tree_idx).k_multiplier          = k_multiplier;
     
-    chordae(tree_idx).c_dec_chordae_leaf     = c_dec_chordae_leaf_tmp; 
+    chordae(tree_idx).c_dec_chordae_leaf    = c_dec_chordae_leaf_tmp; 
     chordae(tree_idx).c_dec_multiplier      = c_dec_multiplier;
     
 end 

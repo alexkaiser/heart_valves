@@ -60,14 +60,30 @@ function leaflet = add_chordae(leaflet, tree_idx)
         warning('weird boundary errors possible on such a small tree'); 
     end 
 
+    if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs 
+        targets_for_bcs = true; 
+    else 
+        targets_for_bcs = false; 
+    end 
+    
     % just for initial guess 
     tree_frac           = 0.5; 
     
     total_len = 2^(n_tree+1) - 1; 
     max_internal = 2^(n_tree) - 1;     % last node that is not a leaf 
    
-    % root pulled from the papillary arrays 
-    chordae(tree_idx).root = papillary(:,tree_idx); 
+    if ~targets_for_bcs
+        % root pulled from the papillary arrays 
+        chordae(tree_idx).root = papillary(:,tree_idx); 
+    else 
+        % root target pulled from the papillary arrays 
+        chordae(tree_idx).root_target = papillary(:,tree_idx); 
+        chordae(tree_idx).targets_for_bcs = true; 
+        
+        % just move the initial condition up slightly for the root 
+        % which is now an internal point 
+        chordae(tree_idx).root        = papillary(:,tree_idx) + [0; 0; 0.1]; 
+    end 
     
     % initialize the left boundary conditions from the leaflet     
     chordae(tree_idx).C = zeros(3,total_len);   
@@ -113,6 +129,11 @@ function leaflet = add_chordae(leaflet, tree_idx)
     chordae(tree_idx).min_global_idx   = leaflet.total_internal_with_trees + 1; 
     
     leaflet.total_internal_with_trees  = leaflet.total_internal_with_trees + 3*max_internal; 
+    
+    % one extra internal here for root
+    if targets_for_bcs
+        leaflet.total_internal_with_trees = leaflet.total_internal_with_trees + 3; 
+    end 
     
     leaflet.chordae = chordae;
 end 

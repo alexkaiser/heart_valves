@@ -75,6 +75,7 @@ function F = difference_equations_bead_slip(leaflet)
     if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs 
         targets_for_bcs = true; 
         k_target_net = leaflet.target_net; 
+        k_target_papillary = leaflet.target_papillary; 
     else 
         targets_for_bcs = false; 
     end 
@@ -244,6 +245,39 @@ function F = difference_equations_bead_slip(leaflet)
         
         % normalize this, no mesh parameters in chordae computations 
         du_chordae = 1; 
+        
+        % root is an unknown because it is being treated as a target point 
+        % hangle this manually 
+        if targets_for_bcs
+
+            root = chordae(tree_idx).root; 
+            
+            % root attachment to first internal node 
+            F_chordae(tree_idx).root = zeros(3,1); 
+            
+            % root index is zero (and is a separate variable)
+            i = 0; 
+            
+            % root always connects to first point 
+            nbr_idx = 1; 
+            
+            % get the neighbors coordinates, reference coordinate and spring constants
+            [nbr R_nbr k_val j_nbr k_nbr c_dec_tension_chordae] = get_nbr_chordae(leaflet, i, nbr_idx, tree_idx); 
+
+            tension = k_val; 
+            if decreasing_tension && (k_val ~= 0.0)
+                tension = tension + k_val * tension_decreasing(root, nbr, du_chordae, c_dec_tension_chordae) ; 
+            end
+
+            tension_by_tangent = tension * (nbr - root) / norm(nbr - root);  
+            F_chordae(tree_idx).root = F_chordae(tree_idx).root + tension_by_tangent; 
+
+            % connection to boundary condition root point 
+            tension_by_tangent = tension_zero_rest_length_linear_by_tangent(root, chordae(tree_idx).root_target, k_target_papillary);
+            F_chordae(tree_idx).root = F_chordae(tree_idx).root + tension_by_tangent; 
+            
+        end 
+        
 
         for i=1:N_chordae
 

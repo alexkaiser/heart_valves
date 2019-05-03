@@ -75,7 +75,20 @@ for k=1:k_max
     end 
 end
 
+% fprintf('length(X_learized) = %d, internal placed only\n', length(X_linearized)); 
+
 for tree_idx = 1:leaflet.num_trees
+    
+    if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs         
+        X_linearized = [X_linearized; chordae(tree_idx).root(:)];
+        
+        % fprintf('length(X_learized) = %d, tree_idx = %d, root placed\n', length(X_linearized), tree_idx); 
+        
+    end 
+    
     X_linearized = [X_linearized; chordae(tree_idx).C(:)]; 
+    % fprintf('length(X_learized) = %d, tree_idx = %d, tree placed\n', length(X_linearized), tree_idx); 
 end 
+
+% 'pause'
 
