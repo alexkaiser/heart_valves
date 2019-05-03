@@ -72,18 +72,9 @@ function leaflet = add_chordae(leaflet, tree_idx)
     total_len = 2^(n_tree+1) - 1; 
     max_internal = 2^(n_tree) - 1;     % last node that is not a leaf 
    
-    if ~targets_for_bcs
-        % root pulled from the papillary arrays 
-        chordae(tree_idx).root = papillary(:,tree_idx); 
-    else 
-        % root target pulled from the papillary arrays 
-        chordae(tree_idx).root_target = papillary(:,tree_idx); 
-        chordae(tree_idx).targets_for_bcs = true; 
-        
-        % just move the initial condition up slightly for the root 
-        % which is now an internal point 
-        chordae(tree_idx).root        = papillary(:,tree_idx) + [0; 0; 0.1]; 
-    end 
+    
+    % root pulled from the papillary arrays 
+    chordae(tree_idx).root = papillary(:,tree_idx); 
     
     % initialize the left boundary conditions from the leaflet     
     chordae(tree_idx).C = zeros(3,total_len);   
@@ -106,6 +97,17 @@ function leaflet = add_chordae(leaflet, tree_idx)
             chordae(tree_idx).C(:,i) = (tree_frac)*p + 0.5*(1-tree_frac)*l + 0.5*(1-tree_frac)*r; 
         end
 
+    end 
+    
+    if targets_for_bcs
+        % root target pulled from the papillary arrays 
+        chordae(tree_idx).root_target = papillary(:,tree_idx); 
+        chordae(tree_idx).targets_for_bcs = true; 
+        
+        % just move the initial condition up slightly for the root 
+        % which is now an internal point
+        root_frac = 0.95; 
+        chordae(tree_idx).root = root_frac *chordae(tree_idx).root_target + (1-root_frac) * chordae(tree_idx).C(:,1); 
     end 
     
     

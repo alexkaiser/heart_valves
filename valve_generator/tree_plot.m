@@ -74,6 +74,13 @@ end
 
 width = 1; 
 
+if leaflet.targets_for_bcs
+    x = [root(1); leaflet.chordae(tree_idx).root_target(1)]; 
+    y = [root(2); leaflet.chordae(tree_idx).root_target(2)]; 
+    z = [root(3); leaflet.chordae(tree_idx).root_target(3)];
+    plot3(x,y,z,'k*'); 
+end 
+
 
 % left side 
 x = [root(1); C(1,1)]; 

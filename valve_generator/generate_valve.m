@@ -31,7 +31,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N_range = 2^8; % 2.^(5:11); 
+N_range = 2^5; % 2.^(5:11); 
 
 for N = N_range
 
@@ -95,7 +95,7 @@ for N = N_range
     end
 
 
-    iteration_movie = false; 
+    iteration_movie = true; 
     if iteration_movie
         valve.leaflets(1).iteration_movie = true;
         % valve.leaflets(1).movie_name = 'const_tension_newton'; 

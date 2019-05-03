@@ -130,7 +130,7 @@ if isfield(leaflet, 'iteration_movie') && leaflet.iteration_movie
     view(0,90)
     title_str = sprintf('%s_top_%d', movie_name, it);
     printfig(fig_movie, title_str); 
-    close(fig_movie); 
+    % close(fig_movie); 
 end 
 
 converged = false; 
@@ -397,7 +397,7 @@ while true
         view(0,90)
         title_str = sprintf('%s_top_%d', movie_name, it);
         printfig(fig_movie, title_str); 
-        close(fig_movie); 
+%         close(fig_movie); 
     end    
 end 
 
