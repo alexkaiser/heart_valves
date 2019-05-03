@@ -80,6 +80,11 @@ leaflet_Z.X = Z;
 
 for tree_idx = 1:leaflet.num_trees
     leaflet_Z.chordae(tree_idx).C = rand(size(leaflet_Z.chordae(tree_idx).C)); 
+    
+    if leaflet.targets_for_bcs
+        leaflet_Z.chordae(tree_idx).root(rand(3,1)); 
+    end 
+    
 end 
 Z_linearized = linearize_internal_points(leaflet_Z); 
 
@@ -97,7 +102,12 @@ for i = 1:length(epsilon_vals)
     leaflet_perturbation.X = leaflet.X + ep*leaflet_Z.X; 
     
     for tree_idx = 1:leaflet.num_trees
-        leaflet_perturbation.chordae(tree_idx).C = leaflet.chordae(tree_idx).C  + ep*leaflet_Z.chordae(tree_idx).C; 
+        leaflet_perturbation.chordae(tree_idx).C = leaflet.chordae(tree_idx).C  + ep*leaflet_Z.chordae(tree_idx).C;
+        
+        if leaflet.targets_for_bcs
+            leaflet_perturbation.chordae(tree_idx).root = leaflet.chordae(tree_idx).root + ep*leaflet_Z.chordae(tree_idx).root;
+        end 
+        
     end 
     
     % eval the difference eqns on the perturbation 
@@ -191,8 +201,13 @@ for tree_idx = 1:leaflet.num_trees
             leaflet_perturbation   = leaflet;  
             leaflet_perturbation.X = leaflet.X + ep * leaflet_Z.X; 
 
-            for tree_idx = 1:leaflet.num_trees
-                leaflet_perturbation.chordae(tree_idx).C = leaflet.chordae(tree_idx).C  + ep*leaflet_Z.chordae(tree_idx).C; 
+            for tree_idx_tmp = 1:leaflet.num_trees
+                leaflet_perturbation.chordae(tree_idx_tmp).C = leaflet.chordae(tree_idx_tmp).C  + ep*leaflet_Z.chordae(tree_idx_tmp).C; 
+                
+                if leaflet.targets_for_bcs
+                    leaflet_perturbation.chordae(tree_idx_tmp).root = leaflet.chordae(tree_idx_tmp).root + ep*leaflet_Z.chordae(tree_idx_tmp).root;
+                end
+                
             end
             
             % eval the difference eqns on the perturbation
@@ -200,7 +215,7 @@ for tree_idx = 1:leaflet.num_trees
 
             diffs = F_perturbed - F - ep*J*Z_linearized; 
 
-            range = leaflet.chordae(tree_idx).min_global_idx + 3*(i-1) + (0:2);
+            range = range_chordae(leaflet.chordae, i, tree_idx); % leaflet.chordae(tree_idx).min_global_idx + 3*(i-1) + (0:2);
             errors(ep_idx) = norm(diffs(range)); 
 
             fprintf('%e\t | %e \n', ep, errors(ep_idx)); 
