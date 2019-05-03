@@ -63,7 +63,7 @@ for tree_idx = 1:leaflet.num_trees
     end 
     
     for i=1:N_chordae
-        leaflet.chordae(tree_idx).C(:,i)  = v_linearized(idx + (0:2));  
+        leaflet.chordae(tree_idx).C(:,i) = v_linearized(idx + (0:2));  
         idx = idx + 3; 
     end 
 end 

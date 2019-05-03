@@ -270,26 +270,26 @@ function F = difference_equations_bead_slip(leaflet)
             end
 
             tension_by_tangent = tension * (nbr - root) / norm(nbr - root); 
-            if tree_idx == 1 
-                tension_by_tangent
-                tangent_up_normalized = tension_by_tangent / norm(tension_by_tangent);  
-            end 
+%             if tree_idx == 1 
+%                 tension_by_tangent
+%                 tangent_up_normalized = tension_by_tangent / norm(tension_by_tangent);  
+%             end 
                 
             
             F_chordae(tree_idx).root = F_chordae(tree_idx).root + tension_by_tangent; 
 
             % connection to boundary condition root point 
             tension_by_tangent = tension_zero_rest_length_linear_by_tangent(root, chordae(tree_idx).root_target, k_target_papillary);
-            if tree_idx == 1 
-                tension_by_tangent
-                tangent_down_normalized = tension_by_tangent / norm(tension_by_tangent); 
-            end 
+%             if tree_idx == 1 
+%                 tension_by_tangent
+%                 tangent_down_normalized = tension_by_tangent / norm(tension_by_tangent); 
+%             end 
             F_chordae(tree_idx).root = F_chordae(tree_idx).root + tension_by_tangent; 
-            if tree_idx == 1 
-                F_chordae(tree_idx).root 
-                angle = acos(tangent_down_normalized' * tangent_up_normalized)
-                angle_degress = angle * 180/pi 
-            end 
+%             if tree_idx == 1 
+%                 F_chordae(tree_idx).root 
+%                 angle = acos(tangent_down_normalized' * tangent_up_normalized)
+%                 angle_degress = angle * 180/pi 
+%             end 
         end 
         
 

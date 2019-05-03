@@ -95,7 +95,7 @@ for N = N_range
     end
 
 
-    iteration_movie = true; 
+    iteration_movie = false; 
     if iteration_movie
         valve.leaflets(1).iteration_movie = true;
         % valve.leaflets(1).movie_name = 'const_tension_newton'; 

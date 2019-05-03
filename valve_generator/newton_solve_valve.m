@@ -90,6 +90,12 @@ advanpix_multiprecision = false;
 % human-friendly format if false 
 latex_table = false; 
 
+if isfield(leaflet, 'careful_first_step')
+    careful_first_step = leaflet.careful_first_step; 
+    careful_first_step_coeff = leaflet.careful_first_step_coeff; 
+else 
+    careful_first_step = false; 
+end 
 
 if ~exist('max_consecutive_fails', 'var')
     max_consecutive_fails = inf; 
@@ -225,6 +231,10 @@ while true
         % default precision 
         % solve the system,
         soln = J \ (-F_linearized); 
+    end 
+    
+    if careful_first_step && (it == 0) 
+        soln = soln * careful_first_step_coeff; 
     end 
     
     

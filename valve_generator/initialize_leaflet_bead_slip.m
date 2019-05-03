@@ -92,6 +92,16 @@ if isfield(valve, 'targets_for_bcs')
     leaflet.targets_for_bcs = valve.targets_for_bcs; 
 end 
 
+if isfield(valve, 'careful_first_step')
+    leaflet.careful_first_step = valve.careful_first_step; 
+    if leaflet.careful_first_step && isfield(valve, 'careful_first_step_coeff')
+        leaflet.careful_first_step_coeff = valve.careful_first_step_coeff; 
+    else 
+        warning('Using default careful_first_step_coeff of 1/2')
+        leaflet.careful_first_step_coeff = 1/2; 
+    end 
+end 
+
 leaflet.total_angle_anterior = angles.anterior; 
 
 if valve.commissural_leaflets
