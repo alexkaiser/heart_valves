@@ -90,11 +90,13 @@ advanpix_multiprecision = false;
 % human-friendly format if false 
 latex_table = false; 
 
-if isfield(leaflet, 'careful_first_step')
-    careful_first_step = leaflet.careful_first_step; 
-    careful_first_step_coeff = leaflet.careful_first_step_coeff; 
+if isfield(leaflet, 'careful_early_steps')
+    careful_early_steps         = leaflet.careful_early_steps; 
+    careful_early_step_coeff    = leaflet.careful_early_step_coeff; 
+    residual_decrease_to_double = leaflet.residual_decrease_to_double;     
+    error_norm_for_comparison   = err; 
 else 
-    careful_first_step = false; 
+    careful_early_steps         = false; 
 end 
 
 if ~exist('max_consecutive_fails', 'var')
@@ -233,11 +235,7 @@ while true
         soln = J \ (-F_linearized); 
     end 
     
-    if careful_first_step && (it == 0) 
-        soln = soln * careful_first_step_coeff; 
-    end 
-    
-    
+     
     if iterative_refinement
         % see
         % https://blogs.mathworks.com/cleve/2015/02/16/iterative-refinement-for-solutions-to-linear-systems/ 
@@ -253,8 +251,14 @@ while true
         check_iterative_refinement(J)
     end 
     
+    if careful_early_steps
+        alpha = careful_early_step_coeff; 
+    else 
+        alpha = 1.0; 
+    end 
+    
     % add in to get the next iterate 
-    X_linearized = X_linearized_prev + soln; 
+    X_linearized = X_linearized_prev + alpha * soln; 
 
     % copy data back to 2d 
     leaflet = internal_points_to_2d(X_linearized, leaflet); 
@@ -263,7 +267,6 @@ while true
     
     if back_tracking && (~optimization)
         
-        alpha = 1.0; 
         back_tracking_it = 0; 
         while true 
            
@@ -335,6 +338,14 @@ while true
 
     end 
         
+    
+    % if we have decreased by more than the required amount, can turn initial alpha up 
+    if err < residual_decrease_to_double * error_norm_for_comparison
+        careful_early_step_coeff = min(2 * careful_early_step_coeff, 1); 
+        error_norm_for_comparison = err; 
+    end 
+    
+    
     % various ways to leave the main loop 
     it = it + 1; 
     if it > max_it
@@ -367,6 +378,9 @@ while true
         fprintf('%d & %.2e & %f & %.2f \\\\ \n \\hline \n', it, err, alpha, toc); 
     else
         fprintf('Global iteration = %d, \tnorm %e, \telapsed = %f', it, err, toc); 
+        if exist('careful_early_step_coeff', 'var')
+            fprintf(', \talpha_start = %f', careful_early_step_coeff); 
+        end        
         if exist('alpha', 'var')
             fprintf(', \talpha = %f', alpha); 
         end

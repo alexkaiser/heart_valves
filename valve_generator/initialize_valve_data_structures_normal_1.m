@@ -45,8 +45,9 @@ valve.max_it                = 1e8;
 valve.max_continuations     = 1e8; 
 
 % shirinks initial 
-valve.careful_first_step = true; 
-valve.careful_first_step_coeff = 1/8; 
+valve.careful_early_steps         = true; 
+valve.careful_early_step_coeff    = 1/8; 
+valve.residual_decrease_to_double = 1/2; 
 
 % Parameters for quick exit on line search 
 valve.max_consecutive_fails = 0;  
