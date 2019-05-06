@@ -156,7 +156,7 @@ function [] = output_to_ibamr_format(valve)
 
     
     % Lagrangian mesh spacing 
-    ds = valve.ds;
+    ds = valve.ds
     
     
     if isfield(valve, 'kappa_cross_layer_multipler') && (valve.kappa_cross_layer_multipler ~= 0) && (params.num_copies > 1)
@@ -174,7 +174,7 @@ function [] = output_to_ibamr_format(valve)
     
     % copies, if needed, will be placed this far down 
     if params.num_copies > 1
-        z_offset_vals = -linspace(0, ds, params.num_copies); 
+        z_offset_vals = -ds*[0:(params.num_copies-1)]
     else 
         z_offset_vals = 0; 
     end  
@@ -197,9 +197,11 @@ function [] = output_to_ibamr_format(valve)
         
         if params.cross_layer_on
             params.min_idx_for_cross_layer = params.global_idx; 
+            % fprintf('min_idx_for_cross_layer = %d\n', params.min_idx_for_cross_layer); 
         end 
         
         params.z_offset = z_offset_vals(copy); 
+        fprintf('params.z_offset = %f\n', params.z_offset); 
         first_idx = params.global_idx + 1; 
         
         for i=1:length(valve.leaflets)
@@ -226,10 +228,11 @@ function [] = output_to_ibamr_format(valve)
         end 
 
         if params.cross_layer_on
-            params.max_idx_for_cross_layer = params.global_idx; 
-            if copy > 1 
-                params = place_cross_layer_springs(params); 
-            end 
+            params.max_idx_for_cross_layer = params.global_idx - 1; 
+%             fprintf('max_idx_for_cross_layer = %d\n', params.max_idx_for_cross_layer); 
+%             if copy > 1 
+%                 params = place_cross_layer_springs(params); 
+%             end 
         end 
         
         % flat part of mesh 
@@ -262,7 +265,8 @@ function [] = output_to_ibamr_format(valve)
         else 
             
             % pass L=r to get only one ring placed 
-            params = place_net(params, valve.leaflets(i), ds, r, r, k_rel, k_target_net, ref_frac_net, eta_net); 
+            hoop_springs = false; 
+            params = place_net(params, valve.leaflets(i), ds, r, r, k_rel, k_target_net, ref_frac_net, eta_net, hoop_springs); 
             
         end 
         
@@ -271,15 +275,25 @@ function [] = output_to_ibamr_format(valve)
         % first time through, count all included indices 
         if params.cross_layer_on && (copy == 1)
             params.total_per_layer = params.global_idx; 
+            fprintf('params.total_per_layer = %d\n', params.total_per_layer); 
         end 
         
         % adjust for offset 
-        last_idx = params.global_idx + 1; 
+        last_idx = params.global_idx; 
+        
+        fprintf('this layer range, matlab indices, inclusive                          = %d:%d\n', first_idx, last_idx); 
+        
         params.vertices(3,first_idx:last_idx) = params.vertices(3,first_idx:last_idx) + params.z_offset; 
         
         if params.targets_for_bcs
             params.vertices_target(3,first_idx:last_idx) = params.vertices_target(3,first_idx:last_idx) + params.z_offset; 
         end 
+        
+        if copy > 1 
+            params = place_cross_layer_springs(params); 
+        end 
+
+        
         
     end 
 
@@ -328,9 +342,10 @@ end
 function params = write_all_vertices(params)
     % writes all vertices to file 
 
-    max_idx = params.global_idx; 
+    max_idx = params.global_idx;
+    fprintf('max_idx = %d\n', max_idx); 
     
-    debug = true; 
+    debug = false; 
     if debug 
         min_x = min(params.vertices(1,1:max_idx)) 
         max_x = max(params.vertices(1,1:max_idx)) 
@@ -922,10 +937,31 @@ function params = place_cross_layer_springs(params)
     % don't include these for now 
     output_tmp = false; 
         
+    debug = true; 
+    err_count = 0; 
+    
+    fprintf('Cross layer spring range     (inclusive, zero based for ibamr files) = %d:%d\n', params.min_idx_for_cross_layer, params.max_idx_for_cross_layer); 
+    fprintf('connect to range in previous (inclusive, zero based for ibamr files) = %d:%d\n', params.min_idx_for_cross_layer -  params.total_per_layer, params.max_idx_for_cross_layer -  params.total_per_layer); 
     for i=(params.min_idx_for_cross_layer):(params.max_idx_for_cross_layer)
         idx          = i -  params.total_per_layer; 
         nbr_idx      = i;  
 
+        if debug
+           coords = params.vertices(:,idx+1); 
+           coords_nbr = params.vertices(:,nbr_idx+1);
+           
+           if abs(norm(coords - coords_nbr) - rest_len) > eps
+               if err_count < 5
+                   fprintf('nonrest len spring, rest_len = %f, current_len = %f\n', rest_len, norm(coords - coords_nbr)); 
+                   fprintf('    idx = %d, coords = %f %f %f\n', idx, coords(1), coords(2), coords(3)); 
+                   fprintf('nbr_idx = %d, coords = %f %f %f\n',nbr_idx, coords_nbr(1), coords_nbr(2), coords_nbr(3)); 
+                   fprintf('\n'); 
+                   err_count = err_count + 1; 
+               end 
+           end 
+           
+        end 
+        
         params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx, output_tmp); 
     end 
 
@@ -933,7 +969,7 @@ end
 
 
                         
-function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac, eta)
+function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac, eta, hoop_springs)
     % 
     % Places a polar coordinate mesh in a box 
     % Starts with N points evenly spaced at radius R
@@ -959,6 +995,10 @@ function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac
     %     total_targets 
     % 
 
+    if ~exist('hoop_springs', 'var')
+        hoop_springs = true; 
+    end 
+    
     X     = leaflet.X; 
     j_max = leaflet.j_max; 
     k_max = leaflet.k_max; 
@@ -1068,29 +1108,30 @@ function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac
                     error('should always be placing points in order, something wrong'); 
                 end 
 
-                % check up directions for springs 
-                if j < j_max
-                    j_nbr = j+1; 
-                    if ~isnan(indices_global(j_nbr,k))
-                        rest_len = ref_frac * norm(points(:,j,k) - points(:,j_nbr,k)); 
-                        k_abs = k_rel / rest_len;
-                        nbr_idx = indices_global(j_nbr,k); 
-                        params = spring_string(params, idx, nbr_idx, k_abs, rest_len, function_idx, output_tmp); 
+                if hoop_springs
+                    % check up directions for springs 
+                    if j < j_max
+                        j_nbr = j+1; 
+                        if ~isnan(indices_global(j_nbr,k))
+                            rest_len = ref_frac * norm(points(:,j,k) - points(:,j_nbr,k)); 
+                            k_abs = k_rel / rest_len;
+                            nbr_idx = indices_global(j_nbr,k); 
+                            params = spring_string(params, idx, nbr_idx, k_abs, rest_len, function_idx, output_tmp); 
+                        end 
+                    end 
+
+                    % don't forget the periodic direction in j
+                    if j == j_max
+                       j_nbr = 1; 
+                       % need to make sure that the 1,k point is also not a NaN  
+                       if ~isnan(indices_global(j_nbr,k)) 
+                           rest_len = ref_frac * norm(points(:,j,k) - points(:,j_nbr,k)); 
+                           k_abs = k_rel / rest_len;
+                           nbr_idx = indices_global(j_nbr,k); 
+                           params = spring_string(params, nbr_idx, idx, k_abs, rest_len, function_idx, output_tmp); 
+                       end 
                     end 
                 end 
-                
-                % don't forget the periodic direction in j
-                if j == j_max
-                   j_nbr = 1; 
-                   % need to make sure that the 1,k point is also not a NaN  
-                   if ~isnan(indices_global(j_nbr,k)) 
-                       rest_len = ref_frac * norm(points(:,j,k) - points(:,j_nbr,k)); 
-                       k_abs = k_rel / rest_len;
-                       nbr_idx = indices_global(j_nbr,k); 
-                       params = spring_string(params, nbr_idx, idx, k_abs, rest_len, function_idx, output_tmp); 
-                   end 
-                end 
-                
             end 
            
         end 
