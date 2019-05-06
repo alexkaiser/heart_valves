@@ -76,17 +76,24 @@ function [] = output_to_ibamr_format(valve)
         error('Must have split papillary locations in current implementation.'); 
     end
 
-    params.vertex    = fopen(strcat(base_name, '.vertex'), 'w'); 
-    params.spring    = fopen(strcat(base_name, '.spring'), 'w'); 
-    params.target    = fopen(strcat(base_name, '.target'), 'w'); 
-    params.inst      = fopen(strcat(base_name, '.inst'), 'w'); 
-    params.papillary = fopen(strcat(base_name, '.papillary'), 'w'); 
+    params.vertex        = fopen(strcat(base_name, '.vertex'), 'w'); 
+    params.spring        = fopen(strcat(base_name, '.spring'), 'w'); 
+    params.target        = fopen(strcat(base_name, '.target'), 'w'); 
+    params.inst          = fopen(strcat(base_name, '.inst'), 'w'); 
+    params.papillary     = fopen(strcat(base_name, '.papillary'), 'w'); 
     
     % just make this ridiculously big for now 
     % would be better to implement some resizing but that will also clutter things up 
     params.vertices_capacity = 100 * N^2; 
-    params.vertices = zeros(3,params.vertices_capacity); 
-
+    params.vertices = zeros(3,params.vertices_capacity);        % this has the initial points for target points 
+    
+    if valve.targets_for_bcs
+        params.targets_for_bcs = true; 
+        params.vertices_target = nan * zeros(3,params.vertices_capacity); % this has the target locations for target points 
+        params.vertex_target_pos_file = fopen(strcat(base_name, '_target_position.vertex'), 'w'); 
+        params.total_vertices_target = 0; 
+    end 
+    
     % keep one global index through the whole thing 
     % every time a vertex is placed this is incremented 
     % and params.vertics(:,i) contains the coordinates 
@@ -270,6 +277,10 @@ function [] = output_to_ibamr_format(valve)
         last_idx = params.global_idx + 1; 
         params.vertices(3,first_idx:last_idx) = params.vertices(3,first_idx:last_idx) + params.z_offset; 
         
+        if params.targets_for_bcs
+            params.vertices_target(3,first_idx:last_idx) = params.vertices_target(3,first_idx:last_idx) + params.z_offset; 
+        end 
+        
     end 
 
     if n_lagrangian_tracers > 0
@@ -294,15 +305,24 @@ function [] = output_to_ibamr_format(valve)
     prepend_line_with_int(strcat(base_name, '.spring'), params.total_springs); 
     prepend_line_with_int(strcat(base_name, '.target'), params.total_targets); 
     prepend_line_with_int(strcat(base_name, '.papillary'), params.total_papillary); 
+    
+    if params.targets_for_bcs
+        fclose(params.vertex_target_pos_file); 
+        prepend_line_with_int(strcat(base_name, '_target_position.vertex'), params.total_vertices_target); 
+        
+        if params.total_vertices_target ~= params.total_vertices
+            error('total vertices in target position file and basic position file are not consistent')
+        end 
+        
+    end
+    
 
 end 
 
 
-function params = vertex_string(params, coords)
+function vertex_string(coords, file)
     % prints formatted string for current vertex to vertex file   
-    
-    fprintf(params.vertex, '%.14f\t %.14f\t %.14f\n', coords(1), coords(2), coords(3)); 
-    params.total_vertices = params.total_vertices + 1; 
+    fprintf(file, '%.14f\t %.14f\t %.14f\n', coords(1), coords(2), coords(3)); 
 end
 
 function params = write_all_vertices(params)
@@ -321,8 +341,21 @@ function params = write_all_vertices(params)
     end 
     
     for i=1:max_idx
-        params = vertex_string(params, params.vertices(:,i)); 
+        vertex_string(params.vertices(:,i), params.vertex); 
+        params.total_vertices = params.total_vertices + 1; 
     end 
+    
+    if params.targets_for_bcs
+        
+        nan_indices = isnan(params.vertices_target); 
+        params.vertices_target(nan_indices) = params.vertices(nan_indices); 
+        
+        for i=1:max_idx
+            vertex_string(params.vertices_target(:,i), params.vertex_target_pos_file); 
+            params.total_vertices_target = params.total_vertices_target + 1; 
+        end 
+    end 
+    
 end 
 
 
@@ -552,22 +585,86 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_targ
     for k=1:k_max
         for j=1:j_max
             
-            % every internal and boundary point written to the file 
-            if is_internal(j,k) || is_bc(j,k)
-                
-                params.vertices(:,params.global_idx + 1) = X(:,j,k); 
-                leaflet.indices_global(j,k) = params.global_idx; 
-                
-                % if on boundary, this is a target point 
-                if is_bc(j,k)
-                    if exist('eta_net', 'var')
-                        params = target_string(params, params.global_idx, k_target_net, eta_net);     
-                    else
-                        params = target_string(params, params.global_idx, k_target_net);     
+            if leaflet.targets_for_bcs
+
+                % every internal point written to the file 
+                % targets written in separate array
+                if is_internal(j,k)
+
+                    % check all neighbors for boundary conditions 
+                    found_target = false; 
+                    target_j = []; 
+                    target_k = []; 
+                    for j_nbr_tmp = [j-1,j+1]
+                        k_nbr_tmp = k;                 
+                        [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                        if target_spring
+                            if found_target
+                                error('Found two targets attached to same location, should be impossible'); 
+                            end 
+                            
+                            found_target = true; 
+                            target_j = j_nbr; 
+                            target_k = k_nbr; 
+                        end 
                     end 
+                        
+                    for k_nbr_tmp = [k-1,k+1]
+                        j_nbr_tmp = j; 
+                        [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    
+                        if target_spring
+                            if found_target
+                                error('Found two targets attached to same location, should be impossible'); 
+                            end 
+                            
+                            found_target = true; 
+                            target_j = j_nbr; 
+                            target_k = k_nbr; 
+                        end 
+                    end 
+                    
+                    params.vertices(:,params.global_idx + 1) = X(:,j,k); 
+                    
+                    if found_target
+                        params.vertices_target(:,params.global_idx + 1) = X(:,target_j,target_k); 
+                    end 
+                    leaflet.indices_global(j,k) = params.global_idx; 
+
+                    % if flag set, this is a target point 
+                    if found_target
+                        if exist('eta_net', 'var')
+                            params = target_string(params, params.global_idx, k_target_net, eta_net);     
+                        else
+                            params = target_string(params, params.global_idx, k_target_net);     
+                        end 
+                    end 
+
+                    params.global_idx = params.global_idx + 1;
                 end 
                 
-                params.global_idx = params.global_idx + 1;
+            else % ~leaflet.targets_for_bcs 
+                
+                % default behavior, bcs are targets with current position 
+                
+                % every internal and boundary point written to the file 
+                if is_internal(j,k) || is_bc(j,k)
+
+                    params.vertices(:,params.global_idx + 1) = X(:,j,k); 
+                    leaflet.indices_global(j,k) = params.global_idx; 
+
+                    % if on boundary, this is a target point 
+                    if is_bc(j,k)
+                        if exist('eta_net', 'var')
+                            params = target_string(params, params.global_idx, k_target_net, eta_net);     
+                        else
+                            params = target_string(params, params.global_idx, k_target_net);     
+                        end 
+                    end 
+
+                    params.global_idx = params.global_idx + 1;
+                end 
+                
             end 
         end 
     end
@@ -580,7 +677,16 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_targ
         [m N_chordae] = size(C);         
 
         % always place root index first 
-        params.vertices(:,params.global_idx + 1) = leaflet.chordae(tree_idx).root; 
+        
+        if leaflet.targets_for_bcs
+            % split location of targets and their current position   
+            params.vertices       (:,params.global_idx + 1) = leaflet.chordae(tree_idx).root;
+            params.vertices_target(:,params.global_idx + 1) = leaflet.chordae(tree_idx).root_target;
+        else
+            % default behavior with only one position 
+            params.vertices(:,params.global_idx + 1) = leaflet.chordae(tree_idx).root;
+        end 
+        
         leaflet.chordae(tree_idx).idx_root = params.global_idx;                 
         
         % root is always a boundary condition 
@@ -657,7 +763,11 @@ function params = add_leaflet_springs(params, leaflet, ds, collagen_spring)
         for j=1:j_max
             
             % every internal and boundary point may have springs connected to it 
-            if is_internal(j,k) || is_bc(j,k)
+            if is_internal(j,k) || (is_bc(j,k) && ~leaflet.targets_for_bcs)
+                
+                if (is_bc(j,k) && ~leaflet.targets_for_bcs)
+                    warning('hit is_bc(j,k) in spring loop')
+                end 
                 
                 if output && ((mod(j,output_stride) == 1) || (output_stride == 1))
                     output_tmp_k = true; 
@@ -704,8 +814,8 @@ function params = add_leaflet_springs(params, leaflet, ds, collagen_spring)
                 % springs in leaflet, only go in up direction 
                 j_nbr_tmp = j + 1; 
                 k_nbr_tmp = k; 
-                [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
-                if valid 
+                [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                if valid && (~target_spring)
                     
                     % no bc to bc springs 
                     if ~(is_bc(j, k) && is_bc(j_nbr, k_nbr))
@@ -731,8 +841,8 @@ function params = add_leaflet_springs(params, leaflet, ds, collagen_spring)
                 % springs in leaflet, only go in up direction 
                 j_nbr_tmp = j; 
                 k_nbr_tmp = k + 1; 
-                [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
-                if valid 
+                [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                if valid && (~target_spring)
                     
                     % no bc to bc springs 
                     if ~(is_bc(j, k) && is_bc(j_nbr, k_nbr))

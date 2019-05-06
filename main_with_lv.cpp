@@ -563,7 +563,7 @@ int main(int argc, char* argv[])
 
         #endif
 
-
+        bool motion_position_initialized = false; 
 
         // add some timers         
         get_timestamp(&time1_total); 
@@ -589,6 +589,19 @@ int main(int argc, char* argv[])
             // get current step 
             dt = time_integrator->getMaximumTimeStepSize();
         
+            if (!motion_position_initialized){
+                // LV motion 
+                update_prescribed_motion_positions(patch_hierarchy, 
+                                                  l_data_manager, 
+                                                  loop_time, 
+                                                  dt, 
+                                                  t_cycle_length, 
+                                                  fourier_atrium, 
+                                                  motion_info); 
+                motion_position_initialized = true; 
+            } 
+
+
             if((!prev_step_initialized) && from_restart){
                     dt_prev = dt;
                     prev_step_initialized = true;
@@ -1043,7 +1056,11 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
     int smoothing_steps_per_side; 
     int smoothing_steps_total; 
 
-    if (fabs(min_step_time - t_reduced) < motion_info->t_smoothing/2){
+    if (current_time < motion_info->t_smoothing/2){
+        // no smoothing on initial steps
+        smoothing_on = false; 
+    }
+    else if (fabs(min_step_time - t_reduced) < motion_info->t_smoothing/2){
         // if we are right by the minimum time, then smoothing is on with the prevoius value         
         // do not smooth on initial step, only if we are above 
         if (current_time > (motion_info->t_smoothing)){
@@ -1063,7 +1080,7 @@ void update_prescribed_motion_positions(Pointer<PatchHierarchy<NDIM> > hierarchy
     if (smoothing_on){
         smoothing_steps_per_side = floor( (motion_info->t_smoothing/2) / dt); 
         smoothing_steps_total    = smoothing_steps_per_side*2 + 1; 
-    }
+    } 
 
     bool print_summary = false; 
     int n_valve_printed = 0; 
