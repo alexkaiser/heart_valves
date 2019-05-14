@@ -304,10 +304,10 @@ valve.target_net_unscaled       = 8 * 256/(valve.N^2);
 valve.target_papillary_unscaled = 2 * 40/128; 
 
 % viscoelastic damping coefficients for net, does not include copies 
-valve.eta_net_unscaled = valve.target_net_unscaled/5000; 
+valve.eta_net_unscaled = 0.0; %valve.target_net_unscaled/5000; 
 
 % viscoelastic damping coefficients for root attachments, does not include copies  
-valve.eta_papillary_unscaled = valve.target_papillary_unscaled/500; 
+valve.eta_papillary_unscaled = 0.0; valve.target_papillary_unscaled/500; 
 
 % if nonzero, linear springs of rest length with spacing between the layers 
 % are placed with this value 

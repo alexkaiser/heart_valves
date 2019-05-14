@@ -229,10 +229,6 @@ function [] = output_to_ibamr_format(valve)
 
         if params.cross_layer_on
             params.max_idx_for_cross_layer = params.global_idx - 1; 
-%             fprintf('max_idx_for_cross_layer = %d\n', params.max_idx_for_cross_layer); 
-%             if copy > 1 
-%                 params = place_cross_layer_springs(params); 
-%             end 
         end 
         
         % flat part of mesh 
