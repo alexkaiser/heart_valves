@@ -234,7 +234,13 @@ if interactive && pass_all
     end 
 end 
 
-
+if isfield(valve, 'targets_for_bcs') && valve.targets_for_bcs 
+    valve.leaflets(1).target_length_check = true;     
+    valve.leaflets(1).diff_eqns(valve.leaflets(1)); 
+    valve.leaflets(1).target_length_check = false; 
+end 
+    
+    
 
 % constitutive law version 
 valve_with_reference = valve; 
@@ -256,6 +262,13 @@ for i=1:length(valve.leaflets)
 
     [valve_with_reference.leaflets(i) pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails); 
 
+    if isfield(valve_with_reference, 'targets_for_bcs') && valve_with_reference.targets_for_bcs 
+        valve_with_reference.leaflets(1).target_length_check = true;     
+        valve_with_reference.leaflets(1).diff_eqns(valve_with_reference.leaflets(1));     
+        valve_with_reference.leaflets(1).target_length_check = false; 
+    end 
+    
+    
     if pass
         fprintf('Global solve passed, err = %e\n\n', err); 
     else 

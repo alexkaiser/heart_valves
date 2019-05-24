@@ -528,7 +528,7 @@ indices = [5 7 2 4 6 1 3 0] + 1;
 
 skeleton.papillary = skeleton.papillary(:,indices); 
 
-skeleton.ring_offset_angle = pi/4
+skeleton.ring_offset_angle = pi/4; 
 
 if debug 
     fig = figure; 

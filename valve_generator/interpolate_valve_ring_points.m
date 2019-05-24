@@ -45,7 +45,7 @@ if ~isfield(skeleton, 'ring_offset_angle')
     warning('setting ring_offset_angle to default value of zero'); 
     ring_offset_angle = 0; 
 else 
-    ring_offset_angle = skeleton.ring_offset_angle 
+    ring_offset_angle = skeleton.ring_offset_angle; 
 end
 
 % these are the angles at which the points lie

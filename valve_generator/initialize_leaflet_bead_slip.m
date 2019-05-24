@@ -121,6 +121,9 @@ leaflet.du = 1/N;
 
 leaflet.r = valve.r; 
 
+leaflet.ds = valve.ds; 
+leaflet.target_length_check = false;
+
 if size(papillary, 2) ~= leaflet.num_trees
     error('Must have as many papillary coordinates as trees'); 
 end 

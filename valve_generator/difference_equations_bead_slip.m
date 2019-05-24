@@ -80,6 +80,23 @@ function F = difference_equations_bead_slip(leaflet)
         targets_for_bcs = false; 
     end 
     
+    if isfield(leaflet, 'target_length_check') && leaflet.target_length_check
+        if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs
+            if isfield(leaflet, 'ds')
+                ds = leaflet.ds; 
+                target_length_check = true; 
+            else 
+                warning('target_length_check is on, but ds is not, not checking')
+                target_length_check = false; 
+            end 
+        else 
+            warning('target_length_check is on, but targets_for_bcs is not, not checking'); 
+            target_length_check = false; 
+        end 
+    else 
+        target_length_check = false; 
+    end 
+    
     tension_debug_chordae = false; 
     
     F_leaflet = zeros(size(X_current)); 
@@ -137,6 +154,13 @@ function F = difference_equations_bead_slip(leaflet)
                         X_nbr    = X_current(:,j_nbr,k_nbr);
                         tension_tangent = tension_zero_rest_length_linear_by_tangent(X, X_nbr, k_target_net); 
                         
+                        if target_length_check
+                            target_length = norm(X - X_nbr); 
+                            if target_length > ds
+                                fprintf('Found long target link in leaflet, L = %f, ds = %f\n', target_length, ds); 
+                            end 
+                        end
+                        
                         % targets are absolute forces, no du here 
                         F_tmp = F_tmp + tension_tangent; 
                         
@@ -181,6 +205,13 @@ function F = difference_equations_bead_slip(leaflet)
                         
                         X_nbr    = X_current(:,j_nbr,k_nbr);
                         tension_tangent = tension_zero_rest_length_linear_by_tangent(X, X_nbr, k_target_net); 
+                        
+                        if target_length_check
+                            target_length = norm(X - X_nbr); 
+                            if target_length > ds
+                                fprintf('Found long target link in leaflet, L = %f, ds = %f\n', target_length, ds); 
+                            end 
+                        end
                         
                         % targets are absolute forces, no du here 
                         F_tmp = F_tmp + tension_tangent; 
@@ -278,6 +309,13 @@ function F = difference_equations_bead_slip(leaflet)
             
             F_chordae(tree_idx).root = F_chordae(tree_idx).root + tension_by_tangent; 
 
+            if target_length_check
+                target_length = norm(chordae(tree_idx).root_target - root); 
+                if target_length > ds
+                    fprintf('Found long target link in chordae, L = %f, ds = %f, tree = %d\n', target_length, ds, tree_idx); 
+                end 
+            end
+            
             % connection to boundary condition root point 
             tension_by_tangent = tension_zero_rest_length_linear_by_tangent(root, chordae(tree_idx).root_target, k_target_papillary);
 %             if tree_idx == 1 
