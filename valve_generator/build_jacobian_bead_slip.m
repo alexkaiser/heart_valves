@@ -153,9 +153,9 @@ function J = build_jacobian_bead_slip(leaflet)
                     
                     k_nbr_tmp = k; 
                     
-                    [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
 
-                    if valid
+                    if valid && (~target_k_no_j_spring)
 
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
@@ -174,9 +174,7 @@ function J = build_jacobian_bead_slip(leaflet)
                             end 
                         
                         else 
-                            % connected to a node by a target spring that is a bc 
-                            % targets are absolute forces, no du here 
-                            J_tmp = tension_zero_rest_length_linear_by_tangent_jacobian(X, X_nbr, k_target_net);                             
+                            error('No j direction targets allowed'); 
                         end 
                         
 

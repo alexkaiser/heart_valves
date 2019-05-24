@@ -90,6 +90,13 @@ leaflet.jacobian  = @build_jacobian_bead_slip;
 
 if isfield(valve, 'targets_for_bcs')
     leaflet.targets_for_bcs = valve.targets_for_bcs; 
+    
+    if isfield(valve, 'targets_for_bcs_ref_only')
+        if valve.targets_for_bcs && valve.targets_for_bcs_ref_only
+            error('cannot set targets_for_bcs and for targets_for_bcs_ref_only'); 
+        end 
+    end 
+    
 end 
 
 if isfield(valve, 'careful_early_steps')

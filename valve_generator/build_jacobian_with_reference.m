@@ -149,9 +149,9 @@ function J = build_jacobian_with_reference(leaflet)
                     
                     k_nbr_tmp = k; 
                     
-                    [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
                     
-                    if valid
+                    if valid && (~target_k_no_j_spring)
                         
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
@@ -159,7 +159,7 @@ function J = build_jacobian_with_reference(leaflet)
                         if ~target_spring 
                             J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, R_u(j_spr,k_spr), k_u(j_spr,k_spr), leaflet);                    
                         else 
-                            J_tmp = tension_zero_rest_length_linear_by_tangent_jacobian(X, X_nbr, k_target_net);
+                            error('j direction target springs not allowed'); 
                         end 
                         % current term is always added in 
                         % this gets no sign 
