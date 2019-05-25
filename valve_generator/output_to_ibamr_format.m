@@ -825,8 +825,8 @@ function params = add_leaflet_springs(params, leaflet, ds, collagen_spring)
                 % springs in leaflet, only go in up direction 
                 j_nbr_tmp = j + 1; 
                 k_nbr_tmp = k; 
-                [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
-                if valid && (~target_spring)
+                [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                if valid && (~target_spring) && (~target_k_no_j_spring)
                     
                     % no bc to bc springs 
                     if ~(is_bc(j, k) && is_bc(j_nbr, k_nbr))
