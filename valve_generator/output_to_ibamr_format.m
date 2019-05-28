@@ -92,6 +92,8 @@ function [] = output_to_ibamr_format(valve)
         params.vertices_target = nan * zeros(3,params.vertices_capacity); % this has the target locations for target points 
         params.vertex_target_pos_file = fopen(strcat(base_name, '_target_position.vertex'), 'w'); 
         params.total_vertices_target = 0; 
+    else 
+        params.targets_for_bcs = false; 
     end 
     
     % keep one global index through the whole thing 
@@ -261,7 +263,7 @@ function [] = output_to_ibamr_format(valve)
         else 
             
             
-            if params.targets_for_bcs 
+            if isfield(params, 'targets_for_bcs') && params.targets_for_bcs 
                 if copy == 1
                     params = write_inst_for_targets_as_bcs(params, valve.leaflets(1));                 
                 end 
@@ -781,10 +783,6 @@ function params = add_leaflet_springs(params, leaflet, ds, collagen_spring)
             
             % every internal and boundary point may have springs connected to it 
             if is_internal(j,k) || (is_bc(j,k) && ~leaflet.targets_for_bcs)
-                
-                if (is_bc(j,k) && ~leaflet.targets_for_bcs)
-                    warning('hit is_bc(j,k) in spring loop')
-                end 
                 
                 if output && ((mod(j,output_stride) == 1) || (output_stride == 1))
                     output_tmp_k = true; 
