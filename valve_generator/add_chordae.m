@@ -1,4 +1,4 @@
-function leaflet = add_chordae(leaflet, tree_idx)
+function leaflet = add_chordae(leaflet, tree_idx, C)
     % 
     % Adds a chordae data structure to the current parameters 
     % 
@@ -75,30 +75,36 @@ function leaflet = add_chordae(leaflet, tree_idx)
     
     % root pulled from the papillary arrays 
     chordae(tree_idx).root = papillary(:,tree_idx); 
-    
-    % initialize the left boundary conditions from the leaflet     
-    chordae(tree_idx).C = zeros(3,total_len);   
 
-    % Set the free edge according to array of indicies 
-    for i=1:n_leaves 
-        j = free_edge_idx(i,1); 
-        k = free_edge_idx(i,2); 
-        chordae(tree_idx).C(:, max_internal + i)  = X(:,j,k);
+    if exist('C', 'var')
+        chordae(tree_idx).C = C;       
+    else 
+        
+        % initialize the left boundary conditions from the leaflet     
+        chordae(tree_idx).C = zeros(3,total_len);   
+
+        % Set the free edge according to array of indicies 
+        for i=1:n_leaves 
+            j = free_edge_idx(i,1); 
+            k = free_edge_idx(i,2); 
+            chordae(tree_idx).C(:, max_internal + i)  = X(:,j,k);
+        end 
+
+
+        for i=1:max_internal
+
+            p = get_parent(chordae(tree_idx).C, i, chordae(tree_idx).root); 
+
+            if ~is_leaf(i, max_internal)
+                l = get_left__descendant(chordae(tree_idx).C, i, max_internal); 
+                r = get_right_descendant(chordae(tree_idx).C, i, max_internal); 
+                chordae(tree_idx).C(:,i) = (tree_frac)*p + 0.5*(1-tree_frac)*l + 0.5*(1-tree_frac)*r; 
+            end
+
+        end 
     end 
-     
-    
-    for i=1:max_internal
-
-        p = get_parent(chordae(tree_idx).C, i, chordae(tree_idx).root); 
-
-        if ~is_leaf(i, max_internal)
-            l = get_left__descendant(chordae(tree_idx).C, i, max_internal); 
-            r = get_right_descendant(chordae(tree_idx).C, i, max_internal); 
-            chordae(tree_idx).C(:,i) = (tree_frac)*p + 0.5*(1-tree_frac)*l + 0.5*(1-tree_frac)*r; 
-        end
-
-    end 
-    
+        
+        
     if targets_for_bcs
         % root target pulled from the papillary arrays 
         chordae(tree_idx).root_target = papillary(:,tree_idx); 

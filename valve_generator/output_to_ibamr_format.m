@@ -260,10 +260,16 @@ function [] = output_to_ibamr_format(valve)
             
         else 
             
-            % pass L=r to get only one ring placed 
-            hoop_springs = false; 
-            params = place_net(params, valve.leaflets(i), ds, r, r, k_rel, k_target_net, ref_frac_net, eta_net, hoop_springs); 
             
+            if params.targets_for_bcs 
+                if copy == 1
+                    params = write_inst_for_targets_as_bcs(params, valve.leaflets(1));                 
+                end 
+            else             
+                % pass L=r to get only one ring placed 
+                hoop_springs = false; 
+                params = place_net(params, valve.leaflets(i), ds, r, r, k_rel, k_target_net, ref_frac_net, eta_net, hoop_springs); 
+            end 
         end 
         
         
@@ -1135,6 +1141,41 @@ function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac
 
 end 
 
+
+function params = write_inst_for_targets_as_bcs(params, leaflet)
+    % if targets_for_bcs, then want to set the maximum vertices (which are the points connected to the exact ring location)
+    % as the instrument points 
+
+    j_max = leaflet.j_max; 
+    k_max = leaflet.k_max; 
+    
+    % write the instrument file header here 
+    fprintf(params.inst, '1   # num meters in file\n'); 
+    fprintf(params.inst, 'meter_0   # name\n'); 
+    fprintf(params.inst, '%d  # number of meter points\n', j_max); 
+    
+
+    k = k_max - 1; 
+    instrument_idx = 0; 
+    
+    for j=1:j_max
+    
+        % pull the global index here 
+        idx = leaflet.indices_global(j,k); 
+        
+        if ~leaflet.is_internal(j,k)
+            error('placing non internal vertex in inst file')
+        end 
+        if ~leaflet.is_bc(j,k+1)
+            error('placing an instrument point, but nbr up in k is not a bc')
+        end 
+        
+        fprintf(params.inst, '%d \t0 \t %d\n', idx, instrument_idx); 
+        instrument_idx = instrument_idx + 1; 
+                    
+    end 
+
+end 
 
 function params = place_rays(params, leaflet, ds, L, k_rel, k_target, ref_frac, eta)
     % 

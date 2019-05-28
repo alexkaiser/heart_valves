@@ -72,8 +72,8 @@ valve.decreasing_tension = decreasing_tension;
 valve.diff_eqns = @difference_equations_bead_slip; 
 valve.jacobian  = @build_jacobian_bead_slip;
 
-valve.targets_for_bcs = true; 
-valve.targets_for_bcs_ref_only = false; 
+valve.targets_for_bcs = false; 
+valve.targets_for_bcs_ref_only = true; 
 
 % general solve parameters
 
@@ -298,7 +298,7 @@ end
 % and scaling for copies is handled by the output routine 
 
 % scales for by mesh width for consistant total mesh force on ring 
-valve.target_net_unscaled       = 8 / valve.N; 
+valve.target_net_unscaled       = 0.5 * 8 / valve.N; 
 
 % does not scale since total number of points is constant 
 valve.target_papillary_unscaled = 2 * 40/128; 
