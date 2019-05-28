@@ -30,6 +30,9 @@
 
 #define FLOW_AVERAGER
 
+#define FULL_FLOW_CLAMP 
+#define FULL_FLOW_CLAMP_TIME 0.01
+
 /////////////////////////////// NAMESPACE ////////////////////////////////////
 
 /////////////////////////////// STATIC ///////////////////////////////////////
@@ -300,6 +303,38 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
         
     #endif 
     
+    #ifdef FULL_FLOW_CLAMP
+        if (data_time < FULL_FLOW_CLAMP_TIME){
+            F_data->fillAll(0.0);
+
+            // linear decrease in coefficient value 
+            // from max 
+            double k_full_clamp; 
+            if (cycle_num > 0){
+                k_full_clamp = (1 - data_time/FULL_FLOW_CLAMP_TIME) * 0.25 * rho / dt;
+            }
+            else{
+                k_full_clamp = 0.0; 
+            }
+
+            // Clamp the velocity in all components
+            for (int component = 0; component < NDIM; ++component){
+                for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
+
+                    const Index<NDIM>& i = b();
+                    const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
+
+                    const double U_current = U_current_data ? (*U_current_data)(i_s) : 0.0;
+                    const double U_new     = U_new_data ? (*U_new_data)(i_s) : 0.0;
+                    const double U         = (cycle_num > 0) ? 0.5 * (U_new + U_current) : U_current;
+
+                    (*F_data)(i_s)        += -k_full_clamp * U;
+                }
+            }
+        }
+    #endif
+
+
     return;
 } // setDataOnPatch
 
