@@ -180,7 +180,7 @@ tension_coeffs.beta_anterior        = 1.1;  % radial
 tension_coeffs.alpha_posterior      = 1.0;  % circumferential 
 tension_coeffs.beta_posterior       = 1.0;  % radial
 tension_coeffs.alpha_hoops          = 0.5;  % circumferential hoops     
-tension_coeffs.alpha_edge_connector = 1.0;  % circumferential free edge connector 
+tension_coeffs.alpha_edge_connector = 0.25;  % circumferential free edge connector 
 tension_coeffs.beta_edge_connector  = 0.01;  % circumferential free edge connector
 
 
@@ -202,7 +202,7 @@ n_rings_periodic = max(1,N/64);
 
 % places circumferential fibers this many below hoops 
 % if the location is not already covered by leaflet
-n_edge_connectors = max(1,N/64);  
+n_edge_connectors = max(1,N/256);  
 
 % No explicit commissural leaflet here 
 N_anterior = N/2; 
@@ -314,7 +314,7 @@ valve.eta_papillary_unscaled = 0.0; valve.target_papillary_unscaled/500;
 % if nonzero, linear springs of rest length with spacing between the layers 
 % are placed with this value 
 % final formula is multiplied by valve.tension_base  
-valve.kappa_cross_layer_multipler = 2 * 1e4 / (N * 256); 
+valve.kappa_cross_layer_multipler = 1e4 / 256^2; 
 
 % Approximate Lagrangian mesh spacing at ring 
 % Used for later splitting of springs 
