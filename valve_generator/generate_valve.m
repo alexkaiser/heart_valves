@@ -105,7 +105,7 @@ for N = N_range
     end 
 
 
-    interactive = true; 
+    interactive = false; 
 
     from_history = false; 
     if from_history 

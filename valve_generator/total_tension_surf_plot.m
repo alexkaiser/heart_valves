@@ -159,7 +159,7 @@ if (~circ) && (~rad)
 end 
 
 % x_tmp = X_current(1,:,:)
-plot3(0,0,0,'linestyle','none'); 
+% plot3(0,0,0,'linestyle','none'); 
 hold on; 
 
 % inverted hot colormap 

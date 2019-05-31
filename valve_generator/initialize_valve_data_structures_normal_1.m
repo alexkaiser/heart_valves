@@ -73,7 +73,7 @@ valve.diff_eqns = @difference_equations_bead_slip;
 valve.jacobian  = @build_jacobian_bead_slip;
 
 valve.targets_for_bcs = false; 
-valve.targets_for_bcs_ref_only = true; 
+valve.targets_for_bcs_ref_only = false; 
 
 % general solve parameters
 
@@ -84,6 +84,8 @@ valve.in_heart = true;
 % name 
 if valve.in_heart
     valve.base_name = sprintf('mitral_no_partition_%d', N); 
+    valve.extra_radius_hoops = 0.13; % adds points out the partition up to this amount 
+                                     % two extra hoops at 256
 else 
     valve.base_name = sprintf('mitral_tree_%d', N); 
 end 

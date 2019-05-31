@@ -269,8 +269,21 @@ function [] = output_to_ibamr_format(valve)
                 end 
             else             
                 % pass L=r to get only one ring placed 
-                hoop_springs = false; 
-                params = place_net(params, valve.leaflets(i), ds, r, r, k_rel, k_target_net, ref_frac_net, eta_net, hoop_springs); 
+                hoop_springs = true; 
+                
+                if isfield(valve, 'extra_radius_hoops')
+                    extra_radius_hoops = valve.extra_radius_hoops; 
+                else 
+                    extra_radius_hoops = 0; 
+                end 
+                
+                params = place_net(params, valve.leaflets(i), ds, r, r + extra_radius_hoops, k_rel, k_target_net, ref_frac_net, eta_net, hoop_springs); 
+                
+                if extra_radius_hoops > 0.0
+                    max_to_place = max(0,floor(extra_radius_hoops / ds) - 1);
+                    params = place_rays(params, valve.leaflets(i), ds, r + extra_radius_hoops, k_rel, k_target_net, ref_frac_net, eta_net, max_to_place);
+                end 
+                
             end 
         end 
         
@@ -1175,7 +1188,7 @@ function params = write_inst_for_targets_as_bcs(params, leaflet)
 
 end 
 
-function params = place_rays(params, leaflet, ds, L, k_rel, k_target, ref_frac, eta)
+function params = place_rays(params, leaflet, ds, L, k_rel, k_target, ref_frac, eta, max_to_place)
     % 
     % Places rays of fibers emenating from the leaflet 
     % Angle of rays makes them (roughly) geodesics 
@@ -1218,6 +1231,10 @@ function params = place_rays(params, leaflet, ds, L, k_rel, k_target, ref_frac, 
     
     if ~isfield(leaflet, 'indices_global')
         error('Must place leaflets before placing rays'); 
+    end 
+    
+    if ~exist('max_to_place', 'var')
+        max_to_place = inf; 
     end 
     
     % output flag information 
@@ -1291,13 +1308,16 @@ function params = place_rays(params, leaflet, ds, L, k_rel, k_target, ref_frac, 
                     point = pt_ring + increment; 
                     nbr_idx = leaflet.indices_global(j,k); 
 
+                    n_placed = 0; 
+                    
                     % just keep adding until points leave the domain 
                     % while norm(point(1:2), inf) < L   
                     while (params.x_min <= point(1))      && ...   
-                       (point(1)     <= params.x_max)  && ...   
-                       (params.y_min <= point(2))      && ...   
-                       (point(2)     <= params.y_max) 
-           
+                          (point(1)     <= params.x_max)  && ...   
+                          (params.y_min <= point(2))      && ...   
+                          (point(2)     <= params.y_max)  && ...
+                          (n_placed     <  max_to_place)
+                      
                         % grab the index 
                         idx = params.global_idx;
 
@@ -1319,7 +1339,10 @@ function params = place_rays(params, leaflet, ds, L, k_rel, k_target, ref_frac, 
                         point_prev = point; 
                         point      = point + increment; 
                         params.global_idx = params.global_idx + 1; 
-                        nbr_idx    = idx; 
+                        nbr_idx    = idx;
+                        
+                        n_placed = n_placed + 1; 
+                         
                     end 
 
                 end 

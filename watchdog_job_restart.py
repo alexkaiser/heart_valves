@@ -380,25 +380,18 @@ if __name__ == '__main__':
                 
                 slurm = '''#!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --tasks-per-node=1
-#SBATCH --time=24:00:00
-#SBATCH --mem=16GB
-#SBATCH --job-name=movie_post_process
-#SBATCH --mail-user=kaiser@cims.nyu.edu
+#SBATCH --ntasks-per-node=1
+#SBATCH --time=8:00:00
+#SBATCH --mem=4GB
+#SBATCH --job-name=movie
+#SBATCH --mail-user=adkaiser@gmail.com
 #SBATCH --mail-type=ALL
+#SBATCH --partition=amarsden,normal
 
-module load visit/2.9.1
-module load ffmpeg/intel/3.2.2
-
+visit -cli -nowin -s ~/scratch/make_normal_1_movie.py
 ''' 
                 
                 movie_script.write(slurm)
-                
-                movie_script.write('\n')                
-                movie_script.write('cd ' + viz_dir_name + ' \n')
-                
-                movie_script.write('visit -cli -nowin -s ~/mitral_fully_discrete/make_three_slice_movie.py \n')          
-                
                 movie_script.close()
                 
                 # again, wait for good measure
@@ -408,9 +401,9 @@ module load ffmpeg/intel/3.2.2
                 if code is None:
                     print 'submit of movie script failed, check for problems.\n'
 
-                code = subprocess.call('sbatch ~/mitral_fully_discrete/post_process.sbatch', shell=True)
-                if code is None:
-                    print 'submit of lines3d post process failed, check for problems.\n'
+                # code = subprocess.call('sbatch ~/mitral_fully_discrete/post_process.sbatch', shell=True)
+                # if code is None:
+                #     print 'submit of lines3d post process failed, check for problems.\n'
 
                 break
 

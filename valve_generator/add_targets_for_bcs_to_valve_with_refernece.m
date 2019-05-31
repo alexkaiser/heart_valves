@@ -4,7 +4,7 @@ function valve = add_targets_for_bcs_to_valve_with_refernece(valve, adjustment_l
 % as including target points for boundary conditions 
 % 
 
-debug = true; 
+debug = false; 
 
 if isfield(valve, 'targets_for_bcs') && valve.targets_for_bcs
     return; 
