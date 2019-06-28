@@ -59,10 +59,6 @@ if (~exist('X', 'var')) && (~exist('X_chordae', 'var'))
     chordae = leaflet.chordae; 
 end 
 
-if nargin == 2
-    error('Must pass X and chordae or use current leaflet values'); 
-end 
-
 X_linearized = zeros(total_internal,1); 
 
 % here k is required to be the outer loop 
@@ -75,11 +71,14 @@ for k=1:k_max
     end 
 end
 
-for tree_idx = 1:leaflet.num_trees
-    
-    if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs         
-        X_linearized = [X_linearized; chordae(tree_idx).root(:)];
+% check for existence because chordae only in mitral case
+if exist('chordae', 'var')
+    for tree_idx = 1:leaflet.num_trees
+
+        if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs         
+            X_linearized = [X_linearized; chordae(tree_idx).root(:)];
+        end 
+
+        X_linearized = [X_linearized; chordae(tree_idx).C(:)]; 
     end 
-    
-    X_linearized = [X_linearized; chordae(tree_idx).C(:)]; 
 end 
