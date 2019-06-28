@@ -39,6 +39,9 @@ is_bc       = leaflet.is_bc;
 
 if isfield(leaflet, 'name') && strcmp(leaflet.name, 'aortic')
     
+    % periodic copy 
+    X_copy = [X_copy(:,j_max,:), X_copy]; 
+    
     % anterior part 
     x_component = squeeze(X_copy(1,:,:)); 
     y_component = squeeze(X_copy(2,:,:)); 
@@ -50,6 +53,7 @@ if isfield(leaflet, 'name') && strcmp(leaflet.name, 'aortic')
     axis equal 
     axis auto 
     hold on 
+    
     
 else 
 

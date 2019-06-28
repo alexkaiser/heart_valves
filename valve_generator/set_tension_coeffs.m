@@ -37,7 +37,7 @@ function [leaflet valve] = set_tension_coeffs(leaflet, valve, tension_coeffs)
 % OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-if strcmp(valve.name,'aortic')
+if isfield(valve, 'name') && strcmp(valve.name,'aortic')
     
     j_max                     = leaflet.j_max;
     k_max                     = leaflet.k_max; 

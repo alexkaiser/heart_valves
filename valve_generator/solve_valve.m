@@ -144,17 +144,19 @@ if interactive && pass_all
         fprintf('Current tension_coeffs struct, which includes all valid variables:\n')
         fprintf('tension_coeffs = \n\n')
         disp(valve.leaflets(1).tension_coeffs)
-        
-        fprintf('Current array variables:\n\n')
-        fprintf('k_0_1 = \n\n')
-        disp(valve.leaflets(1).tension_coeffs.k_0_1)
-        fprintf('k_root = \n\n')
-        disp(valve.leaflets(1).tension_coeffs.k_root)
-        fprintf('c_dec_chordae_leaf = \n\n')
-        disp(valve.leaflets(1).tension_coeffs.c_dec_chordae_leaf)
-        fprintf('c_dec_chordae_root = \n\n')
-        disp(valve.leaflets(1).tension_coeffs.c_dec_chordae_root)
-        fprintf('\n\n'); 
+
+        if ~strcmp(valve.name, 'aortic')
+            fprintf('Current array variables:\n\n')
+            fprintf('k_0_1 = \n\n')
+            disp(valve.leaflets(1).tension_coeffs.k_0_1)
+            fprintf('k_root = \n\n')
+            disp(valve.leaflets(1).tension_coeffs.k_root)
+            fprintf('c_dec_chordae_leaf = \n\n')
+            disp(valve.leaflets(1).tension_coeffs.c_dec_chordae_leaf)
+            fprintf('c_dec_chordae_root = \n\n')
+            disp(valve.leaflets(1).tension_coeffs.c_dec_chordae_root)
+            fprintf('\n\n'); 
+        end 
         
         try 
             var_name = input('Enter the name of variable to change as a string (no quotes or whitespace, must match exactly):\n', 's'); 

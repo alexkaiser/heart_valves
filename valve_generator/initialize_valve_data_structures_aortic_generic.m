@@ -143,9 +143,6 @@ valve.L = 3.0;
 valve.skeleton = get_skeleton_aortic_generic(); 
 valve.r = valve.skeleton.r; 
 
-valve.diastolic_increment = [0.0; 0.0; 0.0]; 
-
-
 % Base constants, individual pieces are tuned relative to these values
 
 % tension coefficients structure 
@@ -153,9 +150,9 @@ valve.diastolic_increment = [0.0; 0.0; 0.0];
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
 % valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
-tension_coeffs.pressure_tension_ratio = 0.055; 
+tension_coeffs.pressure_tension_ratio = 0.01; 
 
-tension_coeffs.dec_tension_coeff_base = 4.6; 
+tension_coeffs.dec_tension_coeff_base = 20.0; 
 
 
 % max tensions in leaflets 
@@ -163,8 +160,8 @@ tension_coeffs.alpha = 1.0;   % circumferential
 tension_coeffs.beta  = 0.05;  % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 1.0;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.0;  % radial
+tension_coeffs.c_circ_dec       = 2.0;  % circumferential 
+tension_coeffs.c_rad_dec        = 0.5;  % radial
 
 % scaling for target points 
 % note that this does not include copies 
