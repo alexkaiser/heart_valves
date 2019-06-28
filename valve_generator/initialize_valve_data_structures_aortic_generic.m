@@ -59,8 +59,8 @@ valve.bead_slip = true;
 valve.decreasing_tension = true; 
 
 warning('fix diff eqns for aortic')
-valve.diff_eqns = @difference_equations_bead_slip; 
-valve.jacobian  = @build_jacobian_bead_slip;
+valve.diff_eqns = @difference_equations_aortic; 
+valve.jacobian  = @build_jacobian_aortic;
 
 valve.targets_for_bcs = false; 
 valve.targets_for_bcs_ref_only = false; 

@@ -56,7 +56,9 @@ idx = 1;
 
 if (~exist('X', 'var')) && (~exist('X_chordae', 'var'))
     X       = leaflet.X; 
-    chordae = leaflet.chordae; 
+    if isfield(leaflet, 'chordae')
+        chordae = leaflet.chordae; 
+    end 
 end 
 
 X_linearized = zeros(total_internal,1); 

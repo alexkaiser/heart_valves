@@ -51,20 +51,21 @@ for k=1:k_max
     end 
 end 
 
-for tree_idx = 1:leaflet.num_trees
+if isfield(leaflet, 'chordae')
+    for tree_idx = 1:leaflet.num_trees
 
-    C = leaflet.chordae(tree_idx).C; 
+        C = leaflet.chordae(tree_idx).C; 
 
-    [m N_chordae] = size(C); 
-    
-    if leaflet.targets_for_bcs
-        leaflet.chordae(tree_idx).root = v_linearized(idx + (0:2));  
-        idx = idx + 3; 
-    end 
-    
-    for i=1:N_chordae
-        leaflet.chordae(tree_idx).C(:,i) = v_linearized(idx + (0:2));  
-        idx = idx + 3; 
+        [m N_chordae] = size(C); 
+
+        if leaflet.targets_for_bcs
+            leaflet.chordae(tree_idx).root = v_linearized(idx + (0:2));  
+            idx = idx + 3; 
+        end 
+
+        for i=1:N_chordae
+            leaflet.chordae(tree_idx).C(:,i) = v_linearized(idx + (0:2));  
+            idx = idx + 3; 
+        end 
     end 
 end 
- 

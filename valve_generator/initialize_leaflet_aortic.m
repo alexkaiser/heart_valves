@@ -48,9 +48,8 @@ leaflet.N                  = N;
 
 leaflet.decreasing_tension = valve.decreasing_tension;
 
-warning('update diff eqns for aortic'); 
-leaflet.diff_eqns = @difference_equations_bead_slip; 
-leaflet.jacobian  = @build_jacobian_bead_slip;
+leaflet.diff_eqns = valve.diff_eqns; 
+leaflet.jacobian  = valve.jacobian;
 
 if isfield(valve, 'targets_for_bcs')
     leaflet.targets_for_bcs = valve.targets_for_bcs; 
@@ -104,10 +103,6 @@ leaflet.p_0 = p_0;
 
 % Total number of internal leaflet coordinates (three times number of vertices)
 leaflet.total_internal_leaflet    = 3*sum(leaflet.is_internal(:)); 
-
-% Running total number of coordinates including trees 
-% Updated as trees are added 
-leaflet.total_internal_with_trees = 3*sum(leaflet.is_internal(:)); 
     
 % set coefficients on tensions
 [leaflet, valve] = set_tension_coeffs(leaflet, valve, tension_coeffs); 

@@ -205,7 +205,7 @@ function F = difference_equations_aortic(leaflet)
         end 
     end
     
-    F = linearize_internal_points(leaflet, F_leaflet, F_chordae); 
+    F = linearize_internal_points(leaflet, F_leaflet); 
     
 end 
 
