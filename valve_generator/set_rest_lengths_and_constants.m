@@ -251,16 +251,3 @@ leaflet_with_reference.diff_eqns = @difference_equations_with_reference;
 leaflet_with_reference.jacobian  = @build_jacobian_with_reference;
 
 leaflet_with_reference.ref_frac = 1.0; 
-
-
-
-
-
-
-
-
-
-
-
-
-

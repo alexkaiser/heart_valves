@@ -72,15 +72,23 @@ function [] = output_to_ibamr_format(valve)
         n_lagrangian_tracers = 0; 
     end 
     
-    if ~valve.split_papillary
+    if ~strcmp(valve.name, 'aortic') && ~valve.split_papillary
         error('Must have split papillary locations in current implementation.'); 
     end
 
+    if strcmp(valve.name, 'aortic') 
+        params.type = 'aortic'; 
+    else 
+        params.type = 'default_mitral'; 
+    end 
+        
     params.vertex        = fopen(strcat(base_name, '.vertex'), 'w'); 
     params.spring        = fopen(strcat(base_name, '.spring'), 'w'); 
     params.target        = fopen(strcat(base_name, '.target'), 'w'); 
     params.inst          = fopen(strcat(base_name, '.inst'), 'w'); 
-    params.papillary     = fopen(strcat(base_name, '.papillary'), 'w'); 
+    if ~strcmp(params.type, 'aortic') 
+        params.papillary     = fopen(strcat(base_name, '.papillary'), 'w'); 
+    end 
     
     % just make this ridiculously big for now 
     % would be better to implement some resizing but that will also clutter things up 
@@ -108,8 +116,10 @@ function [] = output_to_ibamr_format(valve)
     params.total_vertices  = 0; 
     params.total_springs   = 0; 
     params.total_targets   = 0; 
-    params.total_papillary = 0; 
-
+    if ~strcmp(params.type, 'aortic') 
+        params.total_papillary = 0; 
+    end 
+    
     % keep a single parameter for outputting copies 
     params.z_offset = 0; 
 
@@ -184,19 +194,20 @@ function [] = output_to_ibamr_format(valve)
     % print the increment for systolic motion
     % this is the negative of the motion that occurred 
     % from the systolic to diastolic before 
-    diastolic_increment = valve.diastolic_increment; 
-    fprintf(params.papillary, '%.14f\t %.14f\t %.14f\n', diastolic_increment(1), diastolic_increment(2), diastolic_increment(3)); 
-    times = valve.papillary_movement_times; 
-    if length(times) ~= 5
-        error('Must have five times for movement'); 
+    if ~strcmp(valve.name, 'aortic') 
+        diastolic_increment = valve.diastolic_increment; 
+        fprintf(params.papillary, '%.14f\t %.14f\t %.14f\n', diastolic_increment(1), diastolic_increment(2), diastolic_increment(3)); 
+        times = valve.papillary_movement_times; 
+        if length(times) ~= 5
+            error('Must have five times for movement'); 
+        end 
+        fprintf(params.papillary, '%.14f\t %.14f\t %.14f %.14f %.14f\n', times(1), times(2), times(3), times(4), times(5)); 
     end 
-    fprintf(params.papillary, '%.14f\t %.14f\t %.14f %.14f %.14f\n', times(1), times(2), times(3), times(4), times(5)); 
     
     for copy = 1:params.num_copies
         
         params.copy = copy; 
-        
-        
+            
         if params.cross_layer_on
             params.min_idx_for_cross_layer = params.global_idx; 
             % fprintf('min_idx_for_cross_layer = %d\n', params.min_idx_for_cross_layer); 
@@ -211,14 +222,17 @@ function [] = output_to_ibamr_format(valve)
             k_max = valve.leaflets(i).k_max; 
             valve.leaflets(i).indices_global = nan * zeros(j_max, k_max);  
         
-            % allocate chordae indexing arrays here 
-            % to stop dissimilar struct assignment error 
-            for tree_idx = 1:valve.leaflets(i).num_trees
-                C = valve.leaflets(i).chordae(tree_idx).C; 
-                [m N_chordae] = size(C);
-                valve.leaflets(i).chordae(tree_idx).idx_root = nan;                 
-                valve.leaflets(i).chordae(tree_idx).indices_global = nan * zeros(N_chordae, 1);
+            if ~strcmp(params.type, 'aortic') 
+                % allocate chordae indexing arrays here 
+                % to stop dissimilar struct assignment error 
+                for tree_idx = 1:valve.leaflets(i).num_trees
+                    C = valve.leaflets(i).chordae(tree_idx).C; 
+                    [m N_chordae] = size(C);
+                    valve.leaflets(i).chordae(tree_idx).idx_root = nan;                 
+                    valve.leaflets(i).chordae(tree_idx).indices_global = nan * zeros(N_chordae, 1);
+                end 
             end 
+            
         end 
         
         for i=1:length(valve.leaflets)
@@ -330,12 +344,16 @@ function [] = output_to_ibamr_format(valve)
     fclose(params.spring   ); 
     fclose(params.target   ); 
     fclose(params.inst     ); 
-    fclose(params.papillary); 
-
+    if ~strcmp(params.type, 'aortic') 
+        fclose(params.papillary); 
+    end 
+    
     prepend_line_with_int(strcat(base_name, '.vertex'), params.total_vertices); 
     prepend_line_with_int(strcat(base_name, '.spring'), params.total_springs); 
     prepend_line_with_int(strcat(base_name, '.target'), params.total_targets); 
-    prepend_line_with_int(strcat(base_name, '.papillary'), params.total_papillary); 
+    if ~strcmp(params.type, 'aortic') 
+        prepend_line_with_int(strcat(base_name, '.papillary'), params.total_papillary); 
+    end 
     
     if params.targets_for_bcs
         fclose(params.vertex_target_pos_file); 
@@ -608,12 +626,13 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_targ
     k_max             = leaflet.k_max; 
     is_internal       = leaflet.is_internal;
     is_bc             = leaflet.is_bc; 
-    num_trees         = leaflet.num_trees; 
-    chordae           = leaflet.chordae; 
-
+    if ~strcmp(params.type, 'aortic')
+        num_trees         = leaflet.num_trees; 
+        chordae           = leaflet.chordae; 
+    end 
+    
     % Keep track of vector index in 1d array 
    
-
     for k=1:k_max
         for j=1:j_max
             
@@ -701,44 +720,45 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_targ
         end 
     end
     
-    
-    % chordae internal terms 
-    for tree_idx = 1:num_trees
-        
-        C = chordae(tree_idx).C; 
-        [m N_chordae] = size(C);         
+    if ~strcmp(params.type, 'aortic')
+        % chordae internal terms 
+        for tree_idx = 1:num_trees
 
-        % always place root index first 
-        
-        if leaflet.targets_for_bcs
-            % split location of targets and their current position   
-            params.vertices       (:,params.global_idx + 1) = leaflet.chordae(tree_idx).root;
-            params.vertices_target(:,params.global_idx + 1) = leaflet.chordae(tree_idx).root_target;
-        else
-            % default behavior with only one position 
-            params.vertices(:,params.global_idx + 1) = leaflet.chordae(tree_idx).root;
-        end 
-        
-        leaflet.chordae(tree_idx).idx_root = params.global_idx;                 
-        
-        % root is always a boundary condition 
-        if exist('eta_papillary', 'var')
-            params = target_string(params, params.global_idx, k_target_papillary, eta_papillary);     
-        else
-            params = target_string(params, params.global_idx, k_target_papillary);     
-        end 
-        
-        % write papillary file 
-        params = papillary_string(params, params.global_idx, leaflet.chordae(tree_idx).root); 
-        
-        params.global_idx = params.global_idx + 1;
-        
-        for i=1:N_chordae
-            params.vertices(:,params.global_idx + 1) = C(:,i); 
-            leaflet.chordae(tree_idx).indices_global(i) = params.global_idx;                 
+            C = chordae(tree_idx).C; 
+            [m N_chordae] = size(C);         
+
+            % always place root index first 
+
+            if leaflet.targets_for_bcs
+                % split location of targets and their current position   
+                params.vertices       (:,params.global_idx + 1) = leaflet.chordae(tree_idx).root;
+                params.vertices_target(:,params.global_idx + 1) = leaflet.chordae(tree_idx).root_target;
+            else
+                % default behavior with only one position 
+                params.vertices(:,params.global_idx + 1) = leaflet.chordae(tree_idx).root;
+            end 
+
+            leaflet.chordae(tree_idx).idx_root = params.global_idx;                 
+
+            % root is always a boundary condition 
+            if exist('eta_papillary', 'var')
+                params = target_string(params, params.global_idx, k_target_papillary, eta_papillary);     
+            else
+                params = target_string(params, params.global_idx, k_target_papillary);     
+            end 
+
+            % write papillary file 
+            params = papillary_string(params, params.global_idx, leaflet.chordae(tree_idx).root); 
+
             params.global_idx = params.global_idx + 1;
+
+            for i=1:N_chordae
+                params.vertices(:,params.global_idx + 1) = C(:,i); 
+                leaflet.chordae(tree_idx).indices_global(i) = params.global_idx;                 
+                params.global_idx = params.global_idx + 1;
+            end 
+
         end 
-        
     end 
 
 end 
@@ -747,8 +767,10 @@ end
 function params = add_springs(params, leaflet, ds, collagen_spring)
 
     params = add_leaflet_springs(params, leaflet, ds, collagen_spring); 
-    params = add_chordae_tree_springs(params, leaflet, ds, collagen_spring); 
-
+    if ~strcmp(params.type, 'aortic')
+        params = add_chordae_tree_springs(params, leaflet, ds, collagen_spring); 
+    end 
+    
 end 
 
 
@@ -762,9 +784,12 @@ function params = add_leaflet_springs(params, leaflet, ds, collagen_spring)
     k_max             = leaflet.k_max; 
     is_internal       = leaflet.is_internal;
     is_bc             = leaflet.is_bc; 
-    chordae           = leaflet.chordae;
-    chordae_idx       = leaflet.chordae_idx; 
-
+    
+    if ~strcmp(params.type, 'aortic')
+        chordae           = leaflet.chordae;
+        chordae_idx       = leaflet.chordae_idx; 
+    end 
+    
     R_u               = leaflet.R_u;
     k_u               = leaflet.k_u;
     R_v               = leaflet.R_v;
@@ -786,10 +811,11 @@ function params = add_leaflet_springs(params, leaflet, ds, collagen_spring)
         output        = false; 
     end 
     
-    if params.output.chordae(copy)
-        output_tmp_chordae = true; 
+    if ~strcmp(params.type, 'aortic')
+        if params.output.chordae(copy)
+            output_tmp_chordae = true; 
+        end 
     end 
-    
     
     for k=1:k_max
         for j=1:j_max
@@ -813,7 +839,7 @@ function params = add_leaflet_springs(params, leaflet, ds, collagen_spring)
                 idx = leaflet.indices_global(j,k); 
                 
                 % current node has a chordae connection
-                if chordae_idx(j,k).tree_idx
+                if ~strcmp(params.type, 'aortic') && chordae_idx(j,k).tree_idx
                     
                     tree_idx = chordae_idx(j,k).tree_idx; 
                     
@@ -1043,9 +1069,13 @@ function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac
         for j=1:j_max
             
             % valve ring points from leaflet 
-            ring_pt = X(1:2,j,k_max);
-
-            increment = ring_pt - params.ring_center(1:2); 
+            if strcmp(params.type, 'aortic')
+                ring_pt = X(1:2,j,1);
+            else 
+                ring_pt = X(1:2,j,k_max);
+            end
+            
+            increment = ring_pt - params.ring_center(1:2);
             increment = ds * increment / norm(increment); 
             
             % expand in the direction of a vector from venter of ring to
@@ -1248,9 +1278,14 @@ function params = place_rays(params, leaflet, ds, L, k_rel, k_target, ref_frac, 
         output        = false; 
     end 
     
+    if strcmp(params.type, 'aortic')
+        k_range = 1; 
+    else 
+        k_range = 1:k_max; 
+    end 
     
     for j = 1:j_max
-        for k = 1:k_max
+        for k = k_range
             if is_bc(j,k)
             
                 % take mod one be 
@@ -1273,9 +1308,16 @@ function params = place_rays(params, leaflet, ds, L, k_rel, k_target, ref_frac, 
                     end
                 end 
                 
-                % k_nbr always down 
+                
                 j_nbr = j; 
-                k_nbr = k-1; 
+                if strcmp(params.type, 'aortic')
+                    % k_nbr always up 
+                    k_nbr = k+1; 
+                else 
+                    % k_nbr always down 
+                    k_nbr = k-1; 
+                end 
+
                 if (j_nbr > 0) &&  (k_nbr > 0) && (j_nbr <= j_max) && (k_nbr <= k_max) && is_internal(j_nbr,k_nbr)
                     neighbors = [X(:,j_nbr,k_nbr), neighbors] ; 
                 end        

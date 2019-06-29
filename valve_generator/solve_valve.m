@@ -253,7 +253,12 @@ valve_with_reference = rmfield(valve_with_reference, 'leaflets');
 
 for i=1:length(valve.leaflets)
         
-    valve_with_reference.leaflets(i) = set_rest_lengths_and_constants(valve.leaflets(i), valve); 
+    if isfield(valve, 'name') && strcmp(valve.name, 'aortic')
+        valve_with_reference.leaflets(i) = set_rest_lengths_and_constants_aortic(valve.leaflets(i), valve); 
+    else
+        % mitral default 
+        valve_with_reference.leaflets(i) = set_rest_lengths_and_constants(valve.leaflets(i), valve); 
+    end 
     
     if valve.targets_for_bcs_ref_only
         adjustment_length = 1e-5; 

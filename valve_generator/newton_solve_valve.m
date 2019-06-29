@@ -90,7 +90,7 @@ advanpix_multiprecision = false;
 % human-friendly format if false 
 latex_table = false; 
 
-if isfield(leaflet, 'careful_early_steps')
+if isfield(leaflet, 'careful_early_steps') && leaflet.careful_early_steps
     careful_early_steps         = leaflet.careful_early_steps; 
     careful_early_step_coeff    = leaflet.careful_early_step_coeff; 
     residual_decrease_to_double = leaflet.residual_decrease_to_double;     
@@ -340,11 +340,12 @@ while true
         
     
     % if we have decreased by more than the required amount, can turn initial alpha up 
-    if err < residual_decrease_to_double * error_norm_for_comparison
-        careful_early_step_coeff = min(2 * careful_early_step_coeff, 1); 
-        error_norm_for_comparison = err; 
+    if careful_early_steps
+        if err < residual_decrease_to_double * error_norm_for_comparison
+            careful_early_step_coeff = min(2 * careful_early_step_coeff, 1); 
+            error_norm_for_comparison = err; 
+        end 
     end 
-    
     
     % various ways to leave the main loop 
     it = it + 1; 

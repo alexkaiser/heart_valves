@@ -45,9 +45,11 @@ valve.max_it                = 1e8;
 valve.max_continuations     = 1e8; 
 
 % shirinks initial 
-valve.careful_early_steps         = true; 
-valve.careful_early_step_coeff    = 1/8; 
-valve.residual_decrease_to_double = 1/2; 
+valve.careful_early_steps         = false; 
+if valve.careful_early_steps
+    valve.careful_early_step_coeff    = 1/8; 
+    valve.residual_decrease_to_double = 1/2; 
+end 
 
 % Parameters for quick exit on line search 
 valve.max_consecutive_fails = 0;  
@@ -113,14 +115,6 @@ valve.collagen_constitutive = true;
 % Constant strain of pressurized configuration 
 valve.strain = .16; 
 
-% no reflections in this version 
-reflect_x = false; 
-
-% Radial and circumferential fibers 
-% Or diagonally oriented fibers 
-% Always true in this version `
-radial_and_circumferential = true; 
-
 % physical units create a scalar multiple of the old 
 % this multiple is large number, so we want to scale the old tolerance accordingly 
 % 8.3326e-04 is a good number here
@@ -129,7 +123,7 @@ valve.tol_global = 1e-3;
 
 % commissural tree version 
 % but without explicit commissural leaflets 
-valve.p_physical = 40 * MMHG_TO_CGS; 
+valve.p_physical = 80 * MMHG_TO_CGS; 
 
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
@@ -160,8 +154,8 @@ tension_coeffs.alpha = 1.0;   % circumferential
 tension_coeffs.beta  = 0.05;  % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 2.0;  % circumferential 
-tension_coeffs.c_rad_dec        = 0.5;  % radial
+tension_coeffs.c_circ_dec       = 1.5;  % circumferential 
+tension_coeffs.c_rad_dec        = 0.6;  % radial
 
 % scaling for target points 
 % note that this does not include copies 
