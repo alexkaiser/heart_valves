@@ -1499,8 +1499,12 @@ function params = place_cartesian_net(params, leaflet, r_extra, L, ds, k_rel, k_
 %         ring_expanded(:,j) = ring_pt + increment; 
 
         % valve ring points from leaflet 
-        ring_pt = X(1:2,j,k_max);
-
+        if strcmp(params.type, 'aortic')
+            ring_pt = X(1:2,j,1);
+        else 
+            ring_pt = X(1:2,j,k_max);
+        end 
+        
         increment = ring_pt - params.ring_center(1:2); 
         increment = r_extra * increment / norm(increment); 
 

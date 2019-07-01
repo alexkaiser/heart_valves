@@ -71,6 +71,7 @@
 #include <timing.h>
 #include <boundary_condition_util.h>
 #include <CirculationModel.h>
+#include <CirculationModel_with_lv.h>
 // #include <FeedbackForcer.h>
 #include <FourierBodyForce.h>
 
@@ -440,7 +441,16 @@ int main(int argc, char* argv[])
                 const bool use_circ_model    = false; 
                 CirculationModel *circ_model = NULL; 
                 pout << "To constructor\n";
-                fourier_series_data *fourier_series = new fourier_series_data("fourier_coeffs.txt", dt);
+
+                std::string fourier_coeffs_name; 
+                if (input_db->keyExists("FOURIER_COEFFS_FILENAME")){
+                    fourier_coeffs_name = input_db->getString("FOURIER_COEFFS_FILENAME");
+                }
+                else {
+                    fourier_coeffs_name = "fourier_coeffs.txt"; 
+                }
+
+                fourier_series_data *fourier_series = new fourier_series_data(fourier_coeffs_name.c_str(), dt);
                 pout << "Series data successfully built\n";
             #endif
     

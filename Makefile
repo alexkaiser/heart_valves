@@ -12,7 +12,7 @@ include $(IBAMR_BUILD_DIR)/config/make.inc
 ## Build the application.
 
 PDIM = 3
-OBJS = boundary_condition_util.o CirculationModel.o FourierBodyForce.o main.o 
+OBJS = CirculationModel_with_lv.o boundary_condition_util.o CirculationModel.o FourierBodyForce.o main.o 
 	
 main3d: $(IBAMR_LIB_3D) $(IBTK_LIB_3D) $(OBJS)
 	$(CXX) -o main3d $(CXXFLAGS) $(LDFLAGS) $(OBJS) $(IBAMR_LIB_3D) $(IBTK_LIB_3D) $(LDFLAGS) $(LIBS) -DNDIM=$(PDIM) 
