@@ -72,6 +72,10 @@ function [] = output_to_ibamr_format(valve)
         n_lagrangian_tracers = 0; 
     end 
     
+    if ~isfield(valve, 'name')
+        valve.name = 'default_mitral'; 
+    end 
+    
     if ~strcmp(valve.name, 'aortic') && ~valve.split_papillary
         error('Must have split papillary locations in current implementation.'); 
     end

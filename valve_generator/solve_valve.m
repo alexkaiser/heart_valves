@@ -260,7 +260,7 @@ for i=1:length(valve.leaflets)
         valve_with_reference.leaflets(i) = set_rest_lengths_and_constants(valve.leaflets(i), valve); 
     end 
     
-    if valve.targets_for_bcs_ref_only
+    if isfield(valve, 'targets_for_bcs_ref_only') && valve.targets_for_bcs_ref_only
         adjustment_length = 1e-5; 
         valve_with_reference = add_targets_for_bcs_to_valve_with_refernece(valve_with_reference, adjustment_length); 
     end 

@@ -30,6 +30,10 @@
 
 #define FLOW_STRAIGHTENER
 
+#define FULL_FLOW_CLAMP 
+#define FULL_FLOW_CLAMP_TIME 0.01
+
+
 /////////////////////////////// NAMESPACE ////////////////////////////////////
 
 /////////////////////////////// STATIC ///////////////////////////////////////
@@ -156,6 +160,8 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
     // Flow straightener (if desired)
     #ifdef FLOW_STRAIGHTENER
     
+        
+
         // no straightener at time zero
         if (!initial_time){
         
@@ -188,42 +194,79 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
             const double dt = d_fluid_solver->getCurrentTimeStepSize();
             const double rho = d_fluid_solver->getStokesSpecifications()->getRho();
             
-            // this may be very, very large
-            // consider changing it
-            double kappa[NDIM];
-            kappa[0] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
-            kappa[1] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
-            kappa[2] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0; 
-                                                               
-            double goal[NDIM]; 
-            goal[0] = 0.0; 
-            goal[1] = 0.0; 
-            
-            // z component goal is the average value 
-            goal[2] = d_flux_z / cross_section_area; 
-            
-            // Clamp the velocity in the x,y components
-            // Maybe clamp the velocity in the z component too... re
-            for (int component = 0; component < NDIM; ++component){
-                for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
+            bool full_clamp_on = false; 
+
+            #ifdef FULL_FLOW_CLAMP
+                if (data_time < FULL_FLOW_CLAMP_TIME){
+                    // F_data->fillAll(0.0);
+
+                    full_clamp_on = true; 
+
+                    // linear decrease in coefficient value 
+                    // from max 
+                    double k_full_clamp; 
+                    if (data_time > 0.0){
+                        k_full_clamp = (1 - data_time/FULL_FLOW_CLAMP_TIME) * 0.25 * rho / dt;
+                    }
+                    else{
+                        k_full_clamp = 0.0; 
+                    }
+
+                    // Clamp the velocity in all components
+                    for (int component = 0; component < NDIM; ++component){
+                        for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
+
+                            const Index<NDIM>& i = b();
+                            const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
+
+                            const double U_current = U_current_data ? (*U_current_data)(i_s) : 0.0;
+                            const double U_new     = U_new_data ? (*U_new_data)(i_s) : 0.0;
+                            const double U         = (cycle_num > 0) ? 0.5 * (U_new + U_current) : U_current;
+
+                            (*F_data)(i_s)        += -k_full_clamp * U;
+                        }
+                    }
+                }
+            #endif
+
+            if (~full_clamp_on){
+                // this may be very, very large
+                // consider changing it
+                double kappa[NDIM];
+                kappa[0] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
+                kappa[1] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
+                kappa[2] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0; 
+                                                                   
+                double goal[NDIM]; 
+                goal[0] = 0.0; 
+                goal[1] = 0.0; 
                 
-                    const Index<NDIM>& i = b();
-                    const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
-
-                    // get the height, which determines whether there is force
-                    const double z = x_lower[axis] + dx[axis] * static_cast<double>(i(axis) - patch_box.lower(axis));
+                // z component goal is the average value 
+                goal[2] = d_flux_z / cross_section_area; 
+                
+                // Clamp the velocity in the x,y components
+                // Maybe clamp the velocity in the z component too... re
+                for (int component = 0; component < NDIM; ++component){
+                    for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
                     
-                    if (z < max_height_force_applied){
-                        const double U_current = U_current_data ? (*U_current_data)(i_s) : 0.0;
-                        const double U_new     = U_new_data ? (*U_new_data)(i_s) : 0.0;
-                        const double U         = (cycle_num > 0) ? 0.5 * (U_new + U_current) : U_current;
+                        const Index<NDIM>& i = b();
+                        const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
 
-                        const double weight    = smooth_kernel((z - center) / (dx[axis]*height_physical));
-                    
-                        (*F_data)(i_s)        += weight*(-kappa[component] * (U - goal[component]));
+                        // get the height, which determines whether there is force
+                        const double z = x_lower[axis] + dx[axis] * static_cast<double>(i(axis) - patch_box.lower(axis));
                         
-                        // std::cout << "Placing a force of " << weight*(-kappa * U) << " in component " << component << " at height " << z << "\n";
+                        if (z < max_height_force_applied){
+                            const double U_current = U_current_data ? (*U_current_data)(i_s) : 0.0;
+                            const double U_new     = U_new_data ? (*U_new_data)(i_s) : 0.0;
+                            const double U         = (cycle_num > 0) ? 0.5 * (U_new + U_current) : U_current;
+
+                            const double weight    = smooth_kernel((z - center) / (dx[axis]*height_physical));
                         
+                            (*F_data)(i_s)        += weight*(-kappa[component] * (U - goal[component]));
+                            
+                            // std::cout << "Placing a force of " << weight*(-kappa * U) << " in component " << component << " at height " << z << "\n";
+                            
+                        }
                     }
                 }
             }

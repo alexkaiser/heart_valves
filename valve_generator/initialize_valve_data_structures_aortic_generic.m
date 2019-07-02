@@ -132,7 +132,7 @@ p_0 = -valve.p_physical;
 % valve.r_dip = 0.75; 
 % valve.total_angle_dip = pi; 
 
-valve.L = 3.0; 
+valve.L = 2.25; 
 
 valve.skeleton = get_skeleton_aortic_generic(); 
 valve.r = valve.skeleton.r; 

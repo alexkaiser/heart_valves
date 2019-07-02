@@ -1,16 +1,19 @@
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=28
-#SBATCH --time=167:00:00
-#SBATCH --mem=125GB
-#SBATCH --job-name=mitral_256
+#SBATCH --ntasks-per-node=24
+#SBATCH --time=24:00:00
+#SBATCH --mem=185GB
+#SBATCH --job-name=normal_1
 #SBATCH --mail-user=adkaiser@gmail.com
 #SBATCH --mail-type=ALL
-#SBATCH --exclusive
-
+#SBATCH --partition=amarsden
 
 module purge
-module load openmpi/gnu/2.0.2
+module load gcc/8.1.0
+module load openmpi/2.0.2
+
+# executable is here 
+SRCDIR=$PWD
 
 # executable is here 
 SRCDIR=$HOME/mitral_fully_discrete

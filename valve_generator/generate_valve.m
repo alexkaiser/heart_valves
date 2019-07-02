@@ -31,7 +31,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N_range = 2^6; % 2.^(5:11); 
+N_range = 2^8; % 2.^(5:11); 
 
 for N = N_range
 
@@ -53,7 +53,7 @@ for N = N_range
     decreasing_tension = true; 
 
     hocm_d_valve = false; 
-    normal_1_valve = true; 
+    normal_1_valve = false; 
 
     if radial
 

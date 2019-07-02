@@ -251,3 +251,15 @@ leaflet_with_reference.diff_eqns = @difference_equations_with_reference;
 leaflet_with_reference.jacobian  = @build_jacobian_with_reference;
 
 leaflet_with_reference.ref_frac = 1.0; 
+
+% % annular dilation if requested 
+% if isfield(valve, 'dilation_radius') && (valve.dilation > 0) 
+%     
+%     r = valve.r; 
+%     r_new = r + valve.dilation; 
+%     
+%     
+% end 
+
+
+

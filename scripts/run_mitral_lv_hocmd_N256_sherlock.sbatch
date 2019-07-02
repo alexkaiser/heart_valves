@@ -23,7 +23,7 @@ mkdir $RUNDIR
 BASE_NAME=mitral_no_partition_256
 BASE_NAME_LV=LV_pt05cm_hocm_d
 INPUT_NAME=input_mitral_LV_256_hocm_d
-RUN_LINE="mpiexec --bind-to core -report-bindings main_with_lv"
+RUN_LINE="mpiexec --bind-to core -report-bindings main"
 OPTIONS="-velocity_ksp_type cg -velocity_pc_type none -velocity_ksp_max_it 1 -velocity_ksp_norm_type none > output.txt 2>&1"
 
 pwd
