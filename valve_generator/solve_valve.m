@@ -268,7 +268,12 @@ for i=1:length(valve.leaflets)
     leaflet = valve_with_reference.leaflets(i); 
     
     p_easy = leaflet.p_0/10; 
-    p_goal    =  0; 
+    
+    if isfield(valve, 'p_final')
+        p_goal = valve.p_final; 
+    else 
+        p_goal = 0; 
+    end 
     
     max_continuations_relaxed = 6; 
 
