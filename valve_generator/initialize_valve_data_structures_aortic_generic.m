@@ -123,12 +123,12 @@ valve.tol_global = 1e-3;
 
 % commissural tree version 
 % but without explicit commissural leaflets 
-valve.p_physical = 120 * MMHG_TO_CGS; 
+valve.p_physical = 100 * MMHG_TO_CGS; 
 
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
 
-valve.p_final = -0.1 * MMHG_TO_CGS; 
+valve.p_final = 0.01 * MMHG_TO_CGS; 
 
 % valve.dip_anterior_systole = true; 
 % valve.r_dip = 0.75; 
@@ -146,7 +146,7 @@ valve.r = valve.skeleton.r;
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
 % valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
-tension_coeffs.pressure_tension_ratio = 0.01; 
+tension_coeffs.pressure_tension_ratio = 0.011; 
 
 tension_coeffs.dec_tension_coeff_base = 20.0; 
 
