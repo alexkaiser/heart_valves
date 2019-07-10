@@ -139,6 +139,114 @@ function order_check_aortic(path, N_values, suffix_name)
 
         % no weight on sup norm version 
         diff_inf(i)  =                       norm(differences, 'inf'); 
+        
+        
+        pointwise_plots = true; 
+        if pointwise_plots && (i == iterations)
+            n_colors = 500; 
+            extended = true; 
+            colormap(make_colormap(n_colors, extended)); 
+
+            cmap = colormap;
+            n_colors = size(cmap,1); 
+
+            max_diff_1_norm   = max(max(diff_one_components)); 
+            max_diff_2_norm   = max(max(diff_two_components)); 
+            max_diff_inf_norm = max(max(diff_inf_components)); 
+    
+            colors_1_norm     = zeros(j_max_coarse,k_max_coarse,3); 
+            colors_2_norm     = zeros(j_max_coarse,k_max_coarse,3); 
+            colors_inf_norm   = zeros(j_max_coarse,k_max_coarse,3); 
+                        
+            for j=1:j_max_coarse
+                for k=1:k_max_coarse
+                    
+                    color_idx = floor(n_colors * diff_one_components(j,k)/max_diff_1_norm);        
+                    if color_idx == 0
+                        color_idx = 1; 
+                    end 
+                    colors_1_norm(j,k,:) = cmap(color_idx,:); 
+                    
+                    color_idx = floor(n_colors * diff_two_components(j,k)/max_diff_2_norm); 
+                    if color_idx == 0
+                        color_idx = 1; 
+                    end 
+                    colors_2_norm(j,k,:) = cmap(color_idx,:); 
+                    
+                    color_idx = floor(n_colors * diff_inf_components(j,k)/max_diff_inf_norm); 
+                    if color_idx == 0
+                        color_idx = 1; 
+                    end
+                    colors_inf_norm(j,k,:) = cmap(color_idx,:);
+                    
+                end 
+            end 
+            
+
+            x_component = squeeze(X_coarse(1,:,:)); 
+            y_component = squeeze(X_coarse(2,:,:)); 
+            z_component = squeeze(X_coarse(3,:,:)); 
+
+            width = 1.0; 
+            
+            figure; 
+            surf(x_component, y_component, z_component, colors_1_norm, 'LineWidth',width);
+            title('1 norm componentwise diffs')            
+            axis equal 
+            axis auto 
+            hold on 
+            
+            colormap(make_colormap(n_colors, extended)); 
+            n_ticks = 5; 
+            tick_array = linspace(0,1,n_ticks); 
+            tick_labels = {}; 
+            for n=1:length(tick_array)
+                tick=tick_array(n); 
+                tension = tick * max_diff_1_norm; 
+                tick_labels{n} = sprintf('%.1e', tension); 
+            end 
+            cbar = colorbar('Ticks', tick_array, 'TickLabels', tick_labels);
+            
+            figure; 
+            surf(x_component, y_component, z_component, colors_2_norm, 'LineWidth',width);
+            title('2 norm componentwise diffs')
+            colorbar
+            axis equal 
+            axis auto 
+            hold on 
+            
+            colormap(make_colormap(n_colors, extended)); 
+            n_ticks = 5; 
+            tick_array = linspace(0,1,n_ticks); 
+            tick_labels = {}; 
+            for n=1:length(tick_array)
+                tick=tick_array(n); 
+                tension = tick * max_diff_1_norm; 
+                tick_labels{n} = sprintf('%.1e', tension); 
+            end 
+            cbar = colorbar('Ticks', tick_array, 'TickLabels', tick_labels);
+            
+            figure; 
+            surf(x_component, y_component, z_component, colors_inf_norm, 'LineWidth',width);
+            title('inf norm componentwise diffs')
+            colorbar
+            axis equal 
+            axis auto 
+            hold on 
+            
+            colormap(make_colormap(n_colors, extended)); 
+            n_ticks = 5; 
+            tick_array = linspace(0,1,n_ticks); 
+            tick_labels = {}; 
+            for n=1:length(tick_array)
+                tick=tick_array(n); 
+                tension = tick * max_diff_1_norm; 
+                tick_labels{n} = sprintf('%.1e', tension); 
+            end 
+            cbar = colorbar('Ticks', tick_array, 'TickLabels', tick_labels);
+
+        end 
+    
 
     end
     
@@ -162,6 +270,7 @@ function order_check_aortic(path, N_values, suffix_name)
 %         end
 %     end 
     
+
     fprintf('Difference equations 2 norm (i.e. Newton solve two norm error):\n')
     N = N_values(1); 
     for i=1:length(N_values)

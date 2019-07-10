@@ -39,7 +39,9 @@ N_each = leaflet.N_each;
     
 X = NaN * zeros(3,j_max,k_max); 
 
-debug = false; 
+debug = true; 
+
+free_edge_smooth = true; 
 
 if isfield(valve.skeleton, 'valve_ring_pts')
     % use whatever points are measured for valve ring 
@@ -106,18 +108,35 @@ else
         for j=1:(N_each/2)
             X(:,j + min_idx + N_each/2,k) = (1 - j*dj_interp) * center + j*dj_interp * commissure_points(:,comm_idx_next); 
         end 
+        
+        if free_edge_smooth && (N_each > 16)
+            
+            smooth_points = N_each/16; 
+            
+            free_edge_copy = X(:,:,k); 
+            
+            smooth_min = (N_each/2) - smooth_points; 
+            smooth_max = (N_each/2) + smooth_points; 
+            
+            for j = smooth_min:smooth_max
+                for component = 1:3
+                    free_edge_copy(component,j + min_idx) = mean(X(component,(j + min_idx - smooth_points):(j + min_idx + smooth_points)  ,k)); 
+                end 
+            end 
+            
+            X(:,:,k) = free_edge_copy; 
+            
+        end 
 
     end 
-    
+        
     % now, linear interpolation from annulus to free edge 
     
     for j=1:j_max 
-        dk_interp = 1/(k_max-1); 
-        
+        dk_interp = 1/(k_max-1);         
         for k=2:(k_max-1)
             X(:,j,k) = (1 - (k-1)*dk_interp) * X(:,j,1) + (k-1)*dk_interp * X(:,j,k_max); 
-        end 
-        
+        end         
     end 
 
 end
