@@ -31,9 +31,13 @@ N_each_range = 2.^(2:8);
 
 N_values = 3 * N_each_range; 
 
-path = 'meshes/aortic_conv_checks_7_2019'
+% path = 'meshes/aortic_conv_checks_7_2019'
 
 % path = 'meshes/aortic_conv_checks_7_2019/dirichlet_free_edge_d4b64337'
+
+% path = 'meshes/aortic_conv_checks_7_2019/dirichlet_free_edge_smoothed_ec700cd'
+
+path = 'meshes/aortic_conv_checks_7_2019/initial_cond_smoothed'; 
 
 suffix_name = ''; 
 

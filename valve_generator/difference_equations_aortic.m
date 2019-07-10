@@ -113,6 +113,8 @@ function F = difference_equations_aortic(leaflet)
                     F_tmp = F_tmp + p_0 * m * cross(X_current(:,j_plus__1,k) - X_current(:,j_minus_1,k), X_current(:,j,k_plus__1) - X_current(:,j,k_minus_1));                     
                 end 
 
+                % check weights when control volume shrinks by half 
+                [weight_u weight_v] = get_fiber_weights(leaflet,j,k); 
                 
                 % u type fibers 
                 for j_nbr_tmp = [j-1,j+1]
@@ -139,7 +141,7 @@ function F = difference_equations_aortic(leaflet)
                             fprintf('tension = %e, dec_tension = %f, (j,k) = (%d, %d) circ\n', tension, dec, j, k); 
                         end 
 
-                        F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
+                        F_tmp = F_tmp + du * weight_u * tension * (X_nbr-X)/norm(X_nbr-X); 
                     
                     elseif valid && target_spring 
                         error('No j direction targets allowed'); 
@@ -174,7 +176,7 @@ function F = difference_equations_aortic(leaflet)
                             fprintf('tension = %e, dec_tension = %f, (j,k) = (%d, %d) radial\n', tension, dec, j, k); 
                         end 
                         
-                        F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
+                        F_tmp = F_tmp + du * weight_v * tension * (X_nbr-X)/norm(X_nbr-X); 
                         
                     elseif valid && target_spring 
                         

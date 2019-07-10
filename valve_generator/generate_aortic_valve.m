@@ -69,7 +69,9 @@ for N_each = N_each_range
 
     build_reference = false; 
     
-    [valve valve_with_reference pass_all] = solve_valve(valve, interactive, from_history, build_reference); 
+    valve_with_reference = []; 
+    pass_all = []; 
+    % [valve valve_with_reference pass_all] = solve_valve(valve, interactive, from_history, build_reference); 
     
     fig = figure; 
     fig = valve_plot(valve, fig); 
