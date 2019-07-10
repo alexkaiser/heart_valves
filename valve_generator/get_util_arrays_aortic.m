@@ -53,7 +53,7 @@ end
 leaflet.N_each = N_each; 
 
 % max possible k is determined by j 
-k_max = N_each/2; 
+k_max = N_each/2 + 1; 
 
 leaflet.j_max                = j_max; 
 leaflet.k_max                = k_max; 
@@ -71,18 +71,6 @@ k_max                     = leaflet.k_max;
 is_bc                     = zeros(j_max, k_max); 
 linear_idx_offset         = zeros(j_max, k_max); 
 point_idx_with_bc         = zeros(j_max, k_max); 
-
-% want to update range here 
-warning('update aortic valve ranges here')
-%     j_range_anterior   = (1:N_anterior); 
-%     j_range_right_comm = [];
-%     j_range_posterior  = (1:N_posterior)  + max(j_range_anterior); 
-%     j_range_left_comm  = []; 
-%     
-%     indices = [j_range_anterior, j_range_posterior]; 
-%     if ~all(indices == (1:j_max))
-%         error('Inconsistency in indices'); 
-%     end 
     
 % edges are boundary conditions 
 % vertical boundaries at each commissure 
@@ -128,9 +116,3 @@ leaflet.is_internal           = is_internal;
 leaflet.is_bc                 = is_bc;
 leaflet.linear_idx_offset     = linear_idx_offset;
 leaflet.point_idx_with_bc     = point_idx_with_bc;
-
-warning('fix j_range for aortic')
-% leaflet.j_range_anterior   = j_range_anterior; 
-% leaflet.j_range_right_comm = j_range_right_comm; 
-% leaflet.j_range_posterior  = j_range_posterior; 
-% leaflet.j_range_left_comm  = j_range_left_comm; 

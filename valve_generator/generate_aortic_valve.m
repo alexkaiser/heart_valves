@@ -31,7 +31,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N_each_range = 2^6; % 2.^(5:11); 
+N_each_range = 2.^(2:8); % 2^6; 
 
 for N_each = N_each_range
 
@@ -58,7 +58,7 @@ for N_each = N_each_range
     end 
 
 
-    interactive = true; 
+    interactive = false; 
 
     from_history = false; 
     if from_history 
@@ -67,14 +67,10 @@ for N_each = N_each_range
         valve.tension_coeff_history = history_tmp; 
     end 
 
-    % if radial && bead_slip && attached
-    %     valve = newton_solve_valve_attached(valve, valve.tol_global, valve.max_it); 
-    % else 
-    % %     valve = solve_valve(valve, p_range, repulsive_coeff_range); 
-
-    [valve valve_with_reference pass_all] = solve_valve(valve, interactive, from_history); 
-    % end 
-
+    build_reference = false; 
+    
+    [valve valve_with_reference pass_all] = solve_valve(valve, interactive, from_history, build_reference); 
+    
     fig = figure; 
     fig = valve_plot(valve, fig); 
 
@@ -99,9 +95,9 @@ for N_each = N_each_range
     save(strcat(valve.base_name, '_final_data')); 
 
     % Write to simulation files 
-    if ~isempty(valve_with_reference)
-        output_to_ibamr_format(valve_with_reference); 
-    end 
+%     if ~isempty(valve_with_reference)
+%         output_to_ibamr_format(valve_with_reference); 
+%     end 
 
 end 
 

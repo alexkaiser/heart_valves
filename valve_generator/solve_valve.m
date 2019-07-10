@@ -1,4 +1,4 @@
-function [valve valve_with_reference pass_all] = solve_valve(valve, interactive, from_history)
+function [valve valve_with_reference pass_all] = solve_valve(valve, interactive, from_history, build_reference)
 % 
 % Refines valve data structure to equilibrium 
 % Applies auto-continuation to pressure and updates both leaflets 
@@ -46,7 +46,9 @@ if ~exist('interactive', 'var')
     interactive = false; 
 end 
 
-
+if ~exist('from_refernece', 'var')
+    from_reference = true; 
+end 
 
 tol_global            = valve.tol_global; 
 max_it                = valve.max_it; 
@@ -243,65 +245,70 @@ if isfield(valve, 'targets_for_bcs') && valve.targets_for_bcs
 end 
     
     
+if build_reference
 
-% constitutive law version 
-valve_with_reference = valve; 
+    % constitutive law version 
+    valve_with_reference = valve; 
 
-% kill off the old leaflet structure, new one has different fields, 
-% which makes matlab complain about assigning it to a structure array 
-valve_with_reference = rmfield(valve_with_reference, 'leaflets'); 
+    % kill off the old leaflet structure, new one has different fields, 
+    % which makes matlab complain about assigning it to a structure array 
+    valve_with_reference = rmfield(valve_with_reference, 'leaflets'); 
 
-for i=1:length(valve.leaflets)
-        
-    if isfield(valve, 'name') && strcmp(valve.name, 'aortic')
-        valve_with_reference.leaflets(i) = set_rest_lengths_and_constants_aortic(valve.leaflets(i), valve); 
-    else
-        % mitral default 
-        valve_with_reference.leaflets(i) = set_rest_lengths_and_constants(valve.leaflets(i), valve); 
-    end 
-    
-    if isfield(valve, 'targets_for_bcs_ref_only') && valve.targets_for_bcs_ref_only
-        adjustment_length = 1e-5; 
-        valve_with_reference = add_targets_for_bcs_to_valve_with_refernece(valve_with_reference, adjustment_length); 
-    end 
-        
-    leaflet = valve_with_reference.leaflets(i); 
-    
-    p_easy = leaflet.p_0/10; 
-    
-    if isfield(valve, 'p_final')
-        p_goal = valve.p_final; 
-    else 
-        p_goal = 0; 
-    end 
-    
-    max_continuations_relaxed = 6; 
+    for i=1:length(valve.leaflets)
 
-    [valve_with_reference.leaflets(i) pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails); 
-
-    if isfield(valve_with_reference, 'targets_for_bcs') && valve_with_reference.targets_for_bcs 
-        valve_with_reference.leaflets(1).target_length_check = true;     
-        valve_with_reference.leaflets(1).diff_eqns(valve_with_reference.leaflets(1));     
-        valve_with_reference.leaflets(1).target_length_check = false; 
-    end 
-    
-    
-    if pass
-        fprintf('Global solve passed, err = %e\n\n', err); 
-    else 
-        if any_passed
-            fprintf('Global solve passed but with pressure, err = %e\n\n', valve_with_reference.leaflets(i).p_0); 
-        else 
-            fprintf('Global solve failed, err = %e\n\n', err); 
+        if isfield(valve, 'name') && strcmp(valve.name, 'aortic')
+            valve_with_reference.leaflets(i) = set_rest_lengths_and_constants_aortic(valve.leaflets(i), valve); 
+        else
+            % mitral default 
+            valve_with_reference.leaflets(i) = set_rest_lengths_and_constants(valve.leaflets(i), valve); 
         end 
+
+        if isfield(valve, 'targets_for_bcs_ref_only') && valve.targets_for_bcs_ref_only
+            adjustment_length = 1e-5; 
+            valve_with_reference = add_targets_for_bcs_to_valve_with_refernece(valve_with_reference, adjustment_length); 
+        end 
+
+        leaflet = valve_with_reference.leaflets(i); 
+
+        p_easy = leaflet.p_0/10; 
+
+        if isfield(valve, 'p_final')
+            p_goal = valve.p_final; 
+        else 
+            p_goal = 0; 
+        end 
+
+        max_continuations_relaxed = 6; 
+
+        [valve_with_reference.leaflets(i) pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails); 
+
+        if isfield(valve_with_reference, 'targets_for_bcs') && valve_with_reference.targets_for_bcs 
+            valve_with_reference.leaflets(1).target_length_check = true;     
+            valve_with_reference.leaflets(1).diff_eqns(valve_with_reference.leaflets(1));     
+            valve_with_reference.leaflets(1).target_length_check = false; 
+        end 
+
+
+        if pass
+            fprintf('Global solve passed, err = %e\n\n', err); 
+        else 
+            if any_passed
+                fprintf('Global solve passed but with pressure, err = %e\n\n', valve_with_reference.leaflets(i).p_0); 
+            else 
+                fprintf('Global solve failed, err = %e\n\n', err); 
+            end 
+        end 
+
+    %     fig = figure; 
+    %     surf_plot(valve.leaflets(i), fig); 
+    %     pause(0.01);
+
+        pass_all = pass_all && pass; 
+
     end 
     
-%     fig = figure; 
-%     surf_plot(valve.leaflets(i), fig); 
-%     pause(0.01);
-    
-    pass_all = pass_all && pass; 
-    
-end 
+else 
+    valve_with_reference = []; 
 
+end 
 

@@ -60,7 +60,6 @@ valve.radial_and_circumferential = true;
 valve.bead_slip = true; 
 valve.decreasing_tension = true; 
 
-warning('fix diff eqns for aortic')
 valve.diff_eqns = @difference_equations_aortic; 
 valve.jacobian  = @build_jacobian_aortic;
 
@@ -128,7 +127,7 @@ valve.p_physical = 100 * MMHG_TO_CGS;
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
 
-valve.p_final = 0.001 * MMHG_TO_CGS; 
+valve.p_final = p_0; % 0.001 * MMHG_TO_CGS; 
 
 % valve.dip_anterior_systole = true; 
 % valve.r_dip = 0.75; 
