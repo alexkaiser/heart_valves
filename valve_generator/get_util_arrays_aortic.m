@@ -84,6 +84,9 @@ end
 for j=1:j_max
     k=1; 
     is_bc(j,k) = true; 
+    
+    k=k_max; 
+    is_bc(j,k) = true; 
 end 
 
 is_internal = ~is_bc; 
