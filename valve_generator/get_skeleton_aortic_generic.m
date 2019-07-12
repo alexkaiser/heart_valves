@@ -37,6 +37,6 @@ function skeleton = get_skeleton_aortic_generic()
 skeleton.r = 1.0; 
 skeleton.r_commissure = 1.0 * skeleton.r; 
 
-skeleton.normal_height = pi/2 * skeleton.r; 
+skeleton.normal_height = 1.4 * skeleton.r; 
 
 skeleton.ring_offset_angle = 0; 
