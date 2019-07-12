@@ -144,9 +144,6 @@ function J = build_jacobian_aortic(leaflet)
 
                 end 
                 
-                % check weights when control volume shrinks by half 
-                [weight_u weight_v] = get_fiber_weights(leaflet,j,k); 
-                
 
                 for j_nbr_tmp = [j-1,j+1]
                     
@@ -166,10 +163,10 @@ function J = build_jacobian_aortic(leaflet)
 
                             % There is a 1/du term throughout from taking a finite difference derivative 
                             % Place this on the tension variables, one of which apprears in each term 
-                            J_tmp = du * weight_u * alpha_tmp * tangent_jacobian(X, X_nbr); 
+                            J_tmp = du * alpha_tmp * tangent_jacobian(X, X_nbr); 
 
                             if decreasing_tension && (alpha_tmp ~= 0)
-                                J_tmp = J_tmp + du * weight_u * alpha_tmp * dec_tension_jacobian(X, X_nbr, du, c_dec_tension); 
+                                J_tmp = J_tmp + du * alpha_tmp * dec_tension_jacobian(X, X_nbr, du, c_dec_tension); 
                             end 
                         
                         else 
@@ -210,10 +207,10 @@ function J = build_jacobian_aortic(leaflet)
 
                             % There is a 1/du term throughout from taking a finite difference derivative 
                             % Place this on the tension variables, one of which apprears in each term 
-                            J_tmp = du * weight_v * beta_tmp * tangent_jacobian(X, X_nbr); 
+                            J_tmp = du * beta_tmp * tangent_jacobian(X, X_nbr); 
 
                             if decreasing_tension && (beta_tmp ~= 0)
-                                J_tmp = J_tmp + du * weight_v * beta_tmp * dec_tension_jacobian(X, X_nbr, du, c_dec_tension); 
+                                J_tmp = J_tmp + du * beta_tmp * dec_tension_jacobian(X, X_nbr, du, c_dec_tension); 
                             end
                             
                         else
