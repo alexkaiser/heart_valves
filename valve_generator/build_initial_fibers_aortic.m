@@ -39,7 +39,7 @@ N_each = leaflet.N_each;
     
 X = NaN * zeros(3,j_max,k_max); 
 
-debug = true; 
+debug = false; 
 
 free_edge_smooth = false; 
 

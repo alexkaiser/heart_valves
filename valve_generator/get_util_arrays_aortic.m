@@ -85,8 +85,10 @@ for j=1:j_max
     k=1; 
     is_bc(j,k) = true; 
     
-    k=k_max; 
-    is_bc(j,k) = true; 
+    if isfield(valve, 'dirichlet_free_edge') && valve.dirichlet_free_edge    
+        k=k_max; 
+        is_bc(j,k) = true; 
+    end 
 end 
 
 is_internal = ~is_bc; 

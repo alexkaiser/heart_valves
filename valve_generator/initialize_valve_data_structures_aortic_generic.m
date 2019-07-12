@@ -107,6 +107,8 @@ valve.output.cartesian_mesh = [0;0;0];
 valve.output.stride_mesh    = N/32; 
 
 
+valve.dirichlet_free_edge = false; 
+
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
 valve.collagen_constitutive = true; 
@@ -145,7 +147,11 @@ valve.r = valve.skeleton.r;
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
 % valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
-tension_coeffs.pressure_tension_ratio = 0.005; % 0.011; 
+if valve.dirichlet_free_edge
+    tension_coeffs.pressure_tension_ratio = 0.005; % 0.011; 
+else 
+    tension_coeffs.pressure_tension_ratio = 0.011; 
+end 
 
 tension_coeffs.dec_tension_coeff_base = 20.0; 
 
