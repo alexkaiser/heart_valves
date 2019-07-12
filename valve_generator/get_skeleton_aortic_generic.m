@@ -35,8 +35,8 @@ function skeleton = get_skeleton_aortic_generic()
 % https://e-echocardiography.com/page/page.php?UID=1867001
 % middle of range, simple hack 
 skeleton.r = 1.0; 
-skeleton.r_commissure = 1.2 * skeleton.r; 
+skeleton.r_commissure = 1.0 * skeleton.r; 
 
-skeleton.normal_height = 1.0; 
+skeleton.normal_height = pi/2 * skeleton.r; 
 
 skeleton.ring_offset_angle = 0; 

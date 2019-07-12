@@ -39,7 +39,7 @@ N_each = leaflet.N_each;
     
 X = NaN * zeros(3,j_max,k_max); 
 
-debug = false; 
+debug = true; 
 
 free_edge_smooth = false; 
 
@@ -62,6 +62,13 @@ else
     
     % valve ring lives at k=1
     
+    % cusp radius is one sixth of the circumference 
+    free_edge_cusp_radius = 2*pi*r/6; 
+    
+    if free_edge_cusp_radius > normal_height
+        error('inconsistent radius and height'); 
+    end 
+    
     du = leaflet.du; 
     if abs(du - 1/N) > eps
         error('inconsistent values in mesh'); 
@@ -70,7 +77,17 @@ else
     % minimum ring 
     k = 1; 
     for j = 1:j_max
-        X(:,j,k) = r * [cos(j*du*2*pi + ring_offset_angle) ; sin(j*du*2*pi + ring_offset_angle); 0]; 
+        
+        j_this_cusp = mod(j,N_each); 
+        x_this_cusp = j_this_cusp / N_each; 
+        center_cusp = 1/2; 
+        
+        circle_height = free_edge_cusp_radius * 2 * sqrt((1/2)^2 - (x_this_cusp - center_cusp)^2); 
+        
+        % top of circular part (bottom of commissure) minus a circle 
+        z_tmp = free_edge_cusp_radius - circle_height; 
+        
+        X(:,j,k) = r * [cos(j*du*2*pi + ring_offset_angle) ; sin(j*du*2*pi + ring_offset_angle); z_tmp]; 
     end
     
     % commissure points
