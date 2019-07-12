@@ -155,7 +155,7 @@ valve.r = valve.skeleton.r;
 if valve.dirichlet_free_edge
     tension_coeffs.pressure_tension_ratio = 0.005; % 0.011; 
 else 
-    tension_coeffs.pressure_tension_ratio = 0.009; 
+    tension_coeffs.pressure_tension_ratio = 0.008; 
 end 
 
 tension_coeffs.dec_tension_coeff_base = 20.0; 
