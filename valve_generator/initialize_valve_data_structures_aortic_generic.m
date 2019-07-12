@@ -119,7 +119,7 @@ valve.dirichlet_free_edge = false;
 valve.collagen_constitutive = true; 
 
 % Constant strain of pressurized configuration 
-valve.strain = .16; 
+valve.strain = .18; 
 
 % physical units create a scalar multiple of the old 
 % this multiple is large number, so we want to scale the old tolerance accordingly 
