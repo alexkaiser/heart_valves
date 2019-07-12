@@ -79,7 +79,7 @@ iterative_refinement = false;
 extra_iterations = true; 
 
 % maximum number of extra iterations 
-max_extra_iterations = 10; 
+max_extra_iterations = 2; 
 n_extra_it = 0; 
 
 % solves linear system with optional advanpix package 
