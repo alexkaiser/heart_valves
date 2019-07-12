@@ -107,7 +107,7 @@ valve.output.cartesian_mesh = [0;0;0];
 valve.output.stride_mesh    = N/32; 
 
 
-valve.dirichlet_free_edge = false; 
+valve.dirichlet_free_edge = true; 
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
@@ -150,7 +150,7 @@ valve.r = valve.skeleton.r;
 if valve.dirichlet_free_edge
     tension_coeffs.pressure_tension_ratio = 0.005; % 0.011; 
 else 
-    tension_coeffs.pressure_tension_ratio = 0.010; 
+    tension_coeffs.pressure_tension_ratio = 0.008; 
 end 
 
 tension_coeffs.dec_tension_coeff_base = 20.0; 

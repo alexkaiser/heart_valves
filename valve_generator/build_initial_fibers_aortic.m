@@ -41,7 +41,7 @@ X = NaN * zeros(3,j_max,k_max);
 
 debug = true; 
 
-free_edge_smooth = true; 
+free_edge_smooth = false; 
 
 if isfield(valve.skeleton, 'valve_ring_pts')
     % use whatever points are measured for valve ring 
@@ -99,7 +99,7 @@ else
     end
      
     % center of commissure points 
-    center = [0; 0; normal_height]; 
+    center = [0; 0; free_edge_cusp_radius + 0.5 * (normal_height - free_edge_cusp_radius)]; 
     
     k = k_max; 
     
@@ -148,7 +148,6 @@ else
     end 
         
     % now, linear interpolation from annulus to free edge 
-    
     for j=1:j_max 
         dk_interp = 1/(k_max-1);         
         for k=2:(k_max-1)
