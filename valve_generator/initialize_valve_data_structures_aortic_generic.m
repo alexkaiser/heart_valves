@@ -107,7 +107,12 @@ valve.output.cartesian_mesh = [0;0;0];
 valve.output.stride_mesh    = N/32; 
 
 
-valve.dirichlet_free_edge = true; 
+valve.place_cylinder = true; 
+valve.z_max_cylinder = pi/2; 
+valve.z_min_cylinder = 0.0; 
+valve.n_layers_cylinder = 3; 
+
+valve.dirichlet_free_edge = false; 
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
@@ -129,7 +134,7 @@ valve.p_physical = 100 * MMHG_TO_CGS;
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
 
-valve.p_final = p_0; % 0.001 * MMHG_TO_CGS; 
+valve.p_final = 0; 
 
 % valve.dip_anterior_systole = true; 
 % valve.r_dip = 0.75; 

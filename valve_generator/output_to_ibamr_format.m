@@ -124,6 +124,14 @@ function [] = output_to_ibamr_format(valve)
         params.total_papillary = 0; 
     end 
     
+    if strcmp(params.type, 'aortic') 
+        ray_springs = true;
+    else 
+        ray_springs = false;
+    end 
+    
+    
+    
     % keep a single parameter for outputting copies 
     params.z_offset = 0; 
 
@@ -260,12 +268,15 @@ function [] = output_to_ibamr_format(valve)
                 if length(valve.leaflets) ~= 1 
                     error('Only one leaflet version currently supported'); 
                 end 
-                params = place_net(params, valve.leaflets(i), ds, r, L, k_rel, k_target_net, ref_frac_net, eta_net); 
+                hoop_springs = true; 
+                params = place_net(params, valve.leaflets(i), ds, r, L, k_rel, k_target_net, ref_frac_net, eta_net, hoop_springs, ray_springs); 
             end 
 
-            % approximate geodesic continutations of fibers 
-            for i=1:length(valve.leaflets)
-                params = place_rays(params, valve.leaflets(i), ds, L, k_rel, k_target_net, ref_frac_net, eta_net);
+            if ~strcmp(params.type, 'aortic') 
+                % approximate geodesic continutations of fibers 
+                for i=1:length(valve.leaflets)
+                    params = place_rays(params, valve.leaflets(i), ds, L, k_rel, k_target_net, ref_frac_net, eta_net);
+                end 
             end 
 
             % flat part of mesh with Cartesian coordinates
@@ -332,6 +343,29 @@ function [] = output_to_ibamr_format(valve)
         
     end 
 
+    
+    if strcmp(params.type, 'aortic') 
+        if isfield(valve, 'place_cylinder') && valve.place_cylinder
+        
+            if ~isfield(valve, 'z_min_cylinder')
+                valve.z_min_cylinder = params.z_min;                
+            end 
+            if ~isfield(valve, 'z_max_cylinder')
+                valve.z_max_cylinder = params.z_max;                
+            end 
+            
+            if ~isfield(valve, 'n_layers_cylinder')
+                valve.n_layers_cylinder = 3;                
+            end
+                        
+            params = place_cylinder(params, r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net); 
+                        
+        end 
+    end 
+    
+    
+    
+    
     if n_lagrangian_tracers > 0
         double_z = true; 
         [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_lagrangian_tracers, double_z); 
@@ -1012,7 +1046,7 @@ end
 
 
                         
-function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac, eta, hoop_springs)
+function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac, eta, hoop_springs, ray_springs)
     % 
     % Places a polar coordinate mesh in a box 
     % Starts with N points evenly spaced at radius R
@@ -1040,6 +1074,10 @@ function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac
 
     if ~exist('hoop_springs', 'var')
         hoop_springs = true; 
+    end 
+    
+    if ~exist('ray_springs', 'var')
+        hoop_springs = false; 
     end 
     
     X     = leaflet.X; 
@@ -1179,12 +1217,158 @@ function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac
                        end 
                     end 
                 end 
+                
+                if ray_springs
+                    % check up directions for springs 
+                    if k < k_max
+                        k_nbr = k+1; 
+                        if ~isnan(indices_global(j,k_nbr))
+                            rest_len = ref_frac * norm(points(:,j,k) - points(:,j,k_nbr)); 
+                            k_abs = k_rel / rest_len;
+                            nbr_idx = indices_global(j,k_nbr); 
+                            params = spring_string(params, idx, nbr_idx, k_abs, rest_len, function_idx, output_tmp); 
+                        end 
+                    end 
+                    
+                end
+                
             end 
            
         end 
     end  
 
 end 
+
+function params = place_cylinder(params, r, ds, z_min, z_max, n_layers, k_rel, k_target)
+    % Places n_layers cylinders
+    % cylinders have axial radial and circumferential fibers 
+    % 
+            
+    N_theta = floor(2*pi*r / ds);  
+    N_z     = floor((z_max - z_min)/ds); 
+    N_r     = n_layers; 
+    
+    dtheta = 1/N_theta; 
+    dz     = 1/N_z; 
+    dr     = ds; 
+    
+    points = zeros(3,N_theta,N_r,N_z);
+    
+    % just keep a list of valid indices, mark NAN if out of physical bounds 
+    indices_global = zeros(N_theta,N_r,N_z);     
+    
+    % always linear springs 
+    function_idx = 0; 
+    
+    % This loop should be one indexed, 
+    % because we want to start not at the edge but ds in 
+    for z_idx=1:N_z
+        for r_idx=1:N_r
+            for theta_idx=1:N_theta
+                       
+                r_tmp = r + (r_idx - 1)*dr; 
+                
+                x_coord = r_tmp * cos(2*pi*dtheta*(theta_idx-1)); 
+                y_coord = r_tmp * sin(2*pi*dtheta*(theta_idx-1)); 
+                z_coord = z_min + z_max * (z_idx - 1) * dz; 
+
+                points(:,theta_idx,r_idx,z_idx) = [x_coord, y_coord, z_coord]; 
+                indices_global(theta_idx,r_idx,z_idx) = params.global_idx; 
+                params.vertices(:,params.global_idx + 1) = points(:,theta_idx,r_idx,z_idx);
+
+                % every valid vertex is a target point here 
+                if exist('eta', 'var')
+                    params = target_string(params, params.global_idx, k_target, eta);     
+                else
+                    params = target_string(params, params.global_idx, k_target);     
+                end 
+
+                params.global_idx = params.global_idx + 1; 
+            end        
+        end 
+    end 
+
+
+% springs     
+    % below the first possible point 
+    idx = -1; 
+    
+    for z_idx=1:N_z
+        for r_idx=1:N_r
+            for theta_idx=1:N_theta          
+% 
+%                 if output && ((mod(j,output_stride) == 1) || (output_stride == 1))
+%                     output_tmp_k = true; 
+%                 else 
+%                     output_tmp_k = false; 
+%                 end 
+%                 
+%                 if output && ((mod(k,output_stride) == 1) || (output_stride == 1))
+%                     output_tmp_j = true; 
+%                 else 
+%                     output_tmp_j = false; 
+%                 end    
+
+                output = true; 
+                
+                last_idx = idx; 
+                idx = indices_global(theta_idx,r_idx,z_idx); 
+                
+                if last_idx >= idx
+                    error('should always be placing points in order, something wrong'); 
+                end
+                    
+                % check up directions for springs 
+                if theta_idx < N_theta
+                    rest_len = norm(points(:,theta_idx,r_idx,z_idx) - points(:,theta_idx+1,r_idx,z_idx)); 
+                    k_abs = k_rel / rest_len;
+                    nbr_idx = indices_global(theta_idx+1,r_idx,z_idx); 
+                    min_idx = min(idx,nbr_idx); 
+                    max_idx = max(idx,nbr_idx); 
+                    params = spring_string(params, min_idx, max_idx, k_abs, rest_len, function_idx, output); 
+                end
+                
+                % periodic wrap 
+                if theta_idx == N_theta
+                    rest_len = norm(points(:,theta_idx,r_idx,z_idx) - points(:,1,r_idx,z_idx)); 
+                    k_abs = k_rel / rest_len;
+                    nbr_idx = indices_global(1,r_idx,z_idx); 
+                    min_idx = min(idx,nbr_idx); 
+                    max_idx = max(idx,nbr_idx); 
+                    params = spring_string(params, min_idx, max_idx, k_abs, rest_len, function_idx, output); 
+                end
+                
+                if r_idx < N_r
+                    rest_len = norm(points(:,theta_idx,r_idx,z_idx) - points(:,theta_idx,r_idx+1,z_idx)); 
+                    k_abs = k_rel / rest_len;
+                    nbr_idx = indices_global(theta_idx,r_idx+1,z_idx); 
+                    min_idx = min(idx,nbr_idx); 
+                    max_idx = max(idx,nbr_idx); 
+                    params = spring_string(params, min_idx, max_idx, k_abs, rest_len, function_idx, output); 
+                end
+                
+                if z_idx < N_z
+                    rest_len = norm(points(:,theta_idx,r_idx,z_idx) - points(:,theta_idx,r_idx,z_idx+1)); 
+                    k_abs = k_rel / rest_len;
+                    nbr_idx = indices_global(theta_idx,r_idx,z_idx+1); 
+                    min_idx = min(idx,nbr_idx); 
+                    max_idx = max(idx,nbr_idx); 
+                    params = spring_string(params, min_idx, max_idx, k_abs, rest_len, function_idx, output); 
+                end
+                
+                
+            end 
+           
+        end 
+    end 
+
+
+
+
+
+end 
+
+
 
 
 function params = write_inst_for_targets_as_bcs(params, leaflet)

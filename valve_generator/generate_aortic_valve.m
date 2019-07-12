@@ -31,7 +31,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N_each_range = 2^5; % 2.^(2:8); 
+N_each_range = 2^6; % 2.^(2:8); 
 
 for N_each = N_each_range
 
@@ -67,7 +67,7 @@ for N_each = N_each_range
         valve.tension_coeff_history = history_tmp; 
     end 
 
-    build_reference = false; 
+    build_reference = true; 
     
     [valve valve_with_reference pass_all] = solve_valve(valve, interactive, from_history, build_reference); 
     
@@ -95,9 +95,9 @@ for N_each = N_each_range
     save(strcat(valve.base_name, '_final_data')); 
 
     % Write to simulation files 
-%     if ~isempty(valve_with_reference)
-%         output_to_ibamr_format(valve_with_reference); 
-%     end 
+    if ~isempty(valve_with_reference)
+        output_to_ibamr_format(valve_with_reference); 
+    end 
 
 end 
 
