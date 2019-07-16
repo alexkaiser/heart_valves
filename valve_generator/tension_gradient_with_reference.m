@@ -1,4 +1,4 @@
-function T_grad = tension_gradient_with_reference(X, X_nbr, R, k_spr, leaflet)
+function T_grad = tension_gradient_with_reference(X, X_nbr, R, k_spr, leaflet, collagen_constitutive)
 % 
 % Returns the tension in the linear constitutive law 
 % 
@@ -32,7 +32,15 @@ function T_grad = tension_gradient_with_reference(X, X_nbr, R, k_spr, leaflet)
 % OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-if isfield(leaflet, 'collagen_constitutive') && leaflet.collagen_constitutive
+if exist('collagen_constitutive', 'var')
+    collagen_constitutive_tmp = collagen_constitutive; 
+elseif isfield(leaflet, 'collagen_constitutive') && leaflet.collagen_constitutive
+    collagen_constitutive_tmp = leaflet.collagen_constitutive; 
+else 
+    collagen_constitutive_tmp = false; 
+end 
+
+if collagen_constitutive_tmp
     
     collagen_curve       = leaflet.collagen_curve; 
     a                    = collagen_curve.a; 

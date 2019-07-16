@@ -116,10 +116,12 @@ valve.dirichlet_free_edge = false;
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
-valve.collagen_constitutive = true; 
+valve.collagen_constitutive_circ = true; 
+valve.collagen_constitutive_rad  = true; 
 
 % Constant strain of pressurized configuration 
-valve.strain = .14; 
+valve.strain_circ = .16; 
+valve.strain_rad  = 0.01; 
 
 % physical units create a scalar multiple of the old 
 % this multiple is large number, so we want to scale the old tolerance accordingly 

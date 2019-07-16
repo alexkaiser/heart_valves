@@ -49,6 +49,9 @@ function F = difference_equations_aortic_with_reference(leaflet)
     R_v                = leaflet.R_v;
     k_v                = leaflet.k_v;
     
+    collagen_constitutive_circ = leaflet.collagen_constitutive_circ; 
+    collagen_constitutive_rad  = leaflet.collagen_constitutive_rad; 
+    
     if isfield(leaflet, 'periodic_j')
         periodic_j = leaflet.periodic_j; 
     else
@@ -112,7 +115,7 @@ function F = difference_equations_aortic_with_reference(leaflet)
                     if valid && (~target_spring) && (~target_k_no_j_spring)
                         X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                        tension = tension_with_reference(X, X_nbr, R_u(j_spr,k_spr), k_u(j_spr,k_spr), leaflet); 
+                        tension = tension_with_reference(X, X_nbr, R_u(j_spr,k_spr), k_u(j_spr,k_spr), leaflet, collagen_constitutive_circ); 
                         F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
                     
                     elseif valid && target_spring 
@@ -131,7 +134,7 @@ function F = difference_equations_aortic_with_reference(leaflet)
                     if valid && (~target_spring)
                         X_nbr = X_current(:,j_nbr,k_nbr); 
                         
-                        tension = tension_with_reference(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet); 
+                        tension = tension_with_reference(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet, collagen_constitutive_rad); 
                         F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
                     
                     elseif valid && target_spring 

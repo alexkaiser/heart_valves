@@ -49,6 +49,9 @@ function J = build_jacobian_aortic_with_reference(leaflet)
     R_v                       = leaflet.R_v;
     k_v                       = leaflet.k_v;
     
+    collagen_constitutive_circ = leaflet.collagen_constitutive_circ; 
+    collagen_constitutive_rad  = leaflet.collagen_constitutive_rad; 
+    
     if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs 
         targets_for_bcs = true; 
         k_target_net = leaflet.target_net;
@@ -147,7 +150,7 @@ function J = build_jacobian_aortic_with_reference(leaflet)
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
 
                         if ~target_spring 
-                            J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, R_u(j_spr,k_spr), k_u(j_spr,k_spr), leaflet);                    
+                            J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, R_u(j_spr,k_spr), k_u(j_spr,k_spr), leaflet, collagen_constitutive_circ);                    
                         else 
                             error('j direction target springs not allowed'); 
                         end 
@@ -180,7 +183,7 @@ function J = build_jacobian_aortic_with_reference(leaflet)
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
  
                         if ~target_spring 
-                            J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet);
+                            J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet, collagen_constitutive_rad);
                         else 
                             J_tmp = tension_zero_rest_length_linear_by_tangent_jacobian(X, X_nbr, k_target_net);
                         end

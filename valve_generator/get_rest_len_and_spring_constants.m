@@ -1,4 +1,4 @@
-function [k R] = get_rest_len_and_spring_constants(X, X_nbr, tension, strain, leaflet)
+function [k R] = get_rest_len_and_spring_constants(X, X_nbr, tension, strain, leaflet, collagen_constitutive)
 % 
 % Given two points, a tension between them, and a desired specified strain 
 % Compute rest length and spring constant that gives the current force 
@@ -44,8 +44,15 @@ function [k R] = get_rest_len_and_spring_constants(X, X_nbr, tension, strain, le
 % OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-if isfield(leaflet, 'collagen_constitutive') && leaflet.collagen_constitutive
-    
+if exist('collagen_constitutive', 'var')
+    collagen_constitutive_tmp = collagen_constitutive; 
+elseif isfield(leaflet, 'collagen_constitutive') && leaflet.collagen_constitutive
+    collagen_constitutive_tmp = leaflet.collagen_constitutive; 
+else 
+    collagen_constitutive_tmp = false; 
+end 
+
+if collagen_constitutive_tmp
     collagen_curve       = leaflet.collagen_curve; 
     a                    = collagen_curve.a; 
     b                    = collagen_curve.b; 

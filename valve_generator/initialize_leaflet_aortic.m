@@ -111,9 +111,9 @@ leaflet.total_internal_leaflet    = 3*sum(leaflet.is_internal(:));
 [leaflet, valve] = set_tension_coeffs(leaflet, valve, tension_coeffs); 
 
 % parameter structure for collagen based nonlinear constitutive 
-if valve.collagen_constitutive
-    leaflet.collagen_constitutive = true; 
-    leaflet.collagen_curve        = get_collagen_curve_parameters(); 
-end 
+leaflet.collagen_curve             = get_collagen_curve_parameters(); 
+leaflet.collagen_constitutive_circ = valve.collagen_constitutive_circ; 
+leaflet.collagen_constitutive_rad  = valve.collagen_constitutive_rad; 
+
 
 

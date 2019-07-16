@@ -31,7 +31,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N_each_range = 2^6; % 2.^(2:8); 
+N_each_range = 2^5; % 2.^(2:8); 
 
 for N_each = N_each_range
 
@@ -82,6 +82,11 @@ for N_each = N_each_range
         fig = valve_plot(valve_with_reference, fig); 
         title('Relaxed configuration radial fibers, reference config based constitutive law'); 
         saveas(fig, strcat(valve.base_name, '_relaxed'), 'fig'); 
+    end 
+    
+    tension_plots = true; 
+    if tension_plots 
+        make_aortic_plots;         
     end 
 
     if pass_all 

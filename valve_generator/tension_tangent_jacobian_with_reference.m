@@ -1,4 +1,4 @@
-function J = tension_tangent_jacobian_with_reference(X, X_nbr, R, k, leaflet)
+function J = tension_tangent_jacobian_with_reference(X, X_nbr, R, k, leaflet, collagen_constitutive)
 % 
 % Computes the local Jacobian block for the tension term with reference config
 % 
@@ -38,18 +38,26 @@ function J = tension_tangent_jacobian_with_reference(X, X_nbr, R, k, leaflet)
 % OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-    X_norm = norm(X_nbr - X);
-    
-    % scalar tension gets differentiated
-    % gradient gets outer product with tangent 
-    
-    tangent = (X_nbr - X)/X_norm; 
-    tension_gradient = tension_gradient_with_reference(X, X_nbr, R, k, leaflet); 
-     
-    % First term is outer product of gradient of tension with tangent 
-    J = tension_gradient * tangent'; 
-    
-    % tangent gets differentiated 
-    J = J + tension_with_reference(X, X_nbr, R, k, leaflet) * tangent_jacobian(X, X_nbr); 
+if exist('collagen_constitutive', 'var')
+    collagen_constitutive_tmp = collagen_constitutive; 
+elseif isfield(leaflet, 'collagen_constitutive') && leaflet.collagen_constitutive
+    collagen_constitutive_tmp = leaflet.collagen_constitutive; 
+else 
+    collagen_constitutive_tmp = false; 
 end 
+
+X_norm = norm(X_nbr - X);
+
+% scalar tension gets differentiated
+% gradient gets outer product with tangent 
+
+tangent = (X_nbr - X)/X_norm; 
+tension_gradient = tension_gradient_with_reference(X, X_nbr, R, k, leaflet, collagen_constitutive_tmp); 
+
+% First term is outer product of gradient of tension with tangent 
+J = tension_gradient * tangent'; 
+
+% tangent gets differentiated 
+J = J + tension_with_reference(X, X_nbr, R, k, leaflet, collagen_constitutive_tmp) * tangent_jacobian(X, X_nbr); 
+
 

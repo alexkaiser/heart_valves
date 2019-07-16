@@ -43,9 +43,12 @@ j_max                  = leaflet.j_max;
 k_max                  = leaflet.k_max; 
 du                     = leaflet.du; 
 is_internal            = leaflet.is_internal; 
-is_bc                  = leaflet.is_bc; 
-strain                 = valve.strain; 
-% diastolic_increment    = valve.diastolic_increment; 
+
+strain_circ            = valve.strain_circ; 
+strain_rad             = valve.strain_rad; 
+
+collagen_constitutive_circ = leaflet.collagen_constitutive_circ; 
+collagen_constitutive_rad  = leaflet.collagen_constitutive_rad; 
 
 R_u = zeros(j_max, k_max); 
 k_u = zeros(j_max, k_max); 
@@ -91,7 +94,7 @@ for j=1:j_max
                     % Take the opposing length element 
                     tension = du * tension; 
 
-                    [k_u(j_spr,k_spr) R_u(j_spr,k_spr)] = get_rest_len_and_spring_constants(X, X_nbr, tension, strain, leaflet); 
+                    [k_u(j_spr,k_spr) R_u(j_spr,k_spr)] = get_rest_len_and_spring_constants(X, X_nbr, tension, strain_circ, leaflet, collagen_constitutive_circ); 
                 
                 end 
                 
@@ -119,7 +122,7 @@ for j=1:j_max
 
                     tension = du * tension; 
 
-                    [k_v(j_spr,k_spr) R_v(j_spr,k_spr)] = get_rest_len_and_spring_constants(X, X_nbr, tension, strain, leaflet); 
+                    [k_v(j_spr,k_spr) R_v(j_spr,k_spr)] = get_rest_len_and_spring_constants(X, X_nbr, tension, strain_rad, leaflet, collagen_constitutive_rad); 
                 
                 end 
                 
