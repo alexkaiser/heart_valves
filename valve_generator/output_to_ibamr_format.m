@@ -58,8 +58,13 @@ function [] = output_to_ibamr_format(valve)
     target_net                  = valve.target_net; 
     target_papillary            = valve.target_papillary; 
     n_lagrangian_tracers        = valve.n_lagrangian_tracers; 
-    collagen_constitutive       = valve.collagen_constitutive; 
-
+    
+    if isfield(valve, 'collagen_constitutive')
+        collagen_constitutive       = valve.collagen_constitutive; 
+    else
+        collagen_constitutive       = false; 
+    end 
+    
     % if this is true, all partition gets ignored except right at valve
     % ring 
     if ~isfield(valve, 'in_heart')
@@ -826,7 +831,14 @@ function params = add_leaflet_springs(params, leaflet, ds, collagen_spring)
     if ~strcmp(params.type, 'aortic')
         chordae           = leaflet.chordae;
         chordae_idx       = leaflet.chordae_idx; 
+        collagen_constitutive_circ = leaflet.collagen_constitutive_circ; 
+        collagen_constitutive_rad  = leaflet.collagen_constitutive_rad; 
+    else 
+        collagen_constitutive_circ = collagen_spring; 
+        collagen_constitutive_rad  = collagen_spring; 
     end 
+    
+    
     
     R_u               = leaflet.R_u;
     k_u               = leaflet.k_u;
@@ -920,10 +932,10 @@ function params = add_leaflet_springs(params, leaflet, ds, collagen_spring)
                         
                         if j_nbr_tmp ~= j_nbr 
                             % periodic wrapping requires oppositite order 
-                            params = place_spring_and_split(params, nbr_idx, idx, k_rel, rest_len, ds, collagen_spring, output_tmp_j);
+                            params = place_spring_and_split(params, nbr_idx, idx, k_rel, rest_len, ds, collagen_constitutive_circ, output_tmp_j);
                         else 
                            % standard order 
-                            params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, collagen_spring, output_tmp_j);
+                            params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, collagen_constitutive_circ, output_tmp_j);
                         end 
 
                     end 
@@ -944,7 +956,7 @@ function params = add_leaflet_springs(params, leaflet, ds, collagen_spring)
 
                         nbr_idx = leaflet.indices_global(j_nbr,k_nbr);
 
-                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, collagen_spring, output_tmp_k);
+                        params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, collagen_constitutive_rad, output_tmp_k);
 
                     end 
 

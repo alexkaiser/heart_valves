@@ -95,7 +95,7 @@ valve.X_config_is_reference = true;
 % places this many exact copies of the leaflet downward in z 
 % spring constants are all reduced by num_copies 
 % spacing is always half a mesh width 
-valve.num_copies = 3; 
+valve.num_copies = 1; 
 
 % add flags to spring files 
 % to view and output with a stride 
@@ -121,7 +121,7 @@ valve.collagen_constitutive_rad  = true;
 
 % Constant strain of pressurized configuration 
 valve.strain_circ = .16; 
-valve.strain_rad  = 0.01; 
+valve.strain_rad  = .01; 
 
 % physical units create a scalar multiple of the old 
 % this multiple is large number, so we want to scale the old tolerance accordingly 
