@@ -39,7 +39,7 @@ N_each = leaflet.N_each;
     
 X = NaN * zeros(3,j_max,k_max); 
 
-debug = true; 
+debug = false; 
 
 free_edge_smooth = false; 
 
@@ -147,7 +147,7 @@ else
 
     end 
         
-    % now, linear interpolation from annulus to free edge 
+%     % now, linear interpolation from annulus to free edge 
     for j=1:j_max 
         dk_interp = 1/(k_max-1);         
         for k=2:(k_max-1)
@@ -169,7 +169,8 @@ if debug
     width = 1.0; 
     surf(x_component, y_component, z_component, 'LineWidth',width);
 
-    % plot3(x_component, y_component, z_component, 'ko', 'LineWidth',width);
+%     hold on 
+%     plot3(x_component, y_component, z_component, 'ko', 'LineWidth',width);
     
     axis equal 
     axis auto 
@@ -177,6 +178,15 @@ if debug
     xlabel('x'); 
     ylabel('y'); 
     title('aortic leaflets initial')
+    
+    figure; 
+    % six times circle radius
+    z_free_edge = squeeze(X(3,:,1));
+    x_circles = linspace(0,6 * free_edge_cusp_radius, length(z_component)); 
+    plot(x_circles, z_free_edge, 'ko'); 
+    axis equal 
+    title('circles in 2d')
+    
 end 
     
 
