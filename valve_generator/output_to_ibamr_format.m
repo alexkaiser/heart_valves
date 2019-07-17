@@ -831,11 +831,11 @@ function params = add_leaflet_springs(params, leaflet, ds, collagen_spring)
     if ~strcmp(params.type, 'aortic')
         chordae           = leaflet.chordae;
         chordae_idx       = leaflet.chordae_idx; 
-        collagen_constitutive_circ = leaflet.collagen_constitutive_circ; 
-        collagen_constitutive_rad  = leaflet.collagen_constitutive_rad; 
-    else 
         collagen_constitutive_circ = collagen_spring; 
         collagen_constitutive_rad  = collagen_spring; 
+    else 
+        collagen_constitutive_circ = leaflet.collagen_constitutive_circ; 
+        collagen_constitutive_rad  = leaflet.collagen_constitutive_rad; 
     end 
     
     
