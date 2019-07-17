@@ -297,7 +297,7 @@ if build_reference
             if isfield(valve, 'dirichlet_free_edge_with_ref_only') && valve.dirichlet_free_edge_with_ref_only
                 valve_with_reference.leaflets(i) = aortic_free_edge_to_neumann_bc(valve_with_reference.leaflets(i)); 
                 
-                neumann_visual_check = true; 
+                neumann_visual_check = false; 
                 if neumann_visual_check
                     leaflets_neumann = solve_valve_pressure_auto_continuation(valve_with_reference.leaflets(i), tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails); 
                     surf_plot(leaflets_neumann); 
