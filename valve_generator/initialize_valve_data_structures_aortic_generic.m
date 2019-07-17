@@ -136,7 +136,7 @@ valve.p_physical = 100 * MMHG_TO_CGS;
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
 
-valve.p_final = -1 * MMHG_TO_CGS; 
+valve.p_final = -0.1 * MMHG_TO_CGS; 
 
 % valve.dip_anterior_systole = true; 
 % valve.r_dip = 0.75; 
@@ -157,7 +157,7 @@ valve.r = valve.skeleton.r;
 if valve.dirichlet_free_edge
     tension_coeffs.pressure_tension_ratio = 0.005; % 0.011; 
 else 
-    tension_coeffs.pressure_tension_ratio = 0.008; 
+    tension_coeffs.pressure_tension_ratio = 0.009; 
 end 
 
 tension_coeffs.dec_tension_coeff_base = 20.0; 
