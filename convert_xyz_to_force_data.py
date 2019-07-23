@@ -38,7 +38,7 @@ Topology is read from spring file.
 import os 
 import sys 
 import numpy as np
-from multiprocessing import Process
+import time 
 
 def read_springs(spring_name, target_list=None): 
     ''' 
@@ -87,7 +87,7 @@ def read_springs(spring_name, target_list=None):
 
                     spring_list_cropped.append(spring_data)
 
-        sprint_list = spring_list_cropped
+        spring_list = spring_list_cropped
 
     return spring_list
 
@@ -269,11 +269,13 @@ if __name__ == '__main__':
         total_procs = 1
         proc_num = 0 
     
-    spring_name = base_name + '.spring'
-    spring_list = read_springs(spring_name)
-
     target_name = base_name + '.target'
     target_list = read_targets(target_name)
+
+    spring_name = base_name + '.spring'
+    spring_list = read_springs(spring_name, target_list)
+
+    print "length spring_list = ", len(spring_list)
 
     n_vertices = None
     valid_loop_count = 0
@@ -282,18 +284,27 @@ if __name__ == '__main__':
     for f_name in sorted(os.listdir(os.getcwd())): 
         if f_name.startswith(base_name) and f_name.endswith('.xyz'):
 
-            if (valid_loop_count % total_procs) == proc_num:
+            if ((valid_loop_count % total_procs) == proc_num) and (valid_loop_count > 528):
+
+                start_this_iter = time.time()
 
                 print 'printing frame', str(valid_loop_count), '\n'
-                        
+                
+                start = time.time()
                 with open(f_name, 'r') as f:
                     vertex_strings, n_vertices = xyz_to_string_array(f, spring_list, n_vertices)
+                end = time.time()
+                print "xyz read time = ", (end - start)
 
+                start = time.time()
                 frame_num_as_str = '{0:05d}'.format(valid_loop_count)
                 file_name = 'force_data_' + frame_num_as_str + '.txt'
-
                 with open(file_name, 'w') as f: 
                     compute_forces_and_tangents(f, spring_list, target_list, vertex_strings)
+                end = time.time()
+                print "force comp and write time = ", (end - start)
+
+                print "total iteration time = ", (end - start_this_iter)
 
             valid_loop_count += 1 
     

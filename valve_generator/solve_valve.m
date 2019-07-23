@@ -141,6 +141,20 @@ if interactive && pass_all
     valve_plot(valve, fig); 
     title('Valve in interactive mode'); 
     
+    if isfield(valve, 'name') && strcmp(valve.name, 'aortic')        
+        fiber_output    = true; 
+        fiber_stride    = 4; 
+        stride_offset_j = 0; 
+        circ  = false; 
+        rad   = false; 
+        ratio = true; 
+        height_plot = true; 
+        fig_ratio = figure; 
+        set(0, 'CurrentFigure', fig_ratio)
+        total_tension_surf_plot_aortic(valve.leaflets(1), fiber_output, fiber_stride, stride_offset_j, circ, rad, ratio, height_plot, fig_ratio)
+        title('ratio circ/radial tension')
+    end 
+    
     while true 
     
         fprintf('Current tension_coeffs struct, which includes all valid variables:\n')
@@ -215,11 +229,22 @@ if interactive && pass_all
                         % if we do not have a figure add one 
                         if ~ishandle(fig)
                             fig = figure; 
-                        end                         
-                        [az el] = view; 
+                        end
+                        set(0, 'CurrentFigure', fig)
+                        [az el] = view;
                         clf(fig); 
                         valve_plot(valve, fig);
                         view(az,el);
+                        
+                        % update aortic tension plots 
+                        if isfield(valve, 'name') && strcmp(valve.name, 'aortic') 
+                            set(0, 'CurrentFigure', fig_ratio)
+                            [az el] = view;
+                            clf(fig_ratio); 
+                            total_tension_surf_plot_aortic(valve.leaflets(1), fiber_output, fiber_stride, stride_offset_j, circ, rad, ratio, height_plot, fig_ratio)
+                            title('ratio circ/radial tension') 
+                            view(az,el);
+                        end 
                         
                     else 
                         fprintf('New parameters failed. Keeping old tension structure. No pass flag.\n'); 

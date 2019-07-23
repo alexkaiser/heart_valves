@@ -216,8 +216,8 @@ valve.leaflets(1) = leaflet;
 valve.eta_multiplier_linear   = 0; 
 valve.eta_multiplier_collagen = 0; 
 
-valve_plot(valve); 
-pause(.1); 
+% valve_plot(valve); 
+% pause(.1); 
 
 disp('Done with initialize.'); 
 

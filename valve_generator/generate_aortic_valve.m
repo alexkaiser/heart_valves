@@ -31,7 +31,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N_each_range = 2^6; % 2.^(2:8); 
+N_each_range = 2^5; % 2.^(2:8); 
 
 for N_each = N_each_range
 
@@ -86,7 +86,7 @@ for N_each = N_each_range
     
     tension_plots = true; 
     if tension_plots 
-        make_aortic_plots;         
+        make_aortic_plots(valve.leaflets(1));         
     end 
 
     if pass_all 
