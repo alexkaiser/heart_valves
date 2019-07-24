@@ -1,14 +1,14 @@
 function [fig_circ fig_rad fig_ratio] = make_aortic_plots(leaflet, fig_circ, fig_rad, fig_ratio)
 
-% if ~exist('fig_circ', 'var')
-%     fig_circ = figure; 
-% end 
-% if ~exist('fig_rad', 'var')
-%     fig_rad = figure; 
-% end 
-% if ~exist('fig_ratio', 'var')
-%     fig_ratio = figure; 
-% end 
+if ~exist('fig_circ', 'var')
+    fig_circ = figure; 
+end 
+if ~exist('fig_rad', 'var')
+    fig_rad = figure; 
+end 
+if ~exist('fig_ratio', 'var')
+    fig_ratio = figure; 
+end 
 
 fiber_output    = true; 
 fiber_stride    = 4; 

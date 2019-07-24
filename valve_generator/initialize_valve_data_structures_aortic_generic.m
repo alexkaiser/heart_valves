@@ -95,7 +95,7 @@ valve.X_config_is_reference = true;
 % places this many exact copies of the leaflet downward in z 
 % spring constants are all reduced by num_copies 
 % spacing is always half a mesh width 
-valve.num_copies = 3; 
+valve.num_copies = 1; 
 
 % add flags to spring files 
 % to view and output with a stride 
@@ -159,7 +159,7 @@ valve.r = valve.skeleton.r;
 if valve.dirichlet_free_edge
     tension_coeffs.pressure_tension_ratio = 0.005; % 0.011; 
 else 
-    tension_coeffs.pressure_tension_ratio = 0.009; 
+    tension_coeffs.pressure_tension_ratio = 0.0081; 
 end 
 
 tension_coeffs.dec_tension_coeff_base = 20.0; 
@@ -167,11 +167,11 @@ tension_coeffs.dec_tension_coeff_base = 20.0;
 
 % max tensions in leaflets 
 tension_coeffs.alpha = 1.0;   % circumferential 
-tension_coeffs.beta  = 0.05;  % radial
+tension_coeffs.beta  = 0.035;  % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 1.5;  % circumferential 
-tension_coeffs.c_rad_dec        = 0.6;  % radial
+tension_coeffs.c_circ_dec       = 2.0;  % circumferential 
+tension_coeffs.c_rad_dec        = 0.35;  % radial
 
 % scaling for target points 
 % note that this does not include copies 
