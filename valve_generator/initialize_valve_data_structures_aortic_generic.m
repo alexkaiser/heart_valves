@@ -159,19 +159,19 @@ valve.r = valve.skeleton.r;
 if valve.dirichlet_free_edge
     tension_coeffs.pressure_tension_ratio = 0.005; % 0.011; 
 else 
-    tension_coeffs.pressure_tension_ratio = 0.2; 
+    tension_coeffs.pressure_tension_ratio = 0.009; 
 end 
 
-tension_coeffs.dec_tension_coeff_base = 1.0; 
+tension_coeffs.dec_tension_coeff_base = 20.0; 
 
 
 % max tensions in leaflets 
-tension_coeffs.alpha = 2.0;   % circumferential 
-tension_coeffs.beta  = 1.0;  % radial
+tension_coeffs.alpha = 1.0;   % circumferential 
+tension_coeffs.beta  = 0.05;  % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 4.0;  % circumferential 
-tension_coeffs.c_rad_dec        = 8.0;  % radial
+tension_coeffs.c_circ_dec       = 1.5;  % circumferential 
+tension_coeffs.c_rad_dec        = 0.6;  % radial
 
 % scaling for target points 
 % note that this does not include copies 
