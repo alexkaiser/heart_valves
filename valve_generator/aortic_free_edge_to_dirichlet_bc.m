@@ -4,6 +4,8 @@ j_max  = leaflet.j_max;
 k_max  = leaflet.k_max; 
 N_each = leaflet.N_each; 
 
+R_v    = leaflet.R_v; 
+
 k = k_max; 
 
 X = leaflet.X; 
@@ -31,8 +33,19 @@ for comm_idx = 1:3
     comm_next = X(:,min_idx + N_each,k); 
     
     for j=1:(N_each-1)
-        X(:,j + min_idx ,k) = (1 - j*dj_interp) * comm_prev ...
+        
+        comm_interp_point = (1 - j*dj_interp) * comm_prev ...
                                  + j*dj_interp  * comm_next; 
+
+        ring_point = X(:,j + min_idx ,1); 
+        
+        tangent = (comm_interp_point - ring_point); 
+        tangent = tangent / norm(tangent); 
+                             
+        % total radial rest length of this radial fiber 
+        total_rest_length = sum(R_v(j + min_idx, :)); 
+        
+        X(:,j + min_idx ,k) = total_rest_length * tangent + ring_point; 
         
         if is_bc(j + min_idx ,k)
             error('trying to set a bc as new position'); 
