@@ -122,7 +122,7 @@ valve.collagen_constitutive_circ = true;
 valve.collagen_constitutive_rad  = false; 
 
 % Constant strain of pressurized configuration 
-valve.strain_circ = .08; 
+valve.strain_circ = .04; 
 valve.strain_rad  = .01; 
 
 % physical units create a scalar multiple of the old 
