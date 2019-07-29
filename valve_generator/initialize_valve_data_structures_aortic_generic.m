@@ -95,7 +95,7 @@ valve.X_config_is_reference = true;
 % places this many exact copies of the leaflet downward in z 
 % spring constants are all reduced by num_copies 
 % spacing is always half a mesh width 
-valve.num_copies = 3; 
+valve.num_copies = 1; 
 
 % add flags to spring files 
 % to view and output with a stride 
@@ -122,7 +122,7 @@ valve.collagen_constitutive_circ = true;
 valve.collagen_constitutive_rad  = false; 
 
 % Constant strain of pressurized configuration 
-valve.strain_circ = .10; 
+valve.strain_circ = .12; 
 valve.strain_rad  = .01; 
 
 % physical units create a scalar multiple of the old 
@@ -138,7 +138,7 @@ valve.p_physical = 100 * MMHG_TO_CGS;
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
 
-valve.p_final = -1 * MMHG_TO_CGS;  
+valve.p_final = 0 * MMHG_TO_CGS;  
 
 % valve.dip_anterior_systole = true; 
 % valve.r_dip = 0.75; 
