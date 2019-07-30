@@ -258,76 +258,79 @@ function [] = output_to_ibamr_format(valve)
             [params valve.leaflets(i)] = assign_indices_vertex_target(params, valve.leaflets(i), k_target_net, k_target_papillary, eta_net, eta_papillary); 
         end 
         
-        if strcmp(params.type, 'aortic') 
-            if isfield(params, 'normal_thicken') && params.normal_thicken
-                first_idx = params.global_idx + 1; 
-            end 
-        end 
-        
         for i=1:length(valve.leaflets)
             params = add_springs(params, valve.leaflets(i), ds, collagen_constitutive); 
         end 
 
+        if strcmp(params.type, 'aortic') 
+            if isfield(params, 'normal_thicken') && params.normal_thicken
+                % skip the bottom bc layer for cross layers, this is placed first 
+                % params.min_idx_for_cross_layer = params.min_idx_for_cross_layer + valve.leaflets(1).j_max; 
+                % these don't get adjusted, first idx is the minimum to adjust 
+                first_idx = params.global_idx + 1; 
+            end 
+        end 
+        
         if params.cross_layer_on
             params.max_idx_for_cross_layer = params.global_idx - 1; 
         end 
         
-        % flat part of mesh 
-        r = valve.r; 
-        ref_frac_net = 1.0;
-
-        if ~in_heart
-            for i=1:length(valve.leaflets)
-                if length(valve.leaflets) ~= 1 
-                    error('Only one leaflet version currently supported'); 
-                end 
-                hoop_springs = true; 
-                params = place_net(params, valve.leaflets(i), ds, r, L, k_rel, k_target_net, ref_frac_net, eta_net, hoop_springs, ray_springs); 
-            end 
-
-            if ~strcmp(params.type, 'aortic') 
-                % approximate geodesic continutations of fibers 
-                for i=1:length(valve.leaflets)
-                    params = place_rays(params, valve.leaflets(i), ds, L, k_rel, k_target_net, ref_frac_net, eta_net);
-                end 
-            end 
-
-            % flat part of mesh with Cartesian coordinates
-            % inner radius, stop mesh here 
-            r_extra = 4*ds; 
-            for i=1:length(valve.leaflets)
-                if length(valve.leaflets) ~= 1 
-                    error('Only one leaflet version currently supported'); 
-                end 
-                params = place_cartesian_net(params, valve.leaflets(i), r_extra, L, ds, k_rel, k_target_net, ref_frac_net, eta_net); 
-            end 
-            
-        else 
-            
-            
-            if isfield(params, 'targets_for_bcs') && params.targets_for_bcs 
-                if copy == 1
-                    params = write_inst_for_targets_as_bcs(params, valve.leaflets(1));                 
-                end 
-            else             
-                % pass L=r to get only one ring placed 
-                hoop_springs = true; 
-                
-                if isfield(valve, 'extra_radius_hoops')
-                    extra_radius_hoops = valve.extra_radius_hoops; 
-                else 
-                    extra_radius_hoops = 0; 
-                end 
-                
-                params = place_net(params, valve.leaflets(i), ds, r, r + extra_radius_hoops, k_rel, k_target_net, ref_frac_net, eta_net, hoop_springs); 
-                
-                if extra_radius_hoops > 0.0
-                    max_to_place = max(0,floor(extra_radius_hoops / ds) - 1);
-                    params = place_rays(params, valve.leaflets(i), ds, r + extra_radius_hoops, k_rel, k_target_net, ref_frac_net, eta_net, max_to_place);
-                end 
-                
-            end 
-        end 
+%         % flat part of mesh 
+%         r = valve.r; 
+%         ref_frac_net = 1.0;
+% 
+%         if ~in_heart
+%             for i=1:length(valve.leaflets)
+%                 if length(valve.leaflets) ~= 1 
+%                     error('Only one leaflet version currently supported'); 
+%                 end 
+%                 hoop_springs = true; 
+%                 params = place_net(params, valve.leaflets(i), ds, r, L, k_rel, k_target_net, ref_frac_net, eta_net, hoop_springs, ray_springs); 
+%             end 
+% 
+%             if ~strcmp(params.type, 'aortic') 
+%                 % approximate geodesic continutations of fibers 
+%                 for i=1:length(valve.leaflets)
+%                     params = place_rays(params, valve.leaflets(i), ds, L, k_rel, k_target_net, ref_frac_net, eta_net);
+%                 end 
+%             end 
+% 
+%             % flat part of mesh with Cartesian coordinates
+%             % inner radius, stop mesh here 
+%             r_extra = 4*ds; 
+%             for i=1:length(valve.leaflets)
+%                 if length(valve.leaflets) ~= 1 
+%                     error('Only one leaflet version currently supported'); 
+%                 end 
+%                 params = place_cartesian_net(params, valve.leaflets(i), r_extra, L, ds, k_rel, k_target_net, ref_frac_net, eta_net); 
+%             end 
+%             
+%         else 
+%             
+%             
+%             if isfield(params, 'targets_for_bcs') && params.targets_for_bcs 
+%                 if copy == 1
+%                     params = write_inst_for_targets_as_bcs(params, valve.leaflets(1));                 
+%                 end 
+%             else             
+%                 % pass L=r to get only one ring placed 
+%                 hoop_springs = true; 
+%                 
+%                 if isfield(valve, 'extra_radius_hoops')
+%                     extra_radius_hoops = valve.extra_radius_hoops; 
+%                 else 
+%                     extra_radius_hoops = 0; 
+%                 end 
+%                 
+%                 params = place_net(params, valve.leaflets(i), ds, r, r + extra_radius_hoops, k_rel, k_target_net, ref_frac_net, eta_net, hoop_springs); 
+%                 
+%                 if extra_radius_hoops > 0.0
+%                     max_to_place = max(0,floor(extra_radius_hoops / ds) - 1);
+%                     params = place_rays(params, valve.leaflets(i), ds, r + extra_radius_hoops, k_rel, k_target_net, ref_frac_net, eta_net, max_to_place);
+%                 end 
+%                 
+%             end 
+%         end 
         
         
         
@@ -357,24 +360,24 @@ function [] = output_to_ibamr_format(valve)
     end 
 
     
-    if strcmp(params.type, 'aortic') 
-        if isfield(valve, 'place_cylinder') && valve.place_cylinder
-        
-            if ~isfield(valve, 'z_min_cylinder')
-                valve.z_min_cylinder = params.z_min;                
-            end 
-            if ~isfield(valve, 'z_max_cylinder')
-                valve.z_max_cylinder = params.z_max;                
-            end 
-            
-            if ~isfield(valve, 'n_layers_cylinder')
-                valve.n_layers_cylinder = 3;                
-            end
-                        
-            params = place_cylinder(params, r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net); 
-                        
-        end 
-    end 
+%     if strcmp(params.type, 'aortic') 
+%         if isfield(valve, 'place_cylinder') && valve.place_cylinder
+%         
+%             if ~isfield(valve, 'z_min_cylinder')
+%                 valve.z_min_cylinder = params.z_min;                
+%             end 
+%             if ~isfield(valve, 'z_max_cylinder')
+%                 valve.z_max_cylinder = params.z_max;                
+%             end 
+%             
+%             if ~isfield(valve, 'n_layers_cylinder')
+%                 valve.n_layers_cylinder = 3;                
+%             end
+%                         
+%             params = place_cylinder(params, r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net); 
+%                         
+%         end 
+%     end 
     
     
     
