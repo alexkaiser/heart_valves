@@ -95,7 +95,9 @@ valve.X_config_is_reference = true;
 % places this many exact copies of the leaflet downward in z 
 % spring constants are all reduced by num_copies 
 % spacing is always half a mesh width 
-valve.num_copies = 1; 
+valve.num_copies = 3; 
+
+valve.normal_thicken = true; 
 
 % add flags to spring files 
 % to view and output with a stride 

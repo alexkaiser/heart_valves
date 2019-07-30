@@ -186,7 +186,7 @@ function [] = output_to_ibamr_format(valve)
     
     % Lagrangian mesh spacing 
     ds = valve.ds
-    
+    params.ds = ds; 
     
     if isfield(valve, 'kappa_cross_layer_multipler') && (valve.kappa_cross_layer_multipler ~= 0) && (params.num_copies > 1)
         params.cross_layer_on          = true; 
@@ -199,7 +199,9 @@ function [] = output_to_ibamr_format(valve)
         params.cross_layer_on          = false; 
     end 
     
-    
+    if isfield(valve, 'normal_thicken') 
+        params.normal_thicken = valve.normal_thicken; 
+    end 
     
     % copies, if needed, will be placed this far down 
     if params.num_copies > 1
@@ -254,6 +256,12 @@ function [] = output_to_ibamr_format(valve)
         
         for i=1:length(valve.leaflets)
             [params valve.leaflets(i)] = assign_indices_vertex_target(params, valve.leaflets(i), k_target_net, k_target_papillary, eta_net, eta_papillary); 
+        end 
+        
+        if strcmp(params.type, 'aortic') 
+            if isfield(params, 'normal_thicken') && params.normal_thicken
+                first_idx = params.global_idx + 1; 
+            end 
         end 
         
         for i=1:length(valve.leaflets)
@@ -653,6 +661,66 @@ function [] = prepend_line_with_int(file_name, val)
 end 
 
 
+function X_extruded = normal_extrude_aortic(params, leaflet)
+    
+    % takes the leaflet and extrudes normally 
+    % 
+
+    X           = leaflet.X; 
+    j_max       = leaflet.j_max; 
+    k_max       = leaflet.k_max; 
+    is_internal = leaflet.is_internal; 
+    is_bc       = leaflet.is_bc; 
+    
+    X_extruded  = zeros(size(X));  
+    
+    extrude_length = (params.copy - 1) * params.ds; 
+    
+    for j=1:j_max
+        for k=1:k_max
+            if is_internal(j,k) || is_bc(j,k) 
+
+%                 if j==1
+%                     j_minus_1 = j_max; % periodic wrap 
+%                 else
+%                     j_minus_1 = j-1;   % prev index
+%                 end 
+%                 if j==j_max
+%                     j_plus__1 = 1;   % periodic wrap 
+%                 else
+%                     j_plus__1 = j+1; % next index
+%                 end 
+%                 if k==1
+%                     k_minus_1 = k;   % identity 
+%                 else
+%                     k_minus_1 = k-1; % prev index
+%                 end 
+%                 if k==k_max
+%                     k_plus__1 = k;   % identity
+%                 else
+%                     k_plus__1 = k+1; % next index
+%                 end 
+                
+                % something off with bcs here 
+                [j_plus__1 j_minus_1 k_plus__1 k_minus_1 m] = get_pressure_nbrs(leaflet,j,k); 
+                    
+                normal = cross(X(:,j_plus__1,k) - X(:,j_minus_1,k), X(:,j,k_plus__1) - X(:,j,k_minus_1));                     
+                normal = normal / norm(normal); 
+    
+                X_extruded(:,j,k) = X(:,j,k) + normal * extrude_length; 
+                
+            end 
+        end 
+    end 
+    
+    if any(any(any(isnan(X_extruded))))
+        error('Something not set in aortic valve extrustion'); 
+    end 
+   
+end 
+
+
+
 function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_target_net, k_target_papillary, eta_net, eta_papillary)
     % 
     % Assigns global indices to the leaflet and chordae 
@@ -672,6 +740,12 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_targ
     if ~strcmp(params.type, 'aortic')
         num_trees         = leaflet.num_trees; 
         chordae           = leaflet.chordae; 
+    end 
+    
+    if strcmp(params.type, 'aortic')
+        if isfield(params, 'normal_thicken') && params.normal_thicken 
+            X = normal_extrude_aortic(params, leaflet); 
+        end 
     end 
     
     % Keep track of vector index in 1d array 
