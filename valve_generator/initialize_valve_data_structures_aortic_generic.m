@@ -99,7 +99,7 @@ valve.num_copies = 3;
 
 valve.normal_thicken = true; 
 % nominal aortic valve thickness
-valve.normal_thickness = .044; 
+valve.normal_thickness = 0.044; 
 
 % add flags to spring files 
 % to view and output with a stride 

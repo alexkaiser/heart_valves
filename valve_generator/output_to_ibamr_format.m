@@ -355,8 +355,6 @@ function [] = output_to_ibamr_format(valve)
         if copy > 1 
             params = place_cross_layer_springs(params); 
         end 
-
-        
         
     end 
 
@@ -1093,6 +1091,17 @@ function params = place_cross_layer_springs(params)
     
     fprintf('Cross layer spring range     (inclusive, zero based for ibamr files) = %d:%d\n', params.min_idx_for_cross_layer, params.max_idx_for_cross_layer); 
     fprintf('connect to range in previous (inclusive, zero based for ibamr files) = %d:%d\n', params.min_idx_for_cross_layer -  params.total_per_layer, params.max_idx_for_cross_layer -  params.total_per_layer); 
+    
+    n_to_place = length((params.min_idx_for_cross_layer):(params.max_idx_for_cross_layer)); 
+    
+    if isfield(params, 'num_cross_layer_placed')
+        if params.num_cross_layer_placed ~= n_to_place
+            error('number of cross links must be the same on each layer')
+        end 
+    else         
+        params.num_cross_layer_placed = n_to_place; 
+    end 
+    
     for i=(params.min_idx_for_cross_layer):(params.max_idx_for_cross_layer)
         idx          = i -  params.total_per_layer; 
         nbr_idx      = i;  
