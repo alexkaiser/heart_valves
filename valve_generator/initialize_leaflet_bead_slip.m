@@ -99,7 +99,7 @@ if isfield(valve, 'targets_for_bcs')
     
 end 
 
-if isfield(valve, 'careful_early_steps')
+if isfield(valve, 'careful_early_steps') && valve.careful_early_steps
     leaflet.careful_early_steps = valve.careful_early_steps; 
     if leaflet.careful_early_steps && isfield(valve, 'careful_early_step_coeff')
         leaflet.careful_early_step_coeff = valve.careful_early_step_coeff; 

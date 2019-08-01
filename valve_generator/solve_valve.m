@@ -46,8 +46,8 @@ if ~exist('interactive', 'var')
     interactive = false; 
 end 
 
-if ~exist('from_refernece', 'var')
-    from_reference = true; 
+if ~exist('build_reference', 'var')
+    build_reference = true; 
 end 
 
 tol_global            = valve.tol_global; 
@@ -161,7 +161,10 @@ if interactive && pass_all
         fprintf('tension_coeffs = \n\n')
         disp(valve.leaflets(1).tension_coeffs)
 
-        if ~strcmp(valve.name, 'aortic')
+        if isfield(valve, 'name') && strcmp(valve.name, 'aortic')
+            % nothing 
+        else
+            % default mitral 
             fprintf('Current array variables:\n\n')
             fprintf('k_0_1 = \n\n')
             disp(valve.leaflets(1).tension_coeffs.k_0_1)
