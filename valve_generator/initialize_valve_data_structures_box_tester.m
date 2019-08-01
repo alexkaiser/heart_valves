@@ -124,7 +124,7 @@ valve.papillary_movement_times = [0 .1 .46 .5 .8];
 valve.collagen_constitutive = true; 
 
 % Constant strain of pressurized configuration 
-valve.strain = .16; 
+valve.strain = .12; 
 
 % no reflections in this version 
 reflect_x = false; 
@@ -174,7 +174,7 @@ valve.diastolic_increment = [0.0; 0.0; 0.0];
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
 % valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
-tension_coeffs.pressure_tension_ratio = 0.085; 
+tension_coeffs.pressure_tension_ratio = 0.07; 
 
 tension_coeffs.dec_tension_coeff_base = 4.6; 
 
@@ -265,7 +265,7 @@ k_0_1_coeff    = frac_of_n_orig .*    ...
 k_root_coeff   = frac_of_n_orig .*    ... 
                 [ 2.2; 2.2;           ...       % anterior  
                   2.0; 2.0;           ...       % anterior and comm, comm and posterior       
-                  1.6; 1.6;           ...       % posterior
+                  1.76; 1.76;           ...       % posterior
                   2.0; 2.0];                    % posterior and comm, comm and anterior
 
 
