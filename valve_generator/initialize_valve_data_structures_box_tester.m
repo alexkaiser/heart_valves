@@ -124,7 +124,7 @@ valve.papillary_movement_times = [0 .1 .46 .5 .8];
 valve.collagen_constitutive = true; 
 
 % Constant strain of pressurized configuration 
-valve.strain = .12; 
+valve.strain = .16; 
 
 % no reflections in this version 
 reflect_x = false; 
@@ -174,7 +174,7 @@ valve.diastolic_increment = [0.0; 0.0; 0.0];
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
 % valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
-tension_coeffs.pressure_tension_ratio = 0.07; 
+tension_coeffs.pressure_tension_ratio = 0.075; 
 
 tension_coeffs.dec_tension_coeff_base = 4.6; 
 
@@ -207,7 +207,7 @@ n_rings_periodic = max(1,N/64);
 
 % places circumferential fibers this many below hoops 
 % if the location is not already covered by leaflet
-n_edge_connectors = max(1,N/64);  
+n_edge_connectors = 0; max(1,N/64);  
 
 % No explicit commissural leaflet here 
 N_anterior = N/2; 
