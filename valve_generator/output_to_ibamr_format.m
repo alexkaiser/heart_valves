@@ -432,12 +432,18 @@ function [] = output_to_ibamr_format(valve)
     if ~strcmp(params.type, 'aortic') 
         fclose(params.papillary); 
     end 
+    if params.beam_on 
+        fclose(params.beam);     
+    end 
     
     prepend_line_with_int(strcat(base_name, '.vertex'), params.total_vertices); 
     prepend_line_with_int(strcat(base_name, '.spring'), params.total_springs); 
     prepend_line_with_int(strcat(base_name, '.target'), params.total_targets); 
     if ~strcmp(params.type, 'aortic') 
         prepend_line_with_int(strcat(base_name, '.papillary'), params.total_papillary); 
+    end 
+    if params.beam_on
+        prepend_line_with_int(strcat(base_name, '.beam'), params.total_beams); 
     end 
     
     if params.targets_for_bcs
@@ -1180,43 +1186,51 @@ function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ)
                 % global index of current point 
                 idx = leaflet.indices_global(j,k); 
 
-                if k_bend_radial > 0
+                if k_bend_circ > 0
                     j_minus_tmp = j - 1; 
                     k_minus_tmp = k; 
                     [valid_minus j_minus k_minus] = get_indices(leaflet, j, k, j_minus_tmp, k_minus_tmp); 
-                    idx_minus = leaflet.indices_global(j_minus,k_minus); 
+                    if valid_minus
+                        idx_minus = leaflet.indices_global(j_minus,k_minus); 
+                    end 
                     
                     j_plus_tmp  = j + 1;
                     k_plus_tmp  = k; 
                     [valid_plus j_plus k_plus] = get_indices(leaflet, j, k, j_plus_tmp, k_plus_tmp); 
-                    idx_plus = leaflet.indices_global(j_plus,k_plus); 
+                    if valid_plus
+                        idx_plus = leaflet.indices_global(j_plus,k_plus); 
+                    end 
                     
                     % both neighbors must be valid 
                     if valid_minus && valid_plus                        
                         if (k_minus ~= k) || (k ~= k_plus)
-                            error('k indices shuold not change when placing radial (j) beam');                            
+                            error('k indices shuold not change when placing circ (j) beam');                            
                         end                         
-                        params = beam_string(params, idx_minus, idx, idx_plus, k_bend_radial); 
+                        params = beam_string(params, idx_minus, idx, idx_plus, k_bend_circ); 
                     end
                 end 
                 
-                if k_bend_circ > 0
+                if k_bend_radial > 0
                     j_minus_tmp = j; 
                     k_minus_tmp = k - 1; 
                     [valid_minus j_minus k_minus] = get_indices(leaflet, j, k, j_minus_tmp, k_minus_tmp); 
-                    idx_minus = leaflet.indices_global(j_minus,k_minus); 
+                    if valid_minus
+                        idx_minus = leaflet.indices_global(j_minus,k_minus); 
+                    end 
                     
                     j_plus_tmp  = j;
                     k_plus_tmp  = k + 1; 
                     [valid_plus j_plus k_plus] = get_indices(leaflet, j, k, j_plus_tmp, k_plus_tmp); 
-                    idx_plus = leaflet.indices_global(j_plus,k_plus); 
+                    if valid_plus
+                        idx_plus = leaflet.indices_global(j_plus,k_plus); 
+                    end 
                     
                     % both neighbors must be valid 
                     if valid_minus && valid_plus                        
                         if (j_minus ~= j) || (j ~= j_plus)
-                            error('j indices shuold not change when placing circ (k) beam');                            
+                            error('j indices shuold not change when placing radial (k) beam');                            
                         end                         
-                        params = beam_string(params, idx_minus, idx, idx_plus, k_bend_circ); 
+                        params = beam_string(params, idx_minus, idx, idx_plus, k_bend_radial); 
                     end
                 end 
             end 
