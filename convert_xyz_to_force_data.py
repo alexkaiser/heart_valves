@@ -284,7 +284,7 @@ if __name__ == '__main__':
     for f_name in sorted(os.listdir(os.getcwd())): 
         if f_name.startswith(base_name) and f_name.endswith('.xyz'):
 
-            if ((valid_loop_count % total_procs) == proc_num) and (valid_loop_count > 528):
+            if ((valid_loop_count % total_procs) == proc_num):
 
                 start_this_iter = time.time()
 
