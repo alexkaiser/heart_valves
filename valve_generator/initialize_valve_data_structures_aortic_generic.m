@@ -196,7 +196,7 @@ valve.eta_papillary_unscaled = 0.0; valve.target_papillary_unscaled/500;
 % if nonzero, linear springs of rest length with spacing between the layers 
 % are placed with this value 
 % final formula is multiplied by valve.tension_base  
-valve.kappa_cross_layer_multipler = 1e3 / 256^2; 
+valve.kappa_cross_layer_multipler = 1e2 / 256^2; 
 
 valve.k_bend_radial = 1e3 * 192/N; 
 valve.k_bend_circ   = 0; 
