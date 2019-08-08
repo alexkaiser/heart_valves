@@ -1177,7 +1177,7 @@ function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ)
     j_max             = leaflet.j_max; 
     k_max             = leaflet.k_max; 
     is_internal       = leaflet.is_internal;
-    linear_interp     = false; 
+    linear_interp     = true; 
            
     for k=1:k_max
         for j=1:j_max
@@ -1233,7 +1233,7 @@ function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ)
                         end    
                         
                         if linear_interp                   
-                            k_bend_tmp = (k/k_max)^2 * k_bend_radial;                             
+                            k_bend_tmp = (k/k_max) * k_bend_radial;
                             params = beam_string(params, idx_minus, idx, idx_plus, k_bend_tmp); 
                         else
                             params = beam_string(params, idx_minus, idx, idx_plus, k_bend_radial); 
