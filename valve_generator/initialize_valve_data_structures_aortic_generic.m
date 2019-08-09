@@ -200,7 +200,7 @@ valve.kappa_cross_layer_multipler = 1e4 / 256^2;
 
 valve.k_bend_radial = 1e2 * 192/N; 
 valve.k_bend_radial_free_edge = 1e5 * 192/N; 
-valve.k_bend_radial_free_edge_percentage = .1; 
+valve.k_bend_radial_free_edge_percentage = .2; 
 valve.k_bend_circ   = 0; 
 
 % Approximate Lagrangian mesh spacing at ring 
