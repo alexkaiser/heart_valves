@@ -292,7 +292,12 @@ function [] = output_to_ibamr_format(valve)
         
         for i=1:length(valve.leaflets)
             if params.beam_on
-                params = add_beams(params, valve.leaflets(i), k_bend_radial, k_bend_circ); 
+                if isfield(valve, 'k_bend_radial_free_edge') && (valve.k_bend_radial_free_edge > 0) && ... 
+                   isfield(valve, 'k_bend_radial_free_edge_percentage') && (valve.k_bend_radial_free_edge_percentage > 0)
+                    params = add_beams(params, valve.leaflets(i), k_bend_radial, k_bend_circ, valve.k_bend_radial_free_edge, valve.k_bend_radial_free_edge_percentage); 
+                else 
+                    params = add_beams(params, valve.leaflets(i), k_bend_radial, k_bend_circ); 
+                end 
             end 
         end 
 
@@ -1172,7 +1177,7 @@ function params = place_cross_layer_springs(params)
 end 
 
 
-function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ)
+function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ, k_bend_radial_free_edge, k_bend_radial_free_edge_percentage)
 
     j_max             = leaflet.j_max; 
     k_max             = leaflet.k_max; 
@@ -1235,6 +1240,10 @@ function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ)
                         if linear_interp                   
                             k_bend_tmp = (k/k_max)^4 * k_bend_radial;
                             params = beam_string(params, idx_minus, idx, idx_plus, k_bend_tmp); 
+                        elseif exist('k_bend_radial_free_edge', 'var') && ...
+                               exist('k_bend_radial_free_edge_percentage', 'var') && ... 
+                               ((k/k_max) >= (1 - k_bend_radial_free_edge_percentage))
+                            params = beam_string(params, idx_minus, idx, idx_plus, k_bend_radial_free_edge); 
                         else
                             params = beam_string(params, idx_minus, idx, idx_plus, k_bend_radial); 
                         end 

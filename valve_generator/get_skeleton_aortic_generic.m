@@ -35,8 +35,46 @@ function skeleton = get_skeleton_aortic_generic()
 % https://e-echocardiography.com/page/page.php?UID=1867001
 % middle of range, simple hack 
 skeleton.r = 1.0; 
+% skeleton.r = 1.25; 
 skeleton.r_commissure = 1.0 * skeleton.r; 
 
 skeleton.normal_height = 1.4 * skeleton.r; 
 
 skeleton.ring_offset_angle = 0; 
+
+% from... 
+%?A general three-dimensional parametric geometry of the native aortic valve and root for biomechanical modeling
+% 
+% % approx radius from normal 1 
+% % .05 larger than value in paper 
+% r = 1.25; 
+% skeleton.r = r; 
+% 
+% % aorta radius 
+% r_aorta = 1.1 * r; 
+% 
+% % sinus radius at widest point (valve not to here)
+% r_sinus = 1.4 * r; 
+% 
+% % commissure radius 
+% skeleton.r_commissure = (2/3) * r_aorta + (1/3) * r_sinus; 
+% 
+% % r_co in paper 
+% % wide point in verticle plane through origin and commissure 
+% skeleton.r_co = (1/2) * (r_aorta + r_sinus); 
+% 
+% % height from annulus to origin 
+% % equal to height from annulus to height at which r_co is the radius
+% h1 = .6 * r; 
+% 
+% % commissure height measured from origin (annulus is not at the origin)
+% hc = .5 * r; 
+% 
+% % totall commissures 
+% skeleton.normal_height = 1.4 * skeleton.r; % h1 + hc; 
+% 
+% skeleton.ring_offset_angle = 0; 
+% 
+
+
+
