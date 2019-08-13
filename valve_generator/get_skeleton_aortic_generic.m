@@ -34,8 +34,8 @@ function skeleton = get_skeleton_aortic_generic()
 
 % https://e-echocardiography.com/page/page.php?UID=1867001
 % middle of range, simple hack 
-skeleton.r = 1.0; 
-% skeleton.r = 1.25; 
+% skeleton.r = 1.0; 
+skeleton.r = 1.25; 
 skeleton.r_commissure = 1.0 * skeleton.r; 
 
 skeleton.normal_height = 1.4 * skeleton.r; 
@@ -43,10 +43,10 @@ skeleton.normal_height = 1.4 * skeleton.r;
 skeleton.ring_offset_angle = 0; 
 
 % from... 
-%?A general three-dimensional parametric geometry of the native aortic valve and root for biomechanical modeling
+% A general three-dimensional parametric geometry of the native aortic valve and root for biomechanical modeling
 % 
-% % approx radius from normal 1 
-% % .05 larger than value in paper 
+% approx radius from normal 1 
+% .05 larger than value in paper 
 % r = 1.25; 
 % skeleton.r = r; 
 % 
@@ -74,7 +74,7 @@ skeleton.ring_offset_angle = 0;
 % skeleton.normal_height = 1.4 * skeleton.r; % h1 + hc; 
 % 
 % skeleton.ring_offset_angle = 0; 
-% 
+
 
 
 

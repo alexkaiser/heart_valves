@@ -163,19 +163,19 @@ valve.r = valve.skeleton.r;
 if valve.dirichlet_free_edge
     tension_coeffs.pressure_tension_ratio = 0.005; % 0.011; 
 else 
-    tension_coeffs.pressure_tension_ratio = 0.0081; 
+    tension_coeffs.pressure_tension_ratio = 0.0048; %0.0081; 
 end 
 
-tension_coeffs.dec_tension_coeff_base = 20.0; 
+tension_coeffs.dec_tension_coeff_base = 23.0; 
 
 
 % max tensions in leaflets 
-tension_coeffs.alpha = 1.0;   % circumferential 
+tension_coeffs.alpha = 1.4;   % circumferential 
 tension_coeffs.beta  = 0.035;  % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 2.0;  % circumferential 
-tension_coeffs.c_rad_dec        = 0.35;  % radial
+tension_coeffs.c_circ_dec       = 2.6;  % circumferential 
+tension_coeffs.c_rad_dec        = 0.34;  % radial
 
 % scaling for target points 
 % note that this does not include copies 
@@ -199,8 +199,8 @@ valve.eta_papillary_unscaled = 0.0; valve.target_papillary_unscaled/500;
 valve.kappa_cross_layer_multipler = 1e4 / 256^2; 
 
 valve.k_bend_radial = 1e2 * 192/N; 
-valve.k_bend_radial_free_edge = 1e5 * 192/N; 
-valve.k_bend_radial_free_edge_percentage = .4; 
+% valve.k_bend_radial_free_edge = 1e5 * 192/N; 
+% valve.k_bend_radial_free_edge_percentage = .4; 
 valve.k_bend_circ   = 0; 
 
 % Approximate Lagrangian mesh spacing at ring 
@@ -225,8 +225,8 @@ valve.leaflets(1) = leaflet;
 valve.eta_multiplier_linear   = 0; 
 valve.eta_multiplier_collagen = 0; 
 
-% valve_plot(valve); 
-% pause(.1); 
+valve_plot(valve); 
+pause(.1); 
 
 disp('Done with initialize.'); 
 

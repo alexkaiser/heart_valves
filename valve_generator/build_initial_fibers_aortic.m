@@ -87,6 +87,9 @@ else
         % top of circular part (bottom of commissure) minus a circle 
         z_tmp = free_edge_cusp_radius - circle_height; 
         
+        if r ~= r_commissure 
+            error('this needs to compute r(z) here if r ~= r_commissure'); 
+        end         
         X(:,j,k) = r * [cos(j*du*2*pi + ring_offset_angle) ; sin(j*du*2*pi + ring_offset_angle); z_tmp]; 
     end
     
