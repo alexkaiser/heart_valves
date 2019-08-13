@@ -166,7 +166,7 @@ else
     tension_coeffs.pressure_tension_ratio = 0.0048; %0.0081; 
 end 
 
-tension_coeffs.dec_tension_coeff_base = 23.0; 
+tension_coeffs.dec_tension_coeff_base = 27.0; 
 
 
 % max tensions in leaflets 
@@ -175,7 +175,7 @@ tension_coeffs.beta  = 0.035;  % radial
 
 % decreasing tension coefficients 
 tension_coeffs.c_circ_dec       = 2.6;  % circumferential 
-tension_coeffs.c_rad_dec        = 0.34;  % radial
+tension_coeffs.c_rad_dec        = 0.32;  % radial
 
 % scaling for target points 
 % note that this does not include copies 
