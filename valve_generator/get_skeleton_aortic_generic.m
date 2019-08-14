@@ -69,7 +69,7 @@ skeleton.r_co = (1/2) * (r_aorta + r_sinus);
 
 % height from annulus to origin 
 % equal to height from annulus to height at which r_co is the radius
-h1 = .6 * r; 
+h1 = .9 * r; 
 
 % commissure height measured from origin (annulus is not at the origin)
 hc = .5 * r; 
