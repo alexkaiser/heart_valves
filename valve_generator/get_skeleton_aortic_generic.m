@@ -32,7 +32,7 @@ function skeleton = get_skeleton_aortic_generic()
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-debug = true; 
+debug = false; 
 
 % https://e-echocardiography.com/page/page.php?UID=1867001
 % middle of range, simple hack 
