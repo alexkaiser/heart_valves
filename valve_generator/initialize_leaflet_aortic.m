@@ -51,6 +51,8 @@ leaflet.decreasing_tension = valve.decreasing_tension;
 leaflet.diff_eqns = valve.diff_eqns; 
 leaflet.jacobian  = valve.jacobian;
 
+leaflet.skeleton = valve.skeleton; 
+
 if isfield(valve, 'targets_for_bcs')
     leaflet.targets_for_bcs = valve.targets_for_bcs; 
     

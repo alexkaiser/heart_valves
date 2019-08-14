@@ -410,8 +410,13 @@ function [] = output_to_ibamr_format(valve)
                 valve.n_layers_cylinder = 3;                
             end
                         
-            params = place_cylinder(params, r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net); 
-                        
+            if isfield(valve.skeleton, 'r_of_z')
+                % r that follows z 
+                params = place_cylinder(params, r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, valve.skeleton.r_of_z); 
+            else 
+                % constant r 
+                params = place_cylinder(params, r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net); 
+            end 
         end 
     end 
     
@@ -1322,7 +1327,9 @@ function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac
             
             % valve ring points from leaflet 
             if strcmp(params.type, 'aortic')
-                ring_pt = X(1:2,j,1);
+                % ring_pt = X(1:2,j,1);
+                % literal circle for aortic partition placement 
+                ring_pt = [r*cos(2*pi*(j-1)/j_max); r*sin(2*pi*(j-1)/j_max)];                 
             else 
                 ring_pt = X(1:2,j,k_max);
             end
@@ -1449,7 +1456,7 @@ function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac
 
 end 
 
-function params = place_cylinder(params, r, ds, z_min, z_max, n_layers, k_rel, k_target)
+function params = place_cylinder(params, r, ds, z_min, z_max, n_layers, k_rel, k_target, r_of_z)
     % Places n_layers cylinders
     % cylinders have axial radial and circumferential fibers 
     % 
@@ -1476,11 +1483,17 @@ function params = place_cylinder(params, r, ds, z_min, z_max, n_layers, k_rel, k
         for r_idx=1:N_r
             for theta_idx=1:N_theta
                        
-                r_tmp = r + (r_idx - 1)*dr; 
+                z_coord = z_min + z_max * (z_idx - 1) * dz; 
                 
+                if exist('r_of_z', 'var')
+                    r_tmp = r_of_z(z_coord) + (r_idx - 1)*dr; 
+                else 
+                    r_tmp = r + (r_idx - 1)*dr; 
+                end
+                    
                 x_coord = r_tmp * cos(2*pi*dtheta*(theta_idx-1)); 
                 y_coord = r_tmp * sin(2*pi*dtheta*(theta_idx-1)); 
-                z_coord = z_min + z_max * (z_idx - 1) * dz; 
+                
 
                 points(:,theta_idx,r_idx,z_idx) = [x_coord, y_coord, z_coord]; 
                 indices_global(theta_idx,r_idx,z_idx) = params.global_idx; 
@@ -1898,7 +1911,9 @@ function params = place_cartesian_net(params, leaflet, r_extra, L, ds, k_rel, k_
 
         % valve ring points from leaflet 
         if strcmp(params.type, 'aortic')
-            ring_pt = X(1:2,j,1);
+            % ring_pt = X(1:2,j,1);            
+            r = leaflet.skeleton.r; 
+            ring_pt = [r*cos(2*pi*(j-1)/j_max); r*sin(2*pi*(j-1)/j_max)];
         else 
             ring_pt = X(1:2,j,k_max);
         end 
