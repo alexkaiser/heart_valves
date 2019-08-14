@@ -39,7 +39,7 @@ N_each = leaflet.N_each;
     
 X = NaN * zeros(3,j_max,k_max); 
 
-debug = false; 
+debug = true; 
 
 free_edge_smooth = false; 
 
@@ -57,7 +57,7 @@ else
     
     r                 = valve.skeleton.r; 
     r_commissure      = valve.skeleton.r_commissure; 
-    normal_height     = valve.skeleton.normal_height; 
+    normal_height     = valve.skeleton.normal_height;
     ring_offset_angle = valve.skeleton.ring_offset_angle; 
     
     % valve ring lives at k=1
@@ -67,6 +67,12 @@ else
     
     if free_edge_cusp_radius > normal_height
         error('inconsistent radius and height'); 
+    end 
+    
+    if isfield(valve.skeleton, 'height_min_comm')
+        height_min_comm = valve.skeleton.height_min_comm; 
+    else 
+        height_min_comm = free_edge_cusp_radius; 
     end 
     
     du = leaflet.du; 
@@ -82,16 +88,39 @@ else
         x_this_cusp = j_this_cusp / N_each; 
         center_cusp = 1/2; 
         
-        circle_height = free_edge_cusp_radius * 2 * sqrt((1/2)^2 - (x_this_cusp - center_cusp)^2); 
+        if j_this_cusp == 0 
+            'stop'; 
+        end 
         
-        % top of circular part (bottom of commissure) minus a circle 
-        z_tmp = free_edge_cusp_radius - circle_height; 
+%         circle_height = height_min_comm * 2 * sqrt((1/2)^2 - (x_this_cusp - center_cusp)^2); 
+%         
+%         % top of circular part (bottom of commissure) minus a circle 
+%         z_tmp = height_min_comm - circle_height; 
+
+        % polynomial height profile 
+        power = 3; 
+        normalization = 2^power; % normalization so function takes value 1 at 1/2 
+        z_tmp = height_min_comm * normalization * abs(x_this_cusp - center_cusp)^power; 
+        
+        
+        r_tmp = r; 
         
         if r ~= r_commissure 
-            error('this needs to compute r(z) here if r ~= r_commissure'); 
+            if isfield(valve.skeleton, 'r_of_z')
+                r_tmp = valve.skeleton.r_of_z(z_tmp); 
+            else 
+                error('this needs to compute r(z) here if r ~= r_commissure'); 
+            end 
         end         
-        X(:,j,k) = r * [cos(j*du*2*pi + ring_offset_angle) ; sin(j*du*2*pi + ring_offset_angle); z_tmp]; 
+        
+
+        X(:,j,k) = [r_tmp*cos(j*du*2*pi + ring_offset_angle) ; r_tmp*sin(j*du*2*pi + ring_offset_angle); z_tmp]; 
     end
+    
+    if debug 
+        annulus_z = X(3,:,1); 
+        max_z_annulus = max(annulus_z) 
+    end 
     
     % commissure points
     commissure_points = zeros(3,3); 
@@ -185,10 +214,19 @@ if debug
     figure; 
     % six times circle radius
     z_free_edge = squeeze(X(3,:,1));
-    x_circles = linspace(0,6 * free_edge_cusp_radius, length(z_component)); 
+    
+    dx = 6 * free_edge_cusp_radius / length(z_component); 
+    x_circles = dx * (1:length(z_component));     
+    % x_circles = linspace(0,6 * free_edge_cusp_radius, length(z_component)); 
     plot(x_circles, z_free_edge, 'ko'); 
     axis equal 
     title('circles in 2d')
+    hold on 
+    
+    th = 0:.001:2*pi;         
+    x = free_edge_cusp_radius * cos(th) + free_edge_cusp_radius; 
+    y = free_edge_cusp_radius * sin(th) + free_edge_cusp_radius; 
+    plot(x,y); 
     
 end 
     

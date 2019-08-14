@@ -111,11 +111,6 @@ valve.output.cartesian_mesh = [0;0;0];
 valve.output.stride_mesh    = N/32; 
 
 
-valve.place_cylinder = true; 
-valve.z_max_cylinder = pi/3; 
-valve.z_min_cylinder = 0.0; 
-valve.n_layers_cylinder = 3; 
-
 valve.dirichlet_free_edge = false; 
 
 valve.dirichlet_free_edge_with_ref_only = true; 
@@ -153,6 +148,12 @@ valve.L = 2.25;
 valve.skeleton = get_skeleton_aortic_generic(); 
 valve.r = valve.skeleton.r; 
 
+valve.place_cylinder = true; 
+valve.z_max_cylinder = (pi/3) * valve.r; 
+valve.z_min_cylinder = 0.0; 
+valve.n_layers_cylinder = 3; 
+
+
 % Base constants, individual pieces are tuned relative to these values
 
 % tension coefficients structure 
@@ -163,7 +164,7 @@ valve.r = valve.skeleton.r;
 if valve.dirichlet_free_edge
     tension_coeffs.pressure_tension_ratio = 0.005; % 0.011; 
 else 
-    tension_coeffs.pressure_tension_ratio = 0.0048; %0.0081; 
+    tension_coeffs.pressure_tension_ratio = 0.00481; %0.0081; 
 end 
 
 tension_coeffs.dec_tension_coeff_base = 27.0; 

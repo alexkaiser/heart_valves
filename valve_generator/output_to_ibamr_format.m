@@ -1430,7 +1430,7 @@ function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac
                 
                 if ray_springs
                     % check up directions for springs 
-                    if k < k_max
+                    if k < k_max_rings
                         k_nbr = k+1; 
                         if ~isnan(indices_global(j,k_nbr))
                             rest_len = ref_frac * norm(points(:,j,k) - points(:,j,k_nbr)); 
