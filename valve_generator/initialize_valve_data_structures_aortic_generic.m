@@ -171,12 +171,12 @@ tension_coeffs.dec_tension_coeff_base = 20.0;
 
 
 % max tensions in leaflets 
-tension_coeffs.alpha = 1.1;   % circumferential 
+tension_coeffs.alpha = 1.4;   % circumferential 
 tension_coeffs.beta  = 0.037;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 2.8;  % circumferential 
-tension_coeffs.c_rad_dec        = 0.48;  % radial
+tension_coeffs.c_circ_dec       = 3.08;  % circumferential 
+tension_coeffs.c_rad_dec        = 0.49;  % radial
 
 % scaling for target points 
 % note that this does not include copies 
@@ -199,7 +199,7 @@ valve.eta_papillary_unscaled = 0.0; valve.target_papillary_unscaled/500;
 % final formula is multiplied by valve.tension_base  
 valve.kappa_cross_layer_multipler = 1e4 / 256^2; 
 
-valve.k_bend_radial = 1e4 * 192/N; 
+valve.k_bend_radial = 0; 1e2 * 192/N; 
 % valve.k_bend_radial_free_edge = 1e5 * 192/N; 
 % valve.k_bend_radial_free_edge_percentage = .4; 
 valve.k_bend_circ   = 0; 
