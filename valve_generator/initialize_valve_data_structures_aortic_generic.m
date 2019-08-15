@@ -171,12 +171,12 @@ tension_coeffs.dec_tension_coeff_base = 20.0;
 
 
 % max tensions in leaflets 
-tension_coeffs.alpha = 1.4;   % circumferential 
+tension_coeffs.alpha = 1.6;   % circumferential 
 tension_coeffs.beta  = 0.037;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 3.08;  % circumferential 
-tension_coeffs.c_rad_dec        = 0.49;  % radial
+tension_coeffs.c_circ_dec       = 3.2;  % circumferential 
+tension_coeffs.c_rad_dec        = 0.57;  % radial
 
 % scaling for target points 
 % note that this does not include copies 

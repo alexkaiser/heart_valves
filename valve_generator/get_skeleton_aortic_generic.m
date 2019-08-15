@@ -55,10 +55,10 @@ r = 1.25;
 skeleton.r = r; 
 
 % aorta radius 
-r_aorta = 1.1 * r; 
+r_aorta = r; % 1.1 * r; 
 
 % sinus radius at widest point (valve not to here)
-r_sinus = 1.4 * r; 
+r_sinus = r; %1.4 * r; 
 
 % commissure radius 
 skeleton.r_commissure = (2/3) * r_aorta + (1/3) * r_sinus; 
