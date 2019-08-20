@@ -250,29 +250,10 @@ void VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& aco
             }
 
             if (in_aorta){
-            
-                if (d_circ_model_with_lv->d_fourier_aorta->values[idx] < d_circ_model_with_lv->d_fourier_ventricle->values[idx]){
-
-                    // super simple dirichlet boundary condition based BC on aorta 
-                    // if aorta pressure is less than ventricular pressure 
-                    // valve is open and pressure is aorta pressure 
-
-                    // sign for negative in stress tensor
-                    a = 0.0; 
-                    b = 1.0; 
-                    g = -MMHG_TO_CGS * d_circ_model_with_lv->d_fourier_aorta->values[idx];
-                }
-                else{
-
-                    // BC based aortic valve with damper 
-                    // prescribe ventricular pressure (to mitral valve sees it) 
-                    // But then penalty damp all flow at aorta to zero 
-                    a = 0.0; 
-                    b = 1.0; 
-                    g = -MMHG_TO_CGS * d_circ_model_with_lv->d_fourier_ventricle->values[idx];
-
-                }
-
+                // sign for negative in stress tensor
+                a = 0.0; 
+                b = 1.0; 
+                g = -MMHG_TO_CGS * d_circ_model_with_lv->d_fourier_aorta->values[idx];
             }
             else if (in_atrium){
             

@@ -265,13 +265,6 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                         }
                     #endif
 
-                    // if aortic valve should be closed, damp to zero 
-                    const int idx = d_circ_model_with_lv->d_current_idx_series; 
-                    if (d_circ_model_with_lv->d_fourier_aorta->values[idx] > d_circ_model_with_lv->d_fourier_ventricle->values[idx]){
-                        mask = 1.0; 
-                        U_goal = 0.0; 
-                    } 
-
                 }
 
                 if (in_atrium){
