@@ -409,13 +409,25 @@ function [] = output_to_ibamr_format(valve)
             if ~isfield(valve, 'n_layers_cylinder')
                 valve.n_layers_cylinder = 3;                
             end
-                        
+            
+            if isfield(valve, 'tight_cylinder')
+                tight_cylinder = valve.tight_cylinder; 
+            else 
+                tight_cylinder = false; 
+            end
+            
+            if isfield(valve, 'z_extra')
+                z_extra = valve.z_extra; 
+            else 
+                z_extra = 0; 
+            end 
+
             if isfield(valve.skeleton, 'r_of_z')
                 % r that follows z 
-                params = place_cylinder(params, r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, valve.skeleton.r_of_z); 
+                params = place_cylinder(params, valve.leaflets(1), r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, tight_cylinder, z_extra, valve.skeleton.r_of_z); 
             else 
                 % constant r 
-                params = place_cylinder(params, r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net); 
+                params = place_cylinder(params, valve.leaflets(1), r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, tight_cylinder, z_extra); 
             end 
         end 
     end 
@@ -1461,11 +1473,18 @@ function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac
 
 end 
 
-function params = place_cylinder(params, r, ds, z_min, z_max, n_layers, k_rel, k_target, r_of_z)
+function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers, k_rel, k_target, tight_cylinder, z_extra, r_of_z)
     % Places n_layers cylinders
     % cylinders have axial radial and circumferential fibers 
     % 
             
+    if ~exist('tight_cylinder', 'var')
+        tight_cylinder = false; 
+    end 
+    if ~exist('z_extra', 'var')
+        z_extra = 0; 
+    end 
+    
     N_theta = floor(2*pi*r / ds);  
     N_z     = floor((z_max - z_min)/ds); 
     N_r     = n_layers; 
@@ -1473,6 +1492,13 @@ function params = place_cylinder(params, r, ds, z_min, z_max, n_layers, k_rel, k
     dtheta = 1/N_theta; 
     dz     = 1/N_z; 
     dr     = ds; 
+    
+    % bottom leaflet ring
+    X = leaflet.X; 
+    z_min_leaflet = X(3,:,1);     
+    figure; 
+    theta_leaflet = atan2(X(2,:,1), X(1,:,1)) + pi; % argument from 0 to 2 pi  
+    plot(theta_leaflet, z_min_leaflet); 
     
     points = zeros(3,N_theta,N_r,N_z);
     
@@ -1495,23 +1521,48 @@ function params = place_cylinder(params, r, ds, z_min, z_max, n_layers, k_rel, k
                 else 
                     r_tmp = r + (r_idx - 1)*dr; 
                 end
-                    
+                
+                % get minimum relative
+                theta_leaflet_idx = theta_idx;
+                if isempty(theta_leaflet_idx)
+                    theta_leaflet_idx = 1; 
+                end 
+                if theta_idx == N_theta
+                    theta_leaflet_idx_next = 1; 
+                else 
+                    theta_leaflet_idx_next = theta_leaflet_idx + 1; 
+                end 
+                z_annulus = max(z_min_leaflet(theta_leaflet_idx), z_min_leaflet(theta_leaflet_idx_next)); 
+                
+%                 if r_idx==1 && z_idx==1
+%                     fprintf('theta_idx = %d,\ttheta_leaflet_idx = %d,\t z_annulus = %f\n', theta_idx, theta_leaflet_idx, z_annulus); 
+%                 end 
+                
                 x_coord = r_tmp * cos(2*pi*dtheta*(theta_idx-1)); 
                 y_coord = r_tmp * sin(2*pi*dtheta*(theta_idx-1)); 
                 
-
-                points(:,theta_idx,r_idx,z_idx) = [x_coord, y_coord, z_coord]; 
-                indices_global(theta_idx,r_idx,z_idx) = params.global_idx; 
-                params.vertices(:,params.global_idx + 1) = points(:,theta_idx,r_idx,z_idx);
-
-                % every valid vertex is a target point here 
-                if exist('eta', 'var')
-                    params = target_string(params, params.global_idx, k_target, eta);     
-                else
-                    params = target_string(params, params.global_idx, k_target);     
+                if tight_cylinder
+                    valid = (z_coord < (z_annulus + z_extra));                 
+                else 
+                    valid = true; 
                 end 
+                                
+                if valid
+                    points(:,theta_idx,r_idx,z_idx) = [x_coord, y_coord, z_coord]; 
+                    indices_global(theta_idx,r_idx,z_idx) = params.global_idx; 
+                    params.vertices(:,params.global_idx + 1) = points(:,theta_idx,r_idx,z_idx);
 
-                params.global_idx = params.global_idx + 1; 
+                    % every valid vertex is a target point here 
+                    if exist('eta', 'var')
+                        params = target_string(params, params.global_idx, k_target, eta);     
+                    else
+                        params = target_string(params, params.global_idx, k_target);     
+                    end 
+
+                    params.global_idx = params.global_idx + 1; 
+                else 
+                    indices_global(theta_idx,r_idx,z_idx) = nan; 
+                end 
             end        
         end 
     end 
@@ -1523,76 +1574,68 @@ function params = place_cylinder(params, r, ds, z_min, z_max, n_layers, k_rel, k
     
     for z_idx=1:N_z
         for r_idx=1:N_r
-            for theta_idx=1:N_theta          
-% 
-%                 if output && ((mod(j,output_stride) == 1) || (output_stride == 1))
-%                     output_tmp_k = true; 
-%                 else 
-%                     output_tmp_k = false; 
-%                 end 
-%                 
-%                 if output && ((mod(k,output_stride) == 1) || (output_stride == 1))
-%                     output_tmp_j = true; 
-%                 else 
-%                     output_tmp_j = false; 
-%                 end    
+            for theta_idx=1:N_theta  
+                if ~isnan(indices_global(theta_idx,r_idx,z_idx))
 
-                output = true; 
+                    output = true; 
+
+                    last_idx = idx; 
+                    idx = indices_global(theta_idx,r_idx,z_idx); 
                 
-                last_idx = idx; 
-                idx = indices_global(theta_idx,r_idx,z_idx); 
+                    if last_idx >= idx
+                        error('should always be placing points in order, something wrong'); 
+                    end
+
+                    % check up directions for springs 
+                    if theta_idx < N_theta
+                        rest_len = norm(points(:,theta_idx,r_idx,z_idx) - points(:,theta_idx+1,r_idx,z_idx)); 
+                        k_abs = k_rel / rest_len;
+                        nbr_idx = indices_global(theta_idx+1,r_idx,z_idx); 
+                        if ~isnan(nbr_idx)
+                            min_idx = min(idx,nbr_idx); 
+                            max_idx = max(idx,nbr_idx); 
+                            params = spring_string(params, min_idx, max_idx, k_abs, rest_len, function_idx, output);
+                        end 
+                    end
+
+                    % periodic wrap 
+                    if theta_idx == N_theta
+                        rest_len = norm(points(:,theta_idx,r_idx,z_idx) - points(:,1,r_idx,z_idx)); 
+                        k_abs = k_rel / rest_len;
+                        nbr_idx = indices_global(1,r_idx,z_idx); 
+                        if ~isnan(nbr_idx)
+                            min_idx = min(idx,nbr_idx); 
+                            max_idx = max(idx,nbr_idx); 
+                            params = spring_string(params, min_idx, max_idx, k_abs, rest_len, function_idx, output); 
+                        end
+                    end
+
+                    if r_idx < N_r
+                        rest_len = norm(points(:,theta_idx,r_idx,z_idx) - points(:,theta_idx,r_idx+1,z_idx)); 
+                        k_abs = k_rel / rest_len;
+                        nbr_idx = indices_global(theta_idx,r_idx+1,z_idx);
+                        if ~isnan(nbr_idx)
+                            min_idx = min(idx,nbr_idx); 
+                            max_idx = max(idx,nbr_idx); 
+                            params = spring_string(params, min_idx, max_idx, k_abs, rest_len, function_idx, output); 
+                        end
+                    end
+
+                    if z_idx < N_z
+                        rest_len = norm(points(:,theta_idx,r_idx,z_idx) - points(:,theta_idx,r_idx,z_idx+1)); 
+                        k_abs = k_rel / rest_len;
+                        nbr_idx = indices_global(theta_idx,r_idx,z_idx+1); 
+                        if ~isnan(nbr_idx)
+                            min_idx = min(idx,nbr_idx); 
+                            max_idx = max(idx,nbr_idx); 
+                            params = spring_string(params, min_idx, max_idx, k_abs, rest_len, function_idx, output);
+                        end 
+                    end
                 
-                if last_idx >= idx
-                    error('should always be placing points in order, something wrong'); 
                 end
-                    
-                % check up directions for springs 
-                if theta_idx < N_theta
-                    rest_len = norm(points(:,theta_idx,r_idx,z_idx) - points(:,theta_idx+1,r_idx,z_idx)); 
-                    k_abs = k_rel / rest_len;
-                    nbr_idx = indices_global(theta_idx+1,r_idx,z_idx); 
-                    min_idx = min(idx,nbr_idx); 
-                    max_idx = max(idx,nbr_idx); 
-                    params = spring_string(params, min_idx, max_idx, k_abs, rest_len, function_idx, output); 
-                end
-                
-                % periodic wrap 
-                if theta_idx == N_theta
-                    rest_len = norm(points(:,theta_idx,r_idx,z_idx) - points(:,1,r_idx,z_idx)); 
-                    k_abs = k_rel / rest_len;
-                    nbr_idx = indices_global(1,r_idx,z_idx); 
-                    min_idx = min(idx,nbr_idx); 
-                    max_idx = max(idx,nbr_idx); 
-                    params = spring_string(params, min_idx, max_idx, k_abs, rest_len, function_idx, output); 
-                end
-                
-                if r_idx < N_r
-                    rest_len = norm(points(:,theta_idx,r_idx,z_idx) - points(:,theta_idx,r_idx+1,z_idx)); 
-                    k_abs = k_rel / rest_len;
-                    nbr_idx = indices_global(theta_idx,r_idx+1,z_idx); 
-                    min_idx = min(idx,nbr_idx); 
-                    max_idx = max(idx,nbr_idx); 
-                    params = spring_string(params, min_idx, max_idx, k_abs, rest_len, function_idx, output); 
-                end
-                
-                if z_idx < N_z
-                    rest_len = norm(points(:,theta_idx,r_idx,z_idx) - points(:,theta_idx,r_idx,z_idx+1)); 
-                    k_abs = k_rel / rest_len;
-                    nbr_idx = indices_global(theta_idx,r_idx,z_idx+1); 
-                    min_idx = min(idx,nbr_idx); 
-                    max_idx = max(idx,nbr_idx); 
-                    params = spring_string(params, min_idx, max_idx, k_abs, rest_len, function_idx, output); 
-                end
-                
-                
-            end 
-           
+            end            
         end 
     end 
-
-
-
-
 
 end 
 
