@@ -416,18 +416,18 @@ function [] = output_to_ibamr_format(valve)
                 tight_cylinder = false; 
             end
             
-            if isfield(valve, 'z_extra')
-                z_extra = valve.z_extra; 
+            if isfield(valve, 'z_extra_cylinder')
+                z_extra_cylinder = valve.z_extra_cylinder; 
             else 
-                z_extra = 0; 
+                z_extra_cylinder = 0; 
             end 
-
+            
             if isfield(valve.skeleton, 'r_of_z')
                 % r that follows z 
-                params = place_cylinder(params, valve.leaflets(1), r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, tight_cylinder, z_extra, valve.skeleton.r_of_z); 
+                params = place_cylinder(params, valve.leaflets(1), r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, tight_cylinder, z_extra_cylinder, valve.skeleton.r_of_z); 
             else 
                 % constant r 
-                params = place_cylinder(params, valve.leaflets(1), r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, tight_cylinder, z_extra); 
+                params = place_cylinder(params, valve.leaflets(1), r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, tight_cylinder, z_extra_cylinder); 
             end 
         end 
     end 
@@ -444,8 +444,12 @@ function [] = output_to_ibamr_format(valve)
     end 
     
     if valve.in_heart && isfield(valve, 'transformation_vertex_file')
-        % no initial rotation placed yet 
-        params.vertices = coordinate_transformation_vertices(params.vertices, valve.transformation_vertex_file);         
+        if isfield(valve, 'initial_rotation_aortic')
+            R_0 = valve.initial_rotation_aortic; 
+        else
+            R_0 = eye(3);
+        end 
+        params.vertices = coordinate_transformation_vertices(params.vertices, valve.transformation_vertex_file, R_0);         
     end 
     
     % finally, write all vertices 
@@ -1495,9 +1499,11 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
     
     % bottom leaflet ring
     X = leaflet.X; 
+    j_max = leaflet.j_max; 
     z_min_leaflet = X(3,:,1);     
     figure; 
-    theta_leaflet = atan2(X(2,:,1), X(1,:,1)) + pi; % argument from 0 to 2 pi  
+    theta_leaflet = atan2(X(2,:,1), X(1,:,1));
+    theta_leaflet = mod(theta_leaflet, 2*pi); % argument from 0 to 2 pi  
     plot(theta_leaflet, z_min_leaflet); 
     
     points = zeros(3,N_theta,N_r,N_z);
@@ -1522,21 +1528,38 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
                     r_tmp = r + (r_idx - 1)*dr; 
                 end
                 
-                % get minimum relative
-                theta_leaflet_idx = theta_idx;
-                if isempty(theta_leaflet_idx)
-                    theta_leaflet_idx = 1; 
-                end 
-                if theta_idx == N_theta
-                    theta_leaflet_idx_next = 1; 
-                else 
-                    theta_leaflet_idx_next = theta_leaflet_idx + 1; 
-                end 
-                z_annulus = max(z_min_leaflet(theta_leaflet_idx), z_min_leaflet(theta_leaflet_idx_next)); 
+                theta_tmp = 2*pi*dtheta*(theta_idx-1); 
                 
-%                 if r_idx==1 && z_idx==1
-%                     fprintf('theta_idx = %d,\ttheta_leaflet_idx = %d,\t z_annulus = %f\n', theta_idx, theta_leaflet_idx, z_annulus); 
-%                 end 
+                % first check for exact mesh alignment
+                theta_leaflet_idx = find((theta_tmp == theta_leaflet), 1); 
+                if ~isempty(theta_leaflet_idx)
+                    z_annulus = max(z_min_leaflet(theta_leaflet_idx));
+                else                    
+                    % otherwise search for correct angle                     
+                    theta_leaflet_idx = find((theta_tmp < theta_leaflet), 1); 
+                    if isempty(theta_leaflet_idx)
+                        theta_leaflet_idx = 1; 
+                    end 
+
+                    % get minimum relative
+                    theta_leaflet_idx_prev = theta_leaflet_idx - 1; 
+                    if theta_leaflet_idx_prev == 0 
+                        theta_leaflet_idx_prev = j_max; 
+                    end
+    %                theta_leaflet_idx = theta_idx;
+
+                    if theta_leaflet_idx < j_max
+                        theta_leaflet_idx_next = theta_leaflet_idx + 1; 
+                    else 
+                        theta_leaflet_idx_next = 1; 
+                    end 
+
+                    z_annulus = max(z_min_leaflet(theta_leaflet_idx_prev), max(z_min_leaflet(theta_leaflet_idx), z_min_leaflet(theta_leaflet_idx_next))); 
+                end 
+                
+                if r_idx==1 && z_idx==1
+                    fprintf('theta_idx = %d,\ttheta_leaflet_idx = %d,\t z_annulus = %f\n', theta_idx, theta_leaflet_idx, z_annulus); 
+                end 
                 
                 x_coord = r_tmp * cos(2*pi*dtheta*(theta_idx-1)); 
                 y_coord = r_tmp * sin(2*pi*dtheta*(theta_idx-1)); 

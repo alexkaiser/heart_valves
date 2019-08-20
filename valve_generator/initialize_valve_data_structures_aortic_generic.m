@@ -79,9 +79,11 @@ if valve.in_heart
     valve.extra_radius_hoops = 0.0; % adds points out the partition up to this amount 
 
     valve.tight_cylinder = true; 
-    valve.z_extra_cylinder = 0.2; 
+    valve.z_extra_cylinder = 0.3; 
                                      
-    % valve.transformation_vertex_file = 'aortic_annulus.vertex';                                
+    valve.initial_rotation_aortic = rotation_matrix_z(pi/4); 
+    
+    valve.transformation_vertex_file = 'aortic_annulus.vertex';                                
 else 
     valve.base_name = sprintf('aortic_%d', N); 
 end 
@@ -101,7 +103,7 @@ valve.X_config_is_reference = true;
 % spacing is always half a mesh width 
 valve.num_copies = 3; 
 
-valve.normal_thicken = false; 
+valve.normal_thicken = true; 
 % nominal aortic valve thickness
 valve.normal_thickness = 0.044; 
 
