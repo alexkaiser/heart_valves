@@ -21,6 +21,7 @@ mkdir $RUNDIR
 
 # set up run info 
 BASE_NAME=mitral_no_partition_256
+BASE_NAME_AORTIC=aortic_no_partition_192
 BASE_NAME_LV=LV_pt05cm_normal_1
 INPUT_NAME=input_mitral_LV_256_normal_1
 RUN_LINE="mpiexec --bind-to core -report-bindings main_with_lv"
@@ -30,6 +31,7 @@ pwd
 
 # move stuff the the run directory 
 cp $BASE_NAME*                                $RUNDIR
+cp $BASE_NAME_AORTIC*                         $RUNDIR
 cp $BASE_NAME_LV*                             $RUNDIR
 cp aorta_bdry.vertex                          $RUNDIR
 cp atrium_bdry.vertex                         $RUNDIR

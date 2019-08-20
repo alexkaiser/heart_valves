@@ -404,14 +404,21 @@ int main(int argc, char* argv[])
 
         pout << "structure_name_LV = " << structure_name_LV << "\n"; 
 
+        std::string structure_name_aortic = input_db->getString("NAME_AORTIC"); 
+
+        pout << "structure_name_aortic = " << structure_name_aortic << "\n"; 
+
         // set up the ventricle and valve skeleton motion 
         double t_smoothing = 4.0e-2; 
         prescribed_motion_info* motion_info_LV     = initialize_prescribed_motion_info(structure_name_LV, t_cycle_length, t_smoothing); 
         prescribed_motion_info* motion_info_mitral = initialize_prescribed_motion_info(structure_name, t_cycle_length, t_smoothing); 
-        prescribed_motion_info* motion_info        = combine_prescribe_motion(motion_info_LV, motion_info_mitral); 
-        delete_prescribed_motion(motion_info_LV); 
-        delete_prescribed_motion(motion_info_mitral);         
-
+        prescribed_motion_info* motion_info_aortic = initialize_prescribed_motion_info(structure_name_aortic, t_cycle_length, t_smoothing); 
+        prescribed_motion_info* motion_info_tmp    = combine_prescribe_motion(motion_info_LV, motion_info_mitral); 
+        prescribed_motion_info* motion_info        = combine_prescribe_motion(motion_info_tmp, motion_info_aortic); 
+        delete_prescribed_motion(motion_info_LV);
+        delete_prescribed_motion(motion_info_mitral);
+        delete_prescribed_motion(motion_info_aortic);
+        delete_prescribed_motion(motion_info_tmp);
 
         string aorta_vertices_file_name  = "aorta_bdry.vertex"; 
         string atrium_vertices_file_name = "atrium_bdry.vertex"; 

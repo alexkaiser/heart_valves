@@ -15,6 +15,7 @@ MAX_LEVELS = 2                            // maximum number of levels in locally
 REF_RATIO  = 4                            // refinement ratio between levels
 
 NAME = "mitral_no_partition_256"
+NAME_AORTIC = "aortic_no_partition_192"
 NAME_LV = "LV_pt05cm_normal_1"
 
 X_MIN = 26.0
@@ -182,11 +183,14 @@ IBMethod {
 
 IBStandardInitializer {
    max_levels      = MAX_LEVELS
-   structure_names = "LV_pt05cm_normal_1","mitral_no_partition_256"
+   structure_names = "LV_pt05cm_normal_1","mitral_no_partition_256","aortic_no_partition_192"
    LV_pt05cm_normal_1 {
       level_number = MAX_LEVELS - 1
    }
    mitral_no_partition_256 {
+      level_number = MAX_LEVELS - 1
+   }
+   aortic_no_partition_192 {
       level_number = MAX_LEVELS - 1
    }
 }
