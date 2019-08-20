@@ -229,7 +229,7 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
                 }
             #endif
 
-            if (~full_clamp_on){
+            if (!full_clamp_on){
                 // this may be very, very large
                 // consider changing it
                 double kappa[NDIM];
