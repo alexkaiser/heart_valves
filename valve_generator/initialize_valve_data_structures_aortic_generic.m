@@ -71,13 +71,15 @@ name = 'aortic';
 valve.name = name; 
 
 % does not place partition
-valve.in_heart = false; 
+valve.in_heart = true; 
 
 % name 
 if valve.in_heart
     valve.base_name = sprintf('aortic_no_partition_%d', N); 
     valve.extra_radius_hoops = 0.13; % adds points out the partition up to this amount 
                                      % two extra hoops at 256
+    
+    % valve.transformation_vertex_file = 'aortic_annulus.vertex';                                
 else 
     valve.base_name = sprintf('aortic_%d', N); 
 end 
@@ -97,7 +99,7 @@ valve.X_config_is_reference = true;
 % spacing is always half a mesh width 
 valve.num_copies = 3; 
 
-valve.normal_thicken = true; 
+valve.normal_thicken = false; 
 % nominal aortic valve thickness
 valve.normal_thickness = 0.044; 
 

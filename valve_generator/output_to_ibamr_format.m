@@ -431,6 +431,11 @@ function [] = output_to_ibamr_format(valve)
         fclose(particles); 
     end 
     
+    if valve.in_heart && isfield(valve, 'transformation_vertex_file')
+        % no initial rotation placed yet 
+        params.vertices = coordinate_transformation_vertices(params.vertices, valve.transformation_vertex_file);         
+    end 
+    
     % finally, write all vertices 
     params = write_all_vertices(params); 
 
@@ -1292,7 +1297,7 @@ function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac
     end 
     
     if ~exist('ray_springs', 'var')
-        hoop_springs = false; 
+        ray_springs = false; 
     end 
     
     X     = leaflet.X; 
