@@ -28,6 +28,8 @@ Z_MAX = 23.5921 + 0.0001  // Others are a solid distance from the existing setup
 
 N_FLUID = N_FLUID_FINE / (REF_RATIO^(MAX_LEVELS - 1))
 
+MAX_RESTART_TO_WRITE = 10
+
 CYCLE_DURATION = 0.8
 T_OFFSET_START_BCS_UNSCALED = 0.5 // this is a bad hack and should be improved
 

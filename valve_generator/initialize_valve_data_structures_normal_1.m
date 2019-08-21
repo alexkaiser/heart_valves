@@ -303,7 +303,7 @@ end
 valve.target_net_unscaled       = 8 / valve.N; 
 
 % does not scale since total number of points is constant 
-valve.target_papillary_unscaled = 2 * 40/128; 
+valve.target_papillary_unscaled = 10 * 40/128; 
 
 % viscoelastic damping coefficients for net, does not include copies 
 valve.eta_net_unscaled = 0.0; %valve.target_net_unscaled/5000; 
