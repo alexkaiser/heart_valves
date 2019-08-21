@@ -45,7 +45,7 @@ valve.max_it                = 1e8;
 valve.max_continuations     = 1e8; 
 
 % shirinks initial 
-valve.careful_early_steps         = true; 
+valve.careful_early_steps         = false; 
 valve.careful_early_step_coeff    = 1/8; 
 valve.residual_decrease_to_double = 1/2; 
 
@@ -169,7 +169,7 @@ valve.diastolic_increment = [0.0; 0.0; 0.0];
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
 % valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
-tension_coeffs.pressure_tension_ratio = 0.055; 
+tension_coeffs.pressure_tension_ratio = 0.094; 
 
 tension_coeffs.dec_tension_coeff_base = 4.6; 
 
@@ -180,7 +180,7 @@ tension_coeffs.beta_anterior        = 1.1;  % radial
 tension_coeffs.alpha_posterior      = 1.0;  % circumferential 
 tension_coeffs.beta_posterior       = 1.0;  % radial
 tension_coeffs.alpha_hoops          = 0.5;  % circumferential hoops     
-tension_coeffs.alpha_edge_connector = 0.25;  % circumferential free edge connector 
+tension_coeffs.alpha_edge_connector = 1.0;  % circumferential free edge connector 
 tension_coeffs.beta_edge_connector  = 0.01;  % circumferential free edge connector
 
 
@@ -202,7 +202,7 @@ n_rings_periodic = max(1,N/64);
 
 % places circumferential fibers this many below hoops 
 % if the location is not already covered by leaflet
-n_edge_connectors = max(1,N/256);  
+n_edge_connectors = max(1,N/64);  
 
 % No explicit commissural leaflet here 
 N_anterior = N/2; 
