@@ -44,6 +44,11 @@ valve.N = N;
 valve.max_it                = 1e8; 
 valve.max_continuations     = 1e8; 
 
+% shirinks initial 
+valve.careful_early_steps         = false; 
+valve.careful_early_step_coeff    = 1/8; 
+valve.residual_decrease_to_double = 1/2; 
+
 % Parameters for quick exit on line search 
 valve.max_consecutive_fails = 0;  
 valve.max_total_fails       = 0; 
@@ -66,7 +71,9 @@ valve.decreasing_tension = decreasing_tension;
 
 valve.diff_eqns = @difference_equations_bead_slip; 
 valve.jacobian  = @build_jacobian_bead_slip;
-        
+
+valve.targets_for_bcs = false; 
+valve.targets_for_bcs_ref_only = false; 
 
 % general solve parameters
 
@@ -77,6 +84,8 @@ valve.in_heart = true;
 % name 
 if valve.in_heart
     valve.base_name = sprintf('mitral_no_partition_%d', N); 
+    valve.extra_radius_hoops = 0.13; % adds points out the partition up to this amount 
+                                     % two extra hoops at 256
 else 
     valve.base_name = sprintf('mitral_tree_%d', N); 
 end 
@@ -122,7 +131,7 @@ reflect_x = false;
 
 % Radial and circumferential fibers 
 % Or diagonally oriented fibers 
-% Always true in this version 
+% Always true in this version `
 radial_and_circumferential = true; 
 
 % physical units create a scalar multiple of the old 
@@ -160,7 +169,7 @@ valve.diastolic_increment = [0.0; 0.0; 0.0];
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
 % valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
-tension_coeffs.pressure_tension_ratio = 0.109; 
+tension_coeffs.pressure_tension_ratio = 0.02; 
 
 tension_coeffs.dec_tension_coeff_base = 4.6; 
 
@@ -168,24 +177,24 @@ tension_coeffs.dec_tension_coeff_base = 4.6;
 % max tensions in leaflets 
 tension_coeffs.alpha_anterior       = 1.75;  % circumferential 
 tension_coeffs.beta_anterior        = 1.1;  % radial
-tension_coeffs.alpha_posterior      = 1.75;  % circumferential 
+tension_coeffs.alpha_posterior      = 1.0;  % circumferential 
 tension_coeffs.beta_posterior       = 1.0;  % radial
 tension_coeffs.alpha_hoops          = 0.5;  % circumferential hoops     
-tension_coeffs.alpha_edge_connector = 1.75;  % circumferential free edge connector 
+tension_coeffs.alpha_edge_connector = 1.0;  % circumferential free edge connector 
 tension_coeffs.beta_edge_connector  = 0.01;  % circumferential free edge connector
 
 
 % decreasing tension coefficients 
 tension_coeffs.c_circ_dec_anterior       = 2.5;  % circumferential 
-tension_coeffs.c_rad_dec_anterior        = 1.4;  % radial
-tension_coeffs.c_circ_dec_posterior      = 3.1;  % circumferential 
+tension_coeffs.c_rad_dec_anterior        = 1.5;  % radial
+tension_coeffs.c_circ_dec_posterior      = 1.0;  % circumferential 
 tension_coeffs.c_rad_dec_posterior       = 1.5;  % radial
-tension_coeffs.c_circ_dec_hoops          = 2.5;  % circumferential hoops
+tension_coeffs.c_circ_dec_hoops          = 2.0;  % circumferential hoops
 tension_coeffs.c_rad_dec_hoops_anterior  = 0.5;  % radial hoops, anterior part 
 tension_coeffs.c_rad_dec_hoops_posterior = 0.5;  % radial hoops, posterior part 
 tension_coeffs.c_dec_tension_chordae     = 1.0;  % chordae
 
-tension_coeffs.c_circ_dec_edge_connector  = 2.5;  % circumferential hoops
+tension_coeffs.c_circ_dec_edge_connector  = 2.0;  % circumferential hoops
 tension_coeffs.c_rad_dec_edge_connector   = 2.0;  % circumferential hoops
 
 % places this many periodic rings above 
@@ -222,7 +231,7 @@ leaflet_direction = [leaflet_direction, -1, 1];
 leaflet_N_start = 0; 
 
 % changes entire tree strength by constants 
-tension_coeffs.tree_tension_multiplier = 0.85; 
+tension_coeffs.tree_tension_multiplier = 1.0; 
 
 % Leaf tensions are all modified 
 tension_coeffs.leaf_tension_base = .9; 
@@ -291,21 +300,21 @@ end
 % and scaling for copies is handled by the output routine 
 
 % scales for by mesh width for consistant total mesh force on ring 
-valve.target_net_unscaled       = 8 * 256/(valve.N^2); 
+valve.target_net_unscaled       = 8 / valve.N; 
 
 % does not scale since total number of points is constant 
-valve.target_papillary_unscaled = 40/128; 
+valve.target_papillary_unscaled = 10 * 40/128; 
 
 % viscoelastic damping coefficients for net, does not include copies 
-valve.eta_net_unscaled = valve.target_net_unscaled/5000; 
+valve.eta_net_unscaled = 0.0; %valve.target_net_unscaled/5000; 
 
 % viscoelastic damping coefficients for root attachments, does not include copies  
-valve.eta_papillary_unscaled = valve.target_papillary_unscaled/500; 
+valve.eta_papillary_unscaled = 0.0; valve.target_papillary_unscaled/500; 
 
 % if nonzero, linear springs of rest length with spacing between the layers 
 % are placed with this value 
 % final formula is multiplied by valve.tension_base  
-valve.kappa_cross_layer_multipler = 2 * 1e4 / (N * 256); 
+valve.kappa_cross_layer_multipler = 1e4 / 256^2; 
 
 % Approximate Lagrangian mesh spacing at ring 
 % Used for later splitting of springs 
@@ -345,5 +354,6 @@ valve_plot(valve);
 pause(.1); 
 
 disp('Done with initialize.'); 
+
 
 
