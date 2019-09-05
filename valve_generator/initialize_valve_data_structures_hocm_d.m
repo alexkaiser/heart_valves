@@ -169,26 +169,26 @@ valve.diastolic_increment = [0.0; 0.0; 0.0];
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
 % valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
-tension_coeffs.pressure_tension_ratio = 0.02; 
+tension_coeffs.pressure_tension_ratio = 0.035; 
 
-tension_coeffs.dec_tension_coeff_base = 4.6; 
+tension_coeffs.dec_tension_coeff_base = 7; 
 
 
 % max tensions in leaflets 
 tension_coeffs.alpha_anterior       = 1.75;  % circumferential 
 tension_coeffs.beta_anterior        = 1.1;  % radial
 tension_coeffs.alpha_posterior      = 1.0;  % circumferential 
-tension_coeffs.beta_posterior       = 1.0;  % radial
+tension_coeffs.beta_posterior       = 0.8;  % radial
 tension_coeffs.alpha_hoops          = 0.5;  % circumferential hoops     
-tension_coeffs.alpha_edge_connector = 1.0;  % circumferential free edge connector 
+tension_coeffs.alpha_edge_connector = 1.75;  % circumferential free edge connector 
 tension_coeffs.beta_edge_connector  = 0.01;  % circumferential free edge connector
 
 
 % decreasing tension coefficients 
 tension_coeffs.c_circ_dec_anterior       = 2.5;  % circumferential 
-tension_coeffs.c_rad_dec_anterior        = 1.5;  % radial
+tension_coeffs.c_rad_dec_anterior        = 1.7;  % radial
 tension_coeffs.c_circ_dec_posterior      = 1.0;  % circumferential 
-tension_coeffs.c_rad_dec_posterior       = 1.5;  % radial
+tension_coeffs.c_rad_dec_posterior       = 0.7;  % radial
 tension_coeffs.c_circ_dec_hoops          = 2.0;  % circumferential hoops
 tension_coeffs.c_rad_dec_hoops_anterior  = 0.5;  % radial hoops, anterior part 
 tension_coeffs.c_rad_dec_hoops_posterior = 0.5;  % radial hoops, posterior part 
@@ -231,7 +231,7 @@ leaflet_direction = [leaflet_direction, -1, 1];
 leaflet_N_start = 0; 
 
 % changes entire tree strength by constants 
-tension_coeffs.tree_tension_multiplier = 1.0; 
+tension_coeffs.tree_tension_multiplier = 0.75; 
 
 % Leaf tensions are all modified 
 tension_coeffs.leaf_tension_base = .9; 
