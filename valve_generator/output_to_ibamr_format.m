@@ -1351,8 +1351,10 @@ function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac
                 % ring_pt = X(1:2,j,1);
                 % literal circle for aortic partition placement 
                 ring_pt = [r*cos(2*pi*(j-1)/j_max); r*sin(2*pi*(j-1)/j_max)];                 
+                ring_z  = params.ring_center(3); 
             else 
                 ring_pt = X(1:2,j,k_max);
+                ring_z  = X(3,j,k_max);
             end
             
             increment = ring_pt - params.ring_center(1:2);
@@ -1374,7 +1376,8 @@ function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac
                (params.y_min    <= coords_horiz(2)) && ...   
                (coords_horiz(2) <= params.y_max   ) 
                 
-                points(:,j,k) = [coords_horiz; params.ring_center(3)]; 
+                % points(:,j,k) = [coords_horiz; params.ring_center(3)]; 
+                points(:,j,k) = [coords_horiz; ring_z]; 
                 indices_global(j,k) = params.global_idx; 
                 params.vertices(:,params.global_idx + 1) = points(:,j,k); 
                 

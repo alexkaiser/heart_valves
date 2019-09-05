@@ -84,7 +84,7 @@ valve.in_heart = true;
 % name 
 if valve.in_heart
     valve.base_name = sprintf('mitral_no_partition_%d', N); 
-    valve.extra_radius_hoops = 0.13; % adds points out the partition up to this amount 
+    valve.extra_radius_hoops = 0; 0.13; % adds points out the partition up to this amount 
                                      % two extra hoops at 256
 else 
     valve.base_name = sprintf('mitral_tree_%d', N); 
