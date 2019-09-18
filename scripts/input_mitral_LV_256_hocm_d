@@ -7,32 +7,33 @@ RHO = 1.0
 
 L = 6.0       // box sizing 
 N = 256       // lagrangian mesh parameter, number of points on circumference of ring  
-N_FLUID = N/4 // fluid mesh width, base 
+N_FLUID_FINE = N/4 // fluid mesh width, base 
 
 
 // grid spacing parameters
-MAX_LEVELS = 1                            // maximum number of levels in locally refined grid
+MAX_LEVELS = 2                            // maximum number of levels in locally refined grid
 REF_RATIO  = 4                            // refinement ratio between levels
 
 NAME = "mitral_no_partition_256"
+NAME_AORTIC = "aortic_no_partition_192"
 NAME_LV = "LV_pt05cm_hocm_d_"
 
 ORIGIN_X = 7.678500000000005
 ORIGIN_Y = 35.495345292620861
 ORIGIN_Z = 26.479999999999745
 
-X_MIN =  2.0
-X_MAX =  11.0
-Y_MIN =  30.5
-Y_MAX =  39.5
-Z_MIN =  16.6552000 + .001 // Z_MAX - 12 
-Z_MAX =  28.6552000 + .001 // Others are a solid distance from the existing setup, this is exactly on the inlets and outlets 
+X_MIN =  0.0
+X_MAX =  12.0
+Y_MIN =  28.0
+Y_MAX =  40.0
+Z_MIN =  13.6551 + 0.1         // Z_MAX - 18
+Z_MAX =  31.6551 + 0.1    // Others are a solid distance from the existing setup, this is exactly on the inlets and outlets 
                           // It is complaining about points that are exactly on the boundary, move .001cm up
 
-// without extrusion 
-// Z_MIN =  15.6552000 + .01 // Z_MAX - 12 
-// Z_MAX =  27.6552000 + .01 // Others are a solid distance from the existing setup, this is exactly on the inlets and outlets 
-                          // It is complaining about points that are exactly on the boundary, move .01cm up
+
+N_FLUID = N_FLUID_FINE / (REF_RATIO^(MAX_LEVELS - 1))
+MAX_RESTART_TO_WRITE = 10
+
 
 CYCLE_DURATION = 0.857142857142857
 T_OFFSET_START_BCS_UNSCALED = 0.5 // this is a bad hack and should be improved
@@ -41,7 +42,7 @@ T_OFFSET_START_BCS_UNSCALED = 0.5 // this is a bad hack and should be improved
 DELTA_FUNCTION      = "IB_5"
 SOLVER_TYPE         = "STAGGERED"         // the fluid solver to use (STAGGERED or COLLOCATED)
 START_TIME          = 0.0e0               // initial simulation time
-END_TIME            = CYCLE_DURATION      // final simulation time
+END_TIME            = 3*CYCLE_DURATION      // final simulation time
 GROW_DT             = 2.0e0               // growth factor for timesteps
 NUM_CYCLES          = 1                   // number of cycles of fixed-point iteration
 CONVECTIVE_TS_TYPE  = "ADAMS_BASHFORTH"   // convective time stepping type
@@ -49,7 +50,7 @@ CONVECTIVE_OP_TYPE  = "PPM"               // convective differencing discretizat
 CONVECTIVE_FORM     = "ADVECTIVE"         // how to compute the convective terms
 NORMALIZE_PRESSURE  = FALSE               // whether to explicitly force the pressure to have mean zero
 CFL_MAX             = 0.3                 // maximum CFL number
-DT                  = 5.0e-6              // maximum timestep size
+DT                  = 1.5e-5              // maximum timestep size
 ERROR_ON_DT_CHANGE  = TRUE                // whether to emit an error message if the time step size changes
 VORTICITY_TAGGING   = TRUE                // whether to tag cells for refinement based on vorticity thresholds
 TAG_BUFFER          = 2                   // size of tag buffer used by grid generation algorithm
@@ -189,11 +190,14 @@ IBMethod {
 
 IBStandardInitializer {
    max_levels      = MAX_LEVELS
-   structure_names = "LV_pt05cm_hocm_d","mitral_no_partition_256"
-   LV_pt05cm_hocm_d {
+   structure_names = "LV_pt05cm_hocm_d_","mitral_no_partition_256","aortic_no_partition_192"
+   LV_pt05cm_hocm_d_ {
       level_number = MAX_LEVELS - 1
    }
    mitral_no_partition_256 {
+      level_number = MAX_LEVELS - 1
+   }
+   aortic_no_partition_192 {
       level_number = MAX_LEVELS - 1
    }
 }
@@ -248,7 +252,7 @@ Main {
 }
 
 CartesianGeometry {
-domain_boxes = [ (0,0,0),( 3*N_FLUID/2 - 1,3*N_FLUID/2 - 1, 2*N_FLUID - 1) ]
+domain_boxes = [ (0,0,0),( 2*N_FLUID - 1,2*N_FLUID - 1, 3*N_FLUID - 1) ]
     x_lo = X_MIN, Y_MIN, Z_MIN 
     x_up = X_MAX, Y_MAX, Z_MAX 
     //x_lo =  -L + ORIGIN_X, -L + ORIGIN_Y,  3.0 - 4*L + ORIGIN_Z 
