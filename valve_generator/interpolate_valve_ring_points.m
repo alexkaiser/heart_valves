@@ -1,4 +1,4 @@
-function pts = interpolate_valve_ring_points(valve, mesh)
+function pts = interpolate_valve_ring_points(valve, mesh, valve_ring_points_priority)
 
 % Copyright (c) 2019, Alexander D. Kaiser
 % All rights reserved.
@@ -29,6 +29,10 @@ function pts = interpolate_valve_ring_points(valve, mesh)
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 skeleton = valve.skeleton;
+
+if exist('valve_ring_points_priority', 'var')
+    skeleton.valve_ring_pts = valve_ring_points_priority; 
+end 
 
 if ~isfield(skeleton, 'valve_ring_pts')
     error('must have field valve.skeleton.valve_ring_pts to interpolate points'); 

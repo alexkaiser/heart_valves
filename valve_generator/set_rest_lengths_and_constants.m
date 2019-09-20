@@ -261,5 +261,33 @@ leaflet_with_reference.ref_frac = 1.0;
 %     
 % end 
 
+if isfield(valve.skeleton, 'valve_ring_pts_early_systole') && isfield(valve.skeleton, 'papillary_early_systole')
 
+    N_anterior       = valve.N_anterior; 
+    N_posterior      = valve.N_posterior;
+           
+    % centered around zero 
+    min_anterior = -leaflet.total_angle_anterior/2; 
+    max_anterior =  leaflet.total_angle_anterior/2; 
 
+    % mesh anterior inclusive of ends 
+    mesh_anterior   = linspace(min_anterior, max_anterior, N_anterior); 
+
+    % mesh posterior includes two anterior points
+    min_anterior_wrapped = min_anterior + 2*pi; 
+    mesh_posterior  = linspace(max_anterior, min_anterior_wrapped, N_posterior + 2);
+    mesh_posterior  = mesh_posterior(2:(end-1)); 
+
+    mesh = [mesh_anterior mesh_posterior];
+    
+    % reset bc values at ring 
+    for j=1:j_max
+        leaflet_with_reference.X(:,j,k_max) = interpolate_valve_ring_points(valve, mesh(j), valve.skeleton.valve_ring_pts_early_systole); 
+    end 
+            
+    % reset papillary tip locations 
+    for tree_idx = 1:leaflet_with_reference.num_trees
+        % leaflet = add_chordae(leaflet, tree_idx); 
+        leaflet_with_reference.chordae(tree_idx).root = valve.skeleton.papillary_early_systole(:,tree_idx); 
+    end     
+end 
