@@ -169,7 +169,7 @@ valve.diastolic_increment = [0.0; 0.0; 0.0];
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
 % valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
-tension_coeffs.pressure_tension_ratio = 0.036; 
+tension_coeffs.pressure_tension_ratio = 0.041; 
 
 tension_coeffs.dec_tension_coeff_base = 7; 
 
@@ -186,12 +186,12 @@ tension_coeffs.beta_edge_connector  = 0.01;  % circumferential free edge connect
 
 % decreasing tension coefficients 
 tension_coeffs.c_circ_dec_anterior       = 5.0;  % circumferential 
-tension_coeffs.c_rad_dec_anterior        = 1.7;  % radial
+tension_coeffs.c_rad_dec_anterior        = 1.5;  % radial
 tension_coeffs.c_circ_dec_posterior      = 3.0;  % circumferential 
-tension_coeffs.c_rad_dec_posterior       = 0.4;  % radial
+tension_coeffs.c_rad_dec_posterior       = 0.3;  % radial
 tension_coeffs.c_circ_dec_hoops          = 2.0;  % circumferential hoops
 tension_coeffs.c_rad_dec_hoops_anterior  = 0.5;  % radial hoops, anterior part 
-tension_coeffs.c_rad_dec_hoops_posterior = 0.5;  % radial hoops, posterior part 
+tension_coeffs.c_rad_dec_hoops_posterior = 0.3;  % radial hoops, posterior part 
 tension_coeffs.c_dec_tension_chordae     = 1.0;  % chordae
 
 tension_coeffs.c_circ_dec_edge_connector  = 1.0;  % circumferential hoops
