@@ -286,6 +286,10 @@ function [] = output_to_ibamr_format(valve)
             [params valve.leaflets(i)] = assign_indices_vertex_target(params, valve.leaflets(i), k_target_net, k_target_papillary, eta_net, eta_papillary); 
         end 
         
+        if strcmp(valve.name, 'aortic') 
+            params.layer_indices(copy).indices_global = valve.leaflets(1).indices_global; 
+        end 
+        
         for i=1:length(valve.leaflets)
             params = add_springs(params, valve.leaflets(i), ds, collagen_constitutive); 
         end 
@@ -389,7 +393,7 @@ function [] = output_to_ibamr_format(valve)
             params.vertices_target(3,first_idx:last_idx) = params.vertices_target(3,first_idx:last_idx) + params.z_offset; 
         end 
         
-        if copy > 1 
+        if (copy > 1) && ~strcmp(params.type, 'aortic')  
             params = place_cross_layer_springs(params); 
         end 
         
@@ -397,6 +401,9 @@ function [] = output_to_ibamr_format(valve)
 
     
     if strcmp(params.type, 'aortic') 
+        
+        params = place_cross_layer_springs_aortic(params, valve.leaflets(1)); 
+        
         if isfield(valve, 'place_cylinder') && valve.place_cylinder
         
             if ~isfield(valve, 'z_min_cylinder')
@@ -1097,7 +1104,6 @@ function params = add_leaflet_springs(params, leaflet, ds, collagen_spring)
 end 
 
 
-
 function params = add_chordae_tree_springs(params, leaflet, ds, collagen_spring)
     % 
     % Adds chordae tree to IBAMR format files 
@@ -1200,6 +1206,59 @@ function params = place_cross_layer_springs(params)
         params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx, output_tmp); 
     end 
 
+end 
+
+function params = place_cross_layer_springs_aortic(params, leaflet)
+
+    if params.num_copies <= 1 
+        return
+    end 
+    
+    function_idx = 0; 
+    kappa        = params.kappa_cross_layer; 
+    rest_len     = params.rest_len_cross_layer;
+    % don't include these for now 
+    output_tmp = false; 
+        
+    debug = true; 
+    lenient_tol = true; 
+    if lenient_tol
+        tol = 1e-3; 
+    else
+        tol = eps; 
+    end
+    err_count = 0; 
+    
+    j_max = leaflet.j_max; 
+    k_max = leaflet.k_max; 
+    
+    for copy = 1:(params.num_copies-1)
+        for j=1:j_max
+            for k=1:k_max
+                idx          = params.layer_indices(copy  ).indices_global(j,k); 
+                nbr_idx      = params.layer_indices(copy+1).indices_global(j,k);  
+
+                if debug
+                   coords = params.vertices(:,idx+1); 
+                   coords_nbr = params.vertices(:,nbr_idx+1);
+
+                   if abs(norm(coords - coords_nbr) - rest_len) > tol
+                       if err_count < 5
+                           fprintf('nonrest len spring, rest_len = %f, current_len = %f\n', rest_len, norm(coords - coords_nbr)); 
+                           fprintf('    idx = %d, coords = %f %f %f\n', idx, coords(1), coords(2), coords(3)); 
+                           fprintf('nbr_idx = %d, coords = %f %f %f\n',nbr_idx, coords_nbr(1), coords_nbr(2), coords_nbr(3)); 
+                           fprintf('\n'); 
+                           err_count = err_count + 1; 
+                       end 
+                   end 
+
+                end 
+            end
+
+            params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx, output_tmp); 
+        end 
+    end 
+    
 end 
 
 
