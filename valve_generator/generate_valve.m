@@ -52,8 +52,8 @@ for N = N_range
     optimization = false; 
     decreasing_tension = true; 
 
-    hocm_d_valve = true; 
-    normal_1_valve = false;
+    hocm_d_valve = false; 
+    normal_1_valve = true;
     box_tester_valve = false; 
 
     if radial

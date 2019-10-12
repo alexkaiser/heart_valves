@@ -169,7 +169,7 @@ valve.diastolic_increment = [0.0; 0.0; 0.0];
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
 % valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
-tension_coeffs.pressure_tension_ratio = 0.094; 
+tension_coeffs.pressure_tension_ratio = 0.055; 
 
 tension_coeffs.dec_tension_coeff_base = 4.6; 
 
