@@ -466,7 +466,7 @@ papillary          = [papillary_anterior, papillary_posterior_and_comm];
 % copy these structures to the initial 
 valve.skeleton.valve_ring_pts_early_systole = leaflet_diastole_skeleton.X(:,:,leaflet.k_max); 
 valve.skeleton.papillary_early_systole = papillary; 
-valve.skeleton.ring_offset_angle = valve_copy_diastole_skeleton.skeleton.ring_offset_angle; 
+valve.skeleton.ring_offset_angle = pi; 
 
 valve_plot(valve); 
 pause(.1); 
