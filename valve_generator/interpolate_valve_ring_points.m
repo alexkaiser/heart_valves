@@ -39,8 +39,8 @@ if ~isfield(skeleton, 'valve_ring_pts')
 end
 
 if ~isfield(skeleton, 'ring_center')
-    warning('ring_center not found, using origin');
-    ring_center = zeros(3,1); 
+    warning('ring_center not found, computing center');
+    ring_center = mean(skeleton.valve_ring_pts,2); 
 else
     ring_center = skeleton.ring_center; 
 end 
