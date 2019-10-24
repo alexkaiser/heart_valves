@@ -426,6 +426,8 @@ papillary_right = papillary_right - center;
 theta = atan2(normal(2), normal(1)); 
 R = rotation_matrix_z(-theta); 
 
+R_cumulative = R; 
+
 normal          = R*normal; 
 papillary_left  = R*papillary_left; 
 papillary_right = R*papillary_right; 
@@ -437,6 +439,8 @@ end
 % get angle to place on positive z axis 
 phi = atan2(normal(3), normal(1)); 
 R = rotation_matrix_y(pi/2 - phi); 
+
+R_cumulative = R * R_cumulative; 
 
 normal          = R*normal; 
 papillary_left  = R*papillary_left; 
@@ -456,11 +460,11 @@ end
 midpoint = 0.5 * (papillary_left(1:2) + papillary_right(1:2)); 
 theta = atan2(midpoint(2), midpoint(1)); 
 
-skeleton.ring_offset_angle = -(-theta + pi); 
-
 R = rotation_matrix_z(-theta + pi); 
 papillary_left  = R*papillary_left; 
 papillary_right = R*papillary_right; 
+
+R_cumulative = R * R_cumulative; 
 
 if output 
 
@@ -501,5 +505,6 @@ skeleton.papillary(2).center = papillary_right;
 skeleton.papillary(2).radius = tip_radius;
 skeleton.papillary(2).normal = [0;0;1];
 
-
+% undo all rotations, then 
+skeleton.inverse_transformation_initial_condition = @(x) (R_cumulative' * x)  + center; 
 

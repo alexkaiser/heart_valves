@@ -136,6 +136,10 @@ function [] = output_to_ibamr_format(valve)
         params.targets_for_bcs = false; 
     end 
     
+    if isfield(valve.skeleton, 'inverse_transformation_initial_condition')
+        params.inverse_transformation_initial_condition = valve.skeleton.inverse_transformation_initial_condition; 
+    end 
+    
     % keep one global index through the whole thing 
     % every time a vertex is placed this is incremented 
     % and params.vertics(:,i) contains the coordinates 
@@ -457,6 +461,9 @@ function [] = output_to_ibamr_format(valve)
             R_0 = eye(3);
         end 
         params.vertices = coordinate_transformation_vertices(params.vertices, valve.transformation_vertex_file, R_0);         
+        
+    elseif valve.in_heart && isfield(valve.skeleton, 'inverse_transformation_initial_condition')
+        params.vertices = valve.skeleton.inverse_transformation_initial_condition(params.vertices) 
     end 
     
     % finally, write all vertices 
@@ -715,6 +722,11 @@ end
 
 function params = papillary_string(params, idx, coords)
     % prints a papillary format string to target file 
+    
+    if isfield(params, 'inverse_transformation_initial_condition')
+        coords = params.inverse_transformation_initial_condition(coords); 
+    end 
+    
     fprintf(params.papillary, '%d\t %.14f\t %.14f %.14f\n', idx, coords(1), coords(2), coords(3) + params.z_offset);
     params.total_papillary = params.total_papillary + 1; 
 end 
