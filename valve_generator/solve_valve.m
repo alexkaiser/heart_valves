@@ -141,6 +141,10 @@ if interactive && pass_all
     valve_plot(valve, fig); 
     title('Valve in interactive mode'); 
     
+    fig_dissection_plot = figure; 
+    fig_dissection_plot = dissection_plot_rest_height(valve, fig_dissection_plot); 
+    
+    
     if isfield(valve, 'name') && strcmp(valve.name, 'aortic')        
         fiber_output    = true; 
         fiber_stride    = 4; 
@@ -238,6 +242,12 @@ if interactive && pass_all
                         clf(fig); 
                         valve_plot(valve, fig);
                         view(az,el);
+                        
+                        if ~ishandle(fig_dissection_plot)
+                            fig_dissection_plot = figure; 
+                        end
+                        set(0, 'CurrentFigure', fig_dissection_plot)
+                        fig_dissection_plot = dissection_plot_rest_height(valve, fig_dissection_plot); 
                         
                         % update aortic tension plots 
                         if isfield(valve, 'name') && strcmp(valve.name, 'aortic') 

@@ -53,9 +53,9 @@ for N = N_range
     decreasing_tension = true; 
 
     hocm_d_valve = false; 
-    normal_1_valve = false;
+    normal_1_valve = true;
     box_tester_valve = false; 
-    mcqueen_valve_1 = true; 
+    mcqueen_valve_1 = false; 
 
     if radial
 
