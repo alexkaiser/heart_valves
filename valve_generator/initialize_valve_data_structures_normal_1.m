@@ -186,7 +186,7 @@ tension_coeffs.beta_edge_connector  = 0.01;  % circumferential free edge connect
 
 % decreasing tension coefficients 
 tension_coeffs.c_circ_dec_anterior       = 2.5;  % circumferential 
-tension_coeffs.c_rad_dec_anterior        = 1.5;  % radial
+tension_coeffs.c_rad_dec_anterior        = 2.0;  % radial
 tension_coeffs.c_circ_dec_posterior      = 1.0;  % circumferential 
 tension_coeffs.c_rad_dec_posterior       = 1.25;  % radial
 tension_coeffs.c_circ_dec_hoops          = 2.0;  % circumferential hoops
