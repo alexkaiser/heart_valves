@@ -188,7 +188,7 @@ tension_coeffs.beta_edge_connector  = 0.01;  % circumferential free edge connect
 tension_coeffs.c_circ_dec_anterior       = 5.0;  % circumferential 
 tension_coeffs.c_rad_dec_anterior        = 1.5;  % radial
 tension_coeffs.c_circ_dec_posterior      = 3.0;  % circumferential 
-tension_coeffs.c_rad_dec_posterior       = 0.3;  % radial
+tension_coeffs.c_rad_dec_posterior       = 0.47;  % radial
 tension_coeffs.c_circ_dec_hoops          = 2.0;  % circumferential hoops
 tension_coeffs.c_rad_dec_hoops_anterior  = 0.5;  % radial hoops, anterior part 
 tension_coeffs.c_rad_dec_hoops_posterior = 0.3;  % radial hoops, posterior part 
@@ -271,10 +271,10 @@ tension_coeffs.c_dec_chordae_leaf = (1/N)  * [1.0; 1.0; ...       % anterior
 
 % root constants do not scale, because the root 
 % should maintain a consistent length when mesh is changed 
-tension_coeffs.c_dec_chordae_root = (1/256) * [1.0; 1.0; ...       % anterior  
-                                               1.0; 1.0; ...       % comm
-                                               1.0; 1.0; ...       % posterior
-                                               1.0; 1.0];          % comm 
+tension_coeffs.c_dec_chordae_root = [0.05;  0.05; ...       % anterior  
+                                     1/256; 1/256; ...       % comm
+                                     1/256; 1/256; ...       % posterior
+                                     1/256; 1/256];          % comm 
 
 n_leaves = N * frac_of_n_orig; 
 
