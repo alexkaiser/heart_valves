@@ -244,6 +244,19 @@ if colorbar_figure
     figure(fig); 
 end 
 
+colorbar_on = true; 
+if colorbar_on 
+    colormap(make_colormap(n_colors, extended)); 
+    cbar = colorbar('Ticks', tick_array, 'TickLabels', tick_labels);     
+    cbar.Label.String = {'Tension','(\cdot 10^3 dynes)'};    
+%     fontsize = 12; 
+%     ax = gca; 
+%     ax.FontSize = fontsize;
+%     cbar.Label.FontSize = fontsize; 
+%     cbar.Label.Rotation = 0;
+%     cbar.Label.Position = [0.4 1.2];
+end 
+
 
 % color leaflet by total of tension 
 % required to be m,n,3 (in annoying contrast to my normal convention)
