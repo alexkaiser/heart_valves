@@ -128,7 +128,7 @@ valve.collagen_constitutive_rad  = false;
 
 % Constant strain of pressurized configuration 
 valve.strain_circ = .12; 
-valve.strain_rad  = .04; 
+valve.strain_rad  = .08; 
 
 % physical units create a scalar multiple of the old 
 % this multiple is large number, so we want to scale the old tolerance accordingly 
@@ -182,7 +182,7 @@ tension_coeffs.beta  = 0.037;   % radial
 
 % decreasing tension coefficients 
 tension_coeffs.c_circ_dec       = 4.0;  % circumferential 
-tension_coeffs.c_rad_dec        = 0.496;  % radial
+tension_coeffs.c_rad_dec        = 0.501;  % radial
 
 % scaling for target points 
 % note that this does not include copies 
