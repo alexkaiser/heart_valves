@@ -1,4 +1,4 @@
-function [fig] = total_tension_surf_plot(leaflet, anterior, fiber_output, fiber_stride, stride_offset_j, circ, rad, fig)
+function [fig] = total_tension_surf_plot(leaflet, anterior, fiber_output, fiber_stride, stride_offset_j, circ, rad, fig, both_leaflets)
 % 
 % Plots leaflet with fibers 
 % 
@@ -101,15 +101,6 @@ j_range_right_comm = leaflet.j_range_right_comm;
 j_range_posterior  = leaflet.j_range_posterior; 
 j_range_left_comm  = leaflet.j_range_left_comm; 
 
-% two anterior trees for now, gross hack 
-n_trees_anterior = 2; 
-if anterior 
-    j_range    = j_range_anterior; 
-    tree_range = 1:n_trees_anterior; 
-else 
-    j_range = [j_range_right_comm, j_range_posterior, j_range_left_comm]; 
-    tree_range = (n_trees_anterior+1):num_trees; 
-end 
 
 
 if isfield(leaflet, 'periodic_j')
@@ -142,6 +133,10 @@ if ~exist('rad', 'var')
     rad = true;  
 end 
 
+if ~exist('both_leaflets','var')
+    both_leaflets = false; 
+end 
+
 if exist('fiber_output', 'var') && fiber_output    
     if ~exist('fiber_stride', 'var')
         fprintf('Using default fiber stride of 1')
@@ -156,6 +151,22 @@ end
 
 if (~circ) && (~rad)
     error('Have to plot at least one fiber family for this function to do anything')
+end 
+
+
+if both_leaflets
+    j_range = 1:j_max; 
+    tree_range = 1:num_trees; 
+else 
+    % two anterior trees for now, gross hack 
+    n_trees_anterior = 2; 
+    if anterior 
+        j_range    = j_range_anterior; 
+        tree_range = 1:n_trees_anterior; 
+    else 
+        j_range = [j_range_right_comm, j_range_posterior, j_range_left_comm]; 
+        tree_range = (n_trees_anterior+1):num_trees; 
+    end 
 end 
 
 % x_tmp = X_current(1,:,:)
@@ -214,7 +225,7 @@ end
 % cbar = colorbar('Ticks', tick_array, 'TickLabels', tick_labels); 
 % cbar.Label.String = 'Tension (K Dyne)'; 
 
-colorbar_figure = true; 
+colorbar_figure = false; 
 if colorbar_figure 
     fig_colorbar = figure; 
     
@@ -244,7 +255,7 @@ if colorbar_figure
     figure(fig); 
 end 
 
-colorbar_on = true; 
+colorbar_on = false; 
 if colorbar_on 
     colormap(make_colormap(n_colors, extended)); 
     cbar = colorbar('Ticks', tick_array, 'TickLabels', tick_labels);     
@@ -270,7 +281,7 @@ num_nbrs_rad  =  zeros(j_max,k_max);
 % Internal leaflet part 
 for j=j_range
     for k=1:k_max
-        if is_internal(j,k) 
+        if is_internal(j,k) || is_bc(j,k)
             
             if fiber_output && ((mod(j,fiber_stride) == 1) || (fiber_stride == 1))
                 output_tmp_k = true; 
@@ -549,7 +560,19 @@ colors_local = colors(j_range,:,:);
 width = 1.0; 
 surf(x_component, y_component, z_component, colors_local, 'edgecolor', 'none');
 
+if both_leaflets
+    % periodic patch 
+    j_range_periodic = [j_max, 1]
     
+    x_component = squeeze(X_copy(1,j_range_periodic,:)); 
+    y_component = squeeze(X_copy(2,j_range_periodic,:)); 
+    z_component = squeeze(X_copy(3,j_range_periodic,:)); 
+    colors_local = colors(j_range_periodic,:,:); 
+    width = 1.0; 
+    surf(x_component, y_component, z_component, colors_local, 'edgecolor', 'none');
+end 
+
+
 
 % chordae internal terms 
 for tree_idx = tree_range
