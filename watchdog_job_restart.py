@@ -156,12 +156,17 @@ if __name__ == '__main__':
     print 'input_name =', input_name
     print 'options = ', options  
     
-    if len(sys.argv) >= 5:
-        restart_dir = sys.argv[4]
-    else:
-        print ''
-        restart_dir = 'restart_IB3d_tree_cycle'
+    # if len(sys.argv) >= 5:
+    #     restart_dir = sys.argv[4]
+    # else:
+    #     print ''
+    restart_dir = 'restart_IB3d_tree_cycle'
         
+    if len(sys.argv) >= 5:
+        session_file_name = sys.argv[4]
+    else:
+        session_file_name = None
+
     # clean up the old done file if needed 
     if os.path.isfile('done.txt'):
         code = subprocess.call('rm done.txt', shell=True)
@@ -359,7 +364,7 @@ if __name__ == '__main__':
     time.sleep(30)
 
     # submit movie script for post processing 
-    if os.path.isfile('done.txt'):
+    if os.path.isfile('done.txt') and (session_file_name is not None):
         
         print 'done.txt found'
     
@@ -381,16 +386,16 @@ if __name__ == '__main__':
                 slurm = '''#!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --time=8:00:00
+#SBATCH --time=16:00:00
 #SBATCH --mem=4GB
 #SBATCH --job-name=movie
 #SBATCH --mail-user=adkaiser@gmail.com
 #SBATCH --mail-type=ALL
 #SBATCH --partition=amarsden,normal
 
-visit -cli -nowin -s ~/scratch/make_normal_1_movie.py
-''' 
-                
+visit -cli -nowin -s ~/scratch/make_movie_generic.py ''' 
+                slurm += session_file_name + "\n"
+
                 movie_script.write(slurm)
                 movie_script.close()
                 

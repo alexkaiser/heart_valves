@@ -26,6 +26,7 @@ BASE_NAME_LV=LV_pt05cm_normal_1
 INPUT_NAME=input_mitral_LV_256_normal_1
 RUN_LINE="mpiexec --bind-to core -report-bindings main_with_lv"
 OPTIONS="-velocity_ksp_type cg -velocity_pc_type none -velocity_ksp_max_it 1 -velocity_ksp_norm_type none > output.txt 2>&1"
+SESSION_NAME="normal_1_two_slice_two_valve.session"
 
 pwd
 
@@ -53,4 +54,4 @@ env | grep -v '{' | grep -v '}' | grep -v '()' | grep -v _= > $env_log
 
 
 # call python script which controls and watches the run 
-python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS"
+python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS" "$SESSION_NAME"
