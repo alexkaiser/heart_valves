@@ -393,7 +393,8 @@ if __name__ == '__main__':
 #SBATCH --mail-type=ALL
 #SBATCH --partition=amarsden,normal
 
-visit -cli -nowin -s ~/scratch/make_movie_generic.py ''' 
+source ~/.bash_profile
+visit -cli -nowin -s ~/scratch/make_movie_generic.py ~/scratch/''' 
                 slurm += session_file_name + "\n"
 
                 movie_script.write(slurm)
