@@ -26,6 +26,7 @@ INPUT_NAME=input_aortic_192
 RUN_LINE="mpiexec --bind-to core -report-bindings main3d"
 OPTIONS="-velocity_ksp_type cg -velocity_pc_type none -velocity_ksp_max_it 1 -velocity_ksp_norm_type none > output.txt 2>&1"
 SESSION_NAME="aortic_192.session"
+VIEW_CLIPPING="-0.2"
 
 pwd
 
@@ -41,6 +42,7 @@ cp fourier_coeffs*.txt                       $RUNDIR
 cp watchdog_job_restart.py                   $RUNDIR
 cp kill_all_mpi.sh                           $RUNDIR
 cp run_aortic_N192.sbatch                    $RUNDIR
+cp run_parallel_movie.py                     $RUNDIR
 
 # go to the run directory before running anything 
 cd $RUNDIR
@@ -50,7 +52,9 @@ env_log=$RUNDIR/env.log
 rm -rf $env_log
 env | grep -v '{' | grep -v '}' | grep -v '()' | grep -v _= > $env_log
 
-
 # call python script which controls and watches the run 
-python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS" "$SESSION_NAME"
+python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS" 
 
+# load stuff for movie making 
+source ~/.bash_profile
+python run_parallel_movie.py $SESSION_NAME $SLURM_NTASKS $VIEW_CLIPPING

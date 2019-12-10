@@ -364,7 +364,8 @@ if __name__ == '__main__':
     time.sleep(30)
 
     # submit movie script for post processing 
-    if os.path.isfile('done.txt') and (session_file_name is not None):
+    # if os.path.isfile('done.txt') and (session_file_name is not None):
+    if False: 
         
         print 'done.txt found'
     
