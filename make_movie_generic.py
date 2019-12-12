@@ -9,8 +9,11 @@ if len(sys.argv) < 2:
 session_name = sys.argv[1]
 
 if len(sys.argv) >= 4:
-    n_procs  = sys.argv[2]
-    proc_num = sys.argv[3]
+    n_procs  = int(sys.argv[2])
+    proc_num = int(sys.argv[3])
+else:
+    n_procs = 1
+    proc_num = 0
 
 if len(sys.argv) >= 5:
     try:
@@ -33,8 +36,8 @@ eulerian_visit_file   = cwd + '/dumps.visit'
 print 'trying to open ', lagrangian_visit_file
 print 'trying to open ', eulerian_visit_file
 
-data = (lagrangian_visit_file, eulerian_visit_file)
-# data = (eulerian_visit_file, lagrangian_visit_file)
+# data = (lagrangian_visit_file, eulerian_visit_file)
+data = (eulerian_visit_file, lagrangian_visit_file)
 
 RestoreSessionWithDifferentSources(session_file, 0, data)
 # RestoreSession(session_file, 0)
@@ -92,33 +95,36 @@ for state in range(TimeSliderGetNStates()):
 
         SaveWindow()
 
-# # call ffmpeg from here so variables are all in place
-# code = subprocess.call('module load ffmpeg', shell=True)
-# if code is None:
-#     print 'ffmpeg module load did not finish'
-#     print 'weird results likely'
 
-# movie_string = 'ffmpeg -framerate 60 -i '
-# movie_string += base_name
-# movie_string += '%4d.jpeg -vf scale=1920:-2 -r 60 -c:v libx264 -preset veryslow -crf 18 '
-# movie_string += base_name + '.mp4'
+# if proc_num == 0:
 
-# code = subprocess.call(movie_string, shell=True)
-# if code is None:
-#     print 'something wrong in movie make, call returned prematurely'
+#     # # call ffmpeg from here so variables are all in place
+#     # code = subprocess.call('module load ffmpeg', shell=True)
+#     # if code is None:
+#     #     print 'ffmpeg module load did not finish'
+#     #     print 'weird results likely'
+
+#     movie_string = 'ffmpeg -framerate 60 -i '
+#     movie_string += base_name
+#     movie_string += '%4d.jpeg -vf scale=1920:-2 -r 60 -c:v libx264 -preset veryslow -crf 18 '
+#     movie_string += base_name + '.mp4'
+
+#     code = subprocess.call(movie_string, shell=True)
+#     if code is None:
+#         print 'something wrong in movie make, call returned prematurely'
 
 
-# # reduce by 10x
-# # 60 input, 60 output is 10x slow motion
-# # 600 input, 60 output is real time 
+#     # # reduce by 10x
+#     # # 60 input, 60 output is 10x slow motion
+#     # # 600 input, 60 output is real time 
 
-# movie_string = 'ffmpeg -framerate 600 -i '
-# movie_string += base_name
-# movie_string += '%4d.jpeg -vf scale=1920:-2 -r 60 -c:v libx264 -preset veryslow -crf 18 '
-# movie_string += base_name + '_real_time.mp4'
+#     # movie_string = 'ffmpeg -framerate 600 -i '
+#     # movie_string += base_name
+#     # movie_string += '%4d.jpeg -vf scale=1920:-2 -r 60 -c:v libx264 -preset veryslow -crf 18 '
+#     # movie_string += base_name + '_real_time.mp4'
 
-# code = subprocess.call(movie_string, shell=True)
-# if code is None:
-#     print 'something wrong in movie make, call returned prematurely'
+#     # code = subprocess.call(movie_string, shell=True)
+#     # if code is None:
+#     #     print 'something wrong in movie make, call returned prematurely'
 
 quit()
