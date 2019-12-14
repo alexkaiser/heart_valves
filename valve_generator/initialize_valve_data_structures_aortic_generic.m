@@ -181,8 +181,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.045;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 3.63;  % circumferential 
-tension_coeffs.c_rad_dec        = 0.672;  % radial
+tension_coeffs.c_circ_dec       = 3.8;  % circumferential 
+tension_coeffs.c_rad_dec        = 0.661;  % radial
 
 % scaling for target points 
 % note that this does not include copies 
