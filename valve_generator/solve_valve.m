@@ -311,6 +311,16 @@ if build_reference
             % mitral default 
             valve_with_reference.leaflets(i) = set_rest_lengths_and_constants(valve.leaflets(i), valve); 
         end 
+        
+        if isfield(valve_with_reference, 'log_annulus_force') && valve_with_reference.log_annulus_force
+            
+            if isfield(valve_with_reference, 'force_log_name') 
+                [annulus_positions, forces_annulus] = compute_annulus_force(valve_with_reference.leaflets(i), valve_with_reference.force_log_name); 
+            else 
+                [annulus_positions, forces_annulus] = compute_annulus_force(valve_with_reference.leaflets(i)); 
+            end 
+
+        end 
 
         if isfield(valve, 'targets_for_bcs_ref_only') && valve.targets_for_bcs_ref_only
             adjustment_length = 1e-5; 

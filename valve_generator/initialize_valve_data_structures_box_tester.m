@@ -145,7 +145,7 @@ name = 'leaflet';
 % commissural tree version 
 % but without explicit commissural leaflets 
 
-valve.p_physical = 100 * MMHG_TO_CGS; 
+valve.p_physical = 120 * MMHG_TO_CGS; 
 
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
@@ -166,6 +166,8 @@ valve.r = valve.skeleton.r;
 
 valve.diastolic_increment = [0.0; 0.0; 0.0]; 
 
+valve.log_annulus_force = true; 
+valve.force_log_name = 'force_data_static.txt';
 
 % Base constants, individual pieces are tuned relative to these values
 
@@ -174,7 +176,7 @@ valve.diastolic_increment = [0.0; 0.0; 0.0];
 % pressure / tension coefficient ratio
 % this tension coefficient is the maximum tension that a fiber can support
 % valve.pressure_tension_ratio = 0.055; % 0.11 * 0.975; 
-tension_coeffs.pressure_tension_ratio = 0.075; 
+tension_coeffs.pressure_tension_ratio = 0.074; 
 
 tension_coeffs.dec_tension_coeff_base = 4.6; 
 
@@ -207,7 +209,7 @@ n_rings_periodic = max(1,N/64);
 
 % places circumferential fibers this many below hoops 
 % if the location is not already covered by leaflet
-n_edge_connectors = 0; max(1,N/64);  
+n_edge_connectors = max(1,N/64);  
 
 % No explicit commissural leaflet here 
 N_anterior = N/2; 
