@@ -415,6 +415,7 @@ valve.eta_multiplier_collagen = 0;
 
 output = true; 
 valve_copy_diastole_skeleton.skeleton = valve_points_diastole_mcqueen_1(tip_radius, output); 
+valve_copy_diastole_skeleton.r = valve_copy_diastole_skeleton.skeleton.r; 
 valve_copy_diastole_skeleton.dip_anterior_systole = false; 
 
 papillary_anterior = zeros(3,n_trees_anterior); 

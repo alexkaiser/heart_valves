@@ -54,8 +54,8 @@ for N = N_range
 
     hocm_d_valve = false; 
     normal_1_valve = false;
-    box_tester_valve = true; 
-    mcqueen_valve_1 = false; 
+    box_tester_valve = false; 
+    mcqueen_valve_1 = true; 
 
     if radial
 
