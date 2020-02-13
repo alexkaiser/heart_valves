@@ -170,7 +170,7 @@ valve.n_layers_cylinder = 3;
 if valve.dirichlet_free_edge
     tension_coeffs.pressure_tension_ratio = 0.005; % 0.011; 
 else 
-    tension_coeffs.pressure_tension_ratio = 0.0048; 
+    tension_coeffs.pressure_tension_ratio = 0.00477; 
 end 
 
 tension_coeffs.dec_tension_coeff_base = 20.0; 
