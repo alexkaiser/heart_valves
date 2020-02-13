@@ -147,6 +147,9 @@ name = 'leaflet';
 
 valve.p_physical = 120 * MMHG_TO_CGS; 
 
+% if nonzero final pressure is desired 
+% valve.p_final = 10 * MMHG_TO_CGS; 
+
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
 

@@ -311,15 +311,15 @@ if build_reference
             % mitral default 
             valve_with_reference.leaflets(i) = set_rest_lengths_and_constants(valve.leaflets(i), valve); 
         end 
-        
+
+        % leave here to compute annulus force at systolic pressure, valve.p_physical 
+        % comment to log diastolic or rest pressure 
         if isfield(valve_with_reference, 'log_annulus_force') && valve_with_reference.log_annulus_force
-            
             if isfield(valve_with_reference, 'force_log_name') 
                 [annulus_positions, forces_annulus] = compute_annulus_force(valve_with_reference.leaflets(i), valve_with_reference.force_log_name); 
             else 
                 [annulus_positions, forces_annulus] = compute_annulus_force(valve_with_reference.leaflets(i)); 
             end 
-
         end 
 
         if isfield(valve, 'targets_for_bcs_ref_only') && valve.targets_for_bcs_ref_only
@@ -361,6 +361,16 @@ if build_reference
             end 
         end 
 
+        % uncomment to compute annulus force at diastolic pressure, valve.p_final
+%         if isfield(valve_with_reference, 'log_annulus_force') && valve_with_reference.log_annulus_force
+%             if isfield(valve_with_reference, 'force_log_name') 
+%                 [annulus_positions, forces_annulus] = compute_annulus_force(valve_with_reference.leaflets(i), valve_with_reference.force_log_name); 
+%             else 
+%                 [annulus_positions, forces_annulus] = compute_annulus_force(valve_with_reference.leaflets(i)); 
+%             end 
+%         end 
+        
+        
         if pass
             fprintf('Global solve passed, err = %e\n\n', err); 
         else 
