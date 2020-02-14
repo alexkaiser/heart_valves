@@ -781,7 +781,7 @@ function X_extruded = normal_extrude_aortic(params, leaflet)
                 normal = cross(X(:,j_plus__1,k) - X(:,j_minus_1,k), X(:,j,k_plus__1) - X(:,j,k_minus_1));                     
                 normal = normal / norm(normal); 
     
-                X_extruded(:,j,k) = X(:,j,k) + normal * extrude_length; 
+                X_extruded(:,j,k) = X(:,j,k) - normal * extrude_length; 
                 
             end 
         end 
