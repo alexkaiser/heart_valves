@@ -52,7 +52,31 @@ else
     collagen_constitutive_tmp = false; 
 end 
 
-if collagen_constitutive_tmp
+if strcmp(collagen_constitutive_tmp, 'aortic_circ')
+    
+    b = 57.456509400487398; 
+    
+    if strain >= 0
+        % exponential through origin following May-Newman 2009 
+        k = tension / (exp(b*strain) - 1.0); 
+    else 
+        error('Trying to set rest length with negative strain')
+    end 
+    
+elseif strcmp(collagen_constitutive_tmp, 'aortic_rad')
+
+    b = 22.397200094241359; 
+        
+    if strain >= 0
+        % exponential through origin following May-Newman 2009 
+        k = tension / (exp(b*strain) - 1.0); 
+    else 
+        error('Trying to set rest length with negative strain')
+    end 
+
+elseif collagen_constitutive_tmp
+    % mitral default 
+    
     collagen_curve       = leaflet.collagen_curve; 
     a                    = collagen_curve.a; 
     b                    = collagen_curve.b; 

@@ -41,7 +41,37 @@ else
     collagen_constitutive_tmp = false; 
 end 
 
-if collagen_constitutive_tmp
+if strcmp(collagen_constitutive_tmp, 'aortic_circ')
+    
+    b = 57.456509400487398; 
+    
+    E = norm(X - X_nbr)/R - 1.0; 
+    
+    if E >= 0
+        % exponential through origin following May-Newman 2009 
+        T = k_spr * (exp(b*E) - 1.0); 
+    else 
+        % linear with slope at origin under compressive strains 
+        T = k_spr * b * E; 
+    end 
+    
+elseif strcmp(collagen_constitutive_tmp, 'aortic_rad')
+
+    b = 22.397200094241359; 
+    
+    E = norm(X - X_nbr)/R - 1.0; 
+    
+    if E >= 0
+        % exponential through origin following May-Newman 2009 
+        T = k_spr * (exp(b*E) - 1.0); 
+    else 
+        % linear with slope at origin under compressive strains 
+        T = k_spr * b * E; 
+    end 
+    
+    
+elseif collagen_constitutive_tmp
+    % default mitral collagen 
     
     collagen_curve       = leaflet.collagen_curve; 
     a                    = collagen_curve.a; 
