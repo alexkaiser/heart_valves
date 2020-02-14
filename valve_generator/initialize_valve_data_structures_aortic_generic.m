@@ -119,7 +119,7 @@ valve.output.stride_mesh    = N/32;
 
 valve.dirichlet_free_edge = false; 
 
-valve.dirichlet_free_edge_with_ref_only = true; 
+valve.dirichlet_free_edge_with_ref_only = false; 
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
