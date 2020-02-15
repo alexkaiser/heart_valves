@@ -592,7 +592,12 @@ function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, 
         error('By convention, only place springs with the second index larger to prevent duplicates'); 
     end 
     
-    if collagen_spring
+    if strcmp(collagen_spring, 'aortic_rad')
+        function_idx = 3;
+    elseif strcmp(collagen_spring, 'aortic_circ')
+        function_idx = 2;
+    elseif collagen_spring
+        % default mitral 
         function_idx = 1;
     else 
         function_idx = 0;

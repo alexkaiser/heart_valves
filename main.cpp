@@ -133,6 +133,12 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
 inline double spring_function_collagen(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
 inline double deriv_spring_collagen(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
 
+inline double spring_function_aortic_circ(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
+inline double deriv_spring_aortic_circ(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
+inline double spring_function_aortic_rad(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
+inline double deriv_spring_aortic_rad(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
+
+
 #define DEBUG_OUTPUT 0 
 #define ENABLE_INSTRUMENTS
 #define FOURIER_SERIES_BODY_FORCE
@@ -315,8 +321,10 @@ int main(int argc, char* argv[])
         Pointer<IBStandardForceGen> ib_force_fcn = new IBStandardForceGen();
         
         // adding custom function for collagen springs
-        ib_force_fcn->registerSpringForceFunction(1, &spring_function_collagen, &deriv_spring_collagen);
-        
+        ib_force_fcn->registerSpringForceFunction(1, &spring_function_collagen,    &deriv_spring_collagen);
+        ib_force_fcn->registerSpringForceFunction(2, &spring_function_aortic_circ, &deriv_spring_aortic_circ);
+        ib_force_fcn->registerSpringForceFunction(3, &spring_function_aortic_rad,  &deriv_spring_aortic_rad);
+
         ib_method_ops->registerIBLagrangianForceFunction(ib_force_fcn);
         
         
@@ -997,9 +1005,6 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
 
 
 
-
-
-
 inline double spring_function_collagen(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
     /* 
     Compute force for collagen springs
@@ -1064,6 +1069,7 @@ inline double spring_function_collagen(double R, const double* params, int lag_m
     return 0.0;
 } // spring_function_collagen
 
+
 inline double deriv_spring_collagen(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
     // not implemented
 
@@ -1072,6 +1078,66 @@ inline double deriv_spring_collagen(double R, const double* params, int lag_mast
 } // deriv_spring_collagen
 
 
+
+inline double spring_function_aortic_circ(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
+    // function idx 2
+    static const double b = 57.456509400487398; // Exponential rate
+
+    const double kappa    = params[0];
+    const double rest_len = params[1];
+    
+    // Strain, dimension 1
+    const double E = R/rest_len - 1.0;
+    
+    // Compute the force
+    if (E > 0.0){
+        return kappa * (exp(b*E) - 1);
+    }
+    else{
+        // linear for compressive strains with continuous slope at origin 
+        return kappa * b *  E;
+    }
+    return 0.0;
+} // spring_function_aortic_circ
+
+
+inline double deriv_spring_aortic_circ(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
+    // not implemented
+
+    SAMRAI_MPI::abort();
+    return 0.0;
+} // deriv_spring_aortic_circ
+
+
+
+inline double spring_function_aortic_rad(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
+    // function idx 3
+    static const double b = 22.397200094241359; // Exponential rate
+
+    const double kappa    = params[0];
+    const double rest_len = params[1];
+    
+    // Strain, dimension 1
+    const double E = R/rest_len - 1.0;
+    
+    // Compute the force
+    if (E > 0.0){
+        return kappa * (exp(b*E) - 1);
+    }
+    else{
+        // linear for compressive strains with continuous slope at origin 
+        return kappa * b *  E;
+    }
+    return 0.0;
+} // spring_function_aortic_rad
+
+
+inline double deriv_spring_aortic_rad(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
+    // not implemented
+
+    SAMRAI_MPI::abort();
+    return 0.0;
+} // deriv_spring_aortic_rad
 
 
 
