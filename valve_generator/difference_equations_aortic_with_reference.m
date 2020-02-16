@@ -83,7 +83,16 @@ function F = difference_equations_aortic_with_reference(leaflet)
         target_length_check = false; 
     end 
 
-    
+    if isfield(leaflet, 'tension_debug') && leaflet.tension_debug
+        tension_debug = true; 
+    else 
+        tension_debug = false; 
+    end 
+    tension_debug = true; 
+    % prints tensions greater than threshold (in dynes)
+    % set to zero for all nonzero tensions 
+    % set to -1 for all tensions 
+    tension_tol = 1; 
     
     F_leaflet = zeros(size(X_current)); 
 
@@ -118,10 +127,17 @@ function F = difference_equations_aortic_with_reference(leaflet)
                         tension = tension_with_reference(X, X_nbr, R_u(j_spr,k_spr), k_u(j_spr,k_spr), leaflet, collagen_constitutive_circ); 
                         F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
                     
+                        if tension_debug
+                            strain_temp = norm(X - X_nbr)/R_u(j_spr,k_spr) - 1; 
+                            if tension > tension_tol
+                                fprintf('tension = %e, strain = %f, (j,k) = (%d, %d), circ\n', tension, strain_temp, j, k); 
+                            end 
+                        end 
+                        
                     elseif valid && target_spring 
                         error('No j direction targets allowed'); 
                     end 
-                    
+                                        
                 end 
 
                 % v type fibers 
@@ -136,7 +152,14 @@ function F = difference_equations_aortic_with_reference(leaflet)
                         
                         tension = tension_with_reference(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet, collagen_constitutive_rad); 
                         F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
-                    
+                                                
+                        if tension_debug
+                            strain_temp = norm(X - X_nbr)/R_v(j_spr,k_spr) - 1; 
+                            if tension > tension_tol
+                                fprintf('tension = %e, strain = %f, (j,k) = (%d, %d), radial\n', tension, strain_temp, j, k); 
+                            end 
+                        end 
+                                            
                     elseif valid && target_spring 
                         
                         if ~targets_for_bcs

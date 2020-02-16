@@ -6,12 +6,13 @@ N_each = leaflet.N_each;
 
 R_v    = leaflet.R_v; 
 
-full_leaflet_interp = false; 
+full_leaflet_interp = true; 
 if full_leaflet_interp
     k_range = 2:k_max; 
 else
     k_range = k_max; 
 end 
+
 X = leaflet.X; 
 
 debug = true; 
