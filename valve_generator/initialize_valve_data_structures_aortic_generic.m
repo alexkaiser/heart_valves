@@ -124,7 +124,7 @@ valve.dirichlet_free_edge_with_ref_only = true;
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
 valve.collagen_constitutive_circ = 'aortic_circ'; 
-valve.collagen_constitutive_rad  = 'aortic_rad'; 
+valve.collagen_constitutive_rad  = false; 'aortic_rad'; 
 
 % Constant strain of pressurized configuration 
 valve.strain_circ = .15; 

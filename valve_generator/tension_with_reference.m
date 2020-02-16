@@ -52,7 +52,8 @@ if strcmp(collagen_constitutive_tmp, 'aortic_circ')
         T = k_spr * (exp(b*E) - 1.0); 
     else 
         % linear with slope at origin under compressive strains 
-        T = k_spr * b * E; 
+        % fprintf('hit compressive strain\n'); 
+        T = 0; %k_spr * b * E; 
     end 
     
 elseif strcmp(collagen_constitutive_tmp, 'aortic_rad')
@@ -66,7 +67,7 @@ elseif strcmp(collagen_constitutive_tmp, 'aortic_rad')
         T = k_spr * (exp(b*E) - 1.0); 
     else 
         % linear with slope at origin under compressive strains 
-        T = k_spr * b * E; 
+        T = 0; %k_spr * b * E; 
     end 
     
     

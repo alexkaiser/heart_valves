@@ -51,7 +51,7 @@ if strcmp(collagen_constitutive_tmp, 'aortic_circ')
         coeff = k_spr * b * exp(b*E); 
     else 
         % linear with slope at origin under compressive strains 
-        coeff = k_spr * b; 
+        coeff = 0; %k_spr * b; 
     end 
     
     T_grad = -(coeff/R) * (X_nbr - X) / norm(X_nbr - X);
@@ -68,7 +68,7 @@ elseif strcmp(collagen_constitutive_tmp, 'aortic_rad')
         coeff = k_spr * b * exp(b*E); 
     else 
         % linear with slope at origin under compressive strains 
-        coeff = k_spr * b; 
+        coeff = 0; % k_spr * b; 
     end 
     
     T_grad = -(coeff/R) * (X_nbr - X) / norm(X_nbr - X);
