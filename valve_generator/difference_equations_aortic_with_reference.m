@@ -88,11 +88,11 @@ function F = difference_equations_aortic_with_reference(leaflet)
     else 
         tension_debug = false; 
     end 
-    % tension_debug = true; 
+    tension_debug = true; 
     % prints tensions greater than threshold (in dynes)
     % set to zero for all nonzero tensions 
     % set to -1 for all tensions 
-    tension_tol = 1e1; 
+    tension_tol = 1e4; 
     
     F_leaflet = zeros(size(X_current)); 
 

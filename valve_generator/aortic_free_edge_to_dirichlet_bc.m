@@ -13,6 +13,8 @@ else
     k_range = k_max; 
 end 
 
+extra_stretch_radial = 1.54; 
+
 X = leaflet.X; 
 
 debug = true; 
@@ -52,7 +54,7 @@ for comm_idx = 1:3
             total_rest_length = sum(R_v(j + min_idx, 1:(k-1))); 
 
             % based on the rest length 
-            X(:,j + min_idx ,k) = total_rest_length * tangent + ring_point; 
+            X(:,j + min_idx ,k) = total_rest_length * tangent * extra_stretch_radial + ring_point; 
 
             % based on putting the free edge as a triangle between commn points 
             % generally bad 
