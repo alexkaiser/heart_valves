@@ -1,4 +1,4 @@
-function leaflet = aortic_free_edge_to_dirichlet_bc(leaflet)
+function leaflet = aortic_free_edge_to_dirichlet_bc(leaflet, extra_stretch_radial)
 
 j_max  = leaflet.j_max; 
 k_max  = leaflet.k_max; 
@@ -13,7 +13,9 @@ else
     k_range = k_max; 
 end 
 
-extra_stretch_radial = 1.54; 
+if ~exist('extra_stretch_radial', 'var')
+    extra_stretch_radial = 1.0; 
+end
 
 X = leaflet.X; 
 
