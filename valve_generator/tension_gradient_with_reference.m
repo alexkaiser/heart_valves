@@ -47,9 +47,10 @@ if strcmp(collagen_constitutive_tmp, 'aortic_circ')
         
     E = norm(X - X_nbr)/R - 1.0; 
     
-    if E >= E_star
-        coeff = k_spr * b * exp(b*E_star); 
-    elseif E >= 0
+%     if E >= E_star
+%         coeff = k_spr * b * exp(b*E_star); 
+%     else
+    if E >= 0
         % exponential through origin following May-Newman 2009 
         coeff = k_spr * b * exp(b*E); 
     else 
@@ -67,9 +68,10 @@ elseif strcmp(collagen_constitutive_tmp, 'aortic_rad')
     
     E = norm(X - X_nbr)/R - 1.0; 
     
-    if E >= E_star
-        coeff = k_spr * b * exp(b*E_star); 
-    elseif E >= 0
+%     if E >= E_star
+%         coeff = k_spr * b * exp(b*E_star); 
+%     else    
+    if E >= 0
         % exponential through origin following May-Newman 2009 
         coeff = k_spr * b * exp(b*E); 
     else 
