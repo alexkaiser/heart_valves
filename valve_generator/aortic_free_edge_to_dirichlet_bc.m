@@ -52,9 +52,11 @@ for comm_idx = 1:3
             total_rest_length = sum(R_v(j + min_idx, 1:(k-1))); 
 
             % based on the rest length 
-            % X(:,j + min_idx ,k) = total_rest_length * tangent + ring_point; 
+            X(:,j + min_idx ,k) = total_rest_length * tangent + ring_point; 
 
-            X(:,j + min_idx ,k) = (k/k_max) * (comm_interp_point - ring_point) + ring_point; 
+            % based on putting the free edge as a triangle between commn points 
+            % generally bad 
+            % X(:,j + min_idx ,k) = (k/k_max) * (comm_interp_point - ring_point) + ring_point; 
             
             if is_bc(j + min_idx ,k)
                 error('trying to set a bc as new position'); 
