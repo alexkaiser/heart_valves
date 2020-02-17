@@ -73,3 +73,47 @@ plot(myfit_circ, strain_circ, stress_circ_Pa)
 
 fprintf('Circ exponential rate = %f\n', myfit_circ.b)
 
+% piecewise affine version 
+% write to guarante C1 
+
+
+myfittype = fittype('a * ( (E < E_star)*(exp(b*E) - 1.0) + (E >= E_star)*( (exp(b*E_star)-1.0) + b*exp(b*E_star)*(E - E_star) ) )',...
+    'dependent',{'sigma'},'independent',{'E'},...
+    'coefficients',{'a','b','E_star'})
+
+E_max_radial = 0.6; 
+options = fitoptions('Method','NonlinearLeastSquares',...
+               'Lower',[0,0,0],...
+               'Upper',[Inf, Inf, E_max_radial]);
+
+myfit_rad_affine = fit(strain_radial, stress_radial_Pa, myfittype, options)
+
+figure
+plot(myfit_rad_affine, strain_radial, stress_radial_Pa)
+hold on 
+
+fprintf('Radial exponential rate = %f, E_star = %f\n', myfit_rad_affine.b, myfit_rad_affine.E_star)
+
+
+
+
+myfittype = fittype('a * ( (E < E_star)*(exp(b*E) - 1.0) + (E >= E_star)*( (exp(b*E_star)-1.0) + b*exp(b*E_star)*(E - E_star) ) )',...
+    'dependent',{'sigma'},'independent',{'E'},...
+    'coefficients',{'a','b','E_star'})
+
+E_max_circ = 0.20; 
+options = fitoptions('Method','NonlinearLeastSquares',...
+               'Lower',[0,0,0],...
+               'Upper',[Inf, Inf, E_max_circ]);
+
+myfit_circ_affine = fit(strain_circ, stress_circ_Pa, myfittype, options)
+
+plot(myfit_circ_affine, strain_circ, stress_circ_Pa)
+hold on 
+
+fprintf('circ exponential rate = %f, E_star = %f\n', myfit_rad_affine.b, myfit_rad_affine.E_star)
+
+
+
+
+
