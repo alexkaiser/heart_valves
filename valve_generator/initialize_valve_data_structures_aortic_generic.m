@@ -124,7 +124,7 @@ valve.dirichlet_free_edge_with_ref_only = true;
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
 valve.collagen_constitutive_circ = 'aortic_circ'; 
-valve.collagen_constitutive_rad  = 'aortic_rad'; 
+valve.collagen_constitutive_rad  = false; %'aortic_rad'; 
 
 % Constant strain of pressurized configuration 
 valve.strain_circ = .15; 
@@ -205,10 +205,10 @@ valve.eta_papillary_unscaled = 0.0; valve.target_papillary_unscaled/500;
 % final formula is multiplied by valve.tension_base  
 valve.kappa_cross_layer_multipler = 1e4 / 256^2; 
 
-valve.k_bend_radial = 1e4 * 192/N; 
+valve.k_bend_radial = 1e2 * 192/N; 
 valve.k_bend_radial_free_edge = 1e5 * 192/N; 
 valve.k_bend_radial_free_edge_percentage = .4; 
-valve.k_bend_circ   = 1e4 * 192/N; 
+valve.k_bend_circ   = 0; 
 
 % Approximate Lagrangian mesh spacing at ring 
 % Used for later splitting of springs 
