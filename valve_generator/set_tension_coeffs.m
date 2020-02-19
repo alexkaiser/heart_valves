@@ -51,6 +51,31 @@ if isfield(valve, 'name') && strcmp(valve.name,'aortic')
     c_dec_circumferential     = tension_coeffs.c_circ_dec * dec_tension_coeff_base * ones(j_max, k_max);
     c_dec_radial              = tension_coeffs.c_rad_dec  * dec_tension_coeff_base * ones(j_max, k_max); 
     
+    if isfield(tension_coeffs, 'c_circ_dec_annulus')
+        dk_interp = 1/(k_max-1); 
+        for j=1:j_max
+            for k=1:k_max
+                c_dec_circumferential(j,k) = dec_tension_coeff_base * ((1 - (k-1)*dk_interp) * tension_coeffs.c_circ_dec_annulus + ...
+                                                                      (     (k-1)*dk_interp) * tension_coeffs.c_circ_dec        ); 
+            end 
+        end      
+    end 
+    
+    if isfield(tension_coeffs, 'c_circ_dec_free_edge') && isfield(tension_coeffs, 'c_circ_dec_free_edge_percentage')
+        if tension_coeffs.c_circ_dec_free_edge_percentage >= 1
+            error('percentage cannot be greater or equal to one')
+        end 
+        
+        if tension_coeffs.c_circ_dec_free_edge_percentage > 0
+            k_min = floor((1 - tension_coeffs.c_circ_dec_free_edge_percentage)*k_max);
+            for j=1:j_max
+                for k=k_min:k_max
+                    c_dec_circumferential(j,k) = dec_tension_coeff_base * tension_coeffs.c_circ_dec_free_edge; 
+                end 
+            end      
+        end 
+    end 
+    
     % final scaling on target points 
     valve.tension_base     = tension_base; 
     valve.target_net       = valve.target_net_unscaled       * tension_base; 
