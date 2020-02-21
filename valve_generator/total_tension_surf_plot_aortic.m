@@ -115,6 +115,8 @@ if ~exist('height_plot', 'var')
     height_plot = false; 
 end 
 
+% max value to plot for ratio 
+ratio_cap = 40; 
 
 % quick argument checking 
 if circ && rad
@@ -346,6 +348,11 @@ end
 
 if ratio 
     max_ratio = max(max(ratio_ptwise));
+    
+    if ratio_cap 
+        max_ratio = ratio_cap; 
+    end 
+    
     tick_max = max_ratio; 
     colors = zeros(j_max,k_max,3); 
     for j=1:j_max
