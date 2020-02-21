@@ -303,6 +303,13 @@ if build_reference
         if isfield(valve, 'name') && strcmp(valve.name, 'aortic')
             valve_with_reference.leaflets(i) = set_rest_lengths_and_constants_aortic(valve.leaflets(i), valve); 
             
+            plots = true; 
+            [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean]  = estimate_tangent_modulus_aortic_with_reference(valve_with_reference.leaflets(i), valve.normal_thickness, plots); 
+            leaflet.sigma_circ = sigma_circ; 
+            leaflet.sigma_rad = sigma_rad; 
+            leaflet.sigma_circ_mean = sigma_circ_mean;  
+            leaflet.sigma_rad_mean = sigma_rad_mean; 
+            
             if isfield(valve, 'dirichlet_free_edge_with_ref_only') && valve.dirichlet_free_edge_with_ref_only
                 % multiplicative stretch for setting aortic valve initial condition 
                 % set to prescribed stain + 1 (prescribed stretch) for maintaining the leaflet height as the loaded height 

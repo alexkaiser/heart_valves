@@ -76,6 +76,16 @@ fprintf('Circ exponential rate = %f\n', myfit_circ.b)
 % piecewise affine version 
 % write to guarante C1 
 
+loaded_strain_radial = 0.54; 
+
+tangent_mod_radial = myfit_rad.a * myfit_rad.b * exp(myfit_rad.b * loaded_strain_radial)
+
+loaded_strain_circ = 0.15; 
+tangent_mod_circ = myfit_circ.a * myfit_circ.b * exp(myfit_circ.b * loaded_strain_circ)
+
+loaded_strain_circ = 0.2; 
+tangent_mod_circ_pt2_strain = myfit_circ.a * myfit_circ.b * exp(myfit_circ.b * loaded_strain_circ)
+
 
 myfittype = fittype('a * ( (E < E_star)*(exp(b*E) - 1.0) + (E >= E_star)*( (exp(b*E_star)-1.0) + b*exp(b*E_star)*(E - E_star) ) )',...
     'dependent',{'sigma'},'independent',{'E'},...
