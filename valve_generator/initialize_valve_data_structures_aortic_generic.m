@@ -103,7 +103,7 @@ valve.X_config_is_reference = true;
 % spacing is always half a mesh width 
 valve.num_copies = 3; 
 
-valve.copy_spring_weights = [3/4 1/8 1/8];
+valve.copy_spring_weights = [1/2 1/4 1/4];
 
 valve.normal_thicken = true; 
 % nominal aortic valve thickness
