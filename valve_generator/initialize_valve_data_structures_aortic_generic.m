@@ -103,7 +103,7 @@ valve.X_config_is_reference = true;
 % spacing is always half a mesh width 
 valve.num_copies = 3; 
 
-valve.copy_spring_weights = [1/2 1/4 1/4];
+% valve.copy_spring_weights = [1/2 1/4 1/4];
 
 valve.normal_thicken = true; 
 % nominal aortic valve thickness
@@ -123,6 +123,8 @@ valve.dirichlet_free_edge = false;
 
 valve.dirichlet_free_edge_with_ref_only = true; 
 
+
+
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
 valve.collagen_constitutive_circ = 'aortic_circ'; 
@@ -131,6 +133,8 @@ valve.collagen_constitutive_rad  = 'aortic_rad';
 % Constant strain of pressurized configuration 
 valve.strain_circ = .15; 
 valve.strain_rad  = .54; 
+
+valve.extra_stretch_radial_dirichlet_free_edge = 0.9 * valve.strain_rad + 1.0; 
 
 % physical units create a scalar multiple of the old 
 % this multiple is large number, so we want to scale the old tolerance accordingly 

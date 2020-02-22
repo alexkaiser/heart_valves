@@ -313,7 +313,11 @@ if build_reference
             if isfield(valve, 'dirichlet_free_edge_with_ref_only') && valve.dirichlet_free_edge_with_ref_only
                 % multiplicative stretch for setting aortic valve initial condition 
                 % set to prescribed stain + 1 (prescribed stretch) for maintaining the leaflet height as the loaded height 
-                extra_stretch_radial = valve.strain_rad + 1.0; 
+                if isfield(valve, 'extra_stretch_radial_dirichlet_free_edge')
+                    extra_stretch_radial = valve.extra_stretch_radial_dirichlet_free_edge; 
+                else
+                    extra_stretch_radial = valve.strain_rad + 1.0; 
+                end 
                 valve_with_reference.leaflets(i) = aortic_free_edge_to_dirichlet_bc(valve_with_reference.leaflets(i), extra_stretch_radial); 
             end 
             
