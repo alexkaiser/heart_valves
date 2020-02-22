@@ -193,6 +193,9 @@ function [] = output_to_ibamr_format(valve)
     
     % parameters for scaling of other constants 
     params.num_copies = valve.num_copies; 
+    if isfield(valve, 'copy_spring_weights')
+        params.copy_spring_weights = valve.copy_spring_weights; 
+    end 
     params.eta_multiplier_linear   = valve.eta_multiplier_linear; 
     params.eta_multiplier_collagen = valve.eta_multiplier_collagen; 
     
@@ -551,8 +554,13 @@ function params = spring_string(params, idx, nbr, kappa, rest_len, function_idx,
         error('By convention, only place springs with the second index larger to prevent duplicates'); 
     end 
     
-    fprintf(params.spring, '%d\t %d\t %.14f\t %.14f', idx, nbr, kappa/params.num_copies, rest_len); 
-    
+    if isfield(params, 'copy_spring_weights')
+        weight = params.copy_spring_weights(params.copy); 
+        fprintf(params.spring, '%d\t %d\t %.14f\t %.14f', idx, nbr, kappa * weight, rest_len); 
+    else
+        % default even division 
+        fprintf(params.spring, '%d\t %d\t %.14f\t %.14f', idx, nbr, kappa/params.num_copies, rest_len); 
+    end 
     % index for custom spring functions 
 %     if ~exist('function_idx', 'var') 
 %         function_idx = 0; 
