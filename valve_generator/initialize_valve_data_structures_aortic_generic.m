@@ -134,7 +134,7 @@ valve.collagen_constitutive_rad  = 'aortic_rad';
 valve.strain_circ = .15; 
 valve.strain_rad  = .54; 
 
-valve.extra_stretch_radial_dirichlet_free_edge = 0.9 * valve.strain_rad + 1.0; 
+valve.extra_stretch_radial_dirichlet_free_edge = 0.75 * valve.strain_rad + 1.0; 
 
 % physical units create a scalar multiple of the old 
 % this multiple is large number, so we want to scale the old tolerance accordingly 
