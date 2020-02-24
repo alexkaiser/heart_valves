@@ -102,6 +102,8 @@ for k=1:k_max
     hold on 
 end 
     
+radial_leaflet_height = positions_y(center_leaflet_idx,k_max) - positions_y(center_leaflet_idx,1)
+
 % r = d/2 (clearly)
 % h = 0.71d = 1.42r, height to commissure 
 % c = .17d = .34r, coaptation height
