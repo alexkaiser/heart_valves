@@ -1592,7 +1592,7 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
     theta_leaflet = atan2(X(2,:,1), X(1,:,1));
     theta_leaflet = mod(theta_leaflet, 2*pi); % argument from 0 to 2 pi  
     plot(theta_leaflet, z_min_leaflet); 
-    axes equal 
+    axis equal 
     
     points = zeros(3,N_theta,N_r,N_z);
     
@@ -1645,9 +1645,9 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
                     z_annulus = max(z_min_leaflet(theta_leaflet_idx_prev), max(z_min_leaflet(theta_leaflet_idx), z_min_leaflet(theta_leaflet_idx_next))); 
                 end 
                 
-                if r_idx==1 && z_idx==1
-                    fprintf('theta_idx = %d,\ttheta_leaflet_idx = %d,\t z_annulus = %f\n', theta_idx, theta_leaflet_idx, z_annulus); 
-                end 
+%                 if r_idx==1 && z_idx==1
+%                     fprintf('theta_idx = %d,\ttheta_leaflet_idx = %d,\t z_annulus = %f\n', theta_idx, theta_leaflet_idx, z_annulus); 
+%                 end 
                 
                 x_coord = r_tmp * cos(2*pi*dtheta*(theta_idx-1)); 
                 y_coord = r_tmp * sin(2*pi*dtheta*(theta_idx-1)); 
