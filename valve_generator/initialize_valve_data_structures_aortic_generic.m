@@ -131,7 +131,7 @@ valve.collagen_constitutive_circ = 'aortic_circ';
 valve.collagen_constitutive_rad  = 'aortic_rad'; 
 
 % Constant strain of pressurized configuration 
-valve.strain_circ = .2; 
+valve.strain_circ = .15; 
 valve.strain_rad  = .54; 
 
 valve.extra_stretch_radial_dirichlet_free_edge = 1.0 * valve.strain_rad + 1.0; 
@@ -184,11 +184,11 @@ tension_coeffs.dec_tension_coeff_base = 20.0;
 
 % max tensions in leaflets 
 tension_coeffs.alpha = 1.6;   % circumferential 
-tension_coeffs.beta  = 0.055;   % radial
+tension_coeffs.beta  = 1.6;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 5.4;  % circumferential 
-tension_coeffs.c_rad_dec        = 11.0;  % radial
+tension_coeffs.c_circ_dec       = 4.0;  % circumferential 
+tension_coeffs.c_rad_dec        = 20.0;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.5;        
 
