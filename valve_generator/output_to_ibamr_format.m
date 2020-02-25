@@ -303,12 +303,22 @@ function [] = output_to_ibamr_format(valve)
         
         for i=1:length(valve.leaflets)
             if params.beam_on
-                if isfield(valve, 'k_bend_radial_free_edge') && (valve.k_bend_radial_free_edge > 0) && ... 
-                   isfield(valve, 'k_bend_radial_free_edge_percentage') && (valve.k_bend_radial_free_edge_percentage > 0)
-                    params = add_beams(params, valve.leaflets(i), k_bend_radial, k_bend_circ, valve.k_bend_radial_free_edge, valve.k_bend_radial_free_edge_percentage); 
+                if isfield(valve, 'k_bend_radial_free_edge') && ... 
+                   isfield(valve, 'k_bend_radial_free_edge_percentage') 
+                    k_bend_radial_free_edge = valve.k_bend_radial_free_edge; 
+                    k_bend_radial_free_edge_percentage = valve.k_bend_radial_free_edge_percentage; 
                 else 
-                    params = add_beams(params, valve.leaflets(i), k_bend_radial, k_bend_circ); 
+                    k_bend_radial_free_edge = 0; 
+                    k_bend_radial_free_edge_percentage = 0; 
+                end
+                
+                if isfield(valve, 'k_bend_radial_annulus')
+                    params = add_beams(params, valve.leaflets(i), k_bend_radial, k_bend_circ, k_bend_radial_free_edge, k_bend_radial_free_edge_percentage, valve.k_bend_radial_annulus);
+                else 
+                    params = add_beams(params, valve.leaflets(i), k_bend_radial, k_bend_circ, k_bend_radial_free_edge, k_bend_radial_free_edge_percentage);
                 end 
+                
+                
             end 
         end 
 
@@ -1287,13 +1297,23 @@ function params = place_cross_layer_springs_aortic(params, leaflet)
 end 
 
 
-function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ, k_bend_radial_free_edge, k_bend_radial_free_edge_percentage)
+function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ, k_bend_radial_free_edge, k_bend_radial_free_edge_percentage, k_bend_radial_annulus)
 
     j_max             = leaflet.j_max; 
     k_max             = leaflet.k_max; 
     is_internal       = leaflet.is_internal;
     linear_interp     = false; 
            
+    if ~exist('k_bend_radial_free_edge', 'var')
+        k_bend_radial_free_edge_percentage = 0; 
+    elseif ~exist('k_bend_radial_free_edge_percentage', 'var')
+        k_bend_radial_free_edge_percentage = 0; 
+    end 
+    
+    if exist('k_bend_radial_annulus', 'var')
+        linear_interp = true; 
+    end 
+    
     for k=1:k_max
         for j=1:j_max
             % beams only centered at internal points 
@@ -1347,13 +1367,13 @@ function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ, k_bend_
                             error('j indices shuold not change when placing radial (k) beam');                            
                         end    
                         
-                        if linear_interp                   
-                            k_bend_tmp = (k/k_max)^4 * k_bend_radial;
-                            params = beam_string(params, idx_minus, idx, idx_plus, k_bend_tmp); 
-                        elseif exist('k_bend_radial_free_edge', 'var') && ...
-                               exist('k_bend_radial_free_edge_percentage', 'var') && ... 
-                               ((k/k_max) >= (1 - k_bend_radial_free_edge_percentage))
+                        if (k_bend_radial_free_edge_percentage > 0) && ... 
+                           ((k/k_max) >= (1 - k_bend_radial_free_edge_percentage))
                             params = beam_string(params, idx_minus, idx, idx_plus, k_bend_radial_free_edge); 
+                        elseif linear_interp                   
+                            k_bend_tmp = (1 - k/(k_max*(1-k_bend_radial_free_edge_percentage))) * k_bend_radial_annulus + ...
+                                         (    k/(k_max*(1-k_bend_radial_free_edge_percentage))) * k_bend_radial; 
+                            params = beam_string(params, idx_minus, idx, idx_plus, k_bend_tmp); 
                         else
                             params = beam_string(params, idx_minus, idx, idx_plus, k_bend_radial); 
                         end 
