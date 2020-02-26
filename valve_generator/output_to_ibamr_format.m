@@ -110,7 +110,7 @@ function [] = output_to_ibamr_format(valve)
             k_bend_circ = 0.0; 
         end 
         
-        if (k_bend_radial > 0) || (k_bend_circ > 0)
+        if any(k_bend_radial > 0) || (k_bend_circ > 0)
             params.beam_on = true; 
         else 
             params.beam_on = false;
@@ -312,8 +312,8 @@ function [] = output_to_ibamr_format(valve)
                     k_bend_radial_free_edge_percentage = 0; 
                 end
                 
-                if isfield(valve, 'k_bend_radial_annulus')
-                    params = add_beams(params, valve.leaflets(i), k_bend_radial, k_bend_circ, k_bend_radial_free_edge, k_bend_radial_free_edge_percentage, valve.k_bend_radial_annulus);
+                if isfield(valve, 'k_bend_radial_interp_pts')
+                    params = add_beams(params, valve.leaflets(i), k_bend_radial, k_bend_circ, k_bend_radial_free_edge, k_bend_radial_free_edge_percentage, valve.k_bend_radial_interp_pts);
                 else 
                     params = add_beams(params, valve.leaflets(i), k_bend_radial, k_bend_circ, k_bend_radial_free_edge, k_bend_radial_free_edge_percentage);
                 end 
@@ -1297,21 +1297,36 @@ function params = place_cross_layer_springs_aortic(params, leaflet)
 end 
 
 
-function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ, k_bend_radial_free_edge, k_bend_radial_free_edge_percentage, k_bend_radial_annulus)
+function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ, k_bend_radial_free_edge, k_bend_radial_free_edge_percentage, k_bend_radial_interp_pts)
 
     j_max             = leaflet.j_max; 
     k_max             = leaflet.k_max; 
     is_internal       = leaflet.is_internal;
-    linear_interp     = false; 
-           
-    if ~exist('k_bend_radial_free_edge', 'var')
+    interpolating     = false; 
+    
+    if ~exist('k_bend_radial_free_edge_percentage', 'var')
         k_bend_radial_free_edge_percentage = 0; 
     elseif ~exist('k_bend_radial_free_edge_percentage', 'var')
         k_bend_radial_free_edge_percentage = 0; 
     end 
     
-    if exist('k_bend_radial_annulus', 'var')
-        linear_interp = true; 
+    if exist('k_bend_radial_interp_pts', 'var')
+        if length(k_bend_radial_interp_pts) ~= length(k_bend_radial)
+            error('Must use same number of interp points if interpolating'); 
+        end 
+        
+        if k_bend_radial_free_edge_percentage > 0
+            warning('Some points in interpolant will be overwritten by free edge value'); 
+        end 
+        
+        interpolating = true; 
+        
+    end 
+    
+    debug = false; 
+    if debug 
+        k_vals_debug = zeros(k_max,1); 
+        bend_coeff_debug = zeros(k_max,1); 
     end 
     
     for k=1:k_max
@@ -1370,10 +1385,26 @@ function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ, k_bend_
                         if (k_bend_radial_free_edge_percentage > 0) && ... 
                            ((k/k_max) >= (1 - k_bend_radial_free_edge_percentage))
                             params = beam_string(params, idx_minus, idx, idx_plus, k_bend_radial_free_edge); 
-                        elseif linear_interp                   
-                            k_bend_tmp = (1 - k/(k_max*(1-k_bend_radial_free_edge_percentage))) * k_bend_radial_annulus + ...
-                                         (    k/(k_max*(1-k_bend_radial_free_edge_percentage))) * k_bend_radial; 
-                            params = beam_string(params, idx_minus, idx, idx_plus, k_bend_tmp); 
+                            
+                            if debug 
+                                k_vals_debug(k) = k; 
+                                bend_coeff_debug(k) = k_bend_radial_free_edge; 
+                            end 
+                            
+                        elseif interpolating
+                            
+                            % C1 shape preserving interpolant 
+                            k_bend_tmp = interp1(k_bend_radial_interp_pts, k_bend_radial, k/k_max, 'pchip');  
+                            if k_bend_tmp > 0
+                                % only place nonzero beams 
+                                params = beam_string(params, idx_minus, idx, idx_plus, k_bend_tmp); 
+                            end 
+                            
+                            if debug 
+                                k_vals_debug(k) = k; 
+                                bend_coeff_debug(k) = k_bend_tmp; 
+                            end 
+                            
                         else
                             params = beam_string(params, idx_minus, idx, idx_plus, k_bend_radial); 
                         end 
@@ -1383,6 +1414,15 @@ function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ, k_bend_
             end 
         end 
     end
+    
+    if debug 
+        figure; 
+        k_vals_debug
+        bend_coeff_debug
+        semilogy(k_vals_debug, bend_coeff_debug); 
+        title('bending stiffness as function of k')
+    end 
+    
 end 
 
                         
