@@ -1361,7 +1361,7 @@ function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ, k_bend_
                     end
                 end 
                 
-                if k_bend_radial > 0
+                if any(k_bend_radial > 0)
                     j_minus_tmp = j; 
                     k_minus_tmp = k - 1; 
                     [valid_minus j_minus k_minus] = get_indices(leaflet, j, k, j_minus_tmp, k_minus_tmp); 
