@@ -222,7 +222,7 @@ valve.k_bend_radial = [1e2 1e2 1e5 1e5] * 192/N;
 % valve.k_bend_radial_free_edge_percentage = 0; 
 valve.k_bend_circ = 0; 
 
-valve.k_bend_radial_interp_pts  = [0    .5  .6   1]; 
+valve.k_bend_radial_interp_pts  = [0    .5  .7   1]
 
 
 % Approximate Lagrangian mesh spacing at ring 
