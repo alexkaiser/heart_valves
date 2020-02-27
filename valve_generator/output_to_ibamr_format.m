@@ -312,10 +312,24 @@ function [] = output_to_ibamr_format(valve)
                     k_bend_radial_free_edge_percentage = 0; 
                 end
                 
-                if isfield(valve, 'k_bend_radial_interp_pts')
-                    params = add_beams(params, valve.leaflets(i), k_bend_radial, k_bend_circ, k_bend_radial_free_edge, k_bend_radial_free_edge_percentage, valve.k_bend_radial_interp_pts);
+                if isfield(valve, 'k_bend_circ_free_edge') && ... 
+                   isfield(valve, 'k_bend_circ_free_edge_percentage') 
+                    k_bend_circ_free_edge = valve.k_bend_circ_free_edge; 
+                    k_bend_circ_free_edge_percentage = valve.k_bend_circ_free_edge_percentage; 
                 else 
-                    params = add_beams(params, valve.leaflets(i), k_bend_radial, k_bend_circ, k_bend_radial_free_edge, k_bend_radial_free_edge_percentage);
+                    k_bend_circ_free_edge = 0; 
+                    k_bend_circ_free_edge_percentage = 0; 
+                end
+                
+                if isfield(valve, 'k_bend_radial_interp_pts')
+                    params = add_beams(params, valve.leaflets(i), k_bend_radial, k_bend_circ, ...
+                                                                  k_bend_radial_free_edge, k_bend_radial_free_edge_percentage, ...
+                                                                  k_bend_circ_free_edge,   k_bend_circ_free_edge_percentage, ...
+                                                                  valve.k_bend_radial_interp_pts);
+                else 
+                    params = add_beams(params, valve.leaflets(i), k_bend_radial, k_bend_circ, ...
+                                                                  k_bend_radial_free_edge, k_bend_radial_free_edge_percentage, ...
+                                                                  k_bend_circ_free_edge,   k_bend_circ_free_edge_percentage);
                 end 
                 
                 
@@ -1297,7 +1311,10 @@ function params = place_cross_layer_springs_aortic(params, leaflet)
 end 
 
 
-function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ, k_bend_radial_free_edge, k_bend_radial_free_edge_percentage, k_bend_radial_interp_pts)
+function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ, ...
+                                             k_bend_radial_free_edge, k_bend_radial_free_edge_percentage, ...
+                                             k_bend_circ_free_edge, k_bend_circ_free_edge_percentage, ...
+                                             k_bend_radial_interp_pts)
 
     j_max             = leaflet.j_max; 
     k_max             = leaflet.k_max; 
@@ -1337,7 +1354,7 @@ function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ, k_bend_
                 % global index of current point 
                 idx = leaflet.indices_global(j,k); 
 
-                if k_bend_circ > 0
+                if (k_bend_circ > 0) || (k_bend_circ_free_edge > 0)
                     j_minus_tmp = j - 1; 
                     k_minus_tmp = k; 
                     [valid_minus j_minus k_minus] = get_indices(leaflet, j, k, j_minus_tmp, k_minus_tmp); 
@@ -1356,8 +1373,15 @@ function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ, k_bend_
                     if valid_minus && valid_plus                        
                         if (k_minus ~= k) || (k ~= k_plus)
                             error('k indices shuold not change when placing circ (j) beam');                            
-                        end                         
-                        params = beam_string(params, idx_minus, idx, idx_plus, k_bend_circ); 
+                        end              
+                        
+                        if (k_bend_circ_free_edge_percentage > 0) && ... 
+                           ((k/k_max) >= (1 - k_bend_circ_free_edge_percentage))
+                            params = beam_string(params, idx_minus, idx, idx_plus, k_bend_circ_free_edge);
+                        elseif k_bend_circ > 0 
+                            params = beam_string(params, idx_minus, idx, idx_plus, k_bend_circ);
+                        else 
+                        end 
                     end
                 end 
                 
