@@ -138,6 +138,9 @@ inline double deriv_spring_aortic_circ(double R, const double* params, int lag_m
 inline double spring_function_aortic_rad(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
 inline double deriv_spring_aortic_rad(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
 
+inline double spring_function_compressive_only_linear_spring(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
+inline double deriv_spring_compressive_only_linear_spring(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
+
 
 #define DEBUG_OUTPUT 0 
 #define ENABLE_INSTRUMENTS
@@ -324,6 +327,7 @@ int main(int argc, char* argv[])
         ib_force_fcn->registerSpringForceFunction(1, &spring_function_collagen,    &deriv_spring_collagen);
         ib_force_fcn->registerSpringForceFunction(2, &spring_function_aortic_circ, &deriv_spring_aortic_circ);
         ib_force_fcn->registerSpringForceFunction(3, &spring_function_aortic_rad,  &deriv_spring_aortic_rad);
+        ib_force_fcn->registerSpringForceFunction(4, &spring_function_compressive_only_linear_spring,  &deriv_spring_compressive_only_linear_spring);
 
         ib_method_ops->registerIBLagrangianForceFunction(ib_force_fcn);
         
@@ -1140,4 +1144,30 @@ inline double deriv_spring_aortic_rad(double R, const double* params, int lag_ma
 } // deriv_spring_aortic_rad
 
 
+inline double spring_function_compressive_only_linear_spring(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
+    // function idx 4
+    const double kappa    = params[0];
+    const double rest_len = params[1];
+    
+    // Strain, dimension 1
+    const double E = R/rest_len - 1.0;
+    
+    // Compute the force
+    if (E > 0.0){
+        // zero under extension 
+        return 0.0; 
+    }
+    else{
+        // linear for compressive strains
+        return kappa * E; 
+    }
+    return 0.0;
+} // spring_function_compressive_only_linear_spring
 
+
+inline double deriv_spring_compressive_only_linear_spring(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
+    // not implemented
+
+    SAMRAI_MPI::abort();
+    return 0.0;
+} // deriv_spring_compressive_only_linear_spring

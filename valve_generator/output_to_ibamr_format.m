@@ -232,6 +232,18 @@ function [] = output_to_ibamr_format(valve)
         params.cross_layer_on          = false; 
     end 
     
+    if isfield(valve, 'kappa_radial_free_edge_compressive') && ...
+            isfield(valve, 'kappa_radial_free_edge_compressive_percentage') && ...
+            isfield(valve, 'kappa_radial_free_edge_compressive_stretch') 
+        params.kappa_radial_free_edge_compressive = valve.kappa_radial_free_edge_compressive_unscaled  * tension_base; 
+        params.kappa_radial_free_edge_compressive_percentage = valve.kappa_radial_free_edge_compressive_percentage; 
+        params.kappa_radial_free_edge_compressive_stretch = valve.kappa_radial_free_edge_compressive_stretch;
+        params.kappa_radial_free_edge_compressive_fn_idx = valve.kappa_radial_free_edge_compressive_fn_idx; 
+        params.compressive_extra_springs_on = true; 
+    else 
+        params.compressive_extra_springs_on = false; 
+    end 
+    
     if isfield(valve, 'normal_thicken') && valve.normal_thicken
         params.normal_thicken = valve.normal_thicken; 
         params.ds_extrude = valve.normal_thickness / valve.num_copies; 
@@ -1143,6 +1155,16 @@ function params = add_leaflet_springs(params, leaflet, ds, collagen_spring)
 
                         params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, ds, collagen_constitutive_rad, output_tmp_k);
 
+                        if isfield(params, 'compressive_extra_springs_on') && params.compressive_extra_springs_on
+                            if (k/k_max) >= (1 - params.kappa_radial_free_edge_compressive_percentage)
+                                k_compressive = params.kappa_radial_free_edge_compressive; 
+                                rest_len_compressive = params.kappa_radial_free_edge_compressive_stretch * rest_len; 
+                                compressive_fn_idx = params.kappa_radial_free_edge_compressive_fn_idx;  
+                                output_temp_compressive = false; 
+                                params = spring_string(params, idx, nbr_idx, k_compressive, rest_len_compressive, compressive_fn_idx, output_temp_compressive); 
+                            end 
+                        end 
+                                                
                     end 
 
                 end 
