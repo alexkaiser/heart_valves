@@ -1324,12 +1324,11 @@ function params = place_cross_layer_springs_aortic(params, leaflet)
                    end 
 
                 end 
-            end
 
-            params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx, output_tmp); 
+                params = spring_string(params, idx, nbr_idx, kappa, rest_len, function_idx, output_tmp);
+            end
         end 
     end 
-    
 end 
 
 

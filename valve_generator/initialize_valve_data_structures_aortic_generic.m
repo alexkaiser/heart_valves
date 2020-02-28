@@ -227,10 +227,10 @@ valve.k_bend_circ_free_edge_percentage = 0;
 
 % valve.k_bend_radial_interp_pts  = [0    .4  .51   1]; 
 
-valve.kappa_radial_free_edge_compressive_unscaled = 1e3 / 256^2; 
-valve.kappa_radial_free_edge_compressive_percentage = 0.4; 
-valve.kappa_radial_free_edge_compressive_stretch = 1.54;  
-valve.kappa_radial_free_edge_compressive_fn_idx = 4; 
+% valve.kappa_radial_free_edge_compressive_unscaled = 1e3 / 256^2;
+% valve.kappa_radial_free_edge_compressive_percentage = 0.4;
+% valve.kappa_radial_free_edge_compressive_stretch = 1.54;
+% valve.kappa_radial_free_edge_compressive_fn_idx = 4;
 
 % Approximate Lagrangian mesh spacing at ring 
 % Used for later splitting of springs 
