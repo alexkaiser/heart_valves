@@ -222,8 +222,8 @@ valve.k_bend_radial = 0; 1e2 * 192/N;
 valve.k_bend_radial_free_edge = 0; 1e4 * 192/N; 
 valve.k_bend_radial_free_edge_percentage = 0; 
 valve.k_bend_circ = 0; 
-valve.k_bend_circ_free_edge = 0; 
-valve.k_bend_circ_free_edge_percentage = 0;
+valve.k_bend_circ_free_edge = 1e3 * 192/N; 
+valve.k_bend_circ_free_edge_percentage = .4;
 
 % valve.k_bend_radial_interp_pts  = [0    .4  .51   1]; 
 
