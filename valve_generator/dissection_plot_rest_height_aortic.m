@@ -104,19 +104,19 @@ end
     
 radial_leaflet_height = positions_y(center_leaflet_idx,k_max) - positions_y(center_leaflet_idx,1)
 
-% figure; 
+figure; 
 height_percentage_ref_aortic = cumsum(R_v(center_leaflet_idx,:)) / sum(R_v(center_leaflet_idx,:)); 
-% plot(1:k_max,height_percentage_ref_aortic)
-% title('percent of leaflet height')
-% xlabel('k')
-% ylabel('height so far (fraction)')
-% 
-% figure; 
+plot(1:k_max,height_percentage_ref_aortic)
+title('percent of leaflet height')
+xlabel('k')
+ylabel('height so far (fraction)')
+
+figure; 
 height_value_ref_aortic = cumsum(R_v(center_leaflet_idx,:)); 
-% plot(1:k_max,height_value_ref_aortic)
-% title('absolute leaflet height in reference config')
-% xlabel('k')
-% ylabel('height so far (absolute)')
+plot(1:k_max,height_value_ref_aortic)
+title('absolute leaflet height in reference config')
+xlabel('k')
+ylabel('height so far (absolute)')
 
 coaptation_height_goal = 0.17*2*radius 
 coaptation_zone_start_index = find(height_value_ref_aortic > (radial_leaflet_height - coaptation_height_goal),1)
