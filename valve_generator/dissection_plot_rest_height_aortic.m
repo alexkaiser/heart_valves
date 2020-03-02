@@ -8,10 +8,57 @@ if ~isfield(valve, 'name') || ~strcmp(valve.name, 'aortic')
     error('dissection_plot_rest_height_aortic called with non aortic type'); 
     return; 
 end 
+
+% loaded (current configuration) lengths
+leaflet = valve.leaflets(1); 
+X_current              = leaflet.X; 
+j_max                  = leaflet.j_max; 
+k_max                  = leaflet.k_max; 
+is_internal            = leaflet.is_internal; 
+is_bc                  = leaflet.is_bc; 
+N_each                 = leaflet.N_each; 
+
+center_leaflet_idx = N_each/2; 
+j = center_leaflet_idx; 
+radial_leaflet_height_loaded = 0; 
+for k=1:(k_max-1)
+    if is_internal(j,k) || is_bc(j,k)
+        j_nbr_tmp = j; 
+        k_nbr_tmp = k + 1; 
+
+        [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+        if ~valid 
+            error('trying to compute lengths with an invalid rest length')
+        end
+        
+        X = X_current(:,j,k);
+        X_nbr = X_current(:,j_nbr,k_nbr); 
+        
+        radial_leaflet_height_loaded = radial_leaflet_height_loaded + norm(X - X_nbr);
+        
+    end 
+end 
+
+free_edge_length_single_loaded = 0; 
+for j=1:N_each
+    k=k_max; 
     
+    j_nbr_tmp = j-1; 
+    k_nbr_tmp = k; 
+    [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+    if ~valid 
+        error('trying to compute lengths with an invalid rest length')
+    end
+    
+    X = X_current(:,j,k);
+    X_nbr = X_current(:,j_nbr,k_nbr); 
+    
+    free_edge_length_single_loaded = free_edge_length_single_loaded + norm(X - X_nbr);
+end 
+
+
 valve_with_reference = valve; 
 valve_with_reference = rmfield(valve_with_reference, 'leaflets'); 
-
 valve_with_reference.leaflets(1) = set_rest_lengths_and_constants_aortic(valve.leaflets(1), valve); 
 
 leaflet = valve_with_reference.leaflets(1); 
@@ -129,14 +176,17 @@ coaptation_zone_start_fraction = coaptation_zone_start_index/k_max
 % lc = .7d = 1.4r. the inner length of the dotted line on the left,  leaflet height in 2d. 
 
 fprintf('Rest length height summary:\n'); 
-fprintf("and targets based on Swanson and Clark 1973\n")
-fprintf("Radius                  = %f\n", radius); 
-fprintf("Coaptation height       = %f\n", 0.17*2*radius); 
-fprintf("One third circumference = %f\n", 2*pi*radius/3); 
-fprintf("Free edge target        = %f\n", 2*1.24*radius); 
-fprintf("Circ free edge length   = %f\n", length_one_leaflet_free_edge(k_max)); 
-fprintf("Leaflet height target   = %f\n", 1.4*radius); 
-fprintf("Radial height           = %f\n", radial_leaflet_height); 
+fprintf("And targets based on Swanson and Clark 1973\n")
+fprintf("Radius                       = %f\n", radius); 
+fprintf("Coaptation height            = %f\n", 0.17*2*radius); 
+fprintf("One third circumference      = %f\n", 2*pi*radius/3); 
+fprintf("Free edge target             = %f\n", 2*1.24*radius); 
+fprintf("Circ free edge loaded length = %f\t", free_edge_length_single_loaded); 
+fprintf("Circ free edge rest length   = %f\n", length_one_leaflet_free_edge(k_max));
+fprintf("Leaflet height target        = %f\n", 1.4*radius); 
+fprintf("Radial height loaded length  = %f\t", radial_leaflet_height_loaded); 
+fprintf("Radial height rest length    = %f\n", radial_leaflet_height); 
+
 
 % 
 % j_center_anterior  = leaflet.j_range_anterior(floor(end/2)); 
