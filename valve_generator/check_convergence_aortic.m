@@ -27,11 +27,12 @@
 % OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-N_each_range = 2.^(2:8); 
+N_each_range = 2.^(2:7); 
 
 N_values = 3 * N_each_range; 
 
-path = 'meshes/aortic_conv_checks_7_2019/neumann_basic_f328f030'
+path = 'meshes/aortic_conv_checks_7_2019/running_best_2_2020_3ac049c'; 
+% path = 'meshes/aortic_conv_checks_7_2019/neumann_basic_f328f030'
 % path = 'meshes/aortic_conv_checks_7_2019/dirichlet_free_edge_d4b64337'
 % path = 'meshes/aortic_conv_checks_7_2019/dirichlet_free_edge_smoothed_ec700cd'
 % path = 'meshes/aortic_conv_checks_7_2019/initial_cond_smoothed'; 
