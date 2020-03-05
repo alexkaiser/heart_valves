@@ -71,7 +71,9 @@ name = 'aortic';
 valve.name = name; 
 
 % does not place partition
-valve.in_heart = false; 
+valve.in_heart = true; 
+
+mri_box = true;
 
 % name 
 if valve.in_heart
@@ -81,9 +83,12 @@ if valve.in_heart
     valve.tight_cylinder = true; 
     valve.z_extra_cylinder = 0.3; 
                                      
-    valve.initial_rotation_aortic = rotation_matrix_z(pi/4); 
-    
-    valve.transformation_vertex_file = 'aortic_annulus.vertex';                                
+    if mri_box
+        valve.initial_rotation_aortic = rotation_matrix_y(-pi/2) * rotation_matrix_z(pi/6); 
+    else 
+        valve.initial_rotation_aortic = rotation_matrix_z(pi/4); 
+        valve.transformation_vertex_file = 'aortic_annulus.vertex';
+    end 
 else 
     valve.base_name = sprintf('aortic_%d', N); 
 end 

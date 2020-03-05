@@ -499,8 +499,11 @@ function [] = output_to_ibamr_format(valve)
         else
             R_0 = eye(3);
         end 
-        params.vertices = coordinate_transformation_vertices(params.vertices, valve.transformation_vertex_file, R_0);         
-        
+        params.vertices = coordinate_transformation_vertices(params.vertices, valve.transformation_vertex_file, R_0);
+    elseif isfield(valve, 'initial_rotation_aortic')
+        % rotation alone 
+        R_0 = valve.initial_rotation_aortic; 
+        params.vertices = R_0 * params.vertices; 
     elseif valve.in_heart && isfield(valve.skeleton, 'inverse_transformation_initial_condition')
         params.vertices = valve.skeleton.inverse_transformation_initial_condition(params.vertices) 
     end 
