@@ -25,10 +25,7 @@
 
 #include <boundary_condition_util.h>
 
-
-int pnpoly(int nvert, double *vertx, double *verty, double testx, double testy); 
-
-
+#include "pnpoly.h"
 
 /////////////////////////////// CLASS DEFINITION /////////////////////////////
 

@@ -22,6 +22,7 @@ class CirculationModel_RV_PA;
 
 #include "CirculationModel.h"
 
+#include "pnpoly.h"
 
 
 #define MMHG_TO_CGS 1333.22368

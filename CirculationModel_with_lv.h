@@ -25,6 +25,7 @@
 
 #include <boundary_condition_util.h>
 
+#include "pnpoly.h"
 
 int pnpoly(int nvert, double *vertx, double *verty, double testx, double testy); 
 
