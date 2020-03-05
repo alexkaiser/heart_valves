@@ -193,6 +193,10 @@ int main(int argc, char* argv[])
     SAMRAI_MPI::setCallAbortInSerialInsteadOfExit();
     SAMRAIManager::startup();
 
+    #ifdef USE_CIRC_MODEL_RV_PA
+        pout << "USE_CIRC_MODEL_RV_PA is defined\n"; 
+    #endif
+
     { // cleanup dynamically allocated objects prior to shutdown
     
         // time step used in various places throughout 
