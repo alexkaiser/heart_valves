@@ -46,7 +46,7 @@ class fourier_series_data{
         // Destructor 
         ~fourier_series_data(); 
         
-        void print_values(); 
+        void print_values() const; 
 
     private: 
 

@@ -55,7 +55,7 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(const fourier_series_data *fourie
                                                    const double  t_offset_bcs_unscaled, 
                                                    const double  initial_time)
     : 
-      d_object_name("circ_model_with_lv"),  // constant name here  
+      d_object_name("circ_model_rv_pa"),  // constant name here  
       d_registered_for_restart(true),      // always true
       d_fourier_right_ventricle(fourier_right_ventricle), 
       d_fourier_right_pa(fourier_right_pa),       
@@ -107,7 +107,7 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(const fourier_series_data *fourie
         
         if (i>0){
             if (fabs(x_prev - x) > tol){
-                TBOX_ERROR("Z coordinates must be consistent\n"); 
+                TBOX_ERROR("x coordinates must be consistent\n"); 
             }
         }
         x_prev = x; 
@@ -132,28 +132,28 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(const fourier_series_data *fourie
 
     for (int i=0; i<d_n_pts_right_pa; i++){
         right_pa_file >> d_right_pa_points_idx1[i]; 
-        right_pa_file >> y; 
-        right_pa_file >> d_right_pa_points_idx2[i];
+        right_pa_file >> d_right_pa_points_idx2[i]; 
+        right_pa_file >> z;
         
 
         if (i>0){
-            if (fabs(y_prev - y) > tol){
-                TBOX_ERROR("Z coordinates must be consistent\n"); 
+            if (fabs(z_prev - z) > tol){
+                TBOX_ERROR("z coordinates must be consistent\n"); 
             }
         }
-        y_prev = y; 
+        z_prev = z; 
 
     }
     pout << "to right_pa file close\n"; 
     right_pa_file.close(); 
-    d_right_pa_axis = 1; 
+    d_right_pa_axis = 2; 
     d_right_pa_side = 0; 
 
     // read vertices from file 
     ifstream left_pa_file(left_pa_vertices_file_name.c_str(), ios::in);
 
     if(!left_pa_file){
-        TBOX_ERROR("Aorta file not found\n"); 
+        TBOX_ERROR("Left PA file not found\n"); 
     }
 
     left_pa_file >> d_n_pts_left_pa; 
@@ -163,15 +163,15 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(const fourier_series_data *fourie
 
     for (int i=0; i<d_n_pts_left_pa; i++){
         left_pa_file >> d_left_pa_points_idx1[i]; 
-        left_pa_file >> d_left_pa_points_idx2[i];
-        left_pa_file >> z; 
+        left_pa_file >> y; 
+        left_pa_file >> d_left_pa_points_idx2[i]; 
 
         if (i>0){
-            if (fabs(z_prev - z) > tol){
-                TBOX_ERROR("Z coordinates must be consistent\n"); 
+            if (fabs(y_prev - y) > tol){
+                TBOX_ERROR("y coordinates must be consistent\n"); 
             }
         }
-        z_prev = z; 
+        y_prev = y; 
 
     }
     pout << "to left_pa file close\n"; 
@@ -299,8 +299,8 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
                                     const SideIndex<NDIM> i_s(i, axis, SideIndex<NDIM>::Lower);
                                     if ((*wgt_sc_data)(i_s) > std::numeric_limits<double>::epsilon())
                                     {
-                                        double dA = n[axis] * dV / dx[axis];
-                                        Q_right_ventricle_local += (*U_data)(i_s)*dA;
+                                        double dA = dV / dx[axis];
+                                        Q_right_ventricle_local += (*U_data)(i_s)* n[axis] * dA;
 
                                         if (!d_area_initialized){
                                             area_right_ventricle_local += dA;
@@ -314,8 +314,8 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
                                     const SideIndex<NDIM> i_s(i, axis, SideIndex<NDIM>::Lower);
                                     if ((*wgt_sc_data)(i_s) > std::numeric_limits<double>::epsilon())
                                     {
-                                        double dA = n[axis] * dV / dx[axis];
-                                        Q_right_pa_local += (*U_data)(i_s)*dA;
+                                        double dA = dV / dx[axis];
+                                        Q_right_pa_local += (*U_data)(i_s) * n[axis] * dA;
 
                                         if (!d_area_initialized){
                                             area_right_pa_local += dA;
@@ -329,8 +329,8 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
                                     const SideIndex<NDIM> i_s(i, axis, SideIndex<NDIM>::Lower);
                                     if ((*wgt_sc_data)(i_s) > std::numeric_limits<double>::epsilon())
                                     {
-                                        double dA = n[axis] * dV / dx[axis];
-                                        Q_left_pa_local += (*U_data)(i_s)*dA;
+                                        double dA = dV / dx[axis];
+                                        Q_left_pa_local += (*U_data)(i_s) * n[axis] * dA;
 
                                         if (!d_area_initialized){
                                             area_left_pa_local += dA;
@@ -356,6 +356,13 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
         d_area_right_pa        = SAMRAI_MPI::sumReduction(area_right_pa_local);  
         d_area_left_pa         = SAMRAI_MPI::sumReduction(area_left_pa_local);  
         d_area_initialized = true;       
+    }
+
+    bool debug_out_areas = true; 
+    if (debug_out_areas){
+        pout << "d_area_right_ventricle = " << d_area_right_ventricle << "\n"; 
+        pout << "d_area_right_pa = " << d_area_right_pa << "\n"; 
+        pout << "d_area_left_pa = " << d_area_left_pa << "\n"; 
     }
 
     d_time += dt; 
@@ -463,7 +470,7 @@ CirculationModel_RV_PA::writeDataFile() const
         if (!from_restart && !file_initialized)
         {
             ofstream fout(DATA_FILE_NAME.c_str(), ios::out);
-            fout << "% time \t P_aorta (mmHg)\t P_atrium (mmHg)\t P_ventricle (mmHg)\t Q_Aorta (ml/s)\t d_Q_left_atrium (ml/s)\tQ_mitral (ml/s)"
+            fout << "% time \t P_right_ventricle (mmHg)\t P_right_pa (mmHg)\t P_left_pa (mmHg)\t d_Q_right_ventricle (ml/s)\t d_Q_right_pa (ml/s)\td_Q_left_pa (ml/s) \td_Q_valve (ml/s)"
                  << "\n"
                  << "bc_vals = [";
             file_initialized = true;

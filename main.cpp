@@ -370,39 +370,40 @@ int main(int argc, char* argv[])
                 "p_init", app_initializer->getComponentDatabase("PressureInitialConditions"), grid_geometry);
             navier_stokes_integrator->registerPressureInitialConditions(p_init);
         }
-
-        // Create Eulerian boundary condition specification objects (when necessary).
-        vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM, static_cast<RobinBcCoefStrategy<NDIM>*>(NULL));
                 
         // This is needed to pull variables later
         VariableDatabase<NDIM>* var_db = VariableDatabase<NDIM>::getDatabase();
-        
-        const bool periodic_domain = grid_geometry->getPeriodicShift().min() > 0;
-        if (!periodic_domain)
-        {        
-            pout << "Using b.c. from file, no series for boundary conditions (body force may still have series).\n";
-            for (unsigned int d = 0; d < NDIM; ++d)
-            {
-                ostringstream bc_coefs_name_stream;
-                bc_coefs_name_stream << "u_bc_coefs_" << d;
-                const string bc_coefs_name = bc_coefs_name_stream.str();
-                ostringstream bc_coefs_db_name_stream;
-                bc_coefs_db_name_stream << "VelocityBcCoefs_" << d;
-                const string bc_coefs_db_name = bc_coefs_db_name_stream.str();
-                u_bc_coefs[d] = new muParserRobinBcCoefs(
-                    bc_coefs_name, app_initializer->getComponentDatabase(bc_coefs_db_name), grid_geometry);
-            }
 
-            navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
-            if (solver_type == "STAGGERED" && input_db->keyExists("BoundaryStabilization"))
-            {
-                time_integrator->registerBodyForceFunction(new StaggeredStokesOpenBoundaryStabilizer(
-                    "BoundaryStabilization",
-                    app_initializer->getComponentDatabase("BoundaryStabilization"),
-                    navier_stokes_integrator,
-                    grid_geometry));
+        #ifndef USE_CIRC_MODEL_RV_PA
+            // Create Eulerian boundary condition specification objects (when necessary).
+            vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM, static_cast<RobinBcCoefStrategy<NDIM>*>(NULL));        
+            const bool periodic_domain = grid_geometry->getPeriodicShift().min() > 0;
+            if (!periodic_domain)
+            {   
+                pout << "Using b.c. from file, no series for boundary conditions (body force may still have series).\n";
+                for (unsigned int d = 0; d < NDIM; ++d)
+                {
+                    ostringstream bc_coefs_name_stream;
+                    bc_coefs_name_stream << "u_bc_coefs_" << d;
+                    const string bc_coefs_name = bc_coefs_name_stream.str();
+                    ostringstream bc_coefs_db_name_stream;
+                    bc_coefs_db_name_stream << "VelocityBcCoefs_" << d;
+                    const string bc_coefs_db_name = bc_coefs_db_name_stream.str();
+                    u_bc_coefs[d] = new muParserRobinBcCoefs(
+                        bc_coefs_name, app_initializer->getComponentDatabase(bc_coefs_db_name), grid_geometry);
+                }
+                navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
+             
+                if (solver_type == "STAGGERED" && input_db->keyExists("BoundaryStabilization"))
+                {
+                    time_integrator->registerBodyForceFunction(new StaggeredStokesOpenBoundaryStabilizer(
+                        "BoundaryStabilization",
+                        app_initializer->getComponentDatabase("BoundaryStabilization"),
+                        navier_stokes_integrator,
+                        grid_geometry));
+                }
             }
-        }
+        #endif
 
         // generic body force
         // Create Eulerian body force function specification objects.
@@ -419,8 +420,10 @@ int main(int argc, char* argv[])
 
         const bool z_periodic = (grid_geometry->getPeriodicShift())[2];
         if (!z_periodic){
-            pout << "Current implementation requires periodic z. Exiting.\n";
-            SAMRAI_MPI::abort();
+            #ifdef FOURIER_SERIES_BODY_FORCE
+                pout << "Current implementation requires periodic z. Exiting.\n";
+                SAMRAI_MPI::abort();
+            #endif 
         }
 
         #ifdef FOURIER_SERIES_BODY_FORCE
@@ -479,6 +482,8 @@ int main(int argc, char* argv[])
 
         #ifdef USE_CIRC_MODEL_RV_PA
              
+            dt = input_db->getDouble("DT");
+
             std::string fourier_coeffs_name_rv; 
             if (input_db->keyExists("FOURIER_COEFFS_FILENAME_RV")){
                 fourier_coeffs_name_rv = input_db->getString("FOURIER_COEFFS_FILENAME_RV");
@@ -486,7 +491,6 @@ int main(int argc, char* argv[])
             else {
                 fourier_coeffs_name_rv = "fourier_coeffs_rv.txt"; 
             }
-
             fourier_series_data *fourier_series_rv = new fourier_series_data(fourier_coeffs_name_rv.c_str(), dt);
 
             std::string fourier_coeffs_name_rpa; 
@@ -496,7 +500,6 @@ int main(int argc, char* argv[])
             else {
                 fourier_coeffs_name_rpa = "fourier_coeffs_rv.txt"; 
             }
-
             fourier_series_data *fourier_series_rpa = new fourier_series_data(fourier_coeffs_name_rpa.c_str(), dt);
 
             std::string fourier_coeffs_name_lpa; 
@@ -559,6 +562,13 @@ int main(int argc, char* argv[])
                                                                                   t_cycle_length,
                                                                                   t_offset_start_bcs_unscaled, 
                                                                                   time_integrator->getIntegratorTime()); 
+
+            // Create Eulerian boundary condition specification objects.
+            vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM);
+            for (int d = 0; d < NDIM; ++d){
+                u_bc_coefs[d] = new VelocityBcCoefs_RV_PA(d, circ_model_rv_pa);
+            }
+            navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
 
         #endif // #ifdef USE_CIRC_MODEL_RV_PA
 

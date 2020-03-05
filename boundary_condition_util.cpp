@@ -367,78 +367,88 @@ void VelocityBcCoefs_RV_PA::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_
         double& b = (!bcoef_data.isNull() ? (*bcoef_data)(i, 0) : dummy);
         double& g = (!gcoef_data.isNull() ? (*gcoef_data)(i, 0) : dummy);
         
+        if (axis == d_comp_idx){
+            // normal component has axis equal to comp_idx 
+
+            // take periodic reduction
+            unsigned int idx = d_circ_model_rv_pa->d_current_idx_series; 
+
+            double X[NDIM];
+            for (int d = 0; d < NDIM; ++d)
+            {
+                X[d] = x_lower[d] + dx[d] * (double(i(d) - patch_lower(d)) + (d == axis ? 0.0 : 0.5));
+            }
+
+            double X_in_plane_1 = 0.0; 
+            double X_in_plane_2 = 0.0; 
+            if (axis == 0)
+            {
+                X_in_plane_1 = X[1]; 
+                X_in_plane_2 = X[2]; 
+            }
+            else if (axis == 1)
+            {
+                X_in_plane_1 = X[0]; 
+                X_in_plane_2 = X[2]; 
+            }
+            else if (axis == 2)
+            {
+                X_in_plane_1 = X[0]; 
+                X_in_plane_2 = X[1]; 
+            }
+            else
+            {
+                TBOX_ERROR("Axis has value that is not 0 1 2\n"); 
+            }
+
+            const int in_right_ventricle  = d_circ_model_rv_pa->point_in_right_ventricle(X_in_plane_1, X_in_plane_2, axis, side);
+            const int in_right_pa         = d_circ_model_rv_pa->point_in_right_pa       (X_in_plane_1, X_in_plane_2, axis, side);
+            const int in_left_pa          = d_circ_model_rv_pa->point_in_left_pa        (X_in_plane_1, X_in_plane_2, axis, side);
+
+            if (in_right_ventricle && in_right_pa){
+                TBOX_ERROR("Position is within two inlets and outlets, should be impossible\n"); 
+            }
+            if (in_right_ventricle && in_left_pa){
+                TBOX_ERROR("Position is within two inlets and outlets, should be impossible\n"); 
+            }
+            if (in_right_pa && in_left_pa){
+                TBOX_ERROR("Position is within two inlets and outlets, should be impossible\n"); 
+            }
+
+            if (in_right_ventricle){
+                // sign for negative in stress tensor
+                a = 0.0; 
+                b = 1.0; 
+                g = -MMHG_TO_CGS * d_circ_model_rv_pa->d_fourier_right_ventricle->values[idx];
+                // pout << "Applying pressure of " << d_circ_model_rv_pa->d_fourier_right_ventricle->values[idx] 
+                //      << "mmHg to right ventricle at position (" << X[0] << ", " << X[1] << ", " << X[2] << ")\n"; 
+            }
+            else if (in_right_pa){
+                // sign for negative in stress tensor
+                a = 0.0; 
+                b = 1.0; 
+                g = -MMHG_TO_CGS * d_circ_model_rv_pa->d_fourier_right_pa->values[idx];
+                // pout << "Applying pressure of " << d_circ_model_rv_pa->d_fourier_right_pa->values[idx] 
+                //      << "mmHg to right pa        at position (" << X[0] << ", " << X[1] << ", " << X[2] << ")\n"; 
+            }
+            else if (in_left_pa){
+                // sign for negative in stress tensor
+                a = 0.0; 
+                b = 1.0; 
+                g = -MMHG_TO_CGS * d_circ_model_rv_pa->d_fourier_left_pa->values[idx];
+                // pout << "Applying pressure of " << d_circ_model_rv_pa->d_fourier_left_pa->values[idx] 
+                //      << "mmHg to left pa         at position (" << X[0] << ", " << X[1] << ", " << X[2] << ")\n"; 
+            }
+            else{
+                // no normal traction for zero pressure 
+                a = 0.0;
+                b = 1.0;
+                g = 0.0;
+            }
         
-        // take periodic reduction
-        unsigned int idx = d_circ_model_rv_pa->d_current_idx_series; 
-
-        double X[NDIM];
-        for (int d = 0; d < NDIM; ++d)
-        {
-            X[d] = x_lower[d] + dx[d] * (double(i(d) - patch_lower(d)) + (d == axis ? 0.0 : 0.5));
-        }
-
-        double X_in_plane_1 = 0.0; 
-        double X_in_plane_2 = 0.0; 
-        if (axis == 0)
-        {
-            X_in_plane_1 = X[1]; 
-            X_in_plane_2 = X[2]; 
-        }
-        else if (axis == 1)
-        {
-            X_in_plane_1 = X[0]; 
-            X_in_plane_2 = X[2]; 
-        }
-        else if (axis == 2)
-        {
-            X_in_plane_1 = X[0]; 
-            X_in_plane_2 = X[1]; 
-        }
-        else
-        {
-            TBOX_ERROR("Axis has value that is not 0 1 2\n"); 
-        }
-
-        const int in_right_ventricle  = d_circ_model_rv_pa->point_in_right_ventricle(X_in_plane_1, X_in_plane_2, axis, side);
-        const int in_right_pa         = d_circ_model_rv_pa->point_in_right_pa       (X_in_plane_1, X_in_plane_2, axis, side);
-        const int in_left_pa          = d_circ_model_rv_pa->point_in_left_pa        (X_in_plane_1, X_in_plane_2, axis, side);
-
-        if (in_right_ventricle && in_right_pa){
-            TBOX_ERROR("Position is within two inlets and outlets, should be impossible\n"); 
-        }
-        if (in_right_ventricle && in_left_pa){
-            TBOX_ERROR("Position is within two inlets and outlets, should be impossible\n"); 
-        }
-        if (in_right_pa && in_left_pa){
-            TBOX_ERROR("Position is within two inlets and outlets, should be impossible\n"); 
-        }
-
-        if (in_right_ventricle){
-            // sign for negative in stress tensor
-            a = 0.0; 
-            b = 1.0; 
-            g = -MMHG_TO_CGS * d_circ_model_rv_pa->d_fourier_right_ventricle->values[idx];
-        }
-        else if (in_right_pa){
-            // sign for negative in stress tensor
-            a = 0.0; 
-            b = 1.0; 
-            g = -MMHG_TO_CGS * d_circ_model_rv_pa->d_fourier_right_pa->values[idx];
-        }
-        else if (in_left_pa){
-            // sign for negative in stress tensor
-            a = 0.0; 
-            b = 1.0; 
-            g = -MMHG_TO_CGS * d_circ_model_rv_pa->d_fourier_left_pa->values[idx];
-        }
-        else if (axis == d_comp_idx){
-            // no normal traction for zero pressure 
-            a = 0.0;
-            b = 1.0;
-            g = 0.0;
         }
         else {
-            // no tangential slip 
+            // no tangential slip everywhere on domain 
             a = 1.0;
             b = 0.0;
             g = 0.0;
@@ -532,9 +542,12 @@ fourier_series_data::~fourier_series_data(){
 } 
 
 
-void fourier_series_data::print_values(){
+void fourier_series_data::print_values() const{
     // Prints values of the series to command line for debugging 
     
+    std::cout << "N_times = " << N_times << "\n"; 
+    std::cout << "L = " << L << "\n"; 
+    std::cout << "dt = " << dt << "\n"; 
     for (unsigned int j=0; j<N_times; j++) {
         std::cout << values[j] << "\n" ; 
     }    
