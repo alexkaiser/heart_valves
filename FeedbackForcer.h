@@ -40,7 +40,8 @@ class FeedbackForcer : public CartGridFunction
    */
   FeedbackForcer(const INSHierarchyIntegrator* fluid_solver,
             		 Pointer<PatchHierarchy<NDIM> > patch_hierarchy,
-                 CirculationModel_with_lv* circ_model_with_lv);
+                 CirculationModel_with_lv* circ_model_with_lv, 
+                 CirculationModel_RV_PA* circ_model_rv_pa);
 
   /*!
    * \brief Destructor.
@@ -71,6 +72,7 @@ class FeedbackForcer : public CartGridFunction
   //\}
 
   CirculationModel_with_lv* d_circ_model_with_lv; 
+  CirculationModel_RV_PA*   d_circ_model_rv_pa; 
 
  private:
   /*!

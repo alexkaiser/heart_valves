@@ -73,7 +73,7 @@
 #include <CirculationModel.h>
 #include <CirculationModel_with_lv.h>
 #include <CirculationModel_RV_PA.h>
-// #include <FeedbackForcer.h>
+#include <FeedbackForcer.h>
 #include <FourierBodyForce.h>
 
 
@@ -573,6 +573,11 @@ int main(int argc, char* argv[])
                 u_bc_coefs[d] = new VelocityBcCoefs_RV_PA(d, circ_model_rv_pa);
             }
             navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
+
+            // flow straightener at boundary 
+            Pointer<FeedbackForcer> feedback_forcer = new FeedbackForcer(navier_stokes_integrator, patch_hierarchy, NULL, circ_model_rv_pa);
+            time_integrator->registerBodyForceFunction(feedback_forcer);
+
 
         #endif // #ifdef USE_CIRC_MODEL_RV_PA
 
