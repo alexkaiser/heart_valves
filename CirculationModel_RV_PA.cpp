@@ -176,7 +176,7 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(const fourier_series_data *fourie
     }
     pout << "to left_pa file close\n"; 
     left_pa_file.close();
-    d_left_pa_axis = 2; 
+    d_left_pa_axis = 1; 
     d_left_pa_side = 0; 
 
     pout << "passed contstructor\n"; 
@@ -358,12 +358,12 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
         d_area_initialized = true;       
     }
 
-    bool debug_out_areas = true; 
-    if (debug_out_areas){
-        pout << "d_area_right_ventricle = " << d_area_right_ventricle << "\n"; 
-        pout << "d_area_right_pa = " << d_area_right_pa << "\n"; 
-        pout << "d_area_left_pa = " << d_area_left_pa << "\n"; 
-    }
+    // bool debug_out_areas = false; 
+    // if (debug_out_areas){
+    //     pout << "d_area_right_ventricle = " << d_area_right_ventricle << "\n"; 
+    //     pout << "d_area_right_pa = " << d_area_right_pa << "\n"; 
+    //     pout << "d_area_left_pa = " << d_area_left_pa << "\n"; 
+    // }
 
     d_time += dt; 
 
