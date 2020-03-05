@@ -145,7 +145,7 @@ inline double deriv_spring_compressive_only_linear_spring(double R, const double
 
 #define DEBUG_OUTPUT 0 
 #define ENABLE_INSTRUMENTS
-#define FOURIER_SERIES_BODY_FORCE
+// #define FOURIER_SERIES_BODY_FORCE
 
 // #define USE_CIRC_MODEL
 #define USE_CIRC_MODEL_RV_PA
@@ -423,6 +423,12 @@ int main(int argc, char* argv[])
             SAMRAI_MPI::abort();
         }
 
+        #ifdef FOURIER_SERIES_BODY_FORCE
+            #ifdef USE_CIRC_MODEL_RV_PA
+                TBOX_ERROR("Cannot have both FOURIER_SERIES_BODY_FORCE and USE_CIRC_MODEL_RV_PA set")
+            #endif  
+        #endif 
+
 
         #ifdef FOURIER_SERIES_BODY_FORCE
 
@@ -448,118 +454,113 @@ int main(int argc, char* argv[])
                 pout << "To constructor\n";
                 fourier_series_data *fourier_series = new fourier_series_data("fourier_coeffs_ventricle.txt", dt);
                 pout << "Series data successfully built\n";
-
             #else
-                #ifdef USE_CIRC_MODEL_RV_PA
-                    /* 
-                    // const bool use_circ_model    = false; 
-                    // CirculationModel *circ_model = NULL;
+                const bool use_circ_model    = false; 
+                CirculationModel *circ_model = NULL; 
+                pout << "To constructor\n";
 
-                    std::string fourier_coeffs_name_rv; 
-                    if (input_db->keyExists("FOURIER_COEFFS_FILENAME_RV")){
-                        fourier_coeffs_name_rv = input_db->getString("FOURIER_COEFFS_FILENAME_RV");
-                    }
-                    else {
-                        fourier_coeffs_name_rv = "fourier_coeffs_rv.txt"; 
-                    }
+                std::string fourier_coeffs_name; 
+                if (input_db->keyExists("FOURIER_COEFFS_FILENAME")){
+                    fourier_coeffs_name = input_db->getString("FOURIER_COEFFS_FILENAME");
+                }
+                else {
+                    fourier_coeffs_name = "fourier_coeffs.txt"; 
+                }
 
-                    fourier_series_data *fourier_series_rv = new fourier_series_data(fourier_coeffs_name_rv.c_str(), dt);
-
-                    std::string fourier_coeffs_name_rpa; 
-                    if (input_db->keyExists("FOURIER_COEFFS_FILENAME_RPA")){
-                        fourier_coeffs_name_rpa = input_db->getString("FOURIER_COEFFS_FILENAME_RPA");
-                    }
-                    else {
-                        fourier_coeffs_name_rpa = "fourier_coeffs_rv.txt"; 
-                    }
-
-                    fourier_series_data *fourier_series_rpa = new fourier_series_data(fourier_coeffs_name_rpa.c_str(), dt);
-
-                    std::string fourier_coeffs_name_lpa; 
-                    if (input_db->keyExists("FOURIER_COEFFS_FILENAME_LPA")){
-                        fourier_coeffs_name_lpa = input_db->getString("FOURIER_COEFFS_FILENAME_LPA");
-                    }
-                    else {
-                        fourier_coeffs_name_lpa = "fourier_coeffs_lpa.txt"; 
-                    }
-
-                    // boundary vertex files 
-                    std::string right_ventricle_vertices_file_name; 
-                    if (input_db->keyExists("BOUNDARY_FILENAME_RV")){
-                        right_ventricle_vertices_file_name = input_db->getString("BOUNDARY_FILENAME_RV");
-                    }
-                    else {
-                        right_ventricle_vertices_file_name = "right_ventricle_bdry.vertex"; 
-                    }
-
-                    std::string right_pa_vertices_file_name; 
-                    if (input_db->keyExists("BOUNDARY_FILENAME_RPA")){
-                        right_pa_vertices_file_name = input_db->getString("BOUNDARY_FILENAME_RPA");
-                    }
-                    else {
-                        right_pa_vertices_file_name = "right_pa_bdry.vertex"; 
-                    }
-
-                    std::string left_pa_vertices_file_name; 
-                    if (input_db->keyExists("BOUNDARY_FILENAME_LPA")){
-                        left_pa_vertices_file_name = input_db->getString("BOUNDARY_FILENAME_LPA");
-                    }
-                    else {
-                        left_pa_vertices_file_name = "left_pa_bdry.vertex"; 
-                    }
-
-                    // scaled cycle length for this patient 
-                    double t_cycle_length = input_db->getDouble("CYCLE_DURATION");
-
-                    // start at systole, which is this far into the Fourier series 
-                    double t_offset_start_bcs_unscaled = input_db->getDouble("T_OFFSET_START_BCS_UNSCALED"); // starts this 
-                    if (input_db->keyExists("T_OFFSET_START_BCS_UNSCALED")){
-                        t_offset_start_bcs_unscaled = input_db->getDouble("T_OFFSET_START_BCS_UNSCALED"); // starts this 
-                    else {
-                        t_offset_start_bcs_unscaled = 0; 
-                    }
-
-                    // start in physical time with relation to Fourier series 
-                    double t_offeset_start = t_offset_start_bcs_unscaled * (t_cycle_length / fourier_atrium->L);
-
-                    fourier_series_data *fourier_series_lpa = new fourier_series_data(fourier_coeffs_name_lpa.c_str(), dt);
-
-                    CirculationModel_RV_PA *circ_model_rv_pa = new CirculationModel_RV_PA(fourier_series_rv, 
-                                                                                          fourier_series_rpa,
-                                                                                          fourier_left_pa, 
-                                                                                          right_ventricle_vertices_file_name,
-                                                                                          right_pa_vertices_file_name,
-                                                                                          left_pa_vertices_file_name,
-                                                                                          cycle_duration,
-                                                                                          t_offset_bcs_unscaled, 
-                                                                                          time_integrator->getIntegratorTime()); 
-
-                    */ 
-
-                #else
-                    const bool use_circ_model    = false; 
-                    CirculationModel *circ_model = NULL; 
-                    pout << "To constructor\n";
-
-                    std::string fourier_coeffs_name; 
-                    if (input_db->keyExists("FOURIER_COEFFS_FILENAME")){
-                        fourier_coeffs_name = input_db->getString("FOURIER_COEFFS_FILENAME");
-                    }
-                    else {
-                        fourier_coeffs_name = "fourier_coeffs.txt"; 
-                    }
-
-                    fourier_series_data *fourier_series = new fourier_series_data(fourier_coeffs_name.c_str(), dt);
-                    pout << "Series data successfully built\n";
-                #endif
-
-            #endif 
-
-
+                fourier_series_data *fourier_series = new fourier_series_data(fourier_coeffs_name.c_str(), dt);
+                pout << "Series data successfully built\n";
+            #endif
+    
             Pointer<FourierBodyForce> body_force = new FourierBodyForce(fourier_series, use_circ_model, circ_model, navier_stokes_integrator, patch_hierarchy);
             time_integrator->registerBodyForceFunction(body_force);
             
         #endif // #ifdef FOURIER_SERIES_BODY_FORCE
+
+
+        #ifdef USE_CIRC_MODEL_RV_PA
+             
+            std::string fourier_coeffs_name_rv; 
+            if (input_db->keyExists("FOURIER_COEFFS_FILENAME_RV")){
+                fourier_coeffs_name_rv = input_db->getString("FOURIER_COEFFS_FILENAME_RV");
+            }
+            else {
+                fourier_coeffs_name_rv = "fourier_coeffs_rv.txt"; 
+            }
+
+            fourier_series_data *fourier_series_rv = new fourier_series_data(fourier_coeffs_name_rv.c_str(), dt);
+
+            std::string fourier_coeffs_name_rpa; 
+            if (input_db->keyExists("FOURIER_COEFFS_FILENAME_RPA")){
+                fourier_coeffs_name_rpa = input_db->getString("FOURIER_COEFFS_FILENAME_RPA");
+            }
+            else {
+                fourier_coeffs_name_rpa = "fourier_coeffs_rv.txt"; 
+            }
+
+            fourier_series_data *fourier_series_rpa = new fourier_series_data(fourier_coeffs_name_rpa.c_str(), dt);
+
+            std::string fourier_coeffs_name_lpa; 
+            if (input_db->keyExists("FOURIER_COEFFS_FILENAME_LPA")){
+                fourier_coeffs_name_lpa = input_db->getString("FOURIER_COEFFS_FILENAME_LPA");
+            }
+            else {
+                fourier_coeffs_name_lpa = "fourier_coeffs_lpa.txt"; 
+            }
+
+            // boundary vertex files 
+            std::string right_ventricle_vertices_file_name; 
+            if (input_db->keyExists("BOUNDARY_FILENAME_RV")){
+                right_ventricle_vertices_file_name = input_db->getString("BOUNDARY_FILENAME_RV");
+            }
+            else {
+                right_ventricle_vertices_file_name = "right_ventricle_bdry.vertex"; 
+            }
+
+            std::string right_pa_vertices_file_name; 
+            if (input_db->keyExists("BOUNDARY_FILENAME_RPA")){
+                right_pa_vertices_file_name = input_db->getString("BOUNDARY_FILENAME_RPA");
+            }
+            else {
+                right_pa_vertices_file_name = "right_pa_bdry.vertex"; 
+            }
+
+            std::string left_pa_vertices_file_name; 
+            if (input_db->keyExists("BOUNDARY_FILENAME_LPA")){
+                left_pa_vertices_file_name = input_db->getString("BOUNDARY_FILENAME_LPA");
+            }
+            else {
+                left_pa_vertices_file_name = "left_pa_bdry.vertex"; 
+            }
+
+            // scaled cycle length for this patient 
+            double t_cycle_length = input_db->getDouble("CYCLE_DURATION");
+
+            // start this far into the Fourier series 
+            double t_offset_start_bcs_unscaled; 
+            if (input_db->keyExists("T_OFFSET_START_BCS_UNSCALED"))
+            {
+                t_offset_start_bcs_unscaled = input_db->getDouble("T_OFFSET_START_BCS_UNSCALED"); // starts this 
+            }
+            else {
+                t_offset_start_bcs_unscaled = 0.0; 
+            }
+
+            // start in physical time with relation to Fourier series 
+            double t_offeset_start = t_offset_start_bcs_unscaled * (t_cycle_length / fourier_series_rv->L);
+
+            fourier_series_data *fourier_series_lpa = new fourier_series_data(fourier_coeffs_name_lpa.c_str(), dt);
+
+            CirculationModel_RV_PA *circ_model_rv_pa = new CirculationModel_RV_PA(fourier_series_rv, 
+                                                                                  fourier_series_rpa,
+                                                                                  fourier_series_lpa,
+                                                                                  right_ventricle_vertices_file_name,
+                                                                                  right_pa_vertices_file_name,
+                                                                                  left_pa_vertices_file_name,
+                                                                                  t_cycle_length,
+                                                                                  t_offset_start_bcs_unscaled, 
+                                                                                  time_integrator->getIntegratorTime()); 
+
+        #endif // #ifdef USE_CIRC_MODEL_RV_PA
 
 
         #ifdef MOVING_PAPILLARY
@@ -765,7 +766,13 @@ int main(int argc, char* argv[])
                     flux_output_stream.flush(); 
                 }                
             
-                body_force->d_flux_z = flux_valve_ring[0]; 
+                #ifdef FOURIER_SERIES_BODY_FORCE
+                    body_force->d_flux_z = flux_valve_ring[0]; 
+                #endif 
+
+                #ifdef CirculationModel_RV_PA
+                    circ_model_rv_pa->set_Q_valve(flux_valve_ring[0]); 
+                #endif 
             
             #endif
             
@@ -788,6 +795,21 @@ int main(int argc, char* argv[])
                     
                 }
             #endif 
+
+            // Update the circulation model if used 
+            #ifdef USE_CIRC_MODEL_RV_PA
+                {
+                    Pointer<hier::Variable<NDIM> > U_var = navier_stokes_integrator->getVelocityVariable();
+                    Pointer<hier::Variable<NDIM> > P_var = navier_stokes_integrator->getPressureVariable();
+                    Pointer<VariableContext> current_ctx = navier_stokes_integrator->getCurrentContext();
+                    const int U_current_idx = var_db->mapVariableAndContextToIndex(U_var, current_ctx);
+                    const int P_current_idx = var_db->mapVariableAndContextToIndex(P_var, current_ctx);
+                    Pointer<HierarchyMathOps> hier_math_ops = navier_stokes_integrator->getHierarchyMathOps();
+                    const int wgt_cc_idx = hier_math_ops->getCellWeightPatchDescriptorIndex();
+                    const int wgt_sc_idx = hier_math_ops->getSideWeightPatchDescriptorIndex();
+                    circ_model_rv_pa->advanceTimeDependentData(dt, patch_hierarchy, U_current_idx, P_current_idx, wgt_cc_idx, wgt_sc_idx);
+                }
+            #endif
             
             
             if (dump_restart_data && (iteration_num % restart_dump_interval == 0 || last_step))

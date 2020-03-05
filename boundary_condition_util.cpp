@@ -377,8 +377,8 @@ void VelocityBcCoefs_RV_PA::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_
             X[d] = x_lower[d] + dx[d] * (double(i(d) - patch_lower(d)) + (d == axis ? 0.0 : 0.5));
         }
 
-        double X_in_plane_1; 
-        double X_in_plane_2; 
+        double X_in_plane_1 = 0.0; 
+        double X_in_plane_2 = 0.0; 
         if (axis == 0)
         {
             X_in_plane_1 = X[1]; 
@@ -393,6 +393,10 @@ void VelocityBcCoefs_RV_PA::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_
         {
             X_in_plane_1 = X[0]; 
             X_in_plane_2 = X[1]; 
+        }
+        else
+        {
+            TBOX_ERROR("Axis has value that is not 0 1 2\n"); 
         }
 
         const int in_right_ventricle  = d_circ_model_rv_pa->point_in_right_ventricle(X_in_plane_1, X_in_plane_2, axis, side);
