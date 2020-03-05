@@ -268,51 +268,93 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
 
                         if (d_circ_model_rv_pa){
 
-/*                            const bool inflow_bdry_aorta        = (d_circ_model_with_lv->d_Q_aorta < 0.0);
-                            const bool outflow_bdry_aorta       = !(inflow_bdry_aorta);
-                            const bool inflow_bdry_left_atrium  = (d_circ_model_with_lv->d_Q_left_atrium < 0.0);
-                            const bool outflow_bdry_left_atrium = !(inflow_bdry_left_atrium);
+                            const bool inflow_bdry_right_ventricle  = (d_circ_model_rv_pa->d_Q_right_ventricle < 0.0);
+                            const bool outflow_bdry_right_ventricle = !(inflow_bdry_right_ventricle);
+                            const bool inflow_bdry_right_pa         = (d_circ_model_rv_pa->d_Q_right_pa < 0.0);
+                            const bool outflow_bdry_right_pa        = !(inflow_bdry_right_pa);
+                            const bool inflow_bdry_left_pa          = (d_circ_model_rv_pa->d_Q_left_pa < 0.0);
+                            const bool outflow_bdry_left_pa         = !(inflow_bdry_left_pa);
 
-                            const int in_aorta  = d_circ_model_with_lv->point_in_aorta(X[0],X[1]); 
-                            const int in_atrium = d_circ_model_with_lv->point_in_atrium(X[0],X[1]); 
-                            if (in_aorta && in_atrium){
-                                TBOX_ERROR("Position is within both aorta and atrium, should be impossible\n"); 
+                            double X_in_plane_1; 
+                            double X_in_plane_2; 
+                            if (axis == 0)
+                            {
+                                X_in_plane_1 = X[1]; 
+                                X_in_plane_2 = X[2]; 
+                            }
+                            else if (axis == 1)
+                            {
+                                X_in_plane_1 = X[0]; 
+                                X_in_plane_2 = X[2]; 
+                            }
+                            else if (axis == 2)
+                            {
+                                X_in_plane_1 = X[0]; 
+                                X_in_plane_2 = X[1]; 
+                            }
+
+                            const int in_right_ventricle  = d_circ_model_rv_pa->point_in_right_ventricle(X_in_plane_1, X_in_plane_2, axis, side);
+                            const int in_right_pa         = d_circ_model_rv_pa->point_in_right_pa       (X_in_plane_1, X_in_plane_2, axis, side);
+                            const int in_left_pa          = d_circ_model_rv_pa->point_in_left_pa        (X_in_plane_1, X_in_plane_2, axis, side);
+
+                            if (in_right_ventricle && in_right_pa){
+                                TBOX_ERROR("Position is within two inlets and outlets, should be impossible\n"); 
+                            }
+                            if (in_right_ventricle && in_left_pa){
+                                TBOX_ERROR("Position is within two inlets and outlets, should be impossible\n"); 
+                            }
+                            if (in_right_pa && in_left_pa){
+                                TBOX_ERROR("Position is within two inlets and outlets, should be impossible\n"); 
                             }
 
                             // no bdry stab unless one of the conditionals is met 
                             double mask = 0.0;
                             double U_goal = 0.0; 
 
-                            if (in_aorta){
+                            if (in_right_ventricle){
                                 const double n = is_lower ? -1.0 : +1.0;
                                 const double U_dot_n = U * n;
-                                if ((inflow_bdry_aorta && U_dot_n > 0.0) || (outflow_bdry_aorta && U_dot_n < 0.0)){
+                                if ((inflow_bdry_right_ventricle && U_dot_n > 0.0) || (outflow_bdry_right_ventricle && U_dot_n < 0.0)){
                                     mask = 1.0;
                                 }
 
                                 #ifdef FLOW_AVERAGER
                                     // set goal to be equal to average flow 
-                                    if (d_circ_model_with_lv->d_area_initialized){
-                                        U_goal = d_circ_model_with_lv->d_Q_aorta / d_circ_model_with_lv->d_area_aorta;
+                                    if (d_circ_model_rv_pa->d_area_initialized){
+                                        U_goal = d_circ_model_rv_pa->d_Q_right_ventricle / d_circ_model_rv_pa->d_area_right_ventricle;
                                         mask = 1.0;
-                                        //pout << "In averager woot, aorta flux = " <<  d_circ_model_with_lv->d_Q_aorta << ", aorta area = " << d_circ_model_with_lv->d_area_aorta << "mean flow aorta = " << U_goal << "\n"; 
                                     }
                                 #endif
                             }
 
-                            if (in_atrium){
+                            if (in_right_pa){
                                 const double n = is_lower ? -1.0 : +1.0;
                                 const double U_dot_n = U * n;
-                                if ((inflow_bdry_left_atrium && U_dot_n > 0.0) || (outflow_bdry_left_atrium && U_dot_n < 0.0)){
+                                if ((inflow_bdry_right_pa && U_dot_n > 0.0) || (outflow_bdry_right_pa && U_dot_n < 0.0)){
                                     mask = 1.0;
                                 }
 
                                 #ifdef FLOW_AVERAGER
                                     // set goal to be equal to average flow 
-                                    if (d_circ_model_with_lv->d_area_initialized){
-                                        U_goal = d_circ_model_with_lv->d_Q_left_atrium / d_circ_model_with_lv->d_area_atrium; 
+                                    if (d_circ_model_rv_pa->d_area_initialized){
+                                        U_goal = d_circ_model_rv_pa->d_Q_right_pa / d_circ_model_rv_pa->d_area_right_pa;
                                         mask = 1.0;
-                                        //pout << "In averager woot, atrium flux = " <<  d_circ_model_with_lv->d_Q_left_atrium << ", atrium area = " << d_circ_model_with_lv->d_area_atrium << "mean flow atrium = " << U_goal << "\n"; 
+                                    }
+                                #endif
+                            }
+
+                            if (in_left_pa){
+                                const double n = is_lower ? -1.0 : +1.0;
+                                const double U_dot_n = U * n;
+                                if ((inflow_bdry_left_pa && U_dot_n > 0.0) || (outflow_bdry_left_pa && U_dot_n < 0.0)){
+                                    mask = 1.0;
+                                }
+
+                                #ifdef FLOW_AVERAGER
+                                    // set goal to be equal to average flow 
+                                    if (d_circ_model_rv_pa->d_area_initialized){
+                                        U_goal = d_circ_model_rv_pa->d_Q_left_pa / d_circ_model_rv_pa->d_area_left_pa;
+                                        mask = 1.0;
                                     }
                                 #endif
                             }
@@ -321,9 +363,9 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                 const double x_bdry = (is_lower ? x_lower[axis] : x_upper[axis]);
                                 mask *= smooth_kernel((X[axis] - x_bdry) / L);
                                 (*F_data)(i_s) += mask * (-kappa * (U - U_goal));
-                            }*/
+                            }
                             
-                        } // if (circ_model_with_lv)                        
+                        } // if (d_circ_model_rv_pa)
 
                     }
                 }

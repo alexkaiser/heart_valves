@@ -23,7 +23,7 @@
 #include <ibamr/app_namespaces.h>
 
 #include "CirculationModel_with_lv.h"
-
+#include "CirculationModel_RV_PA.h"
 
 /////////////////////////////// CLASS DEFINITION /////////////////////////////
 
