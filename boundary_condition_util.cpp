@@ -439,6 +439,12 @@ void VelocityBcCoefs_RV_PA::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_
                 // pout << "Applying pressure of " << d_circ_model_rv_pa->d_fourier_left_pa->values[idx] 
                 //      << "mmHg to left pa         at position (" << X[0] << ", " << X[1] << ", " << X[2] << ")\n"; 
             }
+            else if (side == 0){
+                // no slip on lower boundary (all inlets and outlets are lower)
+                a = 1.0;
+                b = 0.0;
+                g = 0.0;                
+            }
             else{
                 // no normal traction for zero pressure 
                 a = 0.0;
