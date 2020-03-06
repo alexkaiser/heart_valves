@@ -307,7 +307,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                             }
 
                             // no bdry stab unless one of the conditionals is met 
-                            double mask = 0.0;
+                            double mask = 1.0;
                             double U_goal = 0.0; 
 
                             if (in_right_ventricle){
