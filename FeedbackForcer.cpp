@@ -30,7 +30,7 @@
 
 #define FLOW_AVERAGER
 
-#define FULL_FLOW_CLAMP 
+// #define FULL_FLOW_CLAMP 
 #define FULL_FLOW_CLAMP_TIME 0.01
 
 /////////////////////////////// NAMESPACE ////////////////////////////////////
@@ -208,7 +208,6 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
 
                         if (d_circ_model_with_lv){
                             if ((axis == 2) && (side == 1)){
-                                // always working on the z axis, no need to 
                                 const bool inflow_bdry_aorta        = (d_circ_model_with_lv->d_Q_aorta < 0.0);
                                 const bool outflow_bdry_aorta       = !(inflow_bdry_aorta);
                                 const bool inflow_bdry_left_atrium  = (d_circ_model_with_lv->d_Q_left_atrium < 0.0);
@@ -321,7 +320,9 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                 #ifdef FLOW_AVERAGER
                                     // set goal to be equal to average flow 
                                     if (d_circ_model_rv_pa->d_area_initialized){
-                                        U_goal = d_circ_model_rv_pa->d_Q_right_ventricle / d_circ_model_rv_pa->d_area_right_ventricle;
+                                        if ((axis == d_circ_model_rv_pa->d_right_ventricle_axis) && (side == d_circ_model_rv_pa->d_right_ventricle_side)){
+                                            U_goal = d_circ_model_rv_pa->d_Q_right_ventricle / d_circ_model_rv_pa->d_area_right_ventricle;
+                                        }
                                         mask = 1.0;
                                     }
                                 #endif
@@ -337,7 +338,9 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                 #ifdef FLOW_AVERAGER
                                     // set goal to be equal to average flow 
                                     if (d_circ_model_rv_pa->d_area_initialized){
-                                        U_goal = d_circ_model_rv_pa->d_Q_right_pa / d_circ_model_rv_pa->d_area_right_pa;
+                                        if ((axis == d_circ_model_rv_pa->d_right_pa_axis) && (side == d_circ_model_rv_pa->d_right_pa_side)){
+                                            U_goal = d_circ_model_rv_pa->d_Q_right_pa / d_circ_model_rv_pa->d_area_right_pa;
+                                        }
                                         mask = 1.0;
                                     }
                                 #endif
@@ -353,7 +356,9 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                 #ifdef FLOW_AVERAGER
                                     // set goal to be equal to average flow 
                                     if (d_circ_model_rv_pa->d_area_initialized){
-                                        U_goal = d_circ_model_rv_pa->d_Q_left_pa / d_circ_model_rv_pa->d_area_left_pa;
+                                        if ((axis == d_circ_model_rv_pa->d_left_pa_axis) && (side == d_circ_model_rv_pa->d_left_pa_side)){
+                                            U_goal = d_circ_model_rv_pa->d_Q_left_pa / d_circ_model_rv_pa->d_area_left_pa;
+                                        }
                                         mask = 1.0;
                                     }
                                 #endif
