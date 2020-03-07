@@ -31,7 +31,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N_each_range = 2^6; % 2.^(2:8); 
+N_each_range = 2^7; % 2.^(2:8); 
 
 for N_each = N_each_range
 
@@ -58,7 +58,7 @@ for N_each = N_each_range
     end 
 
 
-    interactive = true; 
+    interactive = false; 
 
     from_history = false; 
     if from_history 
