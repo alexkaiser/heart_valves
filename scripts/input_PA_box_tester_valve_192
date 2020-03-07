@@ -16,7 +16,7 @@ FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_pa.txt"
 BOUNDARY_FILENAME_RV = "right_ventricle_bdry.vertex"
 BOUNDARY_FILENAME_RPA = "right_pa_bdry.vertex"
 BOUNDARY_FILENAME_LPA = "left_pa_bdry.vertex"
-CYCLE_DURATION = 0.8
+CYCLE_DURATION = 8.3250000000000002e-01
 
 NX = 178 
 NY = 106
@@ -32,11 +32,13 @@ Z_LOW  = -3.6859
 Z_HIGH = Z_LOW + NZ * DX_FLUID
 
 
+
+
 // solver parameters
 DELTA_FUNCTION      = "IB_5"
 SOLVER_TYPE         = "STAGGERED"         // the fluid solver to use (STAGGERED or COLLOCATED)
 START_TIME          = 0.0e0               // initial simulation time
-END_TIME            = 0.8                 // final simulation time
+END_TIME            = 2*CYCLE_DURATION    // final simulation time
 GROW_DT             = 2.0e0               // growth factor for timesteps
 NUM_CYCLES          = 1                   // number of cycles of fixed-point iteration
 CONVECTIVE_TS_TYPE = "ADAMS_BASHFORTH"    // convective time stepping type
