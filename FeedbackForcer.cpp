@@ -179,7 +179,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
             for(int side=0; side<2; side++)
             {
                 const bool is_lower = (side == 0);
-                const double L = max(dx_coarsest[axis], 2.0 * dx_finest[axis]);
+                const double L = 2*max(dx_coarsest[axis], 2.0 * dx_finest[axis]);
                 const int offset = static_cast<int>(L / dx[axis]);
 
                 if (pgeom->getTouchesRegularBoundary(axis, side)){
