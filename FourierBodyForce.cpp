@@ -190,6 +190,12 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
             const double max_height_force_applied = height_physical + x_lower_global[2];
             const double center = x_lower_global[axis] + 0.5*height_physical;
     
+            // multiplies width of damping by this much
+            // full damping support is L*dx
+            // required that L*dx + center < height_physical for a continuous mask 
+            double L = 2.0; 
+
+
             const int cycle_num = d_fluid_solver->getCurrentCycleNumber();
             const double dt = d_fluid_solver->getCurrentTimeStepSize();
             const double rho = d_fluid_solver->getStokesSpecifications()->getRho();
@@ -236,7 +242,7 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
                 kappa[0] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
                 kappa[1] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0;
                 kappa[2] = cycle_num >= 0 ? 0.25 * rho / dt : 0.0; 
-                                                                   
+
                 double goal[NDIM]; 
                 goal[0] = 0.0; 
                 goal[1] = 0.0; 
@@ -260,7 +266,7 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
                             const double U_new     = U_new_data ? (*U_new_data)(i_s) : 0.0;
                             const double U         = (cycle_num > 0) ? 0.5 * (U_new + U_current) : U_current;
 
-                            const double weight    = smooth_kernel((z - center) / (dx[axis]*height_physical));
+                            const double weight    = smooth_kernel((z - center) / (L*dx[axis]*height_physical));
                         
                             (*F_data)(i_s)        += weight*(-kappa[component] * (U - goal[component]));
                             

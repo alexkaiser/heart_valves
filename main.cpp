@@ -148,7 +148,7 @@ inline double deriv_spring_compressive_only_linear_spring(double R, const double
 // #define FOURIER_SERIES_BODY_FORCE
 
 // #define USE_CIRC_MODEL
-#define USE_CIRC_MODEL_RV_PA
+// #define USE_CIRC_MODEL_RV_PA
 
 #define MMHG_TO_CGS 1333.22368
 #define CGS_TO_MMHG 0.000750061683
