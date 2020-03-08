@@ -193,7 +193,7 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
             // multiplies width of damping by this much
             // full damping support is L*dx
             // required that L*dx + center < height_physical for a continuous mask 
-            double L = 2.0; 
+            double L = 1.0; 
 
 
             const int cycle_num = d_fluid_solver->getCurrentCycleNumber();
