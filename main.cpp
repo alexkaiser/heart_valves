@@ -575,8 +575,8 @@ int main(int argc, char* argv[])
             navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
 
             // flow straightener at boundary 
-            // Pointer<FeedbackForcer> feedback_forcer = new FeedbackForcer(navier_stokes_integrator, patch_hierarchy, NULL, circ_model_rv_pa);
-            // time_integrator->registerBodyForceFunction(feedback_forcer);
+            Pointer<FeedbackForcer> feedback_forcer = new FeedbackForcer(navier_stokes_integrator, patch_hierarchy, NULL, circ_model_rv_pa);
+            time_integrator->registerBodyForceFunction(feedback_forcer);
 
 
         #endif // #ifdef USE_CIRC_MODEL_RV_PA

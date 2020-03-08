@@ -30,7 +30,7 @@
 
 #define FLOW_AVERAGER
 
-// #define FULL_FLOW_CLAMP 
+#define FULL_FLOW_CLAMP 
 #define FULL_FLOW_CLAMP_TIME 0.01
 
 /////////////////////////////// NAMESPACE ////////////////////////////////////
@@ -326,6 +326,10 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                         mask = 1.0;
                                     }
                                 #endif
+
+                                mask = 0; 
+                                U_goal = 0; 
+
                             }
 
                             if (in_right_pa){
@@ -344,6 +348,9 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                         mask = 1.0;
                                     }
                                 #endif
+
+                                mask = 0; 
+                                U_goal = 0; 
                             }
 
                             if (in_left_pa){
@@ -362,6 +369,9 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                         mask = 1.0;
                                     }
                                 #endif
+
+                                mask = 0; 
+                                U_goal = 0; 
                             }
 
                             if (mask > 0.0){
