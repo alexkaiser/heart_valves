@@ -145,7 +145,7 @@ inline double deriv_spring_compressive_only_linear_spring(double R, const double
 
 #define DEBUG_OUTPUT 0 
 #define ENABLE_INSTRUMENTS
-// #define FOURIER_SERIES_BODY_FORCE
+#define FOURIER_SERIES_BODY_FORCE
 
 // #define USE_CIRC_MODEL
 // #define USE_CIRC_MODEL_RV_PA
