@@ -246,7 +246,7 @@ function [] = output_to_ibamr_format(valve)
     
     if isfield(valve, 'normal_thicken') && valve.normal_thicken
         params.normal_thicken = valve.normal_thicken; 
-        params.ds_extrude = valve.normal_thickness / (valve.num_copies-1); 
+        params.ds_extrude = valve.normal_thickness / valve.num_copies; 
         params.rest_len_cross_layer = params.ds_extrude; 
     end 
     
