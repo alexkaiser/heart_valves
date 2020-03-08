@@ -72,8 +72,7 @@
 #include <boundary_condition_util.h>
 #include <CirculationModel.h>
 #include <CirculationModel_with_lv.h>
-#include <CirculationModel_RV_PA.h>
-#include <FeedbackForcer.h>
+// #include <FeedbackForcer.h>
 #include <FourierBodyForce.h>
 
 
@@ -145,10 +144,9 @@ inline double deriv_spring_compressive_only_linear_spring(double R, const double
 
 #define DEBUG_OUTPUT 0 
 #define ENABLE_INSTRUMENTS
-// #define FOURIER_SERIES_BODY_FORCE
+#define FOURIER_SERIES_BODY_FORCE
 
 // #define USE_CIRC_MODEL
-#define USE_CIRC_MODEL_RV_PA
 
 #define MMHG_TO_CGS 1333.22368
 #define CGS_TO_MMHG 0.000750061683
@@ -192,10 +190,6 @@ int main(int argc, char* argv[])
     SAMRAI_MPI::setCommunicator(PETSC_COMM_WORLD);
     SAMRAI_MPI::setCallAbortInSerialInsteadOfExit();
     SAMRAIManager::startup();
-
-    #ifdef USE_CIRC_MODEL_RV_PA
-        pout << "USE_CIRC_MODEL_RV_PA is defined\n"; 
-    #endif
 
     { // cleanup dynamically allocated objects prior to shutdown
     
@@ -374,40 +368,39 @@ int main(int argc, char* argv[])
                 "p_init", app_initializer->getComponentDatabase("PressureInitialConditions"), grid_geometry);
             navier_stokes_integrator->registerPressureInitialConditions(p_init);
         }
+
+        // Create Eulerian boundary condition specification objects (when necessary).
+        vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM, static_cast<RobinBcCoefStrategy<NDIM>*>(NULL));
                 
         // This is needed to pull variables later
         VariableDatabase<NDIM>* var_db = VariableDatabase<NDIM>::getDatabase();
-
-        #ifndef USE_CIRC_MODEL_RV_PA
-            // Create Eulerian boundary condition specification objects (when necessary).
-            vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM, static_cast<RobinBcCoefStrategy<NDIM>*>(NULL));        
-            const bool periodic_domain = grid_geometry->getPeriodicShift().min() > 0;
-            if (!periodic_domain)
-            {   
-                pout << "Using b.c. from file, no series for boundary conditions (body force may still have series).\n";
-                for (unsigned int d = 0; d < NDIM; ++d)
-                {
-                    ostringstream bc_coefs_name_stream;
-                    bc_coefs_name_stream << "u_bc_coefs_" << d;
-                    const string bc_coefs_name = bc_coefs_name_stream.str();
-                    ostringstream bc_coefs_db_name_stream;
-                    bc_coefs_db_name_stream << "VelocityBcCoefs_" << d;
-                    const string bc_coefs_db_name = bc_coefs_db_name_stream.str();
-                    u_bc_coefs[d] = new muParserRobinBcCoefs(
-                        bc_coefs_name, app_initializer->getComponentDatabase(bc_coefs_db_name), grid_geometry);
-                }
-                navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
-             
-                if (solver_type == "STAGGERED" && input_db->keyExists("BoundaryStabilization"))
-                {
-                    time_integrator->registerBodyForceFunction(new StaggeredStokesOpenBoundaryStabilizer(
-                        "BoundaryStabilization",
-                        app_initializer->getComponentDatabase("BoundaryStabilization"),
-                        navier_stokes_integrator,
-                        grid_geometry));
-                }
+        
+        const bool periodic_domain = grid_geometry->getPeriodicShift().min() > 0;
+        if (!periodic_domain)
+        {        
+            pout << "Using b.c. from file, no series for boundary conditions (body force may still have series).\n";
+            for (unsigned int d = 0; d < NDIM; ++d)
+            {
+                ostringstream bc_coefs_name_stream;
+                bc_coefs_name_stream << "u_bc_coefs_" << d;
+                const string bc_coefs_name = bc_coefs_name_stream.str();
+                ostringstream bc_coefs_db_name_stream;
+                bc_coefs_db_name_stream << "VelocityBcCoefs_" << d;
+                const string bc_coefs_db_name = bc_coefs_db_name_stream.str();
+                u_bc_coefs[d] = new muParserRobinBcCoefs(
+                    bc_coefs_name, app_initializer->getComponentDatabase(bc_coefs_db_name), grid_geometry);
             }
-        #endif
+
+            navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
+            if (solver_type == "STAGGERED" && input_db->keyExists("BoundaryStabilization"))
+            {
+                time_integrator->registerBodyForceFunction(new StaggeredStokesOpenBoundaryStabilizer(
+                    "BoundaryStabilization",
+                    app_initializer->getComponentDatabase("BoundaryStabilization"),
+                    navier_stokes_integrator,
+                    grid_geometry));
+            }
+        }
 
         // generic body force
         // Create Eulerian body force function specification objects.
@@ -424,17 +417,9 @@ int main(int argc, char* argv[])
 
         const bool z_periodic = (grid_geometry->getPeriodicShift())[2];
         if (!z_periodic){
-            #ifdef FOURIER_SERIES_BODY_FORCE
-                pout << "Current implementation requires periodic z. Exiting.\n";
-                SAMRAI_MPI::abort();
-            #endif 
+            pout << "Current implementation requires periodic z. Exiting.\n";
+            SAMRAI_MPI::abort();
         }
-
-        #ifdef FOURIER_SERIES_BODY_FORCE
-            #ifdef USE_CIRC_MODEL_RV_PA
-                TBOX_ERROR("Cannot have both FOURIER_SERIES_BODY_FORCE and USE_CIRC_MODEL_RV_PA set")
-            #endif  
-        #endif 
 
 
         #ifdef FOURIER_SERIES_BODY_FORCE
@@ -481,105 +466,7 @@ int main(int argc, char* argv[])
             Pointer<FourierBodyForce> body_force = new FourierBodyForce(fourier_series, use_circ_model, circ_model, navier_stokes_integrator, patch_hierarchy);
             time_integrator->registerBodyForceFunction(body_force);
             
-        #endif // #ifdef FOURIER_SERIES_BODY_FORCE
-
-
-        #ifdef USE_CIRC_MODEL_RV_PA
-             
-            dt = input_db->getDouble("DT");
-
-            std::string fourier_coeffs_name_rv; 
-            if (input_db->keyExists("FOURIER_COEFFS_FILENAME_RV")){
-                fourier_coeffs_name_rv = input_db->getString("FOURIER_COEFFS_FILENAME_RV");
-            }
-            else {
-                fourier_coeffs_name_rv = "fourier_coeffs_rv.txt"; 
-            }
-            fourier_series_data *fourier_series_rv = new fourier_series_data(fourier_coeffs_name_rv.c_str(), dt);
-
-            std::string fourier_coeffs_name_rpa; 
-            if (input_db->keyExists("FOURIER_COEFFS_FILENAME_RPA")){
-                fourier_coeffs_name_rpa = input_db->getString("FOURIER_COEFFS_FILENAME_RPA");
-            }
-            else {
-                fourier_coeffs_name_rpa = "fourier_coeffs_rv.txt"; 
-            }
-            fourier_series_data *fourier_series_rpa = new fourier_series_data(fourier_coeffs_name_rpa.c_str(), dt);
-
-            std::string fourier_coeffs_name_lpa; 
-            if (input_db->keyExists("FOURIER_COEFFS_FILENAME_LPA")){
-                fourier_coeffs_name_lpa = input_db->getString("FOURIER_COEFFS_FILENAME_LPA");
-            }
-            else {
-                fourier_coeffs_name_lpa = "fourier_coeffs_lpa.txt"; 
-            }
-
-            // boundary vertex files 
-            std::string right_ventricle_vertices_file_name; 
-            if (input_db->keyExists("BOUNDARY_FILENAME_RV")){
-                right_ventricle_vertices_file_name = input_db->getString("BOUNDARY_FILENAME_RV");
-            }
-            else {
-                right_ventricle_vertices_file_name = "right_ventricle_bdry.vertex"; 
-            }
-
-            std::string right_pa_vertices_file_name; 
-            if (input_db->keyExists("BOUNDARY_FILENAME_RPA")){
-                right_pa_vertices_file_name = input_db->getString("BOUNDARY_FILENAME_RPA");
-            }
-            else {
-                right_pa_vertices_file_name = "right_pa_bdry.vertex"; 
-            }
-
-            std::string left_pa_vertices_file_name; 
-            if (input_db->keyExists("BOUNDARY_FILENAME_LPA")){
-                left_pa_vertices_file_name = input_db->getString("BOUNDARY_FILENAME_LPA");
-            }
-            else {
-                left_pa_vertices_file_name = "left_pa_bdry.vertex"; 
-            }
-
-            // scaled cycle length for this patient 
-            double t_cycle_length = input_db->getDouble("CYCLE_DURATION");
-
-            // start this far into the Fourier series 
-            double t_offset_start_bcs_unscaled; 
-            if (input_db->keyExists("T_OFFSET_START_BCS_UNSCALED"))
-            {
-                t_offset_start_bcs_unscaled = input_db->getDouble("T_OFFSET_START_BCS_UNSCALED"); // starts this 
-            }
-            else {
-                t_offset_start_bcs_unscaled = 0.0; 
-            }
-
-            // start in physical time with relation to Fourier series 
-            double t_offeset_start = t_offset_start_bcs_unscaled * (t_cycle_length / fourier_series_rv->L);
-
-            fourier_series_data *fourier_series_lpa = new fourier_series_data(fourier_coeffs_name_lpa.c_str(), dt);
-
-            CirculationModel_RV_PA *circ_model_rv_pa = new CirculationModel_RV_PA(fourier_series_rv, 
-                                                                                  fourier_series_rpa,
-                                                                                  fourier_series_lpa,
-                                                                                  right_ventricle_vertices_file_name,
-                                                                                  right_pa_vertices_file_name,
-                                                                                  left_pa_vertices_file_name,
-                                                                                  t_cycle_length,
-                                                                                  t_offset_start_bcs_unscaled, 
-                                                                                  time_integrator->getIntegratorTime()); 
-
-            // Create Eulerian boundary condition specification objects.
-            vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM);
-            for (int d = 0; d < NDIM; ++d){
-                u_bc_coefs[d] = new VelocityBcCoefs_RV_PA(d, circ_model_rv_pa);
-            }
-            navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
-
-            // flow straightener at boundary 
-            Pointer<FeedbackForcer> feedback_forcer = new FeedbackForcer(navier_stokes_integrator, patch_hierarchy, NULL, circ_model_rv_pa);
-            time_integrator->registerBodyForceFunction(feedback_forcer);
-
-
-        #endif // #ifdef USE_CIRC_MODEL_RV_PA
+        #endif
 
 
         #ifdef MOVING_PAPILLARY
@@ -785,13 +672,7 @@ int main(int argc, char* argv[])
                     flux_output_stream.flush(); 
                 }                
             
-                #ifdef FOURIER_SERIES_BODY_FORCE
-                    body_force->d_flux_z = flux_valve_ring[0]; 
-                #endif 
-
-                #ifdef CirculationModel_RV_PA
-                    circ_model_rv_pa->set_Q_valve(flux_valve_ring[0]); 
-                #endif 
+                body_force->d_flux_z = flux_valve_ring[0]; 
             
             #endif
             
@@ -814,21 +695,6 @@ int main(int argc, char* argv[])
                     
                 }
             #endif 
-
-            // Update the circulation model if used 
-            #ifdef USE_CIRC_MODEL_RV_PA
-                {
-                    Pointer<hier::Variable<NDIM> > U_var = navier_stokes_integrator->getVelocityVariable();
-                    Pointer<hier::Variable<NDIM> > P_var = navier_stokes_integrator->getPressureVariable();
-                    Pointer<VariableContext> current_ctx = navier_stokes_integrator->getCurrentContext();
-                    const int U_current_idx = var_db->mapVariableAndContextToIndex(U_var, current_ctx);
-                    const int P_current_idx = var_db->mapVariableAndContextToIndex(P_var, current_ctx);
-                    Pointer<HierarchyMathOps> hier_math_ops = navier_stokes_integrator->getHierarchyMathOps();
-                    const int wgt_cc_idx = hier_math_ops->getCellWeightPatchDescriptorIndex();
-                    const int wgt_sc_idx = hier_math_ops->getSideWeightPatchDescriptorIndex();
-                    circ_model_rv_pa->advanceTimeDependentData(dt, patch_hierarchy, U_current_idx, P_current_idx, wgt_cc_idx, wgt_sc_idx);
-                }
-            #endif
             
             
             if (dump_restart_data && (iteration_num % restart_dump_interval == 0 || last_step))
