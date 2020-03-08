@@ -145,10 +145,10 @@ inline double deriv_spring_compressive_only_linear_spring(double R, const double
 
 #define DEBUG_OUTPUT 0 
 #define ENABLE_INSTRUMENTS
-#define FOURIER_SERIES_BODY_FORCE
+// #define FOURIER_SERIES_BODY_FORCE
 
 // #define USE_CIRC_MODEL
-// #define USE_CIRC_MODEL_RV_PA
+#define USE_CIRC_MODEL_RV_PA
 
 #define MMHG_TO_CGS 1333.22368
 #define CGS_TO_MMHG 0.000750061683
@@ -575,8 +575,8 @@ int main(int argc, char* argv[])
             navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
 
             // flow straightener at boundary 
-            Pointer<FeedbackForcer> feedback_forcer = new FeedbackForcer(navier_stokes_integrator, patch_hierarchy, NULL, circ_model_rv_pa);
-            time_integrator->registerBodyForceFunction(feedback_forcer);
+            // Pointer<FeedbackForcer> feedback_forcer = new FeedbackForcer(navier_stokes_integrator, patch_hierarchy, NULL, circ_model_rv_pa);
+            // time_integrator->registerBodyForceFunction(feedback_forcer);
 
 
         #endif // #ifdef USE_CIRC_MODEL_RV_PA
