@@ -436,6 +436,12 @@ function [] = output_to_ibamr_format(valve)
             params.vertices_target(3,first_idx:last_idx) = params.vertices_target(3,first_idx:last_idx) + params.z_offset; 
         end 
         
+        if strcmp(params.type, 'aortic') && (copy == 1) && isfield(params, 'normal_thicken') && params.normal_thicken 
+            % set end links in circ fibers to be bc in the normal thicken since they cross each other 
+            % with the discontinuous normal at the commissure 
+            valve.leaflets(1) = add_bc_layer_at_commmissure_aortic(valve.leaflets(1)); 
+        end 
+            
         if (copy > 1) && ~strcmp(params.type, 'aortic')  
             params = place_cross_layer_springs(params); 
         end 
@@ -844,6 +850,38 @@ function X_extruded = normal_extrude_aortic(params, leaflet)
     end 
    
 end 
+
+function leaflet = add_bc_layer_at_commmissure_aortic(leaflet)
+    % labels the radial fiber to be boundary conditions 
+    % adjacent in the j direction of existing boundary conditions  
+    % this means that the adjacent radial fiber will be assigned to be a target 
+    % a single circumferential link on each fiber will be removed 
+    % and that link will become part of the commissure
+
+    j_max            = leaflet.j_max; 
+    k_max            = leaflet.k_max; 
+    is_bc            = leaflet.is_bc; 
+    is_internal_temp = leaflet.is_internal; 
+    is_bc_temp       = is_bc; 
+    
+    for j=1:j_max
+        for k=2:k_max
+            if is_bc(j,k) 
+                [j_plus__1 j_minus_1 k_plus__1 k_minus_1 m] = get_pressure_nbrs(leaflet,j,k); 
+
+                is_bc_temp(j_minus_1,k)       = true; 
+                is_bc_temp(j_plus__1,k)       = true; 
+                is_internal_temp(j_minus_1,k) = false; 
+                is_internal_temp(j_plus__1,k) = false; 
+            end 
+        end 
+    end 
+
+    leaflet.is_bc       = is_bc_temp; 
+    leaflet.is_internal = is_internal_temp; 
+
+end 
+
 
 
 
