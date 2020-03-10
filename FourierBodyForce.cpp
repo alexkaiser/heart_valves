@@ -266,7 +266,7 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
                             const double U_new     = U_new_data ? (*U_new_data)(i_s) : 0.0;
                             const double U         = (cycle_num > 0) ? 0.5 * (U_new + U_current) : U_current;
 
-                            const double weight    = smooth_kernel((z - center) / (L*dx[axis]*height_physical));
+                            const double weight    = smooth_kernel((z - center) / (height_physical/2.0));
                         
                             (*F_data)(i_s)        += weight*(-kappa[component] * (U - goal[component]));
                             
