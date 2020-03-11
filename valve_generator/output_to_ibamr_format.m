@@ -98,19 +98,35 @@ function [] = output_to_ibamr_format(valve)
     if ~strcmp(params.type, 'aortic') 
         params.papillary     = fopen(strcat(base_name, '.papillary'), 'w'); 
     end 
-    if isfield(valve, 'k_bend_radial') || isfield(valve, 'k_bend_circ')         
+    
+    if isfield(valve, 'k_bend_radial')           || isfield(valve, 'k_bend_circ') || ... 
+       isfield(valve, 'k_bend_radial_free_edge') || isfield(valve, 'k_bend_cross_layer')
+        
         if isfield(valve, 'k_bend_radial')
             k_bend_radial = valve.k_bend_radial; 
         else 
             k_bend_radial = 0.0; 
-        end 
+        end
+        
         if isfield(valve, 'k_bend_circ')
             k_bend_circ = valve.k_bend_circ; 
         else
             k_bend_circ = 0.0; 
-        end 
+        end
         
-        if any(k_bend_radial > 0) || (k_bend_circ > 0)
+        if isfield(valve, 'k_bend_radial_free_edge')
+            k_bend_radial_free_edge = valve.k_bend_radial_free_edge; 
+        else 
+            k_bend_radial_free_edge = 0.0; 
+        end
+        
+        if isfield(valve, 'k_bend_cross_layer')
+            k_bend_cross_layer = valve.k_bend_cross_layer; 
+        else 
+            k_bend_cross_layer = 0.0; 
+        end
+        
+        if any(k_bend_radial > 0) || (k_bend_circ > 0) || (k_bend_radial_free_edge > 0) || (k_bend_cross_layer > 0)
             params.beam_on = true; 
         else 
             params.beam_on = false;
@@ -228,6 +244,11 @@ function [] = output_to_ibamr_format(valve)
         params.total_per_layer         = nan; 
         params.min_idx_for_cross_layer = nan; 
         params.max_idx_for_cross_layer = nan; 
+        
+        if isfield(valve, 'k_bend_cross_layer') && (valve.k_bend_cross_layer > 0)
+            params.k_bend_cross_layer = valve.k_bend_cross_layer; 
+        end 
+        
     else 
         params.cross_layer_on          = false; 
     end 
@@ -452,6 +473,10 @@ function [] = output_to_ibamr_format(valve)
     if strcmp(params.type, 'aortic') 
         
         params = place_cross_layer_springs_aortic(params, valve.leaflets(1)); 
+        
+        if isfield(params, 'k_bend_cross_layer') && params.cross_layer_on
+            params = place_cross_layer_beams_aortic(params, valve.leaflets(1)); 
+        end 
         
         if isfield(valve, 'place_cylinder') && valve.place_cylinder
         
@@ -1372,6 +1397,31 @@ function params = place_cross_layer_springs_aortic(params, leaflet)
     end 
 end 
 
+
+function params = place_cross_layer_beams_aortic(params, leaflet)
+
+    if params.num_copies ~= 3
+        warning('must use three copies for cross layer beams'); 
+        return
+    end 
+    
+    k_bend_cross_layer = params.k_bend_cross_layer; 
+    
+    j_max = leaflet.j_max; 
+    k_max = leaflet.k_max; 
+    
+    for j=1:j_max
+        for k=1:k_max
+            idx_minus = params.layer_indices(1).indices_global(j,k); 
+            idx       = params.layer_indices(2).indices_global(j,k);  
+            idx_plus  = params.layer_indices(3).indices_global(j,k); 
+
+            params = beam_string(params, idx_minus, idx, idx_plus, k_bend_cross_layer);
+            
+        end
+    end 
+    
+end 
 
 function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ, ...
                                              k_bend_radial_free_edge, k_bend_radial_free_edge_percentage, ...

@@ -230,6 +230,8 @@ valve.k_bend_circ = 0;
 valve.k_bend_circ_free_edge = 0; 
 valve.k_bend_circ_free_edge_percentage = 0;
 
+valve.k_bend_cross_layer = 1e4 * 192/N; 
+
 % valve.k_bend_radial_interp_pts  = [0    .4  .51   1]; 
 
 % valve.kappa_radial_free_edge_compressive_unscaled = 1e3 / 256^2;
