@@ -749,15 +749,16 @@ int main(int argc, char* argv[])
             if (SAMRAI_MPI::getRank() == 0){
                 flux_output_stream << "]; \n\n"; 
                 
-                flux_output_stream << "fig = figure;\n plot(data(:,1), -data(:,2), 'k');\n";
+                flux_output_stream << "fig = figure;\n plot(data(:,1), data(:,2), 'k');\n";
                 flux_output_stream << "hold on;\n";
                 flux_output_stream << "dt = " << dt_original << "; \n"; 
-                flux_output_stream << "net_flux = dt*cumsum(-data(:,2));\n "; 
+                flux_output_stream << "net_flux = dt*cumsum(data(:,2));\n "; 
                 flux_output_stream << "plot(data(:,1), net_flux, '--k');\n";
                 flux_output_stream << "xlabel('t');\n ylabel('ml/s, ml');\n";
-                flux_output_stream << "legend('flux', 'net flux', 'Location', 'NorthWest')\n";
+                flux_output_stream << "legend('Flow', 'Cumulative Flow', 'Location', 'NorthWest')\n";
                 flux_output_stream << "plot(data(:,1), 0*data(:,2), ':k');\n";
                 flux_output_stream << "printfig(fig,'flux.eps');\n"; 
+                flux_output_stream << "final_total_flow = net_flux(end)\n";
                 
                 flux_output_stream.close();
             }
