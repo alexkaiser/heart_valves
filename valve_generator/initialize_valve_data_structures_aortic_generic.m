@@ -211,7 +211,7 @@ valve.target_net_unscaled       = 8 / valve.N;
 valve.target_papillary_unscaled = 2 * 40/128; 
 
 % viscoelastic damping coefficients for net, does not include copies 
-valve.eta_net_unscaled = 1e-5 * valve.target_net_unscaled; 
+valve.eta_net_unscaled = 1e-6 * valve.target_net_unscaled; 
 
 % viscoelastic damping coefficients for root attachments, does not include copies  
 valve.eta_papillary_unscaled = 0.0; valve.target_papillary_unscaled/500; 
