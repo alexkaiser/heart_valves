@@ -235,7 +235,7 @@ valve.k_bend_cross_layer = 0;
 % coaptation height for Swanson and Clark 
 % width is the same 
 valve.k_bend_nodule_length = 0.17*2*valve.skeleton.r;  
-valve.k_bend_nodule        = 1e5 * 192/N;  
+valve.k_bend_nodule        = 1e4 * 192/N;  
 
 % valve.k_bend_radial_interp_pts  = [0    .4  .51   1]; 
 
