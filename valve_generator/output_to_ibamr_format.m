@@ -518,10 +518,10 @@ function [] = output_to_ibamr_format(valve)
             
             if isfield(valve.skeleton, 'r_of_z')
                 % r that follows z 
-                params = place_cylinder(params, valve.leaflets(1), r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, tight_cylinder, z_extra_cylinder, valve.skeleton.r_of_z); 
+                params = place_cylinder(params, valve.leaflets(1), r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, eta_net, tight_cylinder, z_extra_cylinder, valve.skeleton.r_of_z); 
             else 
                 % constant r 
-                params = place_cylinder(params, valve.leaflets(1), r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, tight_cylinder, z_extra_cylinder); 
+                params = place_cylinder(params, valve.leaflets(1), r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, eta_net, tight_cylinder, z_extra_cylinder); 
             end 
         end 
     end 
@@ -1928,7 +1928,7 @@ function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac
 
 end 
 
-function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers, k_rel, k_target, tight_cylinder, z_extra, r_of_z)
+function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers, k_rel, k_target, eta, tight_cylinder, z_extra, r_of_z)
     % Places n_layers cylinders
     % cylinders have axial radial and circumferential fibers 
     % 
@@ -2028,7 +2028,7 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
                     params.vertices(:,params.global_idx + 1) = points(:,theta_idx,r_idx,z_idx);
 
                     % every valid vertex is a target point here 
-                    if exist('eta', 'var')
+                    if exist('eta', 'var') && eta > 0 
                         params = target_string(params, params.global_idx, k_target, eta);     
                     else
                         params = target_string(params, params.global_idx, k_target);     
