@@ -211,7 +211,7 @@ valve.target_net_unscaled       = 8 / valve.N;
 valve.target_papillary_unscaled = 2 * 40/128; 
 
 % viscoelastic damping coefficients for net, does not include copies 
-valve.eta_net_unscaled = 0.0; %valve.target_net_unscaled/5000; 
+valve.eta_net_unscaled = valve.target_net_unscaled/5000; 
 
 % viscoelastic damping coefficients for root attachments, does not include copies  
 valve.eta_papillary_unscaled = 0.0; valve.target_papillary_unscaled/500; 
@@ -234,8 +234,8 @@ valve.k_bend_cross_layer = 0;
 
 % coaptation height for Swanson and Clark 
 % width is the same 
-valve.k_bend_nodule_length = 0.17*2*valve.skeleton.r;  
-valve.k_bend_nodule        = 1e6 * 192/N;  
+% valve.k_bend_nodule_length = 0.17*2*valve.skeleton.r;  
+% valve.k_bend_nodule        = 1e6 * 192/N;  
 
 % valve.k_bend_radial_interp_pts  = [0    .4  .51   1]; 
 
