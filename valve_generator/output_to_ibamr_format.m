@@ -100,7 +100,8 @@ function [] = output_to_ibamr_format(valve)
     end 
     
     if isfield(valve, 'k_bend_radial')           || isfield(valve, 'k_bend_circ') || ... 
-       isfield(valve, 'k_bend_radial_free_edge') || isfield(valve, 'k_bend_cross_layer')
+       isfield(valve, 'k_bend_radial_free_edge') || isfield(valve, 'k_bend_cross_layer') ...
+       isfield(valve, 'k_bend_nodule') 
         
         if isfield(valve, 'k_bend_radial')
             k_bend_radial = valve.k_bend_radial; 
@@ -126,7 +127,16 @@ function [] = output_to_ibamr_format(valve)
             k_bend_cross_layer = 0.0; 
         end
         
-        if any(k_bend_radial > 0) || (k_bend_circ > 0) || (k_bend_radial_free_edge > 0) || (k_bend_cross_layer > 0)
+        if isfield(valve, 'k_bend_nodule')
+            k_bend_nodule = valve.k_bend_nodule; 
+            if ~isfield(valve, 'k_bend_nodule_length')
+                error('must provide nodule length if adding nodule bending'); 
+            end 
+        else 
+            k_bend_nodule = 0.0; 
+        end
+        
+        if any(k_bend_radial > 0) || (k_bend_circ > 0) || (k_bend_radial_free_edge > 0) || (k_bend_cross_layer > 0) || (k_bend_nodule)
             params.beam_on = true; 
         else 
             params.beam_on = false;
@@ -248,7 +258,6 @@ function [] = output_to_ibamr_format(valve)
         if isfield(valve, 'k_bend_cross_layer') && (valve.k_bend_cross_layer > 0)
             params.k_bend_cross_layer = valve.k_bend_cross_layer; 
         end 
-        
     else 
         params.cross_layer_on          = false; 
     end 
@@ -476,6 +485,10 @@ function [] = output_to_ibamr_format(valve)
         
         if isfield(params, 'k_bend_cross_layer') && params.cross_layer_on
             params = place_cross_layer_beams_aortic(params, valve.leaflets(1)); 
+        end 
+        
+        if isfield(valve, 'k_bend_nodule') && isfield(valve, 'k_bend_nodule_length') && params.beam_on
+            params = place_nodule_beams(params, valve.leaflets(1), valve.k_bend_nodule_length, valve.k_bend_nodule);
         end 
         
         if isfield(valve, 'place_cylinder') && valve.place_cylinder
@@ -1421,6 +1434,149 @@ function params = place_cross_layer_beams_aortic(params, leaflet)
         end
     end 
     
+end 
+
+function params = place_nodule_beams(params, leaflet, k_bend_nodule_length, k_bend_nodule)
+
+    if params.num_copies ~= 3
+        warning('must use three copies for cross layer beams'); 
+    end 
+
+    j_max              = leaflet.j_max; 
+    k_max              = leaflet.k_max; 
+    is_internal        = leaflet.is_internal;
+    R_v                = leaflet.R_v; 
+    R_u                = leaflet.R_u; 
+    N                  = leaflet.N; 
+    N_each             = leaflet.N_each; 
+    center_leaflet_idx = N_each/2; 
+    
+    k_min_bending_set = false; 
+    j = center_leaflet_idx; 
+    height = 0; 
+    for k=(k_max:-1:1)
+        j_nbr_tmp = j; 
+        k_nbr_tmp = k-1; 
+        [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+        
+        height = height + R_v(j_spr,k_spr); 
+        
+        if height > k_bend_nodule_length
+            k_min_bending_set = true; 
+            k_min_bending = k; 
+            break 
+        end 
+    end 
+    
+    if ~k_min_bending_set
+        error('boundary for bending not set'); 
+    end 
+    
+    j_range_bending_set = false; 
+    length = 0; 
+    k=k_max;
+    for j=(center_leaflet_idx+1):N_each
+        j_nbr_tmp = j-1; 
+        k_nbr_tmp = k; 
+        [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+
+        length = length + R_u(j_spr,k_spr);
+
+        if length > (k_bend_nodule_length/2)
+            j_max_one_leaflet_bending = j; 
+            j_min_one_leaflet_bending = N_each - j; % symmetric over center index  
+            j_range_bending_set = true; 
+            break 
+        end
+    end 
+    
+    if ~j_range_bending_set
+        error('boundary for bending not set'); 
+    end 
+    
+    masks = zeros(size(is_internal)); 
+    
+    for j=1:j_max
+        for k=1:k_max
+            j_this_leaflet = mod(j,N_each); 
+            
+            if k==k_max
+                'pause'; 
+            end 
+            
+            if (j_min_one_leaflet_bending <= j_this_leaflet) && (j_this_leaflet <= j_max_one_leaflet_bending) && (k_min_bending <= k) 
+                masks(j,k) = 1; 
+            end 
+        end 
+    end 
+    
+    for k=1:k_max
+        for j=1:j_max
+            % beams only centered at internal points 
+            if is_internal(j,k) && (masks(j,k) ~= 0)
+                               
+                for layer_idx = 1:params.num_copies
+                    % global index of current point 
+                    idx = params.layer_indices(layer_idx).indices_global(j,k); 
+
+                    % circ direction 
+                    j_minus_tmp = j - 1; 
+                    k_minus_tmp = k; 
+                    [valid_minus j_minus k_minus] = get_indices(leaflet, j, k, j_minus_tmp, k_minus_tmp); 
+                    if valid_minus
+                        idx_minus = params.layer_indices(layer_idx).indices_global(j_minus,k_minus); 
+                    end 
+
+                    j_plus_tmp  = j + 1;
+                    k_plus_tmp  = k; 
+                    [valid_plus j_plus k_plus] = get_indices(leaflet, j, k, j_plus_tmp, k_plus_tmp); 
+                    if valid_plus
+                        idx_plus = params.layer_indices(layer_idx).indices_global(j_plus,k_plus); 
+                    end 
+
+                    % both neighbors must be valid 
+                    if valid_minus && valid_plus                        
+                        if (k_minus ~= k) || (k ~= k_plus)
+                            error('k indices shuold not change when placing circ (j) beam');                            
+                        end              
+                        params = beam_string(params, idx_minus, idx, idx_plus, k_bend_nodule);
+                    end
+
+                    % radial direction 
+                    j_minus_tmp = j; 
+                    k_minus_tmp = k - 1; 
+                    [valid_minus j_minus k_minus] = get_indices(leaflet, j, k, j_minus_tmp, k_minus_tmp); 
+                    if valid_minus
+                        idx_minus = params.layer_indices(layer_idx).indices_global(j_minus,k_minus); 
+                    end 
+
+                    j_plus_tmp  = j;
+                    k_plus_tmp  = k + 1; 
+                    [valid_plus j_plus k_plus] = get_indices(leaflet, j, k, j_plus_tmp, k_plus_tmp); 
+                    if valid_plus
+                        idx_plus = params.layer_indices(layer_idx).indices_global(j_plus,k_plus); 
+                    end 
+
+                    % both neighbors must be valid 
+                    if valid_minus && valid_plus                        
+                        if (j_minus ~= j) || (j ~= j_plus)
+                            error('j indices shuold not change when placing radial (k) beam');                            
+                        end    
+                        params = beam_string(params, idx_minus, idx, idx_plus, k_bend_nodule); 
+                    end
+                end 
+                
+                if params.num_copies == 3
+                    % cross layer beam 
+                    idx_minus = params.layer_indices(1).indices_global(j,k); 
+                    idx       = params.layer_indices(2).indices_global(j,k);  
+                    idx_plus  = params.layer_indices(3).indices_global(j,k); 
+                    params = beam_string(params, idx_minus, idx, idx_plus, k_bend_nodule);
+                end 
+                
+            end 
+        end 
+    end
 end 
 
 function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ, ...
