@@ -186,7 +186,10 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
             
             // physical height of region of stabilization
             // stabilization is smoothed out from bottom of domain to here
-            const double height_physical = 0.1;
+            double height_physical = 0.1;
+            if (dx[axis] < 0.1){
+                height_physical = 0.2; 
+            }
             const double max_height_force_applied = height_physical + x_lower_global[2];
             const double center = x_lower_global[axis] + 0.5*height_physical;
     
