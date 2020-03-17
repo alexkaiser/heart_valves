@@ -114,6 +114,26 @@ vals_aorta_series = Series_aorta(t);
 % set(fig,'PaperPositionMode','auto')
 % printfig(fig, strcat('aorta_pressure_yellin', suffix))
 
+min_pressure_aorta = min(vals_aorta_series)
+max_pressure_aorta = max(vals_aorta_series)
+mean_pressure_aorta = mean(vals_aorta_series)
+
+vals_plus_one  = [vals_aorta_series(2:end), vals_aorta_series(1)]; 
+vals_minus_one = [vals_aorta_series(end), vals_aorta_series(1:(end-1))]; 
+dp_dt = (vals_plus_one - vals_minus_one)/(2*dt); 
+
+min_dp_dt_aorta = min(dp_dt)
+max_dp_dt_aorta = max(dp_dt)
+
+fig = figure; 
+plot(t, dp_dt, 'k'); 
+hold on
+title('dP/dt')
+xlabel('t')
+ylabel('dp/dt (mmHg/s)')
+set(fig, 'Position', [100, 100, 1000, 500])
+set(fig,'PaperPositionMode','auto')
+printfig(fig, strcat('dp_dt', suffix))
 
 fig = figure; 
 plot(t, vals_ventricle_series, 'k'); 
