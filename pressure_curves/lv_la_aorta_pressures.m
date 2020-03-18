@@ -118,6 +118,8 @@ min_pressure_aorta = min(vals_aorta_series)
 max_pressure_aorta = max(vals_aorta_series)
 mean_pressure_aorta = mean(vals_aorta_series)
 
+time_zero_pressure_aorta = vals_aorta_series(1)
+
 vals_plus_one  = [vals_aorta_series(2:end), vals_aorta_series(1)]; 
 vals_minus_one = [vals_aorta_series(end), vals_aorta_series(1:(end-1))]; 
 dp_dt = (vals_plus_one - vals_minus_one)/(2*dt); 
