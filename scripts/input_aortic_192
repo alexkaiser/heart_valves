@@ -15,7 +15,7 @@ NAME = "aortic_192"
 MAX_RESTART_TO_WRITE = 20
 
 R_proximal =  67.0665822049
-C =  0.00028848526349
+C =  0.000144242631745
 R_distal =  1274.26506189
 FOURIER_COEFFS_FILENAME = "fourier_coeffs_ventricle.txt"
 
