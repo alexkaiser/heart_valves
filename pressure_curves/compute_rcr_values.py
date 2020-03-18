@@ -24,7 +24,7 @@ if __name__== "__main__":
     MMHG_TO_CGS = 1333.22368
 
     P_mean = 1.0433437500000039e+02 * .9
-    dp_dt  = 1300.0
+    dp_dt  = 1300.0 * 2
     Q_min  = 0
     Q_max  = 500 
     # 5.6 L/min
