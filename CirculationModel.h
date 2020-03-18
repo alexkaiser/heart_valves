@@ -1,9 +1,6 @@
 // Filename: CirculationModel.h
 // Created on 04 May 2007 by Boyce Griffith
 
-// Modified 2019, Alexander D. Kaiser
-
-
 #ifndef included_CirculationModel
 #define included_CirculationModel
 
@@ -46,15 +43,13 @@ public:
      */
     double d_time;
     int d_nsrc;
-    vector<double> d_psrc;
-    vector<double> d_qsrc;
+    vector<double> d_qsrc, d_psrc;
     vector<string> d_srcname;
+    double d_P_Wk;
 
-    double d_P_PA; 
-    double d_P_LA;     
-    double d_Q_R; 
-    double d_Q_P; 
-    double d_Q_mi; 
+    double d_R_proximal; 
+    double d_R_distal; 
+    double d_C; 
 
 
     /*!
@@ -66,18 +61,19 @@ public:
     /*!
      * \brief Constructor
      */
-    CirculationModel(const string& object_name, double P_LA_0, double P_PV_0, double t=0.0, bool register_for_restart=true); 
+    CirculationModel(const string& object_name, Pointer<Database> input_db, bool register_for_restart, double P_initial);
 
     /*!
      * \brief Destructor.
      */
     virtual ~CirculationModel();
 
+    void windkessel_be_update(double& P_Wk, double& P_boundary, const double& Q_l_atrium, const double& dt); 
+
     /*!
      * \brief Advance time-dependent data.
      */
-    void advanceTimeDependentData(const double dt,
-                                  const double Q_mi);
+    void advanceTimeDependentData(const double dt, const double Q_input);
 
     /*!
      * \name Implementation of Serializable interface.
@@ -91,6 +87,7 @@ public:
     void putToDatabase(Pointer<Database> db);
 
     void write_plot_code(); 
+
 
 private:
     /*!

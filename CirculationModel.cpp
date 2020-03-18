@@ -1,7 +1,7 @@
 // Filename: CirculationModel.cpp
 // Created on 20 Aug 2007 by Boyce Griffith
 
-// Modified 2019, Alexander D. Kaiser
+// Modified by Alex Kaiser, 7/2016
 
 #include "CirculationModel.h"
 
@@ -28,128 +28,31 @@
 
 // C++ STDLIB INCLUDES
 #include <cassert>
-#include <cmath>
-
-#include <Eigen/Dense>
-using namespace Eigen;
 
 /////////////////////////////// NAMESPACE ////////////////////////////////////
 
 /////////////////////////////// STATIC ///////////////////////////////////////
 
-#define MIN_PER_L_T0_SEC_PER_ML 60.0e-3   // 60/1000
 #define MMHG_TO_CGS 1333.22368
-
-
-#define USE_WINDKESSEL
-// If not defined then this only computes fluxes
-// Pressure is set to zero
-// Currently hard coded for upper boundary
 
 namespace
 {
     // Name of output file.
     static const string DATA_FILE_NAME = "bc_data.m";
 
-    // constants 
-    static const double C_PA         =  4.12; // Pulmonary artery compliance, ml / mmHg 
-    static const double C_LA_relaxed =  3*1.6;  // Left atrial compliance ml / mmHg
-    static const double C_PV         = 10.0 - C_LA_relaxed;  // Pulmonary vein compliance, ml / mmHg 
-        
-    static const double R_P  = (9.0/5.6) * MIN_PER_L_T0_SEC_PER_ML; // Pulmonary resistance, mmHg / (ml/s)
-    
-    static const double beat_time = 0.8; 
-    static const double T_on = .53;   // Pulmonary valve open 
-    static const double T_off = .75;  // Pulmonary valve closes  
-    static const double T_peak = T_on + 0.4 * (T_off - T_on); // Peak pulmonary valve flow 
-    static const double stroke_volume = 75.0; // ml 
-    static const double h = 2.0 * stroke_volume / (T_off - T_on); // Peak flow to get given stroke volume
-    
-    static const bool   atrial_kick_on = true;
-    static const double atrial_kick_center = .44;
-    static const double atrial_kick_time_radius = .09;
-    static const double atrial_kick_time_width = 2.0 * atrial_kick_time_radius;
-    
-    inline double compute_Q_R(double t){
-        // Triangle wave flux 
-        
-        double t_reduced = t - beat_time * floor(t/beat_time); 
-        
-        if (t_reduced <= T_on)
-            return 0.0; 
-        else if (t_reduced <= T_peak)
-            return ( h/(T_peak - T_on) )*t_reduced - (h/(T_peak - T_on)  )*T_on;
-        else if (t_reduced <= T_off)
-            return (-h/(T_off - T_peak))*t_reduced + (h/(T_off -  T_peak))*T_off;
-        else if (t_reduced <= beat_time)
-            return 0.0;
-        
-        TBOX_ERROR("Valid time for flux not found.");
-        return 0.0;
-    }
-    
-    inline double compute_C_LA(double t){
-        
-        if(atrial_kick_on){
-            double t_reduced = t - beat_time * floor(t/beat_time);
-        
-            if (abs(t_reduced - atrial_kick_center) < atrial_kick_time_radius)
-                return C_LA_relaxed * (1.0 - pow(cos(M_PI * (t_reduced - atrial_kick_center) / atrial_kick_time_width),2));
-            else
-                return C_LA_relaxed;
-        }
-        
-        return C_LA_relaxed;
-    }
-    
-    
-    // Backward Euler update for windkessel model.
-    inline void
-    windkessel_be_update(double& Q_R, double& P_PA, double& Q_P, double& P_LA, const double Q_mi, const double t, const double dt)
-    {
-     
-        Q_R = compute_Q_R(t);
-        
-        double C_LA_current = compute_C_LA(t);
-        double C_LA_next    = compute_C_LA(t + dt);
-        
-        double a = C_PA/dt + 1/R_P; 
-        double b = -1/R_P; 
-        double c = -1/R_P; 
-        double d = (C_PV + C_LA_next)/dt + 1/R_P;
-        
-        double rhs[2];  
-        rhs[0] = (C_PA/dt)*P_PA + Q_R;
-        rhs[1] = ((C_PV + C_LA_current)/dt)*P_LA - Q_mi;
-        
-        double det = a*d - b*c; 
-        
-        // Closed form linear system solution 
-        P_PA = (1/det) * ( d*rhs[0] + -b*rhs[1]);
-        P_LA = (1/det) * (-c*rhs[0] +  a*rhs[1]);
-                
-        Q_P = (1/R_P) * (P_PA - P_LA);
-                
-        return;
-    } // windkessel_be_update
-
 }
 
 /////////////////////////////// PUBLIC ///////////////////////////////////////
 
-CirculationModel::CirculationModel(const string& object_name, double P_PA_0, double P_LA_0, double t, bool register_for_restart)
+CirculationModel::CirculationModel(const string& object_name, Pointer<Database> input_db, bool register_for_restart, double P_initial)
     : d_object_name(object_name),
       d_registered_for_restart(register_for_restart),
-      d_time(t),
+      d_time(0.0),
       d_nsrc(1),           // number of sets of variables
-      d_psrc(d_nsrc, 0.0), // pressure
       d_qsrc(d_nsrc, 0.0), // flux
+      d_psrc(d_nsrc, P_initial), // pressure
       d_srcname(d_nsrc),
-      d_P_PA(P_PA_0),
-      d_P_LA(P_LA_0), 
-      d_Q_R(0.0),
-      d_Q_P(0.0), 
-      d_Q_mi(0.0),
+      d_P_Wk(P_initial),
       d_bdry_interface_level_number(numeric_limits<int>::max())
 {
 #if !defined(NDEBUG)
@@ -158,6 +61,19 @@ CirculationModel::CirculationModel(const string& object_name, double P_PA_0, dou
     if (d_registered_for_restart)
     {
         RestartManager::getManager()->registerRestartItem(d_object_name, this);
+    }
+
+    if (input_db)
+    {
+        d_R_proximal = input_db->getDouble("R_proximal"); 
+        d_R_distal   = input_db->getDouble("R_distal"); 
+        d_C          = input_db->getDouble("C");
+        
+        std::cout << "input db got values R_proximal = " << d_R_proximal << "\tR_distal = " << d_R_distal << "\tC = " << d_C << "\n";   
+    }
+        else
+    {
+        TBOX_ERROR("Must provide valid input_db"); 
     }
 
     // Initialize object with data read from the input and restart databases.
@@ -169,8 +85,8 @@ CirculationModel::CirculationModel(const string& object_name, double P_PA_0, dou
     else
     {
         //   nsrcs = the number of sources in the valve tester:
-        //           (1) left atrium
-        d_srcname[0] = "left atrium       ";        
+        //           (1) windkessel
+        d_srcname[0] = "windkessel       ";        
     }
     return;
 } // CirculationModel
@@ -180,97 +96,28 @@ CirculationModel::~CirculationModel()
     return;
 } // ~CirculationModel
 
-void
-CirculationModel::advanceTimeDependentData(const double dt,
-                                           const double Q_mi)
+
+void CirculationModel::windkessel_be_update(double& P_Wk, double& P_boundary, const double& Q_l_atrium, const double& dt)
 {
-    /* 
-    // Compute the mean flow rates in the vicinity of the inflow and outflow
-    // boundaries.
-    std::fill(d_qsrc.begin(), d_qsrc.end(), 0.0);
-    for (int ln = 0; ln <= hierarchy->getFinestLevelNumber(); ++ln)
-    {
-        Pointer<PatchLevel<NDIM> > level = hierarchy->getPatchLevel(ln);
-        for (PatchLevel<NDIM>::Iterator p(level); p; p++)
-        {
-            Pointer<Patch<NDIM> > patch = level->getPatch(p());
-            Pointer<CartesianPatchGeometry<NDIM> > pgeom = patch->getPatchGeometry();
-            if (pgeom->getTouchesRegularBoundary())
-            {
-                Pointer<SideData<NDIM, double> > U_data = patch->getPatchData(U_idx);
-                Pointer<SideData<NDIM, double> > wgt_sc_data = patch->getPatchData(wgt_sc_idx);
-                const Box<NDIM>& patch_box = patch->getBox();
-                // const double* const x_lower = pgeom->getXLower();
-                const double* const dx = pgeom->getDx();
-                double dV = 1.0;
-                for (int d = 0; d < NDIM; ++d)
-                {
-                    dV *= dx[d];
-                }
+    // Backward Euler update for windkessel model.
+    P_Wk       = ((d_C / dt) * P_Wk + Q_l_atrium) / (d_C / dt + 1.0 / d_R_distal);        
+    P_boundary = P_Wk + d_R_proximal * Q_l_atrium;
+    return;
+} // windkessel_be_update
 
-                static const int axis = 2;  // Always z axis here
-                const int side = 1;         // Compute flux at the top only
 
-                const bool is_lower = side == 0;
-                if (pgeom->getTouchesRegularBoundary(axis, side))
-                {
-                    
-                    Vector n;
-                    for (int d = 0; d < NDIM; ++d)
-                    {
-                        n[d] = axis == d ? (is_lower ? -1.0 : +1.0) : 0.0;
-                    }
-                    Box<NDIM> side_box = patch_box;
-                    if (is_lower)
-                    {
-                        side_box.lower(axis) = patch_box.lower(axis);
-                        side_box.upper(axis) = patch_box.lower(axis);
-                    }
-                    else
-                    {
-                        side_box.lower(axis) = patch_box.upper(axis) + 1;
-                        side_box.upper(axis) = patch_box.upper(axis) + 1;
-                    }
-                    for (Box<NDIM>::Iterator b(side_box); b; b++)
-                    {
-                        const Index<NDIM>& i = b();
-                        
-                        // no conditional here, just add the flux in
-                        const SideIndex<NDIM> i_s(i, axis, SideIndex<NDIM>::Lower);
-                        if ((*wgt_sc_data)(i_s) > std::numeric_limits<double>::epsilon())
-                        {
-                            double dA = n[axis] * dV / dx[axis];
-                            d_qsrc[0] += (*U_data)(i_s)*dA;
-                            
-                            // pout << "adding " << (*U_data)(i_s)*dA << "to the flux\n";  
-                            
-                        }
-                    }
-                }
-            }
-        }
-    }
-    SAMRAI_MPI::sumReduction(&d_qsrc[0], d_nsrc);
+void
+CirculationModel::advanceTimeDependentData(const double dt, const double Q_input)
+{
+    d_qsrc[0] = Q_input; 
 
-    // pout << "computed flux = " << d_qsrc[0] << "\n"; 
-    */ 
-    
+    // The downstream pressure is determined by a three-element Windkessel model.
+    double P_boundary;
+    const double Q_source = d_qsrc[0];
+    double& P_Wk = d_P_Wk;
+    windkessel_be_update(P_Wk, P_boundary, Q_source, dt);
+    d_psrc[0] = P_boundary;
 
-    // The downstream (Atrial) pressure is determined by a zero-d model 
-    const double t = d_time;
-
-    double& Q_R  = d_Q_R;
-    double& P_PA = d_P_PA;
-    double& Q_P  = d_Q_P;
-    double& P_LA = d_P_LA;
-
-    // Mitral flux passed in 
-    d_Q_mi = Q_mi;
-    
-    windkessel_be_update(Q_R, P_PA, Q_P, P_LA, d_Q_mi, t, dt);
-    
-    // model in mmHg, body force converts 
-    d_psrc[0] = d_P_LA;
 
     // Update the current time.
     d_time += dt;
@@ -280,22 +127,22 @@ CirculationModel::advanceTimeDependentData(const double dt,
     plog.unsetf(ios_base::showpos);
     plog.unsetf(ios_base::scientific);
 
-    plog.precision(12);
-
     plog << "============================================================================\n"
          << "Circulation model variables at time " << d_time << ":\n";
 
-    plog << "P_PA (mmHg)\t P_LA (mmHg)\t Q_R (ml/s)\t Q_P (ml/s)\t Q_mi (ml/s)\n";
     plog.setf(ios_base::showpos);
     plog.setf(ios_base::scientific);
+    plog.precision(5);
+
+    plog << "Q           = " << d_qsrc[0] << " ml/s\n";
+    plog << "P_boundary  = " << d_psrc[0]/MMHG_TO_CGS << " mmHg\t" << d_psrc[0] << " dynes/cm^2\n";
+    plog << "P_Wk        = " << d_psrc[0]/MMHG_TO_CGS << " mmHg\t" << P_Wk      << " dynes/cm^2\n" ;  
     
-    plog << d_P_PA << ",\t " << d_P_LA << ",\t " << d_Q_R << ",\t " << d_Q_P << ",\t " << d_Q_mi << "\n";
     plog << "============================================================================\n";
 
     plog.unsetf(ios_base::showpos);
     plog.unsetf(ios_base::scientific);
     plog.precision(precision);
-    
 
     // Write the current state to disk.
     writeDataFile();
@@ -310,11 +157,7 @@ CirculationModel::putToDatabase(Pointer<Database> db)
     db->putDoubleArray("d_qsrc", &d_qsrc[0], d_nsrc);
     db->putDoubleArray("d_psrc", &d_psrc[0], d_nsrc);
     db->putStringArray("d_srcname", &d_srcname[0], d_nsrc);
-    db->putDouble("d_P_PA", d_P_PA);
-    db->putDouble("d_P_LA", d_P_LA);
-    db->putDouble("d_Q_R", d_Q_R);
-    db->putDouble("d_Q_P", d_Q_P);
-    db->putDouble("d_Q_mi", d_Q_mi);
+    db->putDouble("d_P_Wk", d_P_Wk);
     db->putInteger("d_bdry_interface_level_number", d_bdry_interface_level_number);
     return;
 } // putToDatabase
@@ -330,38 +173,24 @@ void CirculationModel::write_plot_code()
         fout.setf(ios_base::showpos);
         fout.precision(10);
         fout << "];\n";  
+        fout << "MMHG_TO_CGS = 1333.22368;\n"; 
         fout << "fig = figure;\n";
-        fout << "subplot(3,2,1)\n";
+        fout << "subplot(1,2,1)\n";
+        fout << "plot(bc_vals(:,1), bc_vals(:,2)/MMHG_TO_CGS)\n";
+        fout << "hold on\n"; 
+        fout << "plot(bc_vals(:,1), bc_vals(:,4)/MMHG_TO_CGS)\n";
+        fout << "legend('P_{Ao}', 'P_{Wk}');\n";  
+        fout << "subplot(1,2,2)\n";
         fout << "plot(bc_vals(:,1), bc_vals(:,2))\n";
-        fout << "title('P_{PA}')\n";
-        fout << "subplot(3,2,2)\n";
-        fout << "plot(bc_vals(:,1), bc_vals(:,3))\n";
-        fout << "title('P_{LA}')\n";
-        fout << "subplot(3,2,3)\n";
-        fout << "plot(bc_vals(:,1), bc_vals(:,4))\n";
-        fout << "title('Q_{R}')\n";
-        fout << "subplot(3,2,4)\n";
-        fout << "plot(bc_vals(:,1), bc_vals(:,5))\n";
-        fout << "title('Q_{P}')\n";
-        fout << "subplot(3,2,5)\n";
-        fout << "plot(bc_vals(:,1), bc_vals(:,6))\n";
-        fout << "title('Q_{mi}')\n";
+        fout << "hold on\n";
         fout << "dt = bc_vals(2,1) - bc_vals(1,1);\n"; 
-        fout << "net_flux = dt*cumsum(bc_vals(:,6));\n";
-        fout << "subplot(3,2,6)\n";
+        fout << "net_flux = dt*cumsum(bc_vals(:,2));\n";
         fout << "plot(bc_vals(:,1), net_flux)\n";
-        fout << "title('net Q')\n";
+        fout << "legend('Q', 'net Q')\n";
         fout << "printfig(fig, 'bc_model_variables')\n";
     }
     return;
 }
-
-
-
-
-
-
-
 
 
 /////////////////////////////// PROTECTED ////////////////////////////////////
@@ -379,9 +208,12 @@ CirculationModel::writeDataFile() const
         if (!from_restart && !file_initialized)
         {
             ofstream fout(DATA_FILE_NAME.c_str(), ios::out);
-            fout << "% time \t P_PA (mmHg)\t d_P_LA (mmHg)\t Q_R (ml/s)\t Q_P (ml/s)\t Q_mi (ml/s)"
+            fout << "% time       "
+                 << " P_outlet (dynes/cm^2)"
+                 << " Q (ml/s)"
+                 << " P_Wk (dynes/cm^2)"
                  << "\n"
-                 << "bc_vals = [";
+                 << "bc_data = [";
             file_initialized = true;
         }
 
@@ -392,7 +224,16 @@ CirculationModel::writeDataFile() const
             fout.setf(ios_base::scientific);
             fout.setf(ios_base::showpos);
             fout.precision(10);
-            fout << " " << d_P_PA << " " << d_P_LA << " " << d_Q_R << " " << d_Q_P << " " << d_Q_mi << "; \n";
+            fout << " " << d_psrc[n];
+            fout.setf(ios_base::scientific);
+            fout.setf(ios_base::showpos);
+            fout.precision(10);
+            fout << " " << d_qsrc[n];
+            fout.setf(ios_base::scientific);
+            fout.setf(ios_base::showpos);
+            fout.precision(10);
+            fout << " " << d_P_Wk;
+            fout << "; \n";
         }
     }
     return;
@@ -420,11 +261,7 @@ CirculationModel::getFromRestart()
     db->getDoubleArray("d_qsrc", &d_qsrc[0], d_nsrc);
     db->getDoubleArray("d_psrc", &d_psrc[0], d_nsrc);
     db->getStringArray("d_srcname", &d_srcname[0], d_nsrc);
-    d_P_PA = db->getDouble("d_P_PA");
-    d_P_LA = db->getDouble("d_P_LA");
-    d_Q_R  = db->getDouble("d_Q_R");
-    d_Q_P  = db->getDouble("d_Q_P");
-    d_Q_mi = db->getDouble("d_Q_mi");
+    d_P_Wk = db->getDouble("d_P_Wk");
     d_bdry_interface_level_number = db->getInteger("d_bdry_interface_level_number");
     return;
 } // getFromRestart

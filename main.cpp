@@ -146,7 +146,7 @@ inline double deriv_spring_compressive_only_linear_spring(double R, const double
 #define ENABLE_INSTRUMENTS
 #define FOURIER_SERIES_BODY_FORCE
 
-// #define USE_CIRC_MODEL
+#define USE_CIRC_MODEL
 
 #define MMHG_TO_CGS 1333.22368
 #define CGS_TO_MMHG 0.000750061683
@@ -429,22 +429,24 @@ int main(int argc, char* argv[])
             dt = input_db->getDouble("DT");
         
             #ifdef USE_CIRC_MODEL
-                bool restart_circ_model = true;
-        
-                double start = input_db->getDouble("START_TIME");
+                bool restart_circ_model = true; 
         
                 // End systolic / beginning diastolic PA pressure
-                double P_PA_0 = 24.0;
-        
-                // Beginningg pressure equal to ventricular pressure 
-                // Note that circ model has units of mmHg
-                // As does Fourier series 
-                double P_LA_0 = 13.0; //21.051427137375203;
+                double P_aorta_0 = 120.0 * MMHG_TO_CGS;
         
                 const bool use_circ_model = true; 
-                CirculationModel *circ_model   = new CirculationModel("circ_model", P_PA_0, P_LA_0, start, restart_circ_model);
+                CirculationModel *circ_model   = new CirculationModel("circ_model", input_db, restart_circ_model, P_aorta_0);
                 pout << "To constructor\n";
-                fourier_series_data *fourier_series = new fourier_series_data("fourier_coeffs_ventricle.txt", dt);
+
+                std::string fourier_coeffs_name; 
+                if (input_db->keyExists("FOURIER_COEFFS_FILENAME")){
+                    fourier_coeffs_name = input_db->getString("FOURIER_COEFFS_FILENAME");
+                }
+                else {
+                    fourier_coeffs_name = "fourier_coeffs_ventricle.txt"; 
+                }
+                fourier_series_data *fourier_series = new fourier_series_data(fourier_coeffs_name.c_str(), dt);
+
                 pout << "Series data successfully built\n";
             #else
                 const bool use_circ_model    = false; 
@@ -678,22 +680,10 @@ int main(int argc, char* argv[])
             
             // Update the circulation model if used 
             #ifdef USE_CIRC_MODEL
-                {
-/*              Pointer<hier::Variable<NDIM> > U_var = navier_stokes_integrator->getVelocityVariable();
-                Pointer<hier::Variable<NDIM> > P_var = navier_stokes_integrator->getPressureVariable();
-                Pointer<VariableContext> current_ctx = navier_stokes_integrator->getCurrentContext();
-                const int U_current_idx = var_db->mapVariableAndContextToIndex(U_var, current_ctx);
-                const int P_current_idx = var_db->mapVariableAndContextToIndex(P_var, current_ctx);
-                Pointer<HierarchyMathOps> hier_math_ops = navier_stokes_integrator->getHierarchyMathOps();
-                const int wgt_cc_idx = hier_math_ops->getCellWeightPatchDescriptorIndex();
-                const int wgt_sc_idx = hier_math_ops->getSideWeightPatchDescriptorIndex(); 
-                circ_model->advanceTimeDependentData(
-                    dt, patch_hierarchy, U_current_idx, P_current_idx, wgt_cc_idx, wgt_sc_idx);*/ 
-                    
+            
                 // remember that instruments read 
-                circ_model->advanceTimeDependentData(dt, -flux_valve_ring[0]); 
-                    
-                }
+                circ_model->advanceTimeDependentData(dt, flux_valve_ring[0]); 
+            
             #endif 
             
             

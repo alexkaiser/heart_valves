@@ -130,14 +130,14 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
     double force; 
 
     if (d_use_circ_model){
-        // left atrium pressure from circ model 
-        const double P_LA = MMHG_TO_CGS * d_circ_model->d_psrc[0];
+        // top of domain pressure from circ model
+        const double P_outlet_top = d_circ_model->d_psrc[0];
         
         // left ventricle pressure prescribed from Fourier series 
-        const double P_LV = MMHG_TO_CGS * d_fourier->values[idx]; 
+        const double P_bottom_prescribed = MMHG_TO_CGS * d_fourier->values[idx]; 
         
-        // sign is because forward pressure is down 
-        force = -(P_LA - P_LV) / z_domain_length; 
+        // no sign here 
+        force = (P_outlet_top - P_bottom_prescribed) / z_domain_length; 
     }
     else{ 
         // sign is because forward pressure is down 
@@ -160,8 +160,6 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
     // Flow straightener (if desired)
     #ifdef FLOW_STRAIGHTENER
     
-        
-
         // no straightener at time zero
         if (!initial_time){
         
@@ -186,10 +184,10 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
             
             // physical height of region of stabilization
             // stabilization is smoothed out from bottom of domain to here
-            double height_physical = 0.1;
-            if (dx[axis] < 0.1){
-                height_physical = 0.2; 
-            }
+            double height_physical = 0.2;
+            // if (dx[axis] < 0.1){
+            //     height_physical = 0.2; 
+            // }
             const double max_height_force_applied = height_physical + x_lower_global[2];
             const double center = x_lower_global[axis] + 0.5*height_physical;
     
@@ -197,7 +195,6 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
             // full damping support is L*dx
             // required that L*dx + center < height_physical for a continuous mask 
             double L = 2.0; 
-
 
             const int cycle_num = d_fluid_solver->getCurrentCycleNumber();
             const double dt = d_fluid_solver->getCurrentTimeStepSize();
