@@ -46,6 +46,7 @@ public:
     vector<double> d_qsrc, d_psrc;
     vector<string> d_srcname;
     double d_P_Wk;
+    double d_p_opposite;
 
     double d_R_proximal; 
     double d_R_distal; 

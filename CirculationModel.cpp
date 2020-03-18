@@ -51,6 +51,7 @@ CirculationModel::CirculationModel(const string& object_name, Pointer<Database> 
       d_nsrc(1),           // number of sets of variables
       d_qsrc(d_nsrc, 0.0), // flux
       d_psrc(d_nsrc, P_initial), // pressure
+      d_p_opposite(0.0), // pressure opposite face 
       d_srcname(d_nsrc),
       d_P_Wk(P_initial),
       d_bdry_interface_level_number(numeric_limits<int>::max())
@@ -158,6 +159,7 @@ CirculationModel::putToDatabase(Pointer<Database> db)
     db->putDoubleArray("d_psrc", &d_psrc[0], d_nsrc);
     db->putStringArray("d_srcname", &d_srcname[0], d_nsrc);
     db->putDouble("d_P_Wk", d_P_Wk);
+    db->putDouble("d_p_opposite", d_p_opposite);
     db->putInteger("d_bdry_interface_level_number", d_bdry_interface_level_number);
     return;
 } // putToDatabase
@@ -179,10 +181,12 @@ void CirculationModel::write_plot_code()
         fout << "p_aorta = bc_vals(:,2)/MMHG_TO_CGS;\n"; 
         fout << "q_aorta = bc_vals(:,3);\n"; 
         fout << "p_wk = bc_vals(:,4)/MMHG_TO_CGS;\n"; 
+        fout << "p_lv = bc_vals(:,5)/MMHG_TO_CGS;\n"; 
         fout << "subplot(2,1,1)\n";
         fout << "plot(times, p_aorta, 'k')\n";
         fout << "hold on\n"; 
         fout << "plot(times, p_wk, '--k')\n";
+        fout << "plot(times, p_lv, '.-k')\n";
         fout << "legend('P_{Ao}', 'P_{Wk}');\n";  
         fout << "subplot(2,1,2)\n";
         fout << "plot(times, q_aorta, 'k')\n";
@@ -217,6 +221,7 @@ CirculationModel::writeDataFile() const
                  << " P_outlet (dynes/cm^2)"
                  << " Q (ml/s)"
                  << " P_Wk (dynes/cm^2)"
+                 << " P_opposite (dynes/cm^2)" 
                  << "\n"
                  << "bc_vals = [";
             file_initialized = true;
@@ -238,6 +243,10 @@ CirculationModel::writeDataFile() const
             fout.setf(ios_base::showpos);
             fout.precision(10);
             fout << " " << d_P_Wk;
+            fout.setf(ios_base::scientific);
+            fout.setf(ios_base::showpos);
+            fout.precision(10);
+            fout << " " << d_p_opposite;
             fout << "; \n";
         }
     }
@@ -267,6 +276,7 @@ CirculationModel::getFromRestart()
     db->getDoubleArray("d_psrc", &d_psrc[0], d_nsrc);
     db->getStringArray("d_srcname", &d_srcname[0], d_nsrc);
     d_P_Wk = db->getDouble("d_P_Wk");
+    d_p_opposite = db->getDouble("d_p_opposite");
     d_bdry_interface_level_number = db->getInteger("d_bdry_interface_level_number");
     return;
 } // getFromRestart

@@ -135,6 +135,8 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
         
         // left ventricle pressure prescribed from Fourier series, units of mmHg 
         const double P_bottom_prescribed = MMHG_TO_CGS * d_fourier->values[idx]; 
+
+        d_circ_model->d_p_opposite = MMHG_TO_CGS * d_fourier->values[idx]; 
         
         force = -(P_outlet_top - P_bottom_prescribed) / z_domain_length; 
     }
