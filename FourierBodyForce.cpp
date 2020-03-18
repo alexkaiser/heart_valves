@@ -133,11 +133,10 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
         // top of domain pressure from circ model
         const double P_outlet_top = d_circ_model->d_psrc[0];
         
-        // left ventricle pressure prescribed from Fourier series 
+        // left ventricle pressure prescribed from Fourier series, units of mmHg 
         const double P_bottom_prescribed = MMHG_TO_CGS * d_fourier->values[idx]; 
         
-        // no sign here 
-        force = (P_outlet_top - P_bottom_prescribed) / z_domain_length; 
+        force = -(P_outlet_top - P_bottom_prescribed) / z_domain_length; 
     }
     else{ 
         // sign is because forward pressure is down 

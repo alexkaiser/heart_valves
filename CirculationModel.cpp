@@ -175,12 +175,12 @@ void CirculationModel::write_plot_code()
         fout << "];\n";  
         fout << "MMHG_TO_CGS = 1333.22368;\n"; 
         fout << "fig = figure;\n";
-        fout << "subplot(1,2,1)\n";
+        fout << "subplot(2,1,1)\n";
         fout << "plot(bc_vals(:,1), bc_vals(:,2)/MMHG_TO_CGS)\n";
         fout << "hold on\n"; 
         fout << "plot(bc_vals(:,1), bc_vals(:,4)/MMHG_TO_CGS)\n";
         fout << "legend('P_{Ao}', 'P_{Wk}');\n";  
-        fout << "subplot(1,2,2)\n";
+        fout << "subplot(2,1,2)\n";
         fout << "plot(bc_vals(:,1), bc_vals(:,2))\n";
         fout << "hold on\n";
         fout << "dt = bc_vals(2,1) - bc_vals(1,1);\n"; 
@@ -213,7 +213,7 @@ CirculationModel::writeDataFile() const
                  << " Q (ml/s)"
                  << " P_Wk (dynes/cm^2)"
                  << "\n"
-                 << "bc_data = [";
+                 << "bc_vals = [";
             file_initialized = true;
         }
 
