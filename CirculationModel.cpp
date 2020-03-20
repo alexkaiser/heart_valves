@@ -185,18 +185,27 @@ void CirculationModel::write_plot_code()
         fout << "subplot(2,1,1)\n";
         fout << "plot(times, p_aorta, 'k')\n";
         fout << "hold on\n"; 
-        fout << "plot(times, p_wk, '--k')\n";
-        fout << "plot(times, p_lv, '.-k')\n";
-        fout << "legend('P_{Ao}', 'P_{Wk}');\n";  
+        fout << "plot(times, p_wk, ':k')\n";
+        fout << "plot(times, p_lv, '--k')\n";
+        fout << "legend('P_{Ao}', 'P_{Wk}', 'P_{LV}', 'Location','NorthEastOutside');\n";  
+        fout << "xlabel('t (s)');\n"; 
+        fout << "ylabel('P (mmHg)');\n"; 
         fout << "subplot(2,1,2)\n";
         fout << "plot(times, q_aorta, 'k')\n";
         fout << "hold on\n";
         fout << "dt = times(2,1) - times(1);\n"; 
         fout << "net_flux = dt*cumsum(q_aorta);\n";
         fout << "plot(bc_vals(:,1), net_flux, '--k')\n";
-        fout << "plot(bc_vals(:,1), 0*net_flux, '.k')\n";
-        fout << "legend('Q', 'net Q')\n";
+        fout << "plot(bc_vals(:,1), 0*net_flux, ':k')\n";
+        fout << "legend('Q', 'net Q', 'Location','NorthEastOutside')\n";
+        fout << "xlabel('t (s)')\n";
+        fout << "ylabel('Flow (ml/s), Net Flow (ml)')\n";
+        fout << "set(fig, 'Position', [100, 100, 1000, 750])\n";
+        fout << "set(fig,'PaperPositionMode','auto')\n";
         fout << "printfig(fig, 'bc_model_variables')\n";
+        fout << "mean_p_aorta = mean(p_aorta)\n";
+        fout << "mean_p_wk    = mean(p_wk)\n";
+        fout << "mean_p_lv    = mean(p_lv)\n";
     }
     return;
 }
