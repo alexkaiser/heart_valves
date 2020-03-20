@@ -35,7 +35,7 @@ CONVECTIVE_OP_TYPE  = "PPM"               // convective differencing discretizat
 CONVECTIVE_FORM     = "ADVECTIVE"         // how to compute the convective terms
 NORMALIZE_PRESSURE  = FALSE               // whether to explicitly force the pressure to have mean zero
 CFL_MAX             = 0.3                 // maximum CFL number
-DT                  = 1.2e-5             // maximum timestep size
+DT                  = 1.0e-5              // maximum timestep size
 ERROR_ON_DT_CHANGE  = TRUE                // whether to emit an error message if the time step size changes
 VORTICITY_TAGGING   = TRUE                // whether to tag cells for refinement based on vorticity thresholds
 TAG_BUFFER          = 2                   // size of tag buffer used by grid generation algorithm
@@ -252,7 +252,7 @@ Main {
 
 // visualization dump parameters
    viz_writer                  = "VisIt","Silo"
-   viz_dump_interval           = 1 // int(1.0/(DT*600.0))       // output at 600 fps, 10x slow motion at 60 fps
+   viz_dump_interval           = int(1.0/(DT*600.0))       // output at 600 fps, 10x slow motion at 60 fps
    viz_dump_dirname            = "viz_IB3d_tree_cycle_256"
    visit_number_procs_per_file = 1
 
