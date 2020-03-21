@@ -179,6 +179,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
             for(int side=0; side<2; side++)
             {
                 const bool is_lower = (side == 0);
+                double height_physical = 0.2;
                 const double L = 2*max(dx_coarsest[axis], 2.0 * dx_finest[axis]);
                 const int offset = static_cast<int>(L / dx[axis]);
 
@@ -274,8 +275,8 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                             const bool inflow_bdry_left_pa          = (d_circ_model_rv_pa->d_Q_left_pa < 0.0);
                             const bool outflow_bdry_left_pa         = !(inflow_bdry_left_pa);
 
-                            double X_in_plane_1; 
-                            double X_in_plane_2; 
+                            double X_in_plane_1 = 0.0; 
+                            double X_in_plane_2 = 0.0; 
                             if (axis == 0)
                             {
                                 X_in_plane_1 = X[1]; 
@@ -290,6 +291,9 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                             {
                                 X_in_plane_1 = X[0]; 
                                 X_in_plane_2 = X[1]; 
+                            }
+                            else{
+                                TBOX_ERROR("Invalid axis\n"); 
                             }
 
                             const int in_right_ventricle  = d_circ_model_rv_pa->point_in_right_ventricle(X_in_plane_1, X_in_plane_2, axis, side);
@@ -306,9 +310,9 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                 TBOX_ERROR("Position is within two inlets and outlets, should be impossible\n"); 
                             }
 
-                            // no bdry stab unless one of the conditionals is met 
+                            // bdry stab on everywhere 
                             double mask = 1.0;
-                            double U_goal = 0.0; 
+                            double U_goal = 0.0; // damp to zero outside inlets and outlets 
 
                             if (in_right_ventricle){
                                 const double n = is_lower ? -1.0 : +1.0;
@@ -369,7 +373,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
 
                             if (mask > 0.0){
                                 const double x_bdry = (is_lower ? x_lower[axis] : x_upper[axis]);
-                                mask *= smooth_kernel((X[axis] - x_bdry) / L);
+                                mask *= smooth_kernel((X[axis] - x_bdry) / (height_physical/2.0));
                                 (*F_data)(i_s) += mask * (-kappa * (U - U_goal));
                             }
                             

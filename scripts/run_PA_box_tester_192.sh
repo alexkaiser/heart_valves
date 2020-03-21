@@ -17,14 +17,14 @@ module load openmpi/2.0.2
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_192_79676a_initial_stability_aortic_plus_2_rad_plus_2_circ_e1b973c_vessel_spring_down
+RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_192_9b4438_aortic_plus_2_rad_plus_4_circ_experimental_pressure_2mm_radius_damping
 mkdir $RUNDIR
 
 # set up run info 
 BASE_NAME=aortic_no_partition_192
 BASE_NAME_VESSEL=vessel
 INPUT_NAME=input_PA_box_tester_valve_192
-RUN_LINE="mpiexec --bind-to core -report-bindings main3d"
+RUN_LINE="mpiexec --bind-to core -report-bindings main_rv_pa"
 OPTIONS="-velocity_ksp_type cg -velocity_pc_type none -velocity_ksp_max_it 1 -velocity_ksp_norm_type none > output.txt 2>&1"
 SESSION_NAME="pa_valve_tester.session"
 VIEW_CLIPPING="0.2"
@@ -42,7 +42,7 @@ cp $BASE_NAME*                        $RUNDIR
 cp $BASE_NAME_VESSEL*                 $RUNDIR
 cp $INPUT_NAME                        $RUNDIR
 cp *.cpp                              $RUNDIR
-cp main3d                             $RUNDIR
+cp main_rv_pa                         $RUNDIR
 cp watchdog_job_restart.py            $RUNDIR
 cp kill_all_mpi.sh                    $RUNDIR
 cp run_PA_box_tester_192.sbatch       $RUNDIR
