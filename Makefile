@@ -18,16 +18,18 @@ OBJS = CirculationModel_with_lv.o \
        CirculationModel_RV_PA.o \
        FourierBodyForce.o \
        FeedbackForcer.o \
-       pnpoly.o \
-       main.o
-	
-main3d: $(IBAMR_LIB_3D) $(IBTK_LIB_3D) $(OBJS)
-	$(CXX) -o main3d $(CXXFLAGS) $(LDFLAGS) $(OBJS) $(IBAMR_LIB_3D) $(IBTK_LIB_3D) $(LDFLAGS) $(LIBS) -DNDIM=$(PDIM) 
+       pnpoly.o
 
-# CXXFLAGS += -DUSE_CIRC_MODEL_RV_PA
-# OBJS_RV_PA = CirculationModel_with_lv.o boundary_condition_util.o CirculationModel.o FourierBodyForce.o CirculationModel_RV_PA.o pnpoly.o main.o
-# main3d_rv_pa: $(IBAMR_LIB_3D) $(IBTK_LIB_3D) $(OBJS_RV_PA)
-# 	$(CXX) -o main3d_rv_pa -DUSE_CIRC_MODEL_RV_PA $(CXXFLAGS) $(LDFLAGS) $(OBJS_RV_PA) $(IBAMR_LIB_3D) $(IBTK_LIB_3D) $(LDFLAGS) $(LIBS) -DNDIM=$(PDIM) 
+MAIN = main.o
+	
+main3d: $(IBAMR_LIB_3D) $(IBTK_LIB_3D) $(OBJS) $(MAIN)
+	$(CXX) -o main3d $(CXXFLAGS) $(LDFLAGS) $(OBJS) $(MAIN) $(IBAMR_LIB_3D) $(IBTK_LIB_3D) $(LDFLAGS) $(LIBS) -DNDIM=$(PDIM) 
+
+MAIN_RV_PA = main_rv_pa.o
+
+main_rv_pa: $(IBAMR_LIB_3D) $(IBTK_LIB_3D) $(OBJS) $(MAIN_RV_PA)
+       $(CXX) -o main_rv_pa $(CXXFLAGS) $(LDFLAGS) $(OBJS) $(MAIN_RV_PA) $(IBAMR_LIB_3D) $(IBTK_LIB_3D) $(LDFLAGS) $(LIBS) -DNDIM=$(PDIM) 
+
 
 clean:
 	$(RM) main3d 

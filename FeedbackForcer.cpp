@@ -327,9 +327,6 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                     }
                                 #endif
 
-                                mask = 0; 
-                                U_goal = 0; 
-
                             }
 
                             if (in_right_pa){
@@ -349,8 +346,6 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                     }
                                 #endif
 
-                                mask = 0; 
-                                U_goal = 0; 
                             }
 
                             if (in_left_pa){
@@ -370,8 +365,6 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                     }
                                 #endif
 
-                                mask = 0; 
-                                U_goal = 0; 
                             }
 
                             if (mask > 0.0){
