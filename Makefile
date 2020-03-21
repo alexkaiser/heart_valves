@@ -21,17 +21,17 @@ OBJS = CirculationModel_with_lv.o \
        pnpoly.o
 
 MAIN = main.o
-	
+
 main3d: $(IBAMR_LIB_3D) $(IBTK_LIB_3D) $(OBJS) $(MAIN)
 	$(CXX) -o main3d $(CXXFLAGS) $(LDFLAGS) $(OBJS) $(MAIN) $(IBAMR_LIB_3D) $(IBTK_LIB_3D) $(LDFLAGS) $(LIBS) -DNDIM=$(PDIM) 
 
 MAIN_RV_PA = main_rv_pa.o
 
 main_rv_pa: $(IBAMR_LIB_3D) $(IBTK_LIB_3D) $(OBJS) $(MAIN_RV_PA)
-       $(CXX) -o main_rv_pa $(CXXFLAGS) $(LDFLAGS) $(OBJS) $(MAIN_RV_PA) $(IBAMR_LIB_3D) $(IBTK_LIB_3D) $(LDFLAGS) $(LIBS) -DNDIM=$(PDIM) 
+	$(CXX) -o main_rv_pa $(CXXFLAGS) $(LDFLAGS) $(OBJS) $(MAIN_RV_PA) $(IBAMR_LIB_3D) $(IBTK_LIB_3D) $(LDFLAGS) $(LIBS) -DNDIM=$(PDIM) 
 
 
 clean:
 	$(RM) main3d 
-	$(RM) main3d_rv_pa 
+	$(RM) main_rv_pa 
 	$(RM) *.o 
