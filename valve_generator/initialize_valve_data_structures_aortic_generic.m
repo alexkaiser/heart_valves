@@ -71,7 +71,7 @@ name = 'aortic';
 valve.name = name; 
 
 % does not place partition
-valve.in_heart = false; 
+valve.in_heart = true; 
 
 mri_box = true;
 
@@ -205,7 +205,7 @@ tension_coeffs.c_circ_dec_annulus = 1.5;
 % and scaling for copies is handled by the output routine 
 
 % scales for by mesh width for consistant total mesh force on ring 
-valve.target_net_unscaled       = 0.1 * 8 / valve.N; 
+valve.target_net_unscaled       = 8 / valve.N; 
 
 % does not scale since total number of points is constant 
 valve.target_papillary_unscaled = 2 * 40/128; 
