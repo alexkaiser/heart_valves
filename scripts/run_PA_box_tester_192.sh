@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=2
 #SBATCH --ntasks-per-node=24
-#SBATCH --time=24:00:00
+#SBATCH --time=48:00:00
 #SBATCH --mem=185GB
 #SBATCH --job-name=aortic_1
 #SBATCH --mail-user=adkaiser@gmail.com
@@ -17,7 +17,7 @@ module load openmpi/2.0.2
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_192_9b4438_aortic_plus_2_rad_plus_4_circ_experimental_pressure_2mm_radius_damping
+RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_192_844fd33_aortic_plus_2_rad_plus_4_circ_experimental_pressure_2mm_radius_damping_target_down_10x
 mkdir $RUNDIR
 
 # set up run info 
@@ -45,7 +45,7 @@ cp *.cpp                              $RUNDIR
 cp main_rv_pa                         $RUNDIR
 cp watchdog_job_restart.py            $RUNDIR
 cp kill_all_mpi.sh                    $RUNDIR
-cp run_PA_box_tester_192.sbatch       $RUNDIR
+cp run_PA_box_tester_192.sh           $RUNDIR
 cp run_parallel_movie.py              $RUNDIR
 
 # go to the run directory before running anything 
