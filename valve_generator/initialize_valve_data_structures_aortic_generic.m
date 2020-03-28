@@ -205,7 +205,7 @@ tension_coeffs.c_circ_dec_annulus = 1.5;
 % and scaling for copies is handled by the output routine 
 
 % scales for by mesh width for consistant total mesh force on ring 
-valve.target_net_unscaled       = 8 / valve.N; 
+valve.target_net_unscaled       = (8 / valve.N) * (192/N); 
 
 % does not scale since total number of points is constant 
 valve.target_papillary_unscaled = 2 * 40/128; 
