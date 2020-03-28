@@ -279,7 +279,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
         if (d_circ_model_rv_pa){
 
             // Attempt to prevent flow reversal points near the domain boundary.
-            double height_physical = 0.4;
+            double height_physical = 0.2;
 
             // hardcoded z axis top here 
             for(int axis=0; axis<NDIM; axis++){ 
