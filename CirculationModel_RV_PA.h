@@ -136,6 +136,7 @@ public:
     int point_in_right_pa(double testx, double testy, int axis, int side);
     int point_in_left_pa(double testx, double testy, int axis, int side);
 
+    void write_plot_code(); 
 
 private:
     /*!

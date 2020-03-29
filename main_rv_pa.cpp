@@ -789,7 +789,7 @@ int main(int argc, char* argv[])
                     body_force->d_flux_z = flux_valve_ring[0]; 
                 #endif 
 
-                #ifdef CirculationModel_RV_PA
+                #ifdef USE_CIRC_MODEL_RV_PA
                     circ_model_rv_pa->set_Q_valve(flux_valve_ring[0]); 
                 #endif 
             

@@ -11,6 +11,8 @@ include $(IBAMR_BUILD_DIR)/config/make.inc
 ######################################################################
 ## Build the application.
 
+all: main3d main_rv_pa
+
 PDIM = 3
 OBJS = CirculationModel_with_lv.o \
        boundary_condition_util.o \

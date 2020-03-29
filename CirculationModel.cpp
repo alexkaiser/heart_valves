@@ -236,7 +236,7 @@ CirculationModel::writeDataFile() const
             file_initialized = true;
         }
 
-        ofstream fout(DATA_FILE_NAME.c_str(), ios::app);
+        static ofstream fout(DATA_FILE_NAME.c_str(), ios::app);
         for (int n = 0; n < d_nsrc; ++n)
         {
             fout << d_time;

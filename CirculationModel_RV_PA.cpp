@@ -455,6 +455,54 @@ int CirculationModel_RV_PA::point_in_left_pa(double testx, double testy, int axi
     return pnpoly(d_n_pts_left_pa, d_left_pa_points_idx1, d_left_pa_points_idx2, testx, testy); 
 }
 
+void CirculationModel_RV_PA::write_plot_code()
+{
+    static const int mpi_root = 0;
+    if (SAMRAI_MPI::getRank() == mpi_root)
+    {
+        ofstream fout(DATA_FILE_NAME.c_str(), ios::app);
+        fout.setf(ios_base::scientific);
+        fout.setf(ios_base::showpos);
+        fout.precision(10);
+
+        fout << "];\n";
+        fout << "MMHG_TO_CGS = 1333.22368;\n";
+        fout << "fig = figure;\n";
+        fout << "times   =  bc_vals(:,1);\n";
+        fout << "p_rv    =  bc_vals(:,2);\n";
+        fout << "p_rpa   =  bc_vals(:,3);\n";
+        fout << "p_lpa   =  bc_vals(:,4);\n";
+        fout << "q_rv    = -bc_vals(:,5);\n";
+        fout << "q_rpa   =  bc_vals(:,6);\n";
+        fout << "q_lpa   =  bc_vals(:,7);\n";
+        fout << "q_valve =  bc_vals(:,8);\n";
+        fout << "\n";
+        fout << "subplot(2,1,1)\n";
+        fout << "plot(times, p_rv, 'k')\n";
+        fout << "hold on\n";
+        fout << "plot(times, p_rpa, ':k')\n";
+        fout << "plot(times, p_lpa, '-.k')\n";
+        fout << "legend('P_{RV}', 'P_{RPA}', 'P_{LPA}', 'Location','NorthEastOutside');\n";
+        fout << "xlabel('t (s)')\n";
+        fout << "ylabel('P (mmHg)')\n";
+        fout << "subplot(2,1,2)\n";
+        fout << "plot(times, q_rv, 'k')\n";
+        fout << "hold on\n";
+        fout << "plot(times, q_rpa, '--k')\n";
+        fout << "plot(times, q_lpa, '-.k')\n";
+        fout << "plot(bc_vals(:,1), zeros(size(q_rv)), ':k')\n";
+        fout << "legend('Q RV', 'Q RPA', 'Q LPA', 'Location', 'NorthEastOutside')\n";
+        fout << "xlabel('t (s)')\n";
+        fout << "ylabel('Flow (ml/s), Net Flow (ml)')\n";
+        fout << "set(fig, 'Position', [100, 100, 1000, 750])\n";
+        fout << "set(fig,'PaperPositionMode','auto')\n";
+        fout << "printfig(fig, 'bc_model_variables')\n";
+    }
+    return;
+}
+
+
+
 /////////////////////////////// PROTECTED ////////////////////////////////////
 
 /////////////////////////////// PRIVATE //////////////////////////////////////
@@ -476,7 +524,7 @@ CirculationModel_RV_PA::writeDataFile() const
             file_initialized = true;
         }
 
-        ofstream fout(DATA_FILE_NAME.c_str(), ios::app);
+        static ofstream fout(DATA_FILE_NAME.c_str(), ios::app);
 
         fout << d_time;
         fout.setf(ios_base::scientific);
