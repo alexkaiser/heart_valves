@@ -1,4 +1,4 @@
-
+ 
 // physical parameters
 MU  = 0.04                            // viscosity
 RHO = 1.0
@@ -14,9 +14,11 @@ REF_RATIO  = 4                            // refinement ratio between levels
 NAME = "aortic_384"
 MAX_RESTART_TO_WRITE = 20
 
-R_proximal =  74.5184246721
-C =  0.00115394105396
-R_distal =  1415.85006877
+// from "Estimation of total systemic arterial compliance in humans"
+// https://www.physiology.org/doi/10.1152/jappl.1990.69.1.112
+R_proximal =  77.0
+C = 0.001154
+R_distal =  1185.0
 FOURIER_COEFFS_FILENAME = "fourier_coeffs_ventricle.txt"
 
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_aorta_minus_ventricle.txt"
