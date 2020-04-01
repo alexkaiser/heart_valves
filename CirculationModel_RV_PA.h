@@ -55,12 +55,19 @@ public:
     int     d_right_ventricle_axis; 
     int     d_right_ventricle_side; 
 
+    bool d_rcr_bcs_on; 
+
     const fourier_series_data *d_fourier_right_pa;
     int     d_n_pts_right_pa;
     double* d_right_pa_points_idx1;
     double* d_right_pa_points_idx2;
     int     d_right_pa_axis; 
     int     d_right_pa_side;
+    double  d_right_pa_P;
+    double  d_right_pa_P_Wk;
+    double  d_right_pa_R_proximal; 
+    double  d_right_pa_R_distal; 
+    double  d_right_pa_C;
 
     const fourier_series_data *d_fourier_left_pa; 
     int     d_n_pts_left_pa;
@@ -68,6 +75,11 @@ public:
     double* d_left_pa_points_idx2;
     int     d_left_pa_axis; 
     int     d_left_pa_side;
+    double  d_left_pa_P;
+    double  d_left_pa_P_Wk;
+    double  d_left_pa_R_proximal; 
+    double  d_left_pa_R_distal; 
+    double  d_left_pa_C;
 
     double  d_cycle_duration;
     double  d_t_offset_bcs_unscaled;
@@ -91,15 +103,18 @@ public:
     /*!
      * \brief Constructor
      */
-    CirculationModel_RV_PA(const fourier_series_data *fourier_right_ventricle, 
-                                                       const fourier_series_data *fourier_right_pa, 
-                                                       const fourier_series_data *fourier_left_pa, 
-                                                       string right_ventricle_vertices_file_name,
-                                                       string right_pa_vertices_file_name,
-                                                       string left_pa_vertices_file_name,
-                                                       const double  cycle_duration,
-                                                       const double  t_offset_bcs_unscaled, 
-                                                       const double  initial_time); 
+    CirculationModel_RV_PA(Pointer<Database> input_db, 
+                                               const fourier_series_data *fourier_right_ventricle, 
+                                               const fourier_series_data *fourier_right_pa, 
+                                               const fourier_series_data *fourier_left_pa, 
+                                               string right_ventricle_vertices_file_name,
+                                               string right_pa_vertices_file_name,
+                                               string left_pa_vertices_file_name,
+                                               const double  cycle_duration,
+                                               const double  t_offset_bcs_unscaled, 
+                                               const double  initial_time, 
+                                               double P_initial_pa,
+                                               bool rcr_bcs_on);  
 
     /*!
      * \brief Destructor.

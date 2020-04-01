@@ -427,7 +427,12 @@ void VelocityBcCoefs_RV_PA::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_
                 // sign for negative in stress tensor
                 a = 0.0; 
                 b = 1.0; 
-                g = -MMHG_TO_CGS * d_circ_model_rv_pa->d_fourier_right_pa->values[idx];
+                if (d_circ_model_rv_pa->d_rcr_bcs_on){
+                    g = -d_circ_model_rv_pa->d_right_pa_P; 
+                }
+                else{
+                    g = -MMHG_TO_CGS * d_circ_model_rv_pa->d_fourier_right_pa->values[idx];
+                }
                 // pout << "Applying pressure of " << d_circ_model_rv_pa->d_fourier_right_pa->values[idx] 
                 //      << "mmHg to right pa        at position (" << X[0] << ", " << X[1] << ", " << X[2] << ")\n"; 
             }
@@ -435,7 +440,12 @@ void VelocityBcCoefs_RV_PA::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_
                 // sign for negative in stress tensor
                 a = 0.0; 
                 b = 1.0; 
-                g = -MMHG_TO_CGS * d_circ_model_rv_pa->d_fourier_left_pa->values[idx];
+                if (d_circ_model_rv_pa->d_rcr_bcs_on){
+                    g = -d_circ_model_rv_pa->d_left_pa_P; 
+                }
+                else{
+                    g = -MMHG_TO_CGS * d_circ_model_rv_pa->d_fourier_left_pa->values[idx];
+                }
                 // pout << "Applying pressure of " << d_circ_model_rv_pa->d_fourier_left_pa->values[idx] 
                 //      << "mmHg to left pa         at position (" << X[0] << ", " << X[1] << ", " << X[2] << ")\n"; 
             }

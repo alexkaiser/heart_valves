@@ -45,15 +45,18 @@ static const string DATA_FILE_NAME = "bc_data.m";
 
 /////////////////////////////// PUBLIC ///////////////////////////////////////
 
-CirculationModel_RV_PA::CirculationModel_RV_PA(const fourier_series_data *fourier_right_ventricle, 
-                                                   const fourier_series_data *fourier_right_pa, 
-                                                   const fourier_series_data *fourier_left_pa, 
-                                                   string right_ventricle_vertices_file_name,
-                                                   string right_pa_vertices_file_name,
-                                                   string left_pa_vertices_file_name,
-                                                   const double  cycle_duration,
-                                                   const double  t_offset_bcs_unscaled, 
-                                                   const double  initial_time)
+CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db, 
+                                               const fourier_series_data *fourier_right_ventricle, 
+                                               const fourier_series_data *fourier_right_pa, 
+                                               const fourier_series_data *fourier_left_pa, 
+                                               string right_ventricle_vertices_file_name,
+                                               string right_pa_vertices_file_name,
+                                               string left_pa_vertices_file_name,
+                                               const double  cycle_duration,
+                                               const double  t_offset_bcs_unscaled, 
+                                               const double  initial_time, 
+                                               double P_initial_pa,
+                                               bool rcr_bcs_on)
     : 
       d_object_name("circ_model_rv_pa"),  // constant name here  
       d_registered_for_restart(true),      // always true
@@ -67,10 +70,15 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(const fourier_series_data *fourie
       d_Q_right_pa       (0.0),
       d_Q_left_pa        (0.0),
       d_time(initial_time), 
+      d_right_pa_P(P_initial_pa), 
+      d_right_pa_P_Wk(P_initial_pa),
+      d_left_pa_P(P_initial_pa),
+      d_left_pa_P_Wk(P_initial_pa),
       d_area_right_ventricle(0.0),
       d_area_right_pa(0.0),
       d_area_left_pa (0.0),
-      d_area_initialized(false)
+      d_area_initialized(false), 
+      d_rcr_bcs_on(rcr_bcs_on)
 {
     
     if (d_registered_for_restart)
@@ -85,6 +93,27 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(const fourier_series_data *fourie
         getFromRestart();
     }
     
+    if ((input_db) && (d_rcr_bcs_on))
+    {
+        // left and right equal for now 
+        d_right_pa_R_proximal = input_db->getDouble("right_pa_R_proximal"); 
+        d_right_pa_R_distal   = input_db->getDouble("right_pa_R_distal"); 
+        d_right_pa_C          = input_db->getDouble("right_pa_C");
+
+        d_left_pa_R_proximal  = input_db->getDouble("left_pa_R_proximal"); 
+        d_left_pa_R_distal    = input_db->getDouble("left_pa_R_distal"); 
+        d_left_pa_C           = input_db->getDouble("left_pa_C");
+        
+        std::cout << "input db got values:\n"; 
+        std::cout << "right: R_proximal = " << d_right_pa_R_proximal << "\tR_distal = " << d_right_pa_R_distal << "\tC = " << d_right_pa_C << "\n";   
+        std::cout << "left : R_proximal = " << d_left_pa_R_proximal << "\tR_distal = " << d_left_pa_R_distal << "\tC = " << d_left_pa_C << "\n";   
+    }
+        else
+    {
+        TBOX_ERROR("Must provide valid input_db"); 
+    }
+
+
     double x,x_prev,y,y_prev,z,z_prev; 
     double tol = 1.0e-2; 
 
@@ -262,8 +291,8 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
                                     X[d] = x_lower[d] + dx[d] * (double(i(d) - patch_box.lower(d)) + (d == axis ? 0.0 : 0.5));
                                 }
 
-                                double X_in_plane_1; 
-                                double X_in_plane_2; 
+                                double X_in_plane_1 = 0.0; 
+                                double X_in_plane_2 = 0.0; 
                                 if (axis == 0)
                                 {
                                     X_in_plane_1 = X[1]; 
@@ -278,6 +307,9 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
                                 {
                                     X_in_plane_1 = X[0]; 
                                     X_in_plane_2 = X[1]; 
+                                }
+                                else{
+                                    TBOX_ERROR("Invalid value of axis\n"); 
                                 }
 
                                 const int in_right_ventricle  = this->point_in_right_ventricle(X_in_plane_1, X_in_plane_2, axis, side);
@@ -358,6 +390,18 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
         d_area_initialized = true;       
     }
 
+    if (d_rcr_bcs_on){
+        // The downstream pressure is determined by a three-element Windkessel model.
+
+        d_right_pa_P_Wk = ((d_right_pa_C / dt) * d_right_pa_P_Wk + d_Q_right_pa) / (d_right_pa_C / dt + 1.0 / d_right_pa_R_distal);        
+        d_right_pa_P = d_right_pa_P_Wk + d_right_pa_R_proximal * d_Q_right_pa;
+
+        d_left_pa_P_Wk = ((d_left_pa_C / dt) * d_left_pa_P_Wk + d_Q_left_pa) / (d_left_pa_C / dt + 1.0 / d_left_pa_R_distal);        
+        d_left_pa_P = d_left_pa_P_Wk + d_left_pa_R_proximal * d_Q_left_pa;
+    }
+
+    print_summary(); 
+
     // bool debug_out_areas = false; 
     // if (debug_out_areas){
     //     pout << "d_area_right_ventricle = " << d_area_right_ventricle << "\n"; 
@@ -401,6 +445,7 @@ void CirculationModel_RV_PA::set_Q_valve(double Q_valve){
 }
 
 
+
 void
 CirculationModel_RV_PA::putToDatabase(Pointer<Database> db)
 {
@@ -410,18 +455,41 @@ CirculationModel_RV_PA::putToDatabase(Pointer<Database> db)
     db->putDouble("d_Q_right_pa", d_Q_right_pa);
     db->putDouble("d_Q_left_pa", d_Q_left_pa);
     db->putDouble("d_Q_valve", d_Q_valve);
+    db->putDouble("d_right_pa_P", d_right_pa_P);
+    db->putDouble("d_right_pa_P_Wk", d_right_pa_P_Wk);
+    db->putDouble("d_left_pa_P",d_left_pa_P);
+    db->putDouble("d_left_pa_P_Wk",d_left_pa_P_Wk);
     db->putDouble("d_time", d_time); 
+    db->putBool("d_rcr_bcs_on", d_rcr_bcs_on); 
     return; 
 } // putToDatabase
 
 void CirculationModel_RV_PA::print_summary(){
 
     double P_right_ventricle = d_fourier_right_ventricle->values[d_current_idx_series]; 
-    double P_right_pa        = d_fourier_right_pa->values[d_current_idx_series];
-    double P_left_pa         = d_fourier_left_pa->values[d_current_idx_series];
+    double P_right_pa; 
+    double P_left_pa; 
 
-    pout << "% time \t P_right_ventricle (mmHg)\t P_right_pa (mmHg)\t P_left_pa (mmHg)\t Q_right_ventricle (ml/s)\t d_Q_right_pa (ml/s)\t d_Q_right_pa (ml/s)\tQ_valve (ml/s) \t idx\n" ; 
-    pout << d_time << " " << P_right_ventricle <<  " " << P_right_pa << " " << P_left_pa << " " << d_Q_right_ventricle << " " << d_Q_right_pa << " " << d_Q_left_pa << " " << d_Q_valve << " " << d_current_idx_series << "\n";    
+    if (d_rcr_bcs_on){
+        P_right_pa        = d_right_pa_P / MMHG_TO_CGS;
+        P_left_pa         = d_left_pa_P / MMHG_TO_CGS;
+    }
+    else{
+        P_right_pa        = d_fourier_right_pa->values[d_current_idx_series];
+        P_left_pa         = d_fourier_left_pa->values[d_current_idx_series];
+    }
+
+    pout << "rcr_bcs_on = " << d_rcr_bcs_on << "\n"; 
+    pout << "% time \t P_right_ventricle (mmHg)\t P_right_pa (mmHg)\t P_left_pa (mmHg)\t Q_right_ventricle (ml/s)\t d_Q_right_pa (ml/s)\t d_Q_right_pa (ml/s)\tQ_valve (ml/s) \t idx" ;
+    if (d_rcr_bcs_on){
+        pout << "\t right_pa_P_Wk\t left_pa_P_Wk\t "; 
+    }
+    pout << "\n";
+    pout << d_time << " " << P_right_ventricle <<  " " << P_right_pa << " " << P_left_pa << " " << d_Q_right_ventricle << " " << d_Q_right_pa << " " << d_Q_left_pa << " " << d_Q_valve << " " << d_current_idx_series; 
+    if (d_rcr_bcs_on){
+        pout  << " " << d_right_pa_P_Wk << " " << d_left_pa_P_Wk; 
+    }
+    pout << "\n";
 
 }
 
@@ -468,14 +536,16 @@ void CirculationModel_RV_PA::write_plot_code()
         fout << "];\n";
         fout << "MMHG_TO_CGS = 1333.22368;\n";
         fout << "fig = figure;\n";
-        fout << "times   =  bc_vals(:,1);\n";
-        fout << "p_rv    =  bc_vals(:,2);\n";
-        fout << "p_rpa   =  bc_vals(:,3);\n";
-        fout << "p_lpa   =  bc_vals(:,4);\n";
-        fout << "q_rv    = -bc_vals(:,5);\n";
-        fout << "q_rpa   =  bc_vals(:,6);\n";
-        fout << "q_lpa   =  bc_vals(:,7);\n";
-        fout << "q_valve =  bc_vals(:,8);\n";
+        fout << "times    =  bc_vals(:,1);\n";
+        fout << "p_rv     =  bc_vals(:,2);\n";
+        fout << "p_rpa    =  bc_vals(:,3);\n";
+        fout << "p_lpa    =  bc_vals(:,4);\n";
+        fout << "q_rv     = -bc_vals(:,5);\n";
+        fout << "q_rpa    =  bc_vals(:,6);\n";
+        fout << "q_lpa    =  bc_vals(:,7);\n";
+        fout << "q_valve  =  bc_vals(:,8);\n";
+        fout << "p_wk_rpa =  bc_vals(:,9);\n";
+        fout << "p_wk_lpa =  bc_vals(:,10);\n";
         fout << "\n";
         fout << "subplot(2,1,1)\n";
         fout << "plot(times, p_rv, 'k')\n";
@@ -508,7 +578,7 @@ void CirculationModel_RV_PA::write_plot_code()
 /////////////////////////////// PRIVATE //////////////////////////////////////
 
 void
-CirculationModel_RV_PA::writeDataFile() const
+    CirculationModel_RV_PA::writeDataFile() const
 {
     static const int mpi_root = 0;
     if (SAMRAI_MPI::getRank() == mpi_root)
@@ -532,9 +602,24 @@ CirculationModel_RV_PA::writeDataFile() const
         fout.precision(10);
 
         double P_right_ventricle = d_fourier_right_ventricle->values[d_current_idx_series]; 
-        double P_right_pa        = d_fourier_right_pa->values[d_current_idx_series];
-        double P_left_pa         = d_fourier_left_pa->values[d_current_idx_series];
-        fout << " " << P_right_ventricle <<  " " << P_right_pa << " " << P_left_pa << " " << d_Q_right_ventricle << " " << d_Q_right_pa << " " << d_Q_left_pa << " " << d_Q_valve << "; \n";
+
+        double P_right_pa = 0.0; 
+        double P_left_pa = 0.0; 
+
+        if (d_rcr_bcs_on){
+            P_right_pa        = d_right_pa_P;
+            P_left_pa         = d_left_pa_P;
+        }
+        else{
+            P_right_pa        = d_fourier_right_pa->values[d_current_idx_series];
+            P_left_pa         = d_fourier_left_pa->values[d_current_idx_series];
+        }
+
+        pout << "hit write call in writeDataFile\n"; 
+        fout << " " << P_right_ventricle <<  " " << P_right_pa << " " << P_left_pa;
+        fout << " " << d_Q_right_ventricle << " " << d_Q_right_pa << " " << d_Q_left_pa << " " << d_Q_valve;         
+        fout << " " << d_right_pa_P_Wk << " " << d_left_pa_P_Wk;
+        fout << "; \n";
 
     }
 
@@ -560,8 +645,12 @@ CirculationModel_RV_PA::getFromRestart()
     d_Q_right_pa         = db->getDouble("d_Q_right_pa");
     d_Q_left_pa          = db->getDouble("d_Q_left_pa");
     d_Q_valve            = db->getDouble("d_Q_valve");
+    d_right_pa_P         = db->getDouble("d_right_pa_P");
+    d_right_pa_P_Wk      = db->getDouble("d_right_pa_P_Wk");
+    d_left_pa_P          = db->getDouble("d_left_pa_P");
+    d_left_pa_P_Wk       = db->getDouble("d_left_pa_P_Wk");
     d_time               = db->getDouble("d_time");
-
+    d_rcr_bcs_on         = db->getBool("d_rcr_bcs_on"); 
     return;
 } // getFromRestart
 

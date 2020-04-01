@@ -557,7 +557,11 @@ int main(int argc, char* argv[])
 
             fourier_series_data *fourier_series_lpa = new fourier_series_data(fourier_coeffs_name_lpa.c_str(), dt);
 
-            CirculationModel_RV_PA *circ_model_rv_pa = new CirculationModel_RV_PA(fourier_series_rv, 
+            double P_initial_pa = 32.0 * MMHG_TO_CGS; 
+            bool rcr_bcs_on = true; 
+
+            CirculationModel_RV_PA *circ_model_rv_pa = new CirculationModel_RV_PA(input_db,
+                                                                                  fourier_series_rv, 
                                                                                   fourier_series_rpa,
                                                                                   fourier_series_lpa,
                                                                                   right_ventricle_vertices_file_name,
@@ -565,7 +569,9 @@ int main(int argc, char* argv[])
                                                                                   left_pa_vertices_file_name,
                                                                                   t_cycle_length,
                                                                                   t_offset_start_bcs_unscaled, 
-                                                                                  time_integrator->getIntegratorTime()); 
+                                                                                  time_integrator->getIntegratorTime(), 
+                                                                                  P_initial_pa,
+                                                                                  rcr_bcs_on); 
 
             // Create Eulerian boundary condition specification objects.
             vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM);
