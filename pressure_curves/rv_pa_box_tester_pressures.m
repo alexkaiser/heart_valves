@@ -14,7 +14,7 @@ times = table.Time;
 rv_pressure = table.RightVentriclePressure_Inlet_; 
 pa_pressure = table.MainPulmonaryArteryPressure_Outlets_; 
 
-rv_pressure = rv_pressure + 20; 
+% rv_pressure = rv_pressure + 20; 
 
 % periodic wrap 
 times = [0; times]; 
