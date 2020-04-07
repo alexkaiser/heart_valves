@@ -355,7 +355,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                 double mask = 0.0;
                                 double U_goal = 0.0; 
 
-                                bool tangential_damp_to_zero = false;
+                                bool tangential_damp_to_zero = true;
 
                                 if (in_right_ventricle){
 
@@ -365,7 +365,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                     if (axis == component){
                                         // different signs give local flow reversal
                                         if ((d_circ_model_rv_pa->d_Q_right_ventricle * U_dot_n) < 0.0){
-                                            mask = 1.0;
+                                            // mask = 1.0;
                                         }
                                     }
 
@@ -393,7 +393,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                     if (axis == component){
                                         // different signs give local flow reversal
                                         if ((d_circ_model_rv_pa->d_Q_right_pa * U_dot_n) < 0.0){
-                                            mask = 1.0;
+                                            // mask = 1.0;
                                         }
                                     }
 
@@ -421,7 +421,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                     if (axis == component){
                                         // different signs give local flow reversal
                                         if ((d_circ_model_rv_pa->d_Q_left_pa * U_dot_n) < 0.0){
-                                            mask = 1.0;
+                                            // mask = 1.0;
                                         }
                                     }
 
