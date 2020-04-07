@@ -355,7 +355,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                 double mask = 0.0;
                                 double U_goal = 0.0; 
 
-                                bool tangential_damp_to_zero = true;
+                                bool tangential_damp_to_zero = false;
 
                                 if (in_right_ventricle){
 
