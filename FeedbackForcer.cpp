@@ -28,7 +28,7 @@
 // #define FLOW_STRAIGHTENER
 #define OPEN_BOUNDARY_STABILIZATION
 
-#define FLOW_AVERAGER
+// #define FLOW_AVERAGER
 
 #define FULL_FLOW_CLAMP 
 #define FULL_FLOW_CLAMP_TIME 0.01
@@ -355,7 +355,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                 double mask = 0.0;
                                 double U_goal = 0.0; 
 
-                                bool tangential_damp_to_zero = false;
+                                // bool tangential_damp_to_zero = false;
 
                                 if (in_right_ventricle){
 
@@ -379,9 +379,9 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                         }
                                     #endif
 
-                                    if ((axis != component) && (tangential_damp_to_zero)){
-                                        mask = 1.0;
-                                    }
+                                    // if ((axis != component) && (tangential_damp_to_zero)){
+                                    //     mask = 1.0;
+                                    // }
 
                                 }
 
@@ -407,9 +407,9 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                         }
                                     #endif
 
-                                    if ((axis != component) && (tangential_damp_to_zero)){
-                                        mask = 1.0;
-                                    }
+                                    // if ((axis != component) && (tangential_damp_to_zero)){
+                                    //     mask = 1.0;
+                                    // }
 
                                 }
 
@@ -435,9 +435,9 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                         }
                                     #endif
 
-                                    if ((axis != component) && (tangential_damp_to_zero)){
-                                        mask = 1.0;
-                                    }
+                                    // if ((axis != component) && (tangential_damp_to_zero)){
+                                    //     mask = 1.0;
+                                    // }
 
                                 }
 
