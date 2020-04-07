@@ -93,26 +93,25 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
         getFromRestart();
     }
     
-    if ((input_db) && (d_rcr_bcs_on))
-    {
-        // left and right equal for now 
-        d_right_pa_R_proximal = input_db->getDouble("right_pa_R_proximal"); 
-        d_right_pa_R_distal   = input_db->getDouble("right_pa_R_distal"); 
-        d_right_pa_C          = input_db->getDouble("right_pa_C");
+    if (d_rcr_bcs_on){
+        if (input_db){
+            // left and right equal for now
+            d_right_pa_R_proximal = input_db->getDouble("right_pa_R_proximal");
+            d_right_pa_R_distal   = input_db->getDouble("right_pa_R_distal");
+            d_right_pa_C          = input_db->getDouble("right_pa_C");
 
-        d_left_pa_R_proximal  = input_db->getDouble("left_pa_R_proximal"); 
-        d_left_pa_R_distal    = input_db->getDouble("left_pa_R_distal"); 
-        d_left_pa_C           = input_db->getDouble("left_pa_C");
-        
-        std::cout << "input db got values:\n"; 
-        std::cout << "right: R_proximal = " << d_right_pa_R_proximal << "\tR_distal = " << d_right_pa_R_distal << "\tC = " << d_right_pa_C << "\n";   
-        std::cout << "left : R_proximal = " << d_left_pa_R_proximal << "\tR_distal = " << d_left_pa_R_distal << "\tC = " << d_left_pa_C << "\n";   
-    }
-        else
-    {
-        TBOX_ERROR("Must provide valid input_db"); 
-    }
+            d_left_pa_R_proximal  = input_db->getDouble("left_pa_R_proximal");
+            d_left_pa_R_distal    = input_db->getDouble("left_pa_R_distal");
+            d_left_pa_C           = input_db->getDouble("left_pa_C");
 
+            std::cout << "input db got values:\n";
+            std::cout << "right: R_proximal = " << d_right_pa_R_proximal << "\tR_distal = " << d_right_pa_R_distal << "\tC = " << d_right_pa_C << "\n";
+            std::cout << "left : R_proximal = " << d_left_pa_R_proximal << "\tR_distal = " << d_left_pa_R_distal << "\tC = " << d_left_pa_C << "\n";
+        }
+        else {
+            TBOX_ERROR("Must provide valid input_db");
+        }
+    }
 
     double x,x_prev,y,y_prev,z,z_prev; 
     double tol = 1.0e-2; 
@@ -400,7 +399,7 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
         d_left_pa_P = d_left_pa_P_Wk + d_left_pa_R_proximal * d_Q_left_pa;
     }
 
-    print_summary(); 
+    // print_summary(); 
 
     // bool debug_out_areas = false; 
     // if (debug_out_areas){
@@ -607,18 +606,17 @@ void
         double P_left_pa = 0.0; 
 
         if (d_rcr_bcs_on){
-            P_right_pa        = d_right_pa_P;
-            P_left_pa         = d_left_pa_P;
+            P_right_pa        = d_right_pa_P/MMHG_TO_CGS;
+            P_left_pa         = d_left_pa_P/MMHG_TO_CGS;
         }
         else{
             P_right_pa        = d_fourier_right_pa->values[d_current_idx_series];
             P_left_pa         = d_fourier_left_pa->values[d_current_idx_series];
         }
 
-        pout << "hit write call in writeDataFile\n"; 
         fout << " " << P_right_ventricle <<  " " << P_right_pa << " " << P_left_pa;
         fout << " " << d_Q_right_ventricle << " " << d_Q_right_pa << " " << d_Q_left_pa << " " << d_Q_valve;         
-        fout << " " << d_right_pa_P_Wk << " " << d_left_pa_P_Wk;
+        fout << " " << d_right_pa_P_Wk/MMHG_TO_CGS << " " << d_left_pa_P_Wk/MMHG_TO_CGS;
         fout << "; \n";
 
     }

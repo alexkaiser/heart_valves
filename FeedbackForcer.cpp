@@ -28,7 +28,7 @@
 // #define FLOW_STRAIGHTENER
 #define OPEN_BOUNDARY_STABILIZATION
 
-#define FLOW_AVERAGER
+// #define FLOW_AVERAGER
 
 #define FULL_FLOW_CLAMP 
 #define FULL_FLOW_CLAMP_TIME 0.01
@@ -285,15 +285,9 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
             for(int axis=0; axis<NDIM; axis++){ 
                 for(int side=0; side<2; side++){ 
 
-                const double L = max(dx_coarsest[axis], 2.0 * dx_finest[axis]);
-                const int offset = static_cast<int>(L / dx[axis]);
-                
-                const bool is_lower = side == 0;
-
-                const bool inflow_bdry_aorta        = (d_circ_model_with_lv->d_Q_aorta < 0.0);
-                const bool outflow_bdry_aorta       = !(inflow_bdry_aorta);
-                const bool inflow_bdry_left_atrium  = (d_circ_model_with_lv->d_Q_left_atrium < 0.0);
-                const bool outflow_bdry_left_atrium = !(inflow_bdry_left_atrium);
+                    const double L = max(dx_coarsest[axis], 2.0 * dx_finest[axis]);
+                    const int offset = static_cast<int>(L / dx[axis]);
+                    const bool is_lower = side == 0;
 
                     if (pgeom->getTouchesRegularBoundary(axis, side)){
                         Box<NDIM> bdry_box = domain_box;
@@ -361,46 +355,89 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                 double mask = 0.0;
                                 double U_goal = 0.0; 
 
+                                bool tangential_damp_to_zero = true;
+
                                 if (in_right_ventricle){
+
+                                    const double n = is_lower ? -1.0 : +1.0;
+                                    const double U_dot_n = U * n;
+
+                                    if (axis == component){
+                                        // different signs give local flow reversal
+                                        if ((d_circ_model_rv_pa->d_Q_right_ventricle * U_dot_n) < 0.0){
+                                            mask = 1.0;
+                                        }
+                                    }
 
                                     #ifdef FLOW_AVERAGER
                                         // set goal to be equal to average flow 
                                         if (d_circ_model_rv_pa->d_area_initialized){
                                             if (axis == component){
                                                 U_goal = d_circ_model_rv_pa->d_Q_right_ventricle / d_circ_model_rv_pa->d_area_right_ventricle;
+                                                mask = 1.0;
                                             }
-                                            mask = 1.0;
                                         }
                                     #endif
+
+                                    if ((axis != component) && (tangential_damp_to_zero)){
+                                        mask = 1.0;
+                                    }
 
                                 }
 
                                 if (in_right_pa){
 
+                                    const double n = is_lower ? -1.0 : +1.0;
+                                    const double U_dot_n = U * n;
+
+                                    if (axis == component){
+                                        // different signs give local flow reversal
+                                        if ((d_circ_model_rv_pa->d_Q_right_pa * U_dot_n) < 0.0){
+                                            mask = 1.0;
+                                        }
+                                    }
 
                                     #ifdef FLOW_AVERAGER
                                         // set goal to be equal to average flow 
                                         if (d_circ_model_rv_pa->d_area_initialized){
                                             if (axis == component){
                                                 U_goal = d_circ_model_rv_pa->d_Q_right_pa / d_circ_model_rv_pa->d_area_right_pa;
+                                                mask = 1.0;
                                             }
-                                            mask = 1.0;
                                         }
                                     #endif
+
+                                    if ((axis != component) && (tangential_damp_to_zero)){
+                                        mask = 1.0;
+                                    }
 
                                 }
 
                                 if (in_left_pa){
+
+                                    const double n = is_lower ? -1.0 : +1.0;
+                                    const double U_dot_n = U * n;
+
+                                    if (axis == component){
+                                        // different signs give local flow reversal
+                                        if ((d_circ_model_rv_pa->d_Q_left_pa * U_dot_n) < 0.0){
+                                            mask = 1.0;
+                                        }
+                                    }
 
                                     #ifdef FLOW_AVERAGER
                                         // set goal to be equal to average flow 
                                         if (d_circ_model_rv_pa->d_area_initialized){
                                             if (axis == component){
                                                 U_goal = d_circ_model_rv_pa->d_Q_left_pa / d_circ_model_rv_pa->d_area_left_pa;
+                                                mask = 1.0;
                                             }
-                                            mask = 1.0;
                                         }
                                     #endif
+
+                                    if ((axis != component) && (tangential_damp_to_zero)){
+                                        mask = 1.0;
+                                    }
 
                                 }
 
@@ -411,9 +448,8 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                 }
 
                             }
-                        }
-                        
-                    }
+                        } // for (int component = 0; component<NDIM; component++)
+                    } // if (pgeom->getTouchesRegularBoundary(axis, side)){
                 } // for(int side=0; side<2; side++)
             } // for(int axis=0; axis<NDIM; axis++)
         } // if (d_circ_model_rv_pa)
