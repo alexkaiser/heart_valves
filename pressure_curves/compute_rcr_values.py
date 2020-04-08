@@ -64,7 +64,7 @@ if __name__== "__main__":
     # 5.6 L/min
     Q_mean = 6100.0 / 60 # ml/s 
 
-    ratio_prox_to_distal_resistors = 77.0 / 1185.0 
+    ratio_prox_to_distal_resistors = 0.5 * 77.0 / 1185.0 
 
     decay_time = diastolic_time
 
