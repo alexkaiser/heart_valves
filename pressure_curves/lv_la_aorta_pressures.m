@@ -85,6 +85,24 @@ vals_ventricle_series = Series_ventricle(t);
 % printfig(fig, 'coefficients')
 
 
+n_points_temp = 101; 
+times_temp = linspace(0,cycle_length,n_points_temp); 
+vals_ventricle = Series_ventricle(times_temp); 
+f = fopen('pressure_vals_coarse.txt', 'w'); 
+for i=1:n_points_temp 
+    fprintf(f, '%f, %f\n', times_temp(i), vals_ventricle(i)); 
+end 
+
+n_points_temp = 10001; 
+times_temp = linspace(0,cycle_length,n_points_temp); 
+vals_ventricle = Series_ventricle(times_temp); 
+f = fopen('pressure_vals_fine.txt', 'w'); 
+for i=1:n_points_temp 
+    fprintf(f, '%f, %f\n', times_temp(i), vals_ventricle(i)); 
+end 
+
+
+
 
 [a_0_atrium a_n_atrium b_n_atrium Series_atrium] = series_and_smooth(points_one_cycle_atrium, dt, bump_radius, n_fourier_coeffs, plots); 
 

@@ -32,12 +32,20 @@ Y_HIGH = Y_LOW + NY * DX_FLUID
 Z_LOW  = -4.6859
 Z_HIGH = Z_LOW + NZ * DX_FLUID
 
-right_pa_R_proximal = 4.89   // g / (cm^4 s)
-right_pa_R_distal   = 46.15  // g / (cm^4 s)
-right_pa_C          = 0.0154 // cm^3 / (g/ (cm s^2)) = 20.5925 mL/mmHg 
-left_pa_R_proximal  = 4.89   // g / (cm^4 s)
-left_pa_R_distal    = 46.15  // g / (cm^4 s)
-left_pa_C           = 0.0154 // cm^3 / (g/ (cm s^2)) = 20.5925 mL/mmHg 
+//right_pa_R_proximal = 4.89   // g / (cm^4 s)
+//right_pa_R_distal   = 46.15  // g / (cm^4 s)
+//right_pa_C          = 0.0154 // cm^3 / (g/ (cm s^2)) = 20.5925 mL/mmHg 
+//left_pa_R_proximal  = 4.89   // g / (cm^4 s)
+//left_pa_R_distal    = 46.15  // g / (cm^4 s)
+//left_pa_C           = 0.0154 // cm^3 / (g/ (cm s^2)) = 20.5925 mL/mmHg 
+
+right_pa_R_proximal = 91.24750281435445
+right_pa_C = 0.00078038185618
+right_pa_R_distal = 1733.70255347273451
+left_pa_R_proximal = 91.24750281435445
+left_pa_C = 0.00078038185618
+left_pa_R_distal = 1733.70255347273451
+
 
 // solver parameters
 DELTA_FUNCTION      = "IB_5"

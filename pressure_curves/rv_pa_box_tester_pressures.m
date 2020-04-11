@@ -8,6 +8,14 @@ else
 end 
 plots = true; 
 
+MMHG_TO_CGS = 1333.22368; 
+
+R_proximal_experimental = 4.89   
+R_distal_experimental   = 46.15  
+C_experimental          = 0.0154 
+R_total_experimental    = R_proximal_experimental + R_distal_experimental
+tau_experimental        = C_experimental * R_distal_experimental
+
 table = readtable('HealthyNativePressures.xlsx');
 
 times = table.Time; 
@@ -107,4 +115,89 @@ plot(t, vals_right_ventricle_series - vals_pa_series, 'k')
 title('Pressure differences (mmHg)')
 
 
+flows = [-4.679
+3.558
+34.035
+101.834
+180.228
+226.853
+230.468
+192.169
+123.601
+48.604
+4.302
+-2.023
+-0.795
+0.197
+0.101
+-0.209
+-1.054
+-2.747
+-2.837
+-3.134]; 
 
+times_flows = linspace(0, cycle_length, length(flows)); 
+
+flows_spline = interp1(times_flows, flows, t, 'spline'); 
+
+figure; 
+plot(times_flows, flows)
+hold on 
+plot(t, flows_spline) 
+title('Flow, experimental trace')
+xlabel('t (s)')
+ylabel('flow (ml/s)')
+legend('pointwise', 'spline')
+
+dt_flows = cycle_length / length(flows)
+total_flow = sum(flows) * dt_flows % ml 
+
+Q_mean = total_flow / cycle_length 
+
+Q_mean_L_per_min = Q_mean * 60/1000 
+
+ratio_prox_to_distal_resistors = 0.05 / 0.95
+
+decay_time = .4 
+
+P_mean = mean(vals_pa_series) * MMHG_TO_CGS; 
+
+P_max = 42 * MMHG_TO_CGS; % interpolating the decay by eye to the middle of the oscillation 
+                          % in the experimental trace of PA pressure 
+P_min = 31.25 * MMHG_TO_CGS; 
+
+
+
+
+tol = 1e-12; 
+
+Q_mean_each = Q_mean / 2; 
+
+% total resistance is determined by mean pressure and mean flow 
+R_total = P_mean / Q_mean_each;  
+
+% ratio of resistors is constant 
+% resistors sum to total resistance 
+R_distal = R_total / (1.0 + ratio_prox_to_distal_resistors); 
+R_proximal = R_total - R_distal; 
+
+if abs(R_distal + R_proximal - R_total) > tol 
+    error('resistors not adding up correctly')
+end
+
+% timescale for pressure decrease during aortic valve closure 
+C = -decay_time / (R_distal * log(P_min/P_max)); 
+
+fprintf("R_proximal = %.14f\n", R_proximal); 
+fprintf("C = %.14f\n", C); 
+fprintf("R_distal = %.14f\n", R_distal); 
+R_total = R_proximal + R_distal
+tau = C * R_distal
+
+
+fprintf("right_pa_R_proximal = %.14f\n", R_proximal); 
+fprintf("right_pa_C = %.14f\n", C); 
+fprintf("right_pa_R_distal = %.14f\n", R_distal);
+fprintf("left_pa_R_proximal = %.14f\n", R_proximal); 
+fprintf("left_pa_C = %.14f\n", C); 
+fprintf("left_pa_R_distal = %.14f\n", R_distal);
