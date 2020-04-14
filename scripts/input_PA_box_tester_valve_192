@@ -39,12 +39,12 @@ Z_HIGH = Z_LOW + NZ * DX_FLUID
 //left_pa_R_distal    = 46.15  // g / (cm^4 s)
 //left_pa_C           = 0.0154 // cm^3 / (g/ (cm s^2)) = 20.5925 mL/mmHg 
 
-right_pa_R_proximal = 304.15834271451467
-right_pa_C = 0.00088963531604
-right_pa_R_distal = 1520.79171357257428
-left_pa_R_proximal = 304.15834271451467
-left_pa_C = 0.00088963531604
-left_pa_R_distal = 1520.79171357257428
+right_pa_R_proximal = 608.31668542902958
+right_pa_C = 0.00111204414505
+right_pa_R_distal = 1216.63337085805938
+left_pa_R_proximal = 608.31668542902958
+left_pa_C = 0.00111204414505
+left_pa_R_distal = 1216.63337085805938
 
 
 // solver parameters
