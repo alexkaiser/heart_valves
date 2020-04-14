@@ -399,7 +399,7 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
         d_left_pa_P = d_left_pa_P_Wk + d_left_pa_R_proximal * d_Q_left_pa;
     }
 
-    // print_summary(); 
+    // print_summary();
 
     // bool debug_out_areas = false; 
     // if (debug_out_areas){
