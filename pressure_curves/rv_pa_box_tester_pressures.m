@@ -201,3 +201,45 @@ fprintf("right_pa_R_distal = %.14f\n", R_distal);
 fprintf("left_pa_R_proximal = %.14f\n", R_proximal); 
 fprintf("left_pa_C = %.14f\n", C); 
 fprintf("left_pa_R_distal = %.14f\n", R_distal);
+
+
+fig = figure; 
+
+times_two_cycles = [t,t + cycle_length]; 
+q_rv_exp = [flows_spline, flows_spline]; 
+
+times = 0:dt:(2*cycle_length);
+p_rv_exp  = Series_right_ventricle(times); 
+p_pa_exp  = Series_pa(times); 
+
+title('experimental pressures and flows')
+subplot(2,1,1)
+plot(times, p_rv_exp , 'k')
+hold on
+plot(times, p_pa_exp , ':k')
+legend('P_{RV}', 'P_{PA}', 'Location','NorthEastOutside');
+xlabel('t (s)')
+ylabel('P (mmHg)')
+subplot(2,1,2)
+plot(times_two_cycles, q_rv_exp, 'k')
+hold on
+plot(times_two_cycles, zeros(size(q_rv_exp)), ':k')
+axis([0 1.8 -150 250])
+legend('Q RV', 'Location', 'NorthEastOutside')
+xlabel('t (s)')
+ylabel('Flow (ml/s), Net Flow (ml)')
+set(fig, 'Position', [100, 100, 1000, 750])
+set(fig,'PaperPositionMode','auto')
+printfig(fig, 'bc_variables_experimental')
+
+times_exp = times; 
+save 'bc_variables_experimental.mat' times_two_cycles q_rv_exp times_exp p_rv_exp p_pa_exp
+
+
+
+
+
+
+
+
+
