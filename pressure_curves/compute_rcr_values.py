@@ -28,6 +28,8 @@ if __name__== "__main__":
 
     MMHG_TO_CGS = 1333.22368
 
+    high_pressure = True
+
     R_proximal =  77.0
     C = 0.001154
     R_distal =  1185.0
@@ -58,6 +60,12 @@ if __name__== "__main__":
     P_mean = systolic_time_fraction*P_systolic + diastolic_time_fraction*(P_diastolic_mean)
 
     print "P_mean = ", P_mean
+
+    if high_pressure: 
+        P_mean *= 2 
+        P_min *= 2
+        P_max = P_min + 20 
+
 
     # P_mean = 1.0433437500000039e+02
     

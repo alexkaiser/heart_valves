@@ -25,8 +25,8 @@ points_one_cycle_ventricle = [0.0,   0;
 0.06, 2; 
 0.40, 6; 
 0.53, 14; 
-0.58, 120; 
-0.75, 130; 
+0.58, 120 * 2; 
+0.75, 130 * 2; 
 cycle_length, 8]; 
 
 points_one_cycle_atrium = [0.0, 24.555; 
@@ -85,21 +85,21 @@ vals_ventricle_series = Series_ventricle(t);
 % printfig(fig, 'coefficients')
 
 
-n_points_temp = 101; 
-times_temp = linspace(0,cycle_length,n_points_temp); 
-vals_ventricle = Series_ventricle(times_temp); 
-f = fopen('pressure_vals_coarse.txt', 'w'); 
-for i=1:n_points_temp 
-    fprintf(f, '%f, %f\n', times_temp(i), vals_ventricle(i)); 
-end 
-
-n_points_temp = 10001; 
-times_temp = linspace(0,cycle_length,n_points_temp); 
-vals_ventricle = Series_ventricle(times_temp); 
-f = fopen('pressure_vals_fine.txt', 'w'); 
-for i=1:n_points_temp 
-    fprintf(f, '%f, %f\n', times_temp(i), vals_ventricle(i)); 
-end 
+% n_points_temp = 101; 
+% times_temp = linspace(0,cycle_length,n_points_temp); 
+% vals_ventricle = Series_ventricle(times_temp); 
+% f = fopen('pressure_vals_coarse.txt', 'w'); 
+% for i=1:n_points_temp 
+%     fprintf(f, '%f, %f\n', times_temp(i), vals_ventricle(i)); 
+% end 
+% 
+% n_points_temp = 10001; 
+% times_temp = linspace(0,cycle_length,n_points_temp); 
+% vals_ventricle = Series_ventricle(times_temp); 
+% f = fopen('pressure_vals_fine.txt', 'w'); 
+% for i=1:n_points_temp 
+%     fprintf(f, '%f, %f\n', times_temp(i), vals_ventricle(i)); 
+% end 
 
 
 
