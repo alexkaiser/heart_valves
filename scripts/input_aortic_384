@@ -20,9 +20,9 @@ MAX_RESTART_TO_WRITE = 20
 // C = 0.001154
 // R_distal =  1185.0
 // 
-R_proximal =  153.623279872
-C =  0.00172374824007
-R_distal =  2364.202424
+R_proximal =  38.4058199679
+C =  0.00200291760117
+R_distal =  591.050605999
 FOURIER_COEFFS_FILENAME = "fourier_coeffs_ventricle.txt"
 
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_aorta_minus_ventricle.txt"
@@ -33,7 +33,7 @@ FOURIER_COEFFS_FILENAME = "fourier_coeffs_ventricle.txt"
 DELTA_FUNCTION      = "IB_5"
 SOLVER_TYPE         = "STAGGERED"         // the fluid solver to use (STAGGERED or COLLOCATED)
 START_TIME          = 0.0e0               // initial simulation time
-END_TIME            = 2.4                 // final simulation time
+END_TIME            = 1.6                 // final simulation time
 GROW_DT             = 2.0e0               // growth factor for timesteps
 NUM_CYCLES          = 1                   // number of cycles of fixed-point iteration
 CONVECTIVE_TS_TYPE = "ADAMS_BASHFORTH"    // convective time stepping type
