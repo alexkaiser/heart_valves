@@ -434,7 +434,6 @@ int main(int argc, char* argv[])
                 // End systolic / beginning diastolic PA pressure
                 double P_aorta_0;
                 if (input_db->keyExists("P_aorta_0_MMHG")){
-                    pout << "found initial pressure\n"; 
                     P_aorta_0 = input_db->getDouble("P_aorta_0_MMHG") * MMHG_TO_CGS;
                 }
                 else{

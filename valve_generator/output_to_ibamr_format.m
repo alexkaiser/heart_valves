@@ -492,7 +492,16 @@ function [] = output_to_ibamr_format(valve)
         end 
         
         if isfield(valve, 'place_cylinder') && valve.place_cylinder
-        
+            
+            params_cylinder.vertex        = fopen(strcat(base_name, '_cylinder.vertex'), 'w'); 
+            params_cylinder.spring        = fopen(strcat(base_name, '_cylinder.spring'), 'w'); 
+            params_cylinder.target        = fopen(strcat(base_name, '_cylinder.target'), 'w'); 
+            params_cylinder.total_vertices  = 0; 
+            params_cylinder.total_springs   = 0; 
+            params_cylinder.total_targets   = 0; 
+            params_cylinder.global_idx = 0; 
+            params_cylinder.num_copies = params.num_copies; 
+            
             if ~isfield(valve, 'z_min_cylinder')
                 valve.z_min_cylinder = params.z_min;                
             end 
@@ -518,23 +527,85 @@ function [] = output_to_ibamr_format(valve)
             
             if isfield(valve.skeleton, 'r_of_z')
                 % r that follows z 
-                params = place_cylinder(params, valve.leaflets(1), r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, eta_net, tight_cylinder, z_extra_cylinder, valve.skeleton.r_of_z); 
+                params_cylinder = place_cylinder(params_cylinder, valve.leaflets(1), r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, eta_net, tight_cylinder, z_extra_cylinder, valve.skeleton.r_of_z); 
             else 
                 % constant r 
-                params = place_cylinder(params, valve.leaflets(1), r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, eta_net, tight_cylinder, z_extra_cylinder); 
+                params_cylinder = place_cylinder(params_cylinder, valve.leaflets(1), r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, eta_net, tight_cylinder, z_extra_cylinder); 
             end 
-        end 
+            
+            if valve.in_heart && isfield(valve, 'transformation_vertex_file')
+                if isfield(valve, 'initial_rotation_aortic')
+                    R_0 = valve.initial_rotation_aortic; 
+                else
+                    R_0 = eye(3);
+                end 
+                params_cylinder.vertices = coordinate_transformation_vertices(params_cylinder.vertices, valve.transformation_vertex_file, R_0);
+            elseif isfield(valve, 'initial_rotation_aortic')
+                % rotation alone 
+                R_0 = valve.initial_rotation_aortic; 
+                params_cylinder.vertices = R_0 * params_cylinder.vertices; 
+            elseif valve.in_heart && isfield(valve.skeleton, 'inverse_transformation_initial_condition')
+                params_cylinder.vertices = valve.skeleton.inverse_transformation_initial_condition(params_cylinder.vertices) 
+            end 
+
+            % finally, write all vertices 
+            params_cylinder = write_all_vertices(params_cylinder); 
+
+            % and clean up files with totals 
+            fclose(params_cylinder.vertex   ); 
+            fclose(params_cylinder.spring   ); 
+            fclose(params_cylinder.target   ); 
+
+            prepend_line_with_int(strcat(base_name, '_cylinder.vertex'), params_cylinder.total_vertices); 
+            prepend_line_with_int(strcat(base_name, '_cylinder.spring'), params_cylinder.total_springs); 
+            prepend_line_with_int(strcat(base_name, '_cylinder.target'), params_cylinder.total_targets);
+
+        end
+        
     end 
     
     
     
     
     if n_lagrangian_tracers > 0
+        
         double_z = true; 
-        [params, total_lagrangian_placed] = place_lagrangian_tracers(params, n_lagrangian_tracers, double_z); 
-        particles = fopen(strcat(base_name, '.particles'), 'w'); 
-        fprintf(particles, '%d\n', total_lagrangian_placed); 
-        fclose(particles); 
+        
+        params_particles.vertex = fopen(strcat(base_name, '_particles.vertex'), 'w'); 
+        params_particles.total_vertices  = 0; 
+        params_particles.global_idx = 0; 
+        params_particles.num_copies = params.num_copies; 
+        
+        params_particles.x_min = params.x_min; 
+        params_particles.x_max = params.x_max; 
+        params_particles.y_min = params.y_min; 
+        params_particles.y_max = params.y_max; 
+        params_particles.z_min = params.z_min; 
+        params_particles.z_max = params.z_max;
+        
+        
+        [params_particles, total_lagrangian_placed] = place_lagrangian_tracers(params_particles, n_lagrangian_tracers, double_z); 
+        
+        if valve.in_heart && isfield(valve, 'transformation_vertex_file')
+            if isfield(valve, 'initial_rotation_aortic')
+                R_0 = valve.initial_rotation_aortic; 
+            else
+                R_0 = eye(3);
+            end 
+            params_particles.vertices = coordinate_transformation_vertices(params_particles.vertices, valve.transformation_vertex_file, R_0);
+        elseif isfield(valve, 'initial_rotation_aortic')
+            % rotation alone 
+            R_0 = valve.initial_rotation_aortic; 
+            params_particles.vertices = R_0 * params_particles.vertices; 
+        elseif valve.in_heart && isfield(valve.skeleton, 'inverse_transformation_initial_condition')
+            params_particles.vertices = valve.skeleton.inverse_transformation_initial_condition(params_particles.vertices);  
+        end 
+        
+        params_particles = write_all_vertices(params_particles); 
+        
+        fclose(params_particles.vertex); 
+        prepend_line_with_int(strcat(base_name, '_particles.vertex'), params_particles.total_vertices); 
+
     end 
     
     if valve.in_heart && isfield(valve, 'transformation_vertex_file')
@@ -617,7 +688,7 @@ function params = write_all_vertices(params)
         params.total_vertices = params.total_vertices + 1; 
     end 
     
-    if params.targets_for_bcs
+    if isfield(params, 'targets_for_bcs') && params.targets_for_bcs
         
         nan_indices = isnan(params.vertices_target); 
         params.vertices_target(nan_indices) = params.vertices(nan_indices); 

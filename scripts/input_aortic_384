@@ -21,11 +21,11 @@ MAX_RESTART_TO_WRITE = 20
 // R_distal =  1185.0
 // 
 
-P_aorta_0_MMHG = 60.0
+P_aorta_0_MMHG = 120.0
 
-R_proximal =  153.623279872
-C =  0.000909855109983
-R_distal =  2364.202424
+R_proximal =  76.8116399358
+C =  0.00181971021997
+R_distal =  1182.101212
 FOURIER_COEFFS_FILENAME = "fourier_coeffs_ventricle.txt"
 
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_aorta_minus_ventricle.txt"
@@ -222,12 +222,17 @@ IBMethod {
 
 IBStandardInitializer {
    max_levels      = MAX_LEVELS
-   structure_names = "aortic_384"
+   structure_names = "aortic_384", "aortic_384_cylinder", "aortic_384_particles"
    aortic_384 {
       level_number = MAX_LEVELS - 1
    }
+   aortic_384_cylinder {
+      level_number = MAX_LEVELS - 1
+   }
+   aortic_384_particles {
+      level_number = MAX_LEVELS - 1
+   }
 }
-
 
 INSStaggeredHierarchyIntegrator {
    mu                            = MU
