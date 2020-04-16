@@ -21,11 +21,11 @@ MAX_RESTART_TO_WRITE = 20
 // R_distal =  1185.0
 // 
 
-P_aorta_0_MMHG = 120.0
+P_aorta_0_MMHG = 240.0
 
-R_proximal =  76.8116399358
-C =  0.00181971021997
-R_distal =  1182.101212
+R_proximal =  153.623279872
+C =  0.00172374824007
+R_distal =  2364.202424
 FOURIER_COEFFS_FILENAME = "fourier_coeffs_ventricle.txt"
 
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_aorta_minus_ventricle.txt"

@@ -28,7 +28,7 @@ if __name__== "__main__":
 
     MMHG_TO_CGS = 1333.22368
 
-    high_pressure = False 
+    high_pressure = True 
     low_pressure = False
     assert not (high_pressure and low_pressure)
 
@@ -66,7 +66,7 @@ if __name__== "__main__":
     if high_pressure: 
         P_mean *= 2 
         P_min *= 2
-        P_max = P_min + 40 
+        P_max = P_min + 20 
 
     if low_pressure: 
         P_mean *= 0.5 
