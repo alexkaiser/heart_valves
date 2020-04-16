@@ -432,8 +432,15 @@ int main(int argc, char* argv[])
                 bool restart_circ_model = true; 
         
                 // End systolic / beginning diastolic PA pressure
-                double P_aorta_0 = 120.0 * MMHG_TO_CGS;
-        
+                double P_aorta_0;
+                if (input_db->keyExists("P_aorta_0_MMHG")){
+                    pout << "found initial pressure\n"; 
+                    P_aorta_0 = input_db->getDouble("P_aorta_0_MMHG") * MMHG_TO_CGS;
+                }
+                else{
+                    P_aorta_0 = 120.0 * MMHG_TO_CGS;
+                }
+
                 const bool use_circ_model = true; 
                 CirculationModel *circ_model   = new CirculationModel("circ_model", input_db, restart_circ_model, P_aorta_0);
                 pout << "To constructor\n";

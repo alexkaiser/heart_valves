@@ -20,6 +20,9 @@ MAX_RESTART_TO_WRITE = 20
 // C = 0.001154
 // R_distal =  1185.0
 // 
+
+P_aorta_0_MMHG = 60.0
+
 R_proximal =  153.623279872
 C =  0.000909855109983
 R_distal =  2364.202424
