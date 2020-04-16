@@ -66,7 +66,7 @@ if __name__== "__main__":
     if high_pressure: 
         P_mean *= 2 
         P_min *= 2
-        P_max = P_min + 20 
+        P_max = P_min + 2*20 
 
     if low_pressure: 
         P_mean *= 0.5 
