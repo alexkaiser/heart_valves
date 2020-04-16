@@ -203,6 +203,8 @@ void CirculationModel::write_plot_code()
         fout << "set(fig, 'Position', [100, 100, 1000, 750])\n";
         fout << "set(fig,'PaperPositionMode','auto')\n";
         fout << "printfig(fig, 'bc_model_variables')\n";
+        fout << "min_p_aorta_after_first_beat = min(p_aorta(floor(end/3):end))\n";
+        fout << "max_p_aorta_after_first_beat = max(p_aorta(floor(end/3):end))\n";
         fout << "mean_p_aorta = mean(p_aorta)\n";
         fout << "mean_p_wk    = mean(p_wk)\n";
         fout << "mean_p_lv    = mean(p_lv)\n";
