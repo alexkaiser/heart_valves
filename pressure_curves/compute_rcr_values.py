@@ -71,7 +71,7 @@ if __name__== "__main__":
     if low_pressure: 
         P_mean *= 0.5 
         P_min *= 0.5
-        P_max = P_min + 20 
+        P_max = P_min + 0.5*20 
 
     # P_mean = 1.0433437500000039e+02
     
