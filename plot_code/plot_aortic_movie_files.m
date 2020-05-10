@@ -1,4 +1,4 @@
-function plot_aortic_movie_files(data_file, stride, nframes, basename, image_size)
+function plot_aortic_movie_files(data_file, stride, nframes, outdir, basename, image_size)
 
 % read file 
 load(data_file, 'bc_vals')
@@ -22,11 +22,24 @@ y_height = .4;
 dt = times(2) - times(1);
 net_flux = dt*cumsum(q_aorta);
 
-for step = floor(nframes/2) % 0:(nframes-1)
+for step = floor(nframes/2) % 0:(nframes-1)  
         
     range = 1:(step * stride); 
+    if step == 0
+        range = 1; 
+    end 
     
     fig = figure;
+    % fig = gcf; 
+
+    fig.PaperPositionMode = 'auto'; 
+    fig.Units = 'points';
+    fig.PaperUnits = 'points';
+    fig.Position = [0 0 image_size(1)/4, image_size(2)/4];
+    fig.PaperPosition = [0 0 image_size(1)/4, image_size(2)/4];
+    
+    outname = sprintf('%s%s_%04d.jpeg', outdir, basename, step); 
+    
     hAxis(1) = subplot(2,1,1);
     plot(times(range), p_aorta(range), 'k', 'LineWidth', width)
     axis([0 2.4 -5 160])
@@ -38,11 +51,14 @@ for step = floor(nframes/2) % 0:(nframes-1)
     hold on
     % plot(times, p_wk, ':k')
     plot(times(range), p_lv(range), '--k', 'LineWidth', width)
-    legend('Ao', 'LV', 'Location','NorthEast');
+    legend('Ao', 'LV', 'Location','NorthEast', 'AutoUpdate','off');
     xlabel('Time (s)');
     ylabel('P (mmHg)');
     
-    hAxis(2) = subplot(2,1,2)
+    plot(times(max(range)), p_aorta(max(range)), 'ko', 'MarkerSize', 4*width, 'MarkerFaceColor', 'k')
+    plot(times(max(range)), p_lv(max(range)), 'ko', 'MarkerSize', 4*width, 'MarkerFaceColor', 'k')
+        
+    hAxis(2) = subplot(2,1,2); 
     plot(times(range), q_aorta(range), 'k', 'LineWidth', width)
     axis([0 2.4 -750 750])
     ax = gca; 
@@ -56,6 +72,9 @@ for step = floor(nframes/2) % 0:(nframes-1)
     xlabel('Time (s)')
     ylabel('Flow (ml/s), Cumulative Flow (ml)'); 
     
+    plot(times(max(range)), q_aorta(max(range)), 'ko', 'MarkerSize', 4*width, 'MarkerFaceColor', 'k')
+    plot(times(max(range)), net_flux(max(range)), 'ko', 'MarkerSize', 4*width, 'MarkerFaceColor', 'k')
+    
     % little more rightward placement 
     hAxis(1).Position(1) = hAxis(1).Position(1) + x_shift_position; 
     hAxis(2).Position(1) = hAxis(2).Position(1) + x_shift_position; 
@@ -66,16 +85,12 @@ for step = floor(nframes/2) % 0:(nframes-1)
     hAxis(1).Position(4) = y_height; 
     hAxis(2).Position(4) = y_height; 
     
-    fig = gcf; 
+    fig.PaperPositionMode = 'manual'; 
     fig.PaperUnits = 'points';
-    fig.Position = [0 0 image_size(1), image_size(2)]/4;
     fig.PaperPosition = [0 0 image_size(1), image_size(2)];
     
-    outname = sprintf('%s_%d.jpeg', basename, step); 
-    
     print(fig, '-djpeg', outname);
-
-    close(fig)    
+    close(fig)
     
 end 
     
