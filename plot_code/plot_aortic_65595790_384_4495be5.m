@@ -7,7 +7,8 @@ outdir = '/Users/alex/data_to_remove/aortic_65595790_384_4495be5_circ_pt15_rad_p
 dt = 0.001665; 
 nframes = 1442; 
 stride = 333; 
-image_size = 4*[690, 1080]; 
+% scaling was working, but for some reason an arbitrary factor of .48 = 2250/1080 larger 
+image_size = 4 * [690, 1080] * (1080/2250); 
 basename = 'aortic_65595790_384_4495be5_flow'; 
 
 plot_aortic_movie_files(data_file, stride, nframes, outdir, basename, image_size)

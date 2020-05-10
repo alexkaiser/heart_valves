@@ -30,14 +30,9 @@ for step = floor(nframes/2) % 0:(nframes-1)
     end 
     
     fig = figure;
-    % fig = gcf; 
-
-    fig.PaperPositionMode = 'auto'; 
     fig.Units = 'points';
-    fig.PaperUnits = 'points';
     fig.Position = [0 0 image_size(1)/4, image_size(2)/4];
-    fig.PaperPosition = [0 0 image_size(1)/4, image_size(2)/4];
-    
+
     outname = sprintf('%s%s_%04d.jpeg', outdir, basename, step); 
     
     hAxis(1) = subplot(2,1,1);
@@ -84,11 +79,11 @@ for step = floor(nframes/2) % 0:(nframes-1)
     
     hAxis(1).Position(4) = y_height; 
     hAxis(2).Position(4) = y_height; 
-    
+
     fig.PaperPositionMode = 'manual'; 
     fig.PaperUnits = 'points';
     fig.PaperPosition = [0 0 image_size(1), image_size(2)];
-    
+
     print(fig, '-djpeg', outname);
     close(fig)
     
