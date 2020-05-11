@@ -11,8 +11,8 @@ q_aorta = bc_vals(:,3);
 % p_wk = bc_vals(:,4)/MMHG_TO_CGS;
 p_lv = bc_vals(:,5)/MMHG_TO_CGS;
 
-width = 6; 
-fontsize = 96; 
+width = 3; 
+fontsize = 44; 
 font = 'Times New Roman'; 
 
 x_shift_position = 0.04; 
@@ -22,16 +22,16 @@ y_height = .4;
 dt = times(2) - times(1);
 net_flux = dt*cumsum(q_aorta);
 
-for step = floor(nframes/2) % 0:(nframes-1)  
+for step = 0:(nframes-1)  % floor(nframes/2)
         
     range = 1:(step * stride); 
     if step == 0
         range = 1; 
     end 
     
-    fig = figure;
+    fig = figure('visible','off');
     fig.Units = 'points';
-    fig.Position = [0 0 image_size(1)/4, image_size(2)/4];
+    fig.Position = (1/2) * [0 0 image_size(1), image_size(2)];
 
     outname = sprintf('%s%s_%04d.jpeg', outdir, basename, step); 
     
@@ -46,9 +46,9 @@ for step = floor(nframes/2) % 0:(nframes-1)
     hold on
     % plot(times, p_wk, ':k')
     plot(times(range), p_lv(range), '--k', 'LineWidth', width)
-    legend('Ao', 'LV', 'Location','NorthEast', 'AutoUpdate','off');
+    legend('Aorta', 'Left Ventricle', 'Location','NorthEast', 'AutoUpdate','off');
     xlabel('Time (s)');
-    ylabel('P (mmHg)');
+    ylabel('Pressure (mmHg)');
     
     plot(times(max(range)), p_aorta(max(range)), 'ko', 'MarkerSize', 4*width, 'MarkerFaceColor', 'k')
     plot(times(max(range)), p_lv(max(range)), 'ko', 'MarkerSize', 4*width, 'MarkerFaceColor', 'k')
