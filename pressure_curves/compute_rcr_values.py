@@ -29,7 +29,7 @@ if __name__== "__main__":
     MMHG_TO_CGS = 1333.22368
 
     high_pressure = False 
-    low_pressure = True
+    low_pressure = False
     assert not (high_pressure and low_pressure)
 
     R_proximal =  77.0
