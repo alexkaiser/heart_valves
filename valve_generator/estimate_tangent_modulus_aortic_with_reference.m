@@ -40,8 +40,8 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean]  = estimate_ta
     R_v                = leaflet.R_v;
     k_v                = leaflet.k_v;
     
-    sigma_circ = zeros(j_max, k_max); 
-    sigma_rad  = zeros(j_max, k_max); 
+    sigma_circ = nan(j_max, k_max); 
+    sigma_rad  = nan(j_max, k_max); 
         
     collagen_constitutive_circ = leaflet.collagen_constitutive_circ; 
     collagen_constitutive_rad  = leaflet.collagen_constitutive_rad; 
@@ -54,19 +54,18 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean]  = estimate_ta
     for j=1:j_max
         for k=1:k_max
             if is_internal(j,k)
-
                 X = X_current(:,j,k); 
 
                 len_element_u_type_temp = 0; 
                 element_count = 0; 
-                
+
                 % u type fibers 
                 for j_nbr_tmp = [j-1,j+1]
-                    
+
                     k_nbr_tmp = k; 
-                    
+
                     [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
-                    
+
                     if valid && (~target_spring) && (~target_k_no_j_spring)
                         X_nbr = X_current(:,j_nbr,k_nbr); 
 
@@ -80,37 +79,37 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean]  = estimate_ta
                                 len_element_u_type_temp = len_element_u_type_temp + 0.5 * norm(X - X_nbr_cross); 
                             end 
                         end 
-                        
+
                         element_count = element_count + 1; 
                         sigma_circ(j,k) = tension_grad / (len_element_u_type_temp * thickness); 
-                        
-                        
+
+
                     elseif valid && target_spring 
                         error('No j direction targets allowed'); 
                     end 
-                                        
+
                 end 
 
                 % average forces collected 
                 if element_count > 0
                     sigma_circ(j,k) = sigma_circ(j,k)/element_count; 
                 end 
-                
+
                 len_element_v_type_temp = 0; 
                 element_count = 0; 
-                
+
                 % v type fibers 
                 for k_nbr_tmp = [k-1,k+1]
 
                     j_nbr_tmp = j; 
-                    
+
                     [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
-                    
+
                     if valid && (~target_spring)
                         X_nbr = X_current(:,j_nbr,k_nbr); 
-                        
+
                         tension_grad = tension_derivative_with_reference_wrt_strain(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet, collagen_constitutive_rad); 
-                                                
+
                         % cross wise direction springs 
                         for j_nbr_tmp_cross = [j-1,j+1]
                             [valid_cross j_nbr_cross k_nbr_cross] = get_indices(leaflet, j, k, j_nbr_tmp_cross, k_nbr_tmp);
@@ -120,24 +119,29 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean]  = estimate_ta
                             end 
                         end 
                     end 
-                    
+
                     element_count = element_count + 1; 
                     sigma_rad(j,k) = tension_grad / (len_element_v_type_temp * thickness);
 
                 end                
-                
+
                 % average forces collected 
                 if element_count > 0
                     sigma_rad(j,k) = sigma_rad(j,k)/element_count; 
                 end 
 
-
             end
-        end 
+        end  
     end
     
-    sigma_circ_mean = mean(sigma_circ(:)); 
-    sigma_rad_mean  = mean(sigma_rad(:)); 
+    sigma_circ_linear = sigma_circ(:); 
+    sigma_circ_valid  = sigma_circ_linear(~isnan(sigma_circ_linear)); 
+    
+    sigma_rad_linear = sigma_rad(:); 
+    sigma_rad_valid  = sigma_rad_linear(~isnan(sigma_rad_linear)); 
+    
+    sigma_circ_mean = mean(sigma_circ_valid); 
+    sigma_rad_mean  = mean(sigma_rad_valid); 
 
     if plots
         for circ_temp = [true, false]
@@ -166,6 +170,10 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean]  = estimate_ta
                     end
                 end 
             end
+            
+            if any(any(any(isnan(X_copy))))
+                error('all points should be internal or bcs...')
+            end 
 
             max_sigma = max(max(sigma));
 
