@@ -1183,6 +1183,13 @@ function params = add_leaflet_springs(params, leaflet, ds, collagen_spring)
     else 
         collagen_constitutive_circ = leaflet.collagen_constitutive_circ; 
         collagen_constitutive_rad  = leaflet.collagen_constitutive_rad; 
+        
+        if strcmp(collagen_constitutive_circ, 'linear_no_compressive')
+            collagen_constitutive_circ = false; 
+        end 
+        if strcmp(collagen_constitutive_rad, 'linear_no_compressive')
+            collagen_constitutive_rad = false; 
+        end 
     end 
     
     

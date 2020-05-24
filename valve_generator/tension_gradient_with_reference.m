@@ -81,6 +81,17 @@ elseif strcmp(collagen_constitutive_tmp, 'aortic_rad')
     
     T_grad = -(coeff/R) * (X_nbr - X) / norm(X_nbr - X);
     
+elseif strcmp(collagen_constitutive_tmp, 'linear_no_compressive')
+
+    E = norm(X - X_nbr)/R - 1.0; 
+ 
+    if E >= 0
+        T_grad = -(k_spr/R) * (X_nbr - X) / norm(X_nbr - X);
+    else 
+        T_grad = 0 * (X_nbr - X) / norm(X_nbr - X);
+    end 
+    
+    
 elseif collagen_constitutive_tmp
     % mitral default 
     

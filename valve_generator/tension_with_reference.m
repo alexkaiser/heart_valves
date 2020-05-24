@@ -78,6 +78,16 @@ elseif strcmp(collagen_constitutive_tmp, 'aortic_rad')
         T = 0; %k_spr * b * E; 
     end 
     
+elseif strcmp(collagen_constitutive_tmp, 'linear_no_compressive')
+
+    E = norm(X - X_nbr)/R - 1.0; 
+ 
+    if E >= 0
+        T = k_spr * E; 
+    else 
+        T = 0; 
+    end 
+    
     
 elseif collagen_constitutive_tmp
     % default mitral collagen 

@@ -74,6 +74,14 @@ elseif strcmp(collagen_constitutive_tmp, 'aortic_rad')
         error('Trying to set rest length with negative strain')
     end 
 
+elseif strcmp(collagen_constitutive_tmp, 'linear_no_compressive')
+ 
+    if strain >= 0
+        k = tension / strain; 
+    else 
+        error('Trying to set rest length with negative strain')
+    end  
+    
 elseif collagen_constitutive_tmp
     % mitral default 
     
