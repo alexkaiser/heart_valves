@@ -132,8 +132,8 @@ valve.dirichlet_free_edge_with_ref_only = true;
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
-valve.collagen_constitutive_circ = 'linear_no_compressive'; 'aortic_circ'; 
-valve.collagen_constitutive_rad  = 'linear_no_compressive'; 'aortic_rad'; 
+valve.collagen_constitutive_circ = 'aortic_circ'; 
+valve.collagen_constitutive_rad  = 'aortic_rad'; 
 
 % Constant strain of pressurized configuration 
 valve.strain_circ = .15; 
@@ -234,8 +234,8 @@ valve.k_bend_cross_layer = 0;
 
 % coaptation height for Swanson and Clark 
 % width is the same 
-% valve.k_bend_nodule_length = 0.17*2*valve.skeleton.r;  
-% valve.k_bend_nodule        = 1e6 * 192/N;  
+valve.k_bend_nodule_length = 0.17*2*valve.skeleton.r;  
+valve.k_bend_nodule        = 1e4 * 192/N;  
 
 % valve.k_bend_radial_interp_pts  = [0    .4  .51   1]; 
 
