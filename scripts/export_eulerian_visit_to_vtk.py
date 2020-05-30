@@ -50,11 +50,13 @@ if len(sys.argv) <= 1:
 else: 
     base_name = sys.argv[1]
 
-if 
-    nprocs = 
-
 if len(sys.argv) >= 3:
-    extension = sys.argv[2]
+    nprocs = int(sys.argv[2])
+
+if len(sys.argv) >= 4:
+    extension = sys.argv[3]
+else:
+    extension = 'vtr'
 
 
 # make a mesh plot for dumb reasons
@@ -75,19 +77,6 @@ print "export_opts = ", export_opts
 export_opts['Binary format'] = 1
 export_opts['XML format'] = 1
 
-extension = 'vtk'
-
-# also write a .series file for paraview 
-series_file_initialized = False 
-
-prefix = '''{
-  "file-series-version" : "1.0",
-  "files" : [
-'''
-
-suffix = '''  ]
-}
-'''
 
 nsteps = 3 # TimeSliderGetNStates()
 
@@ -101,39 +90,24 @@ for state in range(nsteps):
     Query('Time')
     t  = GetQueryOutputValue()
 
-    if state == 1:
-        dt = t 
-
     # sort into directories, one per timestep
     subprocess.call('mkdir ' + exp_db.filename, shell=True)
     subprocess.call('mv ' + exp_db.filename + '.* ' + exp_db.filename, shell=True)
 
-    if not series_file_initialized:
 
-        filename_out = base_name + '.' + extension + '.series'
-        print "filename_out = ", filename_out
-
-        f_write = open(filename_out, 'w')
-        f_write.write(prefix)
-        series_file_initialized = True
-
-    tmp_str  = '    { "name" : "'
-    tmp_str += base_name + str(state).zfill(4) + '.' + extension
-    tmp_str += '", "time" : '
-    tmp_str += '{:.14f}'.format(t)
-    tmp_str += ' }'
-    if state != (nsteps-1):
-        tmp_str += ','      # trailing comma not tolerated at end of last line 
-    tmp_str += '\n'
-
-    f_write.write(tmp_str)
-
-f_write.write(suffix)
-f_write.close()
-
-
-
+# write a pvd file for whatever was just written out 
 t = 0.0
+
+# get timestep 
+SetTimeSliderState(0)
+Query('Time')
+if GetQueryOutputValue() != 0.0:
+    raise ValueError('First timestep does not have zero time')
+
+SetTimeSliderState(1)
+Query('Time')
+dt  = GetQueryOutputValue()
+
 
 prefix = '''<?xml version="1.0"?>
 <VTKFile type="Collection" version="0.1"
@@ -146,12 +120,14 @@ suffix = '''  </Collection>
 </VTKFile>
 '''
 
+initialized = False
+
 for n in range(nsteps):
     for proc in range(nprocs):
 
         if not initialized:
 
-            filename_out = basename + '.pvd'
+            filename_out = base_name + '.pvd'
             print "filename_out = ", filename_out
 
             f_write = open(filename_out, 'w')
@@ -165,8 +141,8 @@ for n in range(nsteps):
 
         tmp_str += ' file="'
         if nprocs > 1:
-            tmp_str += basename + str(n).zfill(4) + '/' # sorted into directories 
-        tmp_str += basename + str(n).zfill(4) + '.' 
+            tmp_str += base_name + str(n).zfill(4) + '/' # sorted into directories 
+        tmp_str += base_name + str(n).zfill(4) + '.' 
         if nprocs > 1:
             tmp_str += str(proc) + '.'        
         tmp_str += extension
@@ -180,10 +156,5 @@ f_write.write(suffix)
 f_write.close()
 
 
-
-
-
-
-print 'script cleared without crash'
- 
+print 'script cleared without crash' 
 quit() 
