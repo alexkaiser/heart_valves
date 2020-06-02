@@ -4,6 +4,8 @@ if ~exist('fig', 'var')
     fig = figure; 
 end 
 
+hold off 
+
 if ~isfield(valve, 'name') || ~strcmp(valve.name, 'aortic') 
     error('dissection_plot_rest_height_aortic called with non aortic type'); 
     return; 
