@@ -136,8 +136,8 @@ valve.collagen_constitutive_circ = 'aortic_circ';
 valve.collagen_constitutive_rad  = 'aortic_rad'; 
 
 % Constant strain of pressurized configuration 
-valve.strain_circ = .15 * 4/3; 
-valve.strain_rad  = .54 * 4/3; 
+valve.strain_circ = .15; 
+valve.strain_rad  = .54; 
 
 valve.extra_stretch_radial_dirichlet_free_edge = 1.0 * valve.strain_rad + 1.0; 
 
