@@ -136,8 +136,8 @@ valve.collagen_constitutive_circ = 'aortic_circ';
 valve.collagen_constitutive_rad  = 'aortic_rad'; 
 
 % Constant strain of pressurized configuration 
-valve.strain_circ = .15 * 4/3; 
-valve.strain_rad  = .54 * 4/3; 
+valve.strain_circ = .15; 
+valve.strain_rad  = .54; 
 
 valve.extra_stretch_radial_dirichlet_free_edge = 1.0 * valve.strain_rad + 1.0; 
 
@@ -219,7 +219,7 @@ valve.eta_papillary_unscaled = 0.0; valve.target_papillary_unscaled/500;
 % if nonzero, linear springs of rest length with spacing between the layers 
 % are placed with this value 
 % final formula is multiplied by valve.tension_base  
-valve.kappa_cross_layer_multipler = 1e4 / 256^2; 
+valve.kappa_cross_layer_multipler = 1e3 / 256^2; 
 
 % valve.k_bend_radial = [0 0 1e5 1e5] * 192/N;
 valve.k_bend_radial = 0; 1e2 * 192/N;
