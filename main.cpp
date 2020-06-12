@@ -1096,7 +1096,7 @@ inline double spring_function_aortic_circ(double R, const double* params, int la
     }
     else{
         // linear for compressive strains with continuous slope at origin 
-        return 0.0; //kappa * b *  E;
+        return kappa * b *  E;
     }
     return 0.0;
 } // spring_function_aortic_circ
@@ -1127,7 +1127,7 @@ inline double spring_function_aortic_rad(double R, const double* params, int lag
     }
     else{
         // linear for compressive strains with continuous slope at origin 
-        return 0.0; // kappa * b *  E;
+        return kappa * b *  E;
     }
     return 0.0;
 } // spring_function_aortic_rad
