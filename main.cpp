@@ -130,16 +130,16 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
                                    fourier_series_data *fourier_series, 
                                    papillary_info *papillary);
 
-inline double spring_function_collagen(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
-inline double deriv_spring_collagen(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
+inline double spring_function_collagen(double R, const double* params, int lag_slf_idx, int lag_nbr_idx);
+inline double deriv_spring_collagen(double R, const double* params, int lag_slf_idx, int lag_nbr_idx);
 
-inline double spring_function_aortic_circ(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
-inline double deriv_spring_aortic_circ(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
-inline double spring_function_aortic_rad(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
-inline double deriv_spring_aortic_rad(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
+inline double spring_function_aortic_circ(double R, const double* params, int lag_slf_idx, int lag_nbr_idx);
+inline double deriv_spring_aortic_circ(double R, const double* params, int lag_slf_idx, int lag_nbr_idx);
+inline double spring_function_aortic_rad(double R, const double* params, int lag_slf_idx, int lag_nbr_idx);
+inline double deriv_spring_aortic_rad(double R, const double* params, int lag_slf_idx, int lag_nbr_idx);
 
-inline double spring_function_compressive_only_linear_spring(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
-inline double deriv_spring_compressive_only_linear_spring(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
+inline double spring_function_compressive_only_linear_spring(double R, const double* params, int lag_slf_idx, int lag_nbr_idx);
+inline double deriv_spring_compressive_only_linear_spring(double R, const double* params, int lag_slf_idx, int lag_nbr_idx);
 
 
 #define DEBUG_OUTPUT 0 
@@ -1006,7 +1006,7 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
 
 
 
-inline double spring_function_collagen(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
+inline double spring_function_collagen(double R, const double* params, int lag_slf_idx, int lag_nbr_idx){
     /* 
     Compute force for collagen springs
     
@@ -1043,8 +1043,8 @@ inline double spring_function_collagen(double R, const double* params, int lag_m
     
     // Compute the force
     if (E > full_recruitment){
-        /*if ((lag_mastr_idx % 2500) == 0){
-            std::cout << "Affine. (idx,nbr) = (" << lag_mastr_idx << ", " <<  lag_slave_idx
+        /*if ((lag_slf_idx % 2500) == 0){
+            std::cout << "Affine. (idx,nbr) = (" << lag_slf_idx << ", " <<  lag_nbr_idx
                       << "\tE = " << E
                       << "\tF = " << kappa * (eta_collagen*E + collagen_y_intercept)
                       << "\tEffective slope = " << kappa * eta_collagen
@@ -1054,8 +1054,8 @@ inline double spring_function_collagen(double R, const double* params, int lag_m
         return kappa * (eta_collagen*E + collagen_y_intercept);
     }
     else if (E > 0.0){
-        /*if ((lag_mastr_idx % 2500) == 0){
-            std::cout << "Exp.   (idx,nbr) = (" << lag_mastr_idx << ", " <<  lag_slave_idx << ")"
+        /*if ((lag_slf_idx % 2500) == 0){
+            std::cout << "Exp.   (idx,nbr) = (" << lag_slf_idx << ", " <<  lag_nbr_idx << ")"
                       << "\tE = " << E
                       << "\tF = " << kappa * a * (exp(b*E) - 1)
                       << "\tEffective slope = " << kappa * a * b // taylor series coefficient on first term
@@ -1071,7 +1071,7 @@ inline double spring_function_collagen(double R, const double* params, int lag_m
 } // spring_function_collagen
 
 
-inline double deriv_spring_collagen(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
+inline double deriv_spring_collagen(double R, const double* params, int lag_slf_idx, int lag_nbr_idx){
     // not implemented
 
     SAMRAI_MPI::abort();
@@ -1080,7 +1080,7 @@ inline double deriv_spring_collagen(double R, const double* params, int lag_mast
 
 
 
-inline double spring_function_aortic_circ(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
+inline double spring_function_aortic_circ(double R, const double* params, int lag_slf_idx, int lag_nbr_idx){
     // function idx 2
     static const double b = 57.456509400487398; // Exponential rate
 
@@ -1102,7 +1102,7 @@ inline double spring_function_aortic_circ(double R, const double* params, int la
 } // spring_function_aortic_circ
 
 
-inline double deriv_spring_aortic_circ(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
+inline double deriv_spring_aortic_circ(double R, const double* params, int lag_slf_idx, int lag_nbr_idx){
     // not implemented
 
     SAMRAI_MPI::abort();
@@ -1111,7 +1111,7 @@ inline double deriv_spring_aortic_circ(double R, const double* params, int lag_m
 
 
 
-inline double spring_function_aortic_rad(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
+inline double spring_function_aortic_rad(double R, const double* params, int lag_slf_idx, int lag_nbr_idx){
     // function idx 3
     static const double b = 22.397200094241359; // Exponential rate
 
@@ -1133,7 +1133,7 @@ inline double spring_function_aortic_rad(double R, const double* params, int lag
 } // spring_function_aortic_rad
 
 
-inline double deriv_spring_aortic_rad(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
+inline double deriv_spring_aortic_rad(double R, const double* params, int lag_slf_idx, int lag_nbr_idx){
     // not implemented
 
     SAMRAI_MPI::abort();
@@ -1141,7 +1141,7 @@ inline double deriv_spring_aortic_rad(double R, const double* params, int lag_ma
 } // deriv_spring_aortic_rad
 
 
-inline double spring_function_compressive_only_linear_spring(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
+inline double spring_function_compressive_only_linear_spring(double R, const double* params, int lag_slf_idx, int lag_nbr_idx){
     // function idx 4
     const double kappa    = params[0];
     const double rest_len = params[1];
@@ -1162,7 +1162,7 @@ inline double spring_function_compressive_only_linear_spring(double R, const dou
 } // spring_function_compressive_only_linear_spring
 
 
-inline double deriv_spring_compressive_only_linear_spring(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
+inline double deriv_spring_compressive_only_linear_spring(double R, const double* params, int lag_slf_idx, int lag_nbr_idx){
     // not implemented
 
     SAMRAI_MPI::abort();
