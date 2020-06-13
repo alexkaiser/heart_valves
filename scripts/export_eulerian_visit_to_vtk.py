@@ -1,12 +1,3 @@
-
-# python visit script
-
-# looks for a file named "lag_data.visit"
-# must be in the current directory 
-# exports this to a simple three coordinate list for all times 
-
-# to run 
-
 # Copyright (c) 2019, Alexander D. Kaiser
 # All rights reserved.
 #
@@ -51,12 +42,24 @@ else:
     base_name = sys.argv[1]
 
 if len(sys.argv) >= 3:
-    nprocs = int(sys.argv[2])
+    extension = sys.argv[2]
+else:
+    print "using default extension vtr"
+    extension = 'vtr'
 
 if len(sys.argv) >= 4:
-    extension = sys.argv[3]
-else:
-    extension = 'vtr'
+    nprocs_sim = int(sys.argv[3]) # number of procs in the sim, which determines how many files go into the decomposed data
+else: 
+    print "using default nprocs_sim = 48"
+    nprocs_sim = 48 
+
+if len(sys.argv) >= 6:
+    nprocs = int(sys.argv[4])
+    proc_num = int(sys.argv[5])
+else: 
+    print "using default proc_num 0, nprocs = 1"
+    proc_num = 0
+    nprocs = 1
 
 
 # make a mesh plot for dumb reasons
@@ -78,82 +81,84 @@ export_opts['Binary format'] = 1
 export_opts['XML format'] = 1
 
 
-nsteps = 3 # TimeSliderGetNStates()
+nsteps = TimeSliderGetNStates()
 
-for state in range(nsteps):
-    SetTimeSliderState(state)
-    print 'state = ', state
+for state in range(TimeSliderGetNStates()):
+    # quick hack parallelism 
+    if (state % nprocs) == proc_num:
 
-    exp_db.filename = base_name + str(state).zfill(4)
-    ExportDatabase(exp_db, export_opts)  
+        SetTimeSliderState(state)
+        print 'state = ', state
 
+        exp_db.filename = base_name + str(state).zfill(4)
+        ExportDatabase(exp_db, export_opts)  
+
+        # sort into directories, one per timestep
+        subprocess.call('mkdir ' + exp_db.filename, shell=True)
+        subprocess.call('mv ' + exp_db.filename + '.* ' + exp_db.filename, shell=True)
+
+
+if proc_num == 0:
+
+    # write a pvd file for whatever was just written out 
+    t = 0.0
+
+    # get timestep 
+    SetTimeSliderState(0)
     Query('Time')
-    t  = GetQueryOutputValue()
+    if GetQueryOutputValue() != 0.0:
+        raise ValueError('First timestep does not have zero time')
 
-    # sort into directories, one per timestep
-    subprocess.call('mkdir ' + exp_db.filename, shell=True)
-    subprocess.call('mv ' + exp_db.filename + '.* ' + exp_db.filename, shell=True)
-
-
-# write a pvd file for whatever was just written out 
-t = 0.0
-
-# get timestep 
-SetTimeSliderState(0)
-Query('Time')
-if GetQueryOutputValue() != 0.0:
-    raise ValueError('First timestep does not have zero time')
-
-SetTimeSliderState(1)
-Query('Time')
-dt  = GetQueryOutputValue()
+    SetTimeSliderState(1)
+    Query('Time')
+    dt  = GetQueryOutputValue()
 
 
-prefix = '''<?xml version="1.0"?>
-<VTKFile type="Collection" version="0.1"
-         byte_order="LittleEndian"
-         compressor="vtkZLibDataCompressor">
-  <Collection>
-'''
+    prefix = '''<?xml version="1.0"?>
+    <VTKFile type="Collection" version="0.1"
+             byte_order="LittleEndian"
+             compressor="vtkZLibDataCompressor">
+      <Collection>
+    '''
 
-suffix = '''  </Collection>
-</VTKFile>
-'''
+    suffix = '''  </Collection>
+    </VTKFile>
+    '''
 
-initialized = False
+    initialized = False
 
-for n in range(nsteps):
-    for proc in range(nprocs):
+    for n in range(nsteps):
+        for proc in range(nprocs_sim):
 
-        if not initialized:
+            if not initialized:
 
-            filename_out = base_name + '.pvd'
-            print "filename_out = ", filename_out
+                filename_out = base_name + '.pvd'
+                print "filename_out = ", filename_out
 
-            f_write = open(filename_out, 'w')
-            f_write.write(prefix)
-            initialized = True
+                f_write = open(filename_out, 'w')
+                f_write.write(prefix)
+                initialized = True
 
-        tmp_str = '    <DataSet timestep="'
-        tmp_str += '{:.14f}'.format(t)
-        tmp_str += '" group="" part="'
-        tmp_str += str(proc) + '"'
+            tmp_str = '    <DataSet timestep="'
+            tmp_str += '{:.14f}'.format(t)
+            tmp_str += '" group="" part="'
+            tmp_str += str(proc) + '"'
 
-        tmp_str += ' file="'
-        if nprocs > 1:
-            tmp_str += base_name + str(n).zfill(4) + '/' # sorted into directories 
-        tmp_str += base_name + str(n).zfill(4) + '.' 
-        if nprocs > 1:
-            tmp_str += str(proc) + '.'        
-        tmp_str += extension
-        tmp_str += '"/>\n'
+            tmp_str += ' file="'
+            if nprocs_sim > 1:
+                tmp_str += base_name + str(n).zfill(4) + '/' # sorted into directories 
+            tmp_str += base_name + str(n).zfill(4) + '.' 
+            if nprocs_sim > 1:
+                tmp_str += str(proc) + '.'        
+            tmp_str += extension
+            tmp_str += '"/>\n'
 
-        f_write.write(tmp_str)
+            f_write.write(tmp_str)
 
-    t += dt  
+        t += dt  
 
-f_write.write(suffix)
-f_write.close()
+    f_write.write(suffix)
+    f_write.close()
 
 
 print 'script cleared without crash' 
