@@ -108,7 +108,7 @@ valve.X_config_is_reference = true;
 % spacing is always half a mesh width 
 valve.num_copies = 3; 
 
-% valve.copy_spring_weights = [1/2 1/4 1/4];
+valve.copy_spring_weights = [0.98 0.01 0.01];
 
 valve.normal_thicken = true; 
 % nominal aortic valve thickness
@@ -192,8 +192,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 4.343;  % circumferential 
-tension_coeffs.c_rad_dec        = 0.926;  % radial
+tension_coeffs.c_circ_dec       = 4.55;  % circumferential 
+tension_coeffs.c_rad_dec        = 0.9830;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 2.2;        
 
