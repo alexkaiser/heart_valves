@@ -70,20 +70,20 @@ exp_db = ExportDBAttributes()
 exp_db.db_type = 'VTK' 
 exp_db.variables = ('P', 'U', 'Omega')
 
-print "exp_db = ", exp_db
-print "exp_db.opts = ", exp_db.opts
-print "exp_db.opts.types = ", exp_db.opts.types
+# print "exp_db = ", exp_db
+# print "exp_db.opts = ", exp_db.opts
+# print "exp_db.opts.types = ", exp_db.opts.types
 
 export_opts = GetExportOptions("VTK")
-print "export_opts = ", export_opts
+# print "export_opts = ", export_opts
 
 export_opts['Binary format'] = 1
 export_opts['XML format'] = 1
 
 
-nsteps = TimeSliderGetNStates()
+nsteps = 4 # TimeSliderGetNStates()
 
-for state in range(TimeSliderGetNStates()):
+for state in range(nsteps):
     # quick hack parallelism 
     if (state % nprocs) == proc_num:
 

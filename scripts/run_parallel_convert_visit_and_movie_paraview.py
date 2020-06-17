@@ -47,7 +47,7 @@ def fix_visit_files(viz_directory):
     os.chdir(prev_dir)
 
 
-def run_command_parallel(call_str_base, n_procs)
+def run_command_parallel(call_str_base, n_procs):
 
     processes = []
 
@@ -88,6 +88,8 @@ if __name__ == '__main__':
     for arg in sys.argv:
         print arg, " "
 
+    # script_dir = "~/copies_scripts/"
+    script_dir = "~/mitral_fully_discrete/scripts/"
 
     if os.path.isfile('done.txt'):
         
@@ -118,20 +120,25 @@ if __name__ == '__main__':
                     raise InputError("Must specify n_procs")
                 n_procs = int(sys.argv[3])
 
-                call_str_base = 'visit -cli -nowin -s ~/copies_scripts/export_eulerian_visit_to_vtk.py '
+                call_str_base = 'visit -cli -nowin -s ' + script_dir + 'export_eulerian_visit_to_vtk.py '
                 call_str_base += " eulerian_vars vtr " + str(n_procs_sim) + " "
 
                 run_command_parallel(call_str_base, n_procs)
 
                 for lag_file in os.listdir('..'):
                     if lag_file.endswith('.vertex'):
-                        base_name_lag = lag_file.rstrip('.vertex')
+                        print "found lag file ", lag_file, ", processing parallel"
+                        base_name_lag = lag_file.rsplit('.', 1)[0]
 
-                        call_string_lag = 'visit -cli -nowin -s ~/copies_scripts/export_eulerian_visit_to_vtk.py '
+                        print "base_name_lag = ", base_name_lag
+
+                        call_string_lag = 'visit -cli -nowin -s ' + script_dir + 'export_lag_visit_to_vtk.py '
                         call_string_lag += base_name_lag 
                         call_string_lag += " vtu " # always vtu for silo files 
 
-                        run_command_parallel(call_str_base, n_procs)                        
+                        run_command_parallel(call_string_lag, n_procs)                        
+
+                break 
 
 
 

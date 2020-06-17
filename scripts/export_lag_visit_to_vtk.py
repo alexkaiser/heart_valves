@@ -38,6 +38,7 @@
 
 import sys 
 
+
 print 'we out here'
 
 OpenDatabase("lag_data.visit")
@@ -55,16 +56,20 @@ else:
     print "using default extension vtu"
     extension = 'vtu'
 
-if len(sys.argv) >= 6:
-    nprocs = int(sys.argv[4])
-    proc_num = int(sys.argv[5])
+if len(sys.argv) >= 5:
+    nprocs = int(sys.argv[3])
+    proc_num = int(sys.argv[4])
 else: 
     print "using default proc_num 0, nprocs = 1"
     proc_num = 0
     nprocs = 1
 
 # make a mesh plot for dumb reasons
-AddPlot("Mesh", base_name)
+if "particles" in base_name:
+    AddPlot("Mesh", base_name + '_vertices')
+else:
+    AddPlot("Mesh", base_name + '_mesh')
+# AddPlot("Mesh", base_name)
 DrawPlots()
 
 exp_db = ExportDBAttributes() 
@@ -77,53 +82,88 @@ print "export_opts = ", export_opts
 export_opts['Binary format'] = 1
 export_opts['XML format'] = 1
 
-
-# also write a .series file for paraview 
-initialized = False 
-
-prefix = '''{
-  "file-series-version" : "1.0",
-  "files" : [
-'''
-
-suffix = '''  ]
-}
-'''
-
-nsteps = 3 # TimeSliderGetNStates()
+nsteps = 4 # TimeSliderGetNStates()
 
 for state in range(nsteps):
-    SetTimeSliderState(state)
-    print 'state = ', state
+    # quick hack parallelism 
+    if (state % nprocs) == proc_num:
 
-    exp_db.filename = base_name + str(state).zfill(4)
-    ExportDatabase(exp_db, export_opts)  
+        SetTimeSliderState(state)
+        print 'state = ', state
 
+        exp_db.filename = base_name + str(state).zfill(4)
+        ExportDatabase(exp_db, export_opts)  
+
+
+
+if proc_num == 0:
+
+    # write a pvd file for whatever was just written out 
+    t = 0.0
+
+    # get timestep 
+    SetTimeSliderState(0)
     Query('Time')
-    t  = GetQueryOutputValue()
+    if GetQueryOutputValue() != 0.0:
+        raise ValueError('First timestep does not have zero time')
 
-    if not initialized:
+    SetTimeSliderState(1)
+    Query('Time')
+    dt  = GetQueryOutputValue()
 
-        filename_out = base_name + '.' + extension + '.series'
-        print "filename_out = ", filename_out
 
-        f_write = open(filename_out, 'w')
-        f_write.write(prefix)
-        initialized = True
+    prefix = '''<?xml version="1.0"?>
+    <VTKFile type="Collection" version="0.1"
+             byte_order="LittleEndian"
+             compressor="vtkZLibDataCompressor">
+      <Collection>
+    '''
 
-    tmp_str  = '    { "name" : "'
-    tmp_str += base_name + str(state).zfill(4) + '.' + extension
-    tmp_str += '", "time" : '
-    tmp_str += '{:.14f}'.format(t)
-    tmp_str += ' }'
-    if state != (nsteps-1):
-        tmp_str += ','      # trailing comma not tolerated at end of last line 
-    tmp_str += '\n'
+    suffix = '''  </Collection>
+    </VTKFile>
+    '''
 
-    f_write.write(tmp_str)
+    initialized = False
 
-f_write.write(suffix)
-f_write.close()
-print 'script cleared without crash'
+    # always one proc here 
+    nprocs_sim = 1 
+
+    for n in range(nsteps):
+        for proc in range(nprocs_sim):
+
+            if not initialized:
+
+                filename_out = base_name + '.pvd'
+                print "filename_out = ", filename_out
+
+                f_write = open(filename_out, 'w')
+                f_write.write(prefix)
+                initialized = True
+
+            tmp_str = '    <DataSet timestep="'
+            tmp_str += '{:.14f}'.format(t)
+            tmp_str += '" group="" part="'
+            tmp_str += str(proc) + '"'
+
+            tmp_str += ' file="'
+            if nprocs_sim > 1:
+                tmp_str += base_name + str(n).zfill(4) + '/' # sorted into directories 
+            tmp_str += base_name + str(n).zfill(4) + '.' 
+            if nprocs_sim > 1:
+                tmp_str += str(proc) + '.'        
+            tmp_str += extension
+            tmp_str += '"/>\n'
+
+            f_write.write(tmp_str)
+
+        t += dt  
+
+    f_write.write(suffix)
+    f_write.close()
+
+
+
+
+print 'lag script cleared without crash'
  
 quit() 
