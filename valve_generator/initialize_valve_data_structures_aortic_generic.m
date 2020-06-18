@@ -106,11 +106,11 @@ valve.X_config_is_reference = true;
 % places this many exact copies of the leaflet downward in z 
 % spring constants are all reduced by num_copies 
 % spacing is always half a mesh width 
-valve.num_copies = 3; 
+valve.num_copies = 1; 
 
-valve.copy_spring_weights = [0.8 0.1 0.1];
+% valve.copy_spring_weights = [0.8 0.1 0.1];
 
-valve.normal_thicken = true; 
+valve.normal_thicken = false; % true; 
 % nominal aortic valve thickness
 valve.normal_thickness = 0.044; 
 
