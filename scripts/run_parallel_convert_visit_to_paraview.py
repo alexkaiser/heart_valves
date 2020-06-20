@@ -109,16 +109,12 @@ if __name__ == '__main__':
                 fix_visit_files(viz_dir_name)
 
                 if len(sys.argv) < 2:
-                    raise InputError("Must provide a script name")
-                session_file_name = sys.argv[1]
+                    raise InputError("Must specify n_procs_sim")
+                n_procs_sim = int(sys.argv[1])
 
                 if len(sys.argv) < 3:
-                    raise InputError("Must specify n_procs_sim")
-                n_procs_sim = int(sys.argv[2])
-
-                if len(sys.argv) < 4:
                     raise InputError("Must specify n_procs")
-                n_procs = int(sys.argv[3])
+                n_procs = int(sys.argv[2])
 
                 call_str_base = 'visit -cli -nowin -s ' + script_dir + 'export_eulerian_visit_to_vtk.py '
                 call_str_base += " eulerian_vars vtr " + str(n_procs_sim) + " "

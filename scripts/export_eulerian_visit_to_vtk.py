@@ -36,7 +36,7 @@ OpenDatabase("dumps.visit")
  
 print 'data base open line passed'
 
-if len(sys.argv) <= 1:
+if len(sys.argv) < 2:
     raise TypeError('required agrs: base_name')
 else: 
     base_name = sys.argv[1]
