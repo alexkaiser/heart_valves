@@ -81,7 +81,7 @@ export_opts['Binary format'] = 1
 export_opts['XML format'] = 1
 
 
-nsteps = 4 # TimeSliderGetNStates()
+nsteps = TimeSliderGetNStates()
 
 for state in range(nsteps):
     # quick hack parallelism 
