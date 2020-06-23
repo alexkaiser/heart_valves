@@ -192,10 +192,10 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 4.58;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.2;  % radial
+tension_coeffs.c_circ_dec       = 4.55;  % circumferential 
+tension_coeffs.c_rad_dec        = 0.9830;  % radial
 
-tension_coeffs.c_circ_dec_annulus = 1.8;        
+tension_coeffs.c_circ_dec_annulus = 2.2;        
 
 % tension_coeffs.c_circ_dec_free_edge = 5.0;
 tension_coeffs.c_circ_dec_free_edge_percentage = 0.0;
@@ -230,7 +230,7 @@ valve.k_bend_circ = 0;
 valve.k_bend_circ_free_edge = 0; 
 valve.k_bend_circ_free_edge_percentage = 0;
 
-valve.k_bend_cross_layer = 0;
+valve.k_bend_cross_layer = 1e4 * (192/N)^2;
 
 % coaptation height for Swanson and Clark 
 % width is the same 
