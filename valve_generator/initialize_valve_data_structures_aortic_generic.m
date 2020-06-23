@@ -230,7 +230,7 @@ valve.k_bend_circ = 0;
 valve.k_bend_circ_free_edge = 0; 
 valve.k_bend_circ_free_edge_percentage = 0;
 
-valve.k_bend_cross_layer = 1e4 * (192/N)^2;
+valve.k_bend_cross_layer = 1e3 * (192/N)^2;
 
 % coaptation height for Swanson and Clark 
 % width is the same 
