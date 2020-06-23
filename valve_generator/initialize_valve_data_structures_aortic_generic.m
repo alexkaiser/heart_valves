@@ -192,10 +192,10 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 4.55;  % circumferential 
-tension_coeffs.c_rad_dec        = 0.9830;  % radial
+tension_coeffs.c_circ_dec       = 4.58;  % circumferential 
+tension_coeffs.c_rad_dec        = 1.2;  % radial
 
-tension_coeffs.c_circ_dec_annulus = 2.2;        
+tension_coeffs.c_circ_dec_annulus = 1.8;        
 
 % tension_coeffs.c_circ_dec_free_edge = 5.0;
 tension_coeffs.c_circ_dec_free_edge_percentage = 0.0;
@@ -219,7 +219,7 @@ valve.eta_papillary_unscaled = 0.0; valve.target_papillary_unscaled/500;
 % if nonzero, linear springs of rest length with spacing between the layers 
 % are placed with this value 
 % final formula is multiplied by valve.tension_base  
-valve.kappa_cross_layer_multipler = 1e5 / 256^2; 
+valve.kappa_cross_layer_multipler = 1e4 / 256^2; 
 
 % valve.k_bend_radial = [0 0 1e5 1e5] * 192/N;
 valve.k_bend_radial = 0; 1e2 * 192/N;
@@ -234,8 +234,8 @@ valve.k_bend_cross_layer = 0;
 
 % coaptation height for Swanson and Clark 
 % width is the same 
-valve.k_bend_nodule_length = 0.17*2*valve.skeleton.r;
-valve.k_bend_nodule        = 1e5 * 192/N;
+% valve.k_bend_nodule_length = 0.17*2*valve.skeleton.r;
+% valve.k_bend_nodule        = 1e5 * 192/N;
 
 % valve.k_bend_radial_interp_pts  = [0    .36  .46   1];
 
