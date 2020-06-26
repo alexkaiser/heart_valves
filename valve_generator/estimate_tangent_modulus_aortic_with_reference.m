@@ -51,16 +51,13 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimat
         fig = figure;  
     end 
 
-    if exist('fiber_output', 'var') && fiber_output    
-        if ~exist('fiber_stride', 'var')
-            fprintf('Using default fiber stride of 1')
-            fiber_stride = 1; 
-        end 
+    if ~exist('fiber_stride', 'var')
+        fprintf('Using default fiber stride of 1')
+        fiber_stride = 1; 
+    end 
 
-        if ~exist('stride_offset_j', 'var')
-            stride_offset_j = 0; 
-        end 
-
+    if ~exist('stride_offset_j', 'var')
+        stride_offset_j = 0; 
     end 
 
     hold on;
@@ -77,9 +74,7 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimat
         ratio = false; 
     end 
     
-    if circ || rad || ratio 
-        plots = true; 
-    end
+    plots = (circ || rad || ratio); 
     
     if (circ && rad) || (circ && ratio) || (rad && ratio)
         error('too many plots requested at once')
@@ -375,7 +370,13 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimat
             else 
                 exponent_removed = 10^floor(log10(tick_max)); 
                 tick_labels{n} = sprintf('%.1f', tmp/exponent_removed); 
+                %tick_labels{n} = sprintf('%.1e', tmp); 
             end 
+        end 
+        
+        colorbar_on = false; 
+        if colorbar_on
+            colorbar('Ticks', tick_array, 'TickLabels', tick_labels);
         end 
         
         colorbar_figure = true; 
