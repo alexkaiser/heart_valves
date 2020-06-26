@@ -11,7 +11,7 @@ if ~exist('fig_ratio', 'var')
 end 
 
 fiber_output    = true; 
-fiber_stride    = 4; 
+fiber_stride    = 8; 
 stride_offset_j = 0; 
 
 height_plot = false; 

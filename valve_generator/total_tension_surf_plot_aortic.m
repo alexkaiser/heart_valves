@@ -417,7 +417,7 @@ for j=1:j_max
     end 
 end
 
-one_leaflet = true; 
+
 if one_leaflet 
     X_copy(:,1:(j_min_plot-1),:) = NaN;    
     X_copy(:,(j_max_plot+1):end,:) = NaN;

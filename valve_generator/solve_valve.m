@@ -304,7 +304,7 @@ if build_reference
             valve_with_reference.leaflets(i) = set_rest_lengths_and_constants_aortic(valve.leaflets(i), valve); 
             
             plots = true; 
-            [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean]  = estimate_tangent_modulus_aortic_with_reference(valve_with_reference.leaflets(i), valve.normal_thickness, plots);
+            [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean]  = estimate_tangent_modulus_aortic_with_reference(valve_with_reference.leaflets(i), valve.normal_thickness);
             valve_with_reference.leaflets(i).sigma_circ = sigma_circ; 
             valve_with_reference.leaflets(i).sigma_rad = sigma_rad; 
             valve_with_reference.leaflets(i).sigma_circ_mean = sigma_circ_mean;  
