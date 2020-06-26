@@ -43,7 +43,7 @@ end
 
 if strcmp(collagen_constitutive_tmp, 'aortic_circ')
     
-    b = 57.456509400487398; 
+    b = 57.456509400487398 * 0.5; 
     E_star = 0.2; 
     
     E = norm(X - X_nbr)/R - 1.0; 
@@ -62,7 +62,7 @@ if strcmp(collagen_constitutive_tmp, 'aortic_circ')
     
 elseif strcmp(collagen_constitutive_tmp, 'aortic_rad')
 
-    b = 22.397200094241359; 
+    b = 22.397200094241359 * 0.5; 
     E_star = 0.6; 
     
     E = norm(X - X_nbr)/R - 1.0; 
