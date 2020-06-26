@@ -1,4 +1,4 @@
-function [fig] = total_tension_surf_plot_aortic(leaflet, fiber_output, fiber_stride, stride_offset_j, circ, rad, ratio, height_plot, fig)
+function [fig] = total_tension_surf_plot_aortic(leaflet, fiber_output, fiber_stride, stride_offset_j, circ, rad, ratio, height_plot, fig, colorbar_on)
 % 
 % Plots leaflet with fibers 
 % 
@@ -90,6 +90,7 @@ k_max                  = leaflet.k_max;
 du                     = leaflet.du; 
 is_internal            = leaflet.is_internal; 
 is_bc                  = leaflet.is_bc; 
+N_each                 = leaflet.N_each; 
 
 if isfield(leaflet, 'decreasing_tension') && leaflet.decreasing_tension
     decreasing_tension    = true;  
@@ -115,8 +116,28 @@ if ~exist('height_plot', 'var')
     height_plot = false; 
 end 
 
+if ~exist('colorbar_on', 'var')
+    colorbar_on = true; 
+end 
+
+
+
+one_leaflet = true; 
+if one_leaflet 
+%     X_current(:,1:(N_each-1),:) = NaN;    
+%     X_current(:,(2*N_each:end),:) = NaN;
+
+    j_min_plot = N_each; 
+    j_max_plot = 2*N_each; 
+    j_range = j_min_plot:j_max_plot; 
+    
+else 
+    j_range = 1:j_max; 
+end 
+
+
 % max value to plot for ratio 
-ratio_cap = 40; 
+ratio_cap = 20; 
 
 % quick argument checking 
 if circ && rad
@@ -144,8 +165,6 @@ hold on;
 n_colors = 500; 
 extended = true; 
 colormap(make_colormap(n_colors, extended)); 
-
-
 cmap = colormap;
 n_colors = size(cmap,1); 
 
@@ -154,8 +173,14 @@ max_tension_radial = du * max(beta(:));
 if circ && rad 
     max_tension = max_tension_circ + max_tension_radial; % 1.7 * 0.7 * max(max_tension_circ, max_tension_radial); 
 else 
-    max_tension = max(max_tension_circ, max_tension_radial); 
+    max_tension = max(max_tension_circ, max_tension_radial) * 0.1;
 end
+
+observed_max = true; 
+if observed_max
+    max_tension = 7.5e3; % 1.298292e+04; 
+end 
+
 tick_max = max_tension; 
 
 
@@ -170,169 +195,215 @@ num_nbrs_rad  =  zeros(j_max,k_max);
 
 ratio_ptwise = zeros(j_max,k_max); 
 
+max_tension_found = 0; 
+
 % Internal leaflet part 
-for j=1:j_max
+for j=1:j_max 
     for k=1:k_max
-        if is_internal(j,k) 
-            
-            if fiber_output && ((mod(j,fiber_stride) == 1) || (fiber_stride == 1))
-                output_tmp_k = true; 
-            else 
+
+        if fiber_output && ((mod(j,fiber_stride) == (1 + stride_offset_j)) || (fiber_stride == 1))
+            output_tmp_k = true; 
+        else 
+            output_tmp_k = false; 
+        end 
+
+        if fiber_output && ((mod(k,fiber_stride) == 1) || (fiber_stride == 1))
+            output_tmp_j = true; 
+        else 
+            output_tmp_j = false; 
+        end     
+
+        if one_leaflet 
+            if (j < j_min_plot) || (j > j_max_plot)
+                output_tmp_j = false; 
                 output_tmp_k = false; 
             end 
-
-            if fiber_output && ((mod(k,fiber_stride) == (1 + stride_offset_j)) || (fiber_stride == 1))
-                output_tmp_j = true; 
-            else 
-                output_tmp_j = false; 
-            end     
-            
-
-            X = X_current(:,j,k); 
-
-            F_tmp = zeros(3,1); 
+        end 
 
 
-            % u type fibers 
-            for j_nbr_tmp = [j-1,j+1]
+        X = X_current(:,j,k); 
 
-                k_nbr_tmp = k; 
+        F_tmp = zeros(3,1); 
 
-                [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
 
-                if valid 
+        % u type fibers 
+        for j_nbr_tmp = [j-1,j+1]
 
-                    X_nbr = X_current(:,j_nbr,k_nbr); 
+            k_nbr_tmp = k; 
 
-                    alpha_tmp     = alpha(j_spr,k_spr); 
-                    c_dec_tension = c_dec_circumferential(j_spr,k_spr); 
+            [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
 
-                    tension = alpha_tmp;  
-
-                    if decreasing_tension && (alpha_tmp ~= 0)
-                        tension = tension + alpha_tmp * tension_decreasing(X, X_nbr, du, c_dec_tension) ; 
-                    end 
-
-                    if tension_debug
-                        dec = tension_decreasing(X, X_nbr, du, c_dec_tension) ; 
-                        fprintf('tension = %e, dec_tension = %f, (j,k) = (%d, %d) circ\n', tension, dec, j, k); 
-                    end 
-
-                    % ensure that the circumferential figure is current 
-                    % figure(fig); 
-                    
-                    x_vals = [X(1), X_nbr(1)]; 
-                    y_vals = [X(2), X_nbr(2)]; 
-                    z_vals = [X(3), X_nbr(3)]; 
-                    
-                    % fraction of maximum tension gives fraction of way
-                    % through color bar
-                    tension_circ(j,k)  = tension_circ(j,k) + du * tension; 
-                    num_nbrs_circ(j,k) = num_nbrs_circ(j,k) + 1; 
-                    
-                    if output_tmp_j && circ 
-                        plot3(x_vals,y_vals,z_vals,'k'); 
-                    end 
-
-                    F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
-
+            if one_leaflet 
+                if (j_nbr < j_min_plot) || (j_nbr > j_max_plot)
+                    output_tmp_j = false; 
+                    output_tmp_k = false; 
                 end 
             end 
 
-            % v type fibers 
-            for k_nbr_tmp = [k-1,k+1]
 
-                j_nbr_tmp = j; 
+            if valid 
 
-                [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                X_nbr = X_current(:,j_nbr,k_nbr); 
 
-                if valid
+                alpha_tmp     = alpha(j_spr,k_spr); 
+                c_dec_tension = c_dec_circumferential(j_spr,k_spr); 
 
-                    X_nbr = X_current(:,j_nbr,k_nbr); 
+                tension = alpha_tmp;  
 
-                    beta_tmp      = beta(j_spr,k_spr); 
-                    c_dec_tension = c_dec_radial(j_spr,k_spr); 
+                if decreasing_tension && (alpha_tmp ~= 0)
+                    tension = tension + alpha_tmp * tension_decreasing(X, X_nbr, du, c_dec_tension) ; 
+                end 
 
-                    tension = beta_tmp; 
+                if tension_debug
+                    dec = tension_decreasing(X, X_nbr, du, c_dec_tension) ; 
+                    fprintf('tension = %e, dec_tension = %f, (j,k) = (%d, %d) circ\n', tension, dec, j, k); 
+                end 
 
-                    if decreasing_tension && (beta_tmp ~= 0)
-                        tension = tension + beta_tmp * tension_decreasing(X, X_nbr, du, c_dec_tension) ; 
-                    end
+                % ensure that the circumferential figure is current 
+                % figure(fig); 
 
-                    if tension_debug
-                        dec = tension_decreasing(X, X_nbr, du, c_dec_tension) ; 
-                        fprintf('tension = %e, dec_tension = %f, (j,k) = (%d, %d) radial\n', tension, dec, j, k); 
-                    end 
+                x_vals = [X(1), X_nbr(1)]; 
+                y_vals = [X(2), X_nbr(2)]; 
+                z_vals = [X(3), X_nbr(3)]; 
 
-                    % ensure that the circumferential figure is current 
-                    % figure(fig); 
-                    
-                    x_vals = [X(1), X_nbr(1)]; 
-                    y_vals = [X(2), X_nbr(2)]; 
-                    z_vals = [X(3), X_nbr(3)]; 
-                    
-                    % fraction of maximum tension gives fraction of way
-                    % through color bar 
-                    tension_rad(j,k) = tension_rad(j,k) + du * tension; 
-                    num_nbrs_rad(j,k) = num_nbrs_rad(j,k) + 1;  
+                % fraction of maximum tension gives fraction of way
+                % through color bar
+                tension_circ(j,k)  = tension_circ(j,k) + du * tension; 
+                num_nbrs_circ(j,k) = num_nbrs_circ(j,k) + 1; 
 
-                    % plot local fiber if included 
-                    if output_tmp_k && rad 
-                        plot3(x_vals,y_vals,z_vals,'k'); 
-                    end 
-                    
+                if output_tmp_j && (circ || ratio) 
+                    plot3(x_vals,y_vals,z_vals,'k'); 
+                end 
+
+                F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
+
+            end 
+        end 
+
+        % v type fibers 
+        for k_nbr_tmp = [k-1,k+1]
+
+            j_nbr_tmp = j; 
+
+            [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+
+            if one_leaflet 
+                if (j_nbr < j_min_plot) || (j_nbr > j_max_plot)
+                    output_tmp_j = false; 
+                    output_tmp_k = false; 
+                end 
+            end 
+
+            if valid
+
+                X_nbr = X_current(:,j_nbr,k_nbr); 
+
+                beta_tmp      = beta(j_spr,k_spr); 
+                c_dec_tension = c_dec_radial(j_spr,k_spr); 
+
+                tension = beta_tmp; 
+
+                if decreasing_tension && (beta_tmp ~= 0)
+                    tension = tension + beta_tmp * tension_decreasing(X, X_nbr, du, c_dec_tension) ; 
+                end
+
+                if tension_debug
+                    dec = tension_decreasing(X, X_nbr, du, c_dec_tension) ; 
+                    fprintf('tension = %e, dec_tension = %f, (j,k) = (%d, %d) radial\n', tension, dec, j, k); 
+                end 
+
+                % ensure that the circumferential figure is current 
+                % figure(fig); 
+
+                x_vals = [X(1), X_nbr(1)]; 
+                y_vals = [X(2), X_nbr(2)]; 
+                z_vals = [X(3), X_nbr(3)]; 
+
+                % fraction of maximum tension gives fraction of way
+                % through color bar 
+                tension_rad(j,k) = tension_rad(j,k) + du * tension; 
+                num_nbrs_rad(j,k) = num_nbrs_rad(j,k) + 1;  
+
+                % plot local fiber if included 
+                if output_tmp_k && (rad || ratio) 
+                    plot3(x_vals,y_vals,z_vals,'k'); 
                 end 
 
             end 
 
-            
-            % update color map for sum of local tensions 
-            % tensions either take the exact value (if they only are connected to one node)
-            % or the average on the connecting segments 
-            tension_sum = 0; 
-            
-            if num_nbrs_circ(j,k) == 1
-                circ_temp =       tension_circ(j,k); 
-            elseif num_nbrs_circ(j,k) == 2
-                circ_temp = 0.5 * tension_circ(j,k); 
-            else 
-                error('Improper number of circumferential tension nodes'); 
-            end    
+        end 
 
-            if num_nbrs_rad(j,k) == 1
-                rad_temp =       tension_rad(j,k); 
-            elseif num_nbrs_rad(j,k) == 2
-                rad_temp = 0.5 * tension_rad(j,k); 
-            else 
-                error('Improper number of radial tension nodes'); 
-            end    
-            
-            ratio_ptwise(j,k) = circ_temp / rad_temp; 
-            
-            if circ 
-                tension_sum = tension_sum + circ_temp; 
-            end 
-            if rad 
-                tension_sum = tension_sum + rad_temp; 
-            end 
-            
-            tension_frac_of_max = tension_sum/max_tension; 
-            color_idx = ceil(tension_frac_of_max * n_colors);
 
-            if color_idx == 0
-                color_idx = 1; 
-            end 
+        % update color map for sum of local tensions 
+        % tensions either take the exact value (if they only are connected to one node)
+        % or the average on the connecting segments 
+        tension_sum = 0; 
 
-            if color_idx > n_colors
-                %warning('max color at free edge')
-                color_idx = n_colors; 
-            end 
-            
-            colors(j,k,:) = cmap(color_idx,:); 
+        if num_nbrs_circ(j,k) == 1
+            circ_temp =       tension_circ(j,k); 
+        elseif num_nbrs_circ(j,k) == 2
+            circ_temp = 0.5 * tension_circ(j,k); 
+        else 
+            error('Improper number of circumferential tension nodes'); 
+        end    
 
-        end
+        if num_nbrs_rad(j,k) == 1
+            rad_temp =       tension_rad(j,k); 
+        elseif num_nbrs_rad(j,k) == 2
+            rad_temp = 0.5 * tension_rad(j,k); 
+        else 
+            error('Improper number of radial tension nodes'); 
+        end    
+
+        ratio_ptwise(j,k) = circ_temp / rad_temp; 
+
+        if circ 
+            tension_sum = tension_sum + circ_temp; 
+        end 
+        if rad 
+            tension_sum = tension_sum + rad_temp; 
+        end 
+
+        tension_frac_of_max = tension_sum/max_tension; 
+        color_idx = ceil(tension_frac_of_max * n_colors);
+
+        max_tension_found = max(max_tension_found, tension_sum); 
+
+        if color_idx == 0
+            color_idx = 1; 
+            % fprintf('zero colors found j,k = %d,%d\n', j,k); 
+        end 
+
+        if color_idx > n_colors
+            %warning('max color at free edge')
+            color_idx = n_colors; 
+        end 
+
+        colors(j,k,:) = cmap(color_idx,:); 
+
+
     end 
 end
+
+circ_off_by_one_adjust = true; 
+if (circ || ratio) && circ_off_by_one_adjust 
+    % colors are read from the minimum j,k index for the square 
+    % so shift down by one 
+    
+    colors_temp = zeros(size(colors)); 
+    
+    for j=1:j_max 
+        for k=1:(k_max-1)
+            colors_temp(j,k,:) = colors(j,k+1,:); 
+        end 
+    end 
+    
+    colors = colors_temp; 
+end 
+
+
+
+
 
 % plot the actual surface 
 X_copy      = leaflet.X; 
@@ -345,6 +416,55 @@ for j=1:j_max
         end
     end 
 end
+
+one_leaflet = true; 
+if one_leaflet 
+    X_copy(:,1:(j_min_plot-1),:) = NaN;    
+    X_copy(:,(j_max_plot+1):end,:) = NaN;
+
+
+    outline_cleanup = true; 
+    if outline_cleanup 
+        
+        % horizontal at bottom and free edge 
+        for k=[1,k_max]
+            for j=j_min_plot:(j_max_plot-1)
+
+                X = X_copy(:,j,k); 
+                X_nbr = X_copy(:,j+1,k); 
+                
+                x_vals = [X(1), X_nbr(1)]; 
+                y_vals = [X(2), X_nbr(2)]; 
+                z_vals = [X(3), X_nbr(3)]; 
+                
+                plot3(x_vals,y_vals,z_vals,'k'); 
+            end 
+        end 
+
+        % vertical at commissures 
+        for k=1:(k_max-1)
+            for j=[j_min_plot,j_max_plot]
+
+                X = X_copy(:,j,k); 
+                X_nbr = X_copy(:,j,k+1); 
+                
+                x_vals = [X(1), X_nbr(1)]; 
+                y_vals = [X(2), X_nbr(2)]; 
+                z_vals = [X(3), X_nbr(3)]; 
+                
+                plot3(x_vals,y_vals,z_vals,'k'); 
+            end 
+        end 
+        
+        
+    end 
+end 
+
+
+
+
+
+
 
 if ratio 
     max_ratio = max(max(ratio_ptwise));
@@ -394,22 +514,68 @@ if height_plot
     view(30,30); 
      
 else
-    
+
     n_ticks = 5; 
     tick_array = linspace(0,1,n_ticks); 
     tick_labels = {}; 
     for n=1:length(tick_array)
         tick=tick_array(n); 
         tmp = tick * tick_max; 
-        tick_labels{n} = sprintf('%.1e', tmp); 
+        if ratio 
+            tick_labels{n} = sprintf('%d', tmp); 
+        else 
+            tick_labels{n} = sprintf('%.1f', tmp/1e3); 
+        end 
     end 
-    colorbar('Ticks', tick_array, 'TickLabels', tick_labels);
+        
+    if colorbar_on
+        colorbar('Ticks', tick_array, 'TickLabels', tick_labels);
+    end 
+    
+    colorbar_figure = true; 
+    if colorbar_figure && (~rad)
+        fig_colorbar = figure; 
+
+        colormap(make_colormap(n_colors, extended)); 
+
+        cbar = colorbar('Ticks', tick_array, 'TickLabels', tick_labels); 
+
+%         if ratio
+%             cbar.Label.String = {'Ratio', ' '};
+%         else
+%             cbar.Label.String = {'Tension','(\cdot 10^3 dynes)'};
+%         end 
+
+        fontsize = 24; 
+        ax = gca; 
+        ax.FontSize = fontsize;
+        cbar.Label.FontSize = fontsize; 
+        cbar.Label.Rotation = 0;
+        cbar.Label.Position = [0.4 1.2];
+
+        grid off 
+        axis off 
+
+        if ratio 
+            bar_name = 'colorbar_only_ratio'; 
+        else 
+            bar_name = 'colorbar_only_aortic_tension'; 
+        end 
+        
+        
+        print(fig_colorbar, '-depsc', bar_name); 
+        close(fig_colorbar);    
+        % reset current figure 
+        figure(fig); 
+    end 
+        
     
     x_component = squeeze(X_copy(1,:,:)); 
     y_component = squeeze(X_copy(2,:,:)); 
     z_component = squeeze(X_copy(3,:,:)); 
-    % surf(x_component, y_component, z_component, colors, 'edgecolor', 'none');
-    surf(x_component, y_component, z_component, colors);
+    % surf(x_component, y_component, z_component, colors, 'edgecolor', 'none', 'facecolor', 'interp');
+    surf(x_component, y_component, z_component, colors, 'edgecolor', 'none');
+    % surf(x_component, y_component, z_component, colors);
     % colormap(make_colormap(n_colors, extended)); 
 end 
     
@@ -417,13 +583,18 @@ end
 if circ && rad
     title('total tension')
 elseif circ  
-    title('circ tension')
+%    title('circ tension')
+    fprintf('max circ tension = %e dynes', max_tension_found)
 elseif rad 
-    title('radial tension')
+%    title('radial tension')
+    fprintf('max rad  tension = %e dynes', max_tension_found)
 elseif ratio
-    title(sprintf('ratio circ/rad tension, max ratio = %f', max_ratio)); 
+%     title(sprintf('ratio circ/rad tension, max ratio = %f', max_ratio)); 
 else 
     error('invalid arguments')    
 end
 
+axis equal 
+axis off 
+axis tight
 
