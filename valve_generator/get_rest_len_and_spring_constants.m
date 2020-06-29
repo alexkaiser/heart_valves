@@ -54,7 +54,7 @@ end
 
 if strcmp(collagen_constitutive_tmp, 'aortic_circ')
     
-    b = 57.456509400487398 * 2.0; 
+    b = 57.456509400487398; 
     
     if strain >= 0
         % exponential through origin following May-Newman 2009 
@@ -65,7 +65,7 @@ if strcmp(collagen_constitutive_tmp, 'aortic_circ')
     
 elseif strcmp(collagen_constitutive_tmp, 'aortic_rad')
 
-    b = 22.397200094241359 * 2.0; 
+    b = 22.397200094241359; 
         
     if strain >= 0
         % exponential through origin following May-Newman 2009 
