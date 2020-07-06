@@ -84,6 +84,10 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimat
         max_plot_cap = inf; 
     end 
     
+    if rad && isinf(max_plot_cap)
+        radial_autoscale = true; 
+    end 
+    
     one_leaflet = true; 
     if one_leaflet 
         j_min_plot = N_each; 
@@ -256,6 +260,23 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimat
             sigma = sigma_circ ./ sigma_rad; 
         end 
 
+        if ratio 
+            mean_ratio = 0; 
+            valid_ratio = 0; 
+            
+            for j=1:j_max
+                for k=1:k_max
+                    if ~((sigma(j,k) == 0) || isnan(sigma(j,k)) || isinf(sigma(j,k)))
+                        mean_ratio = mean_ratio + sigma(j,k); 
+                        valid_ratio = valid_ratio + 1; 
+                    end 
+                end 
+            end 
+            
+            mean_ratio = mean_ratio / valid_ratio;             
+            fprintf('mean ratio, ratio first = %f', mean_ratio); 
+        end 
+        
         n_colors = 500;
         extended = true; 
         colormap(make_colormap(n_colors, extended)); 
@@ -322,6 +343,38 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimat
             max_plot_cap = max(max(sigma));
         end 
             
+        % at commissures in vertical direction
+        % where radial tension is not defined 
+        % take the mean of neighbors 
+        comm_color_patch = true; 
+        if (rad || ratio) && comm_color_patch
+            
+            for j=(N_each * (1:3))
+                for k=1:k_max
+                    
+                    if ~((sigma(j,k) == 0) || isnan(sigma(j,k)) || isinf(sigma(j,k)))
+                        error('trying to patch valid color'); 
+                    end 
+                                            
+                    for j_nbr_tmp = [j-1,j+1]
+                        k_nbr_tmp = k; 
+                        [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                        
+                        if ~valid 
+                            error('should always have two neighbors here'); 
+                        end 
+                        
+                        sigma(j,k) = sigma(j,k) + sigma(j_nbr,k_nbr); 
+                        
+                    end 
+                    
+                    sigma(j,k) = sigma(j,k) / 2; 
+                    
+                end 
+            end 
+
+        end 
+        
         tick_max = max_plot_cap; 
         colors = zeros(j_max,k_max,3); 
         for j=1:j_max
@@ -380,7 +433,7 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimat
         end 
         
         colorbar_figure = true; 
-        if colorbar_figure && (~rad)
+        if colorbar_figure 
             fig_colorbar = figure; 
 
             colormap(make_colormap(n_colors, extended)); 
@@ -397,10 +450,17 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimat
             grid off 
             axis off 
 
-            if ratio 
+            if circ 
+                bar_name = 'colorbar_only_circ_tangent_mod'; 
+            elseif rad && exist('radial_autoscale', 'var') && radial_autoscale
+                exponent_removed 
+                bar_name = 'colorbar_only_radial_tangent_mod_autoscale'; 
+            elseif rad 
+                bar_name = 'colorbar_only_radial_tangent_mod'; 
+            elseif ratio 
                 bar_name = 'colorbar_only_ratio_tangent_mod'; 
-            else 
-                bar_name = 'colorbar_only_aortic_tangent_mod'; 
+            else
+                error('incompatible format arguments')
             end 
 
             print(fig_colorbar, '-depsc', bar_name); 

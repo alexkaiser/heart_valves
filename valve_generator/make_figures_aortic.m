@@ -3,19 +3,8 @@ file_name = 'meshes/aortic_semifinal_6fa5a93/aortic_384_final_data.mat';
 
 load(file_name, 'valve', 'valve_with_reference', 'N')
 
-sigma_circ_mean = valve_with_reference.leaflets(1).sigma_circ_mean 
-sigma_rad_mean  = valve_with_reference.leaflets(1).sigma_rad_mean 
 
-mean_ratio_average_first = sigma_circ_mean / sigma_rad_mean
-
-fprintf('mean_ratio_average_first = %.14f', mean_ratio_average_first)
-
-sigma_circ_clark = 5.8e7; 
-
-rel_err_clark = abs((sigma_circ_mean - sigma_circ_clark)/sigma_circ_clark) 
-
-
-closed_valve_figure = true; 
+closed_valve_figure = false; 
 if closed_valve_figure 
     fig = figure; 
     set(fig, 'Renderer', 'Painters');
@@ -166,7 +155,7 @@ if tension_figure
 end 
 
 
-tangent_mod_plots = false; 
+tangent_mod_plots = true; 
 if tangent_mod_plots 
     
     % constitutive law version 
@@ -210,6 +199,15 @@ if tangent_mod_plots
     fig = figure; 
     set(fig, 'Renderer', 'Painters');
     circ  = false; 
+    rad   = true; 
+    ratio = false; 
+    [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig]  = estimate_tangent_modulus_aortic_with_reference(valve_with_reference_no_solve.leaflets(1), valve.normal_thickness, fig, fiber_stride, stride_offset_j, circ, rad, ratio);
+    view(az,el);
+    print(fig, '-depsc', 'rad_tangent_mod_aortic_scaled');
+    
+    fig = figure; 
+    set(fig, 'Renderer', 'Painters');
+    circ  = false; 
     rad   = false; 
     ratio = true; 
     max_plot_cap_ratio = 60; 
@@ -217,6 +215,13 @@ if tangent_mod_plots
     view(az,el);
     print(fig, '-depsc', 'ratio_tangent_mod_aortic');
 
+    sigma_circ_mean
+    sigma_rad_mean 
+
+    mean_ratio_average_first = sigma_circ_mean / sigma_rad_mean; 
+
+    fprintf('mean_ratio_average_first = %.14f\n', mean_ratio_average_first)
+    
 end 
         
 
