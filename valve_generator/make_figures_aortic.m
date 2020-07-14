@@ -47,6 +47,45 @@ if closed_valve_exploded
     print(fig, '-depsc', 'aortic_closed_top_view_exploded'); 
 end 
 
+schematic_patch = true; 
+if schematic_patch
+    fig = figure; 
+    set(fig, 'Renderer', 'Painters');
+    
+    leaflet = valve.leaflets(1); 
+    
+    j_max = leaflet.j_max; 
+    k_max = leaflet.k_max;     
+    N_each = leaflet.N_each; 
+    
+    j_center = floor(N_each/2); 
+    j_min_schematic = j_center - 5;
+    j_max_schematic = j_center + 5; 
+    k_min_schematic = floor(3*k_max/4); 
+    k_max_schematic = k_max - 1; 
+    
+    for j=1:j_max
+        for k=1:k_max
+            if (j < j_min_schematic) || (j > j_max_schematic) || ... 
+               (k < k_min_schematic) || (k > k_max_schematic)
+                leaflet.X(:,j,k) = nan; 
+            end 
+        end        
+    end
+    
+    
+    surf_plot(leaflet, fig); 
+    
+    axis off 
+    axis equal 
+    
+    view(-64,12); 
+    'debug'; 
+    
+    print(fig, '-depsc', 'schematic_patch_aortic'); 
+    
+end 
+
 
 
 % annulus figure 
@@ -155,7 +194,7 @@ if tension_figure
 end 
 
 
-tangent_mod_plots = true; 
+tangent_mod_plots = false; 
 if tangent_mod_plots 
     
     % constitutive law version 
