@@ -1082,7 +1082,7 @@ inline double deriv_spring_collagen(double R, const double* params, int lag_slf_
 
 inline double spring_function_aortic_circ(double R, const double* params, int lag_slf_idx, int lag_nbr_idx){
     // function idx 2
-    static const double b = 57.456509400487398; // Exponential rate
+    static const double b = 57.456509400487398 / 2.0; // Exponential rate
 
     const double kappa    = params[0];
     const double rest_len = params[1];
@@ -1113,7 +1113,7 @@ inline double deriv_spring_aortic_circ(double R, const double* params, int lag_s
 
 inline double spring_function_aortic_rad(double R, const double* params, int lag_slf_idx, int lag_nbr_idx){
     // function idx 3
-    static const double b = 22.397200094241359; // Exponential rate
+    static const double b = 22.397200094241359 / 2.0; // Exponential rate
 
     const double kappa    = params[0];
     const double rest_len = params[1];
