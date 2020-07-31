@@ -51,6 +51,13 @@ if isfield(valve, 'name') && strcmp(valve.name,'aortic')
     c_dec_circumferential     = tension_coeffs.c_circ_dec * dec_tension_coeff_base * ones(j_max, k_max);
     c_dec_radial              = tension_coeffs.c_rad_dec  * dec_tension_coeff_base * ones(j_max, k_max); 
     
+    print_summary = false; 
+    if print_summary 
+        fprintf('alpha = %e, beta = %e\n', alpha(1,1), beta(1,1)); 
+        fprintf('c_dec_radial = b = %f\n', c_dec_radial(1,1)); 
+    end 
+    
+    
     if isfield(tension_coeffs, 'c_circ_dec_annulus')
         
         if isfield(tension_coeffs, 'c_circ_dec_free_edge_percentage') && tension_coeffs.c_circ_dec_free_edge_percentage > 0
@@ -64,6 +71,21 @@ if isfield(valve, 'name') && strcmp(valve.name,'aortic')
             for k=1:k_max_temp
                 c_dec_circumferential(j,k) = dec_tension_coeff_base * ((1 - (k-1)*dk_interp) * tension_coeffs.c_circ_dec_annulus + ...
                                                                       (     (k-1)*dk_interp) * tension_coeffs.c_circ_dec        ); 
+                                                                  
+                if print_summary && (j==1) && (k==1) 
+                    if k_max_temp ~= k_max
+                        error('summary not implemented')
+                    end 
+                    fprintf('a_annulus = c_dec_circumferential(%d,%d) = %f\n', j, k, c_dec_circumferential(j,k)); 
+                end 
+                   
+                if print_summary && (j==1) && (k==k_max_temp) 
+                    if k_max_temp ~= k_max
+                        error('summary not implemented')
+                    end 
+                    fprintf('a_free_edge = c_dec_circumferential(%d,%d) = %f\n', j, k, c_dec_circumferential(j,k)); 
+                end
+                
             end 
         end      
     end 

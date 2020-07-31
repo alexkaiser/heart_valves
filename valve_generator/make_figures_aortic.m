@@ -47,7 +47,7 @@ if closed_valve_exploded
     print(fig, '-depsc', 'aortic_closed_top_view_exploded'); 
 end 
 
-schematic_patch = true; 
+schematic_patch = false; 
 if schematic_patch
     fig = figure; 
     set(fig, 'Renderer', 'Painters');
@@ -263,7 +263,15 @@ if tangent_mod_plots
     
 end 
         
-
+table_numbers = true; 
+if table_numbers
+    
+    leaflet = valve.leaflets(1); 
+    
+    
+    
+    
+end 
 
 
 
