@@ -156,7 +156,7 @@ Q_mean = total_flow / cycle_length
 
 Q_mean_L_per_min = Q_mean * 60/1000 
 
-ratio_prox_to_distal_resistors = 1.0
+ratio_prox_to_distal_resistors = 0.1
 
 decay_time = .4 
 

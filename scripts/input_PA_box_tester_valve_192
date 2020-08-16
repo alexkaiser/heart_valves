@@ -22,8 +22,8 @@ CYCLE_DURATION = 8.3250000000000002e-01
 DX_FLUID = 0.09 
 
 NX = 192 // 178 original 
-NY = 106
-NZ = 88
+NY = 128
+NZ = 96
 
 X_LOW  = -9.4772
 X_HIGH = X_LOW + NX * DX_FLUID
@@ -39,12 +39,12 @@ Z_HIGH = Z_LOW + NZ * DX_FLUID
 //left_pa_R_distal    = 46.15  // g / (cm^4 s)
 //left_pa_C           = 0.0154 // cm^3 / (g/ (cm s^2)) = 20.5925 mL/mmHg 
 
-right_pa_R_proximal = 912.47502814354448
-right_pa_C = 0.00148272552674
-right_pa_R_distal = 912.47502814354448
-left_pa_R_proximal = 912.47502814354448
-left_pa_C = 0.00148272552674
-left_pa_R_distal = 912.47502814354448
+right_pa_R_proximal = 165.90455057155373
+right_pa_C = 0.00081549903971
+right_pa_R_distal = 1659.04550571553523
+left_pa_R_proximal = 165.90455057155373
+left_pa_C = 0.00081549903971
+left_pa_R_distal = 1659.04550571553523
 
 
 // solver parameters
