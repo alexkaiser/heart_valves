@@ -7,7 +7,7 @@
 #SBATCH --mail-user=adkaiser@gmail.com
 #SBATCH --mail-type=ALL
 #SBATCH --partition=amarsden
-#SBATCH --exclude=sh-107-[59-64]
+# #SBATCH --exclude=sh-107-[59-64]
 
 module purge
 module load gcc/8.1.0
@@ -17,7 +17,7 @@ module load openmpi/2.0.2
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_da1831_normal_1_gross_morphology_adjusted
+RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_c72ee06_circ_pt15_rad_pt54_2mm_radial_4mm_circ_extra_semifinal_circ_model_tuned_lit_values
 mkdir $RUNDIR
 
 # set up run info 
