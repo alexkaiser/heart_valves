@@ -516,7 +516,16 @@ res = (5120, 4320)
 animationScene1 = GetAnimationScene()
 # animationScene1.GoToFirst()
 
+# run first iteration, then stop and start over 
 for frame in range(len(timesteps)):
+    if (frame % nprocs) == proc_num:
+        animationScene1.AnimationTime = timesteps[frame]
+
+        Render()
+        SaveScreenshot(basename + str(frame).zfill(4) + '.jpeg', viewOrLayout=layout1, ImageResolution=res, Quality=100, Progressive=1)
+        break 
+
+for frame in range(len(timesteps)-1):
     if (frame % nprocs) == proc_num:
         animationScene1.AnimationTime = timesteps[frame]
 

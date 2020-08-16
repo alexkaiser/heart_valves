@@ -1,4 +1,4 @@
-function plot_aortic_movie_files(data_file, stride, nframes, outdir, basename, image_size)
+function plot_aortic_movie_files(data_file, stride, nframes, outdir, basename, image_size, axis_vec_pressure, axis_vec_flow)
 
 % read file 
 load(data_file, 'bc_vals')
@@ -37,7 +37,7 @@ for step = 0:(nframes-1)  % floor(nframes/2)
     
     hAxis(1) = subplot(2,1,1);
     plot(times(range), p_aorta(range), 'k', 'LineWidth', width)
-    axis([0 2.4 -5 160])
+    axis(axis_vec_pressure)
     
     ax = gca; 
     ax.FontSize = fontsize; 
@@ -55,7 +55,7 @@ for step = 0:(nframes-1)  % floor(nframes/2)
         
     hAxis(2) = subplot(2,1,2); 
     plot(times(range), q_aorta(range), 'k', 'LineWidth', width)
-    axis([0 2.4 -750 750])
+    axis(axis_vec_flow)
     ax = gca; 
     ax.FontSize = fontsize; 
     ax.FontName = font;  
