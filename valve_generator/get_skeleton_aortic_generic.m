@@ -1,4 +1,4 @@
-function skeleton = get_skeleton_aortic_generic()
+function skeleton = get_skeleton_aortic_generic(r)
 % 
 % hardcoded patient specific MV skeleton
 % 
@@ -51,7 +51,9 @@ debug = false;
 % 
 % approx radius from normal 1 
 % .05 larger than value in paper 
-r = 1.25; 
+if ~exist('r','var')
+    r = 1.25; 
+end 
 skeleton.r = r; 
 
 % aorta radius 

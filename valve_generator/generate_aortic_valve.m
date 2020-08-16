@@ -46,7 +46,13 @@ for N_each = N_each_range
     % Initialize structures 
     % Many parameters are in this script 
 
-    valve = initialize_valve_data_structures_aortic_generic(N); 
+    pulm = true; 
+    
+    if pulm
+        valve = initialize_valve_data_structures_pulm_mri_box(N); 
+    else 
+        valve = initialize_valve_data_structures_aortic_generic(N); 
+    end 
     
     iteration_movie = false; 
     if iteration_movie
