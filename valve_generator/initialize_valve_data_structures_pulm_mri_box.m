@@ -71,7 +71,7 @@ name = 'aortic';
 valve.name = name; 
 
 % does not place partition
-valve.in_heart = false; 
+valve.in_heart = true; 
 
 mri_box = true;
 
@@ -250,7 +250,13 @@ valve.k_bend_cross_layer = 0;
 % Approximate Lagrangian mesh spacing at ring 
 % Used for later splitting of springs 
 % If any spring is placed at more than double this length an extra vertex is placed
-valve.ds = 2*pi*valve.skeleton.r / N; 
+dx = 5 /(N/4); 
+valve.ds = dx/2; %2*pi*valve.skeleton.r / N; 
+
+if mri_box
+    thickness_cylinder = 0.3; 
+    valve.n_layers_cylinder = ceil(thickness_cylinder/valve.ds) + 1; 
+end 
 
 [leaflet valve] = initialize_leaflet_aortic(name,                                ... 
                                             N,                                   ...
