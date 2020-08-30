@@ -232,6 +232,7 @@ if __name__ == '__main__':
     number_crash_restarts = 0
     max_crash_restarts = 2
 
+    time.sleep(20*60)
 
     run_restart = False
 

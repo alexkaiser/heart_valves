@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=2
+#SBATCH --nodes=3
 #SBATCH --ntasks-per-node=24
 #SBATCH --time=167:00:00
 #SBATCH --mem=185GB
@@ -26,7 +26,7 @@ BASE_NAME_VESSEL=vessel
 INPUT_NAME=input_PA_box_tester_valve_384
 RUN_LINE="mpiexec --bind-to core -report-bindings main_rv_pa"
 OPTIONS="-velocity_ksp_type cg -velocity_pc_type none -velocity_ksp_max_it 1 -velocity_ksp_norm_type none > output.txt 2>&1"
-SESSION_NAME="pa_valve_tester.session"
+SESSION_NAME="pa_valve_tester_384.session"
 VIEW_CLIPPING="0.2"
 
 pwd
