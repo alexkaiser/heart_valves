@@ -1,4 +1,4 @@
-function skeleton = get_skeleton_aortic_generic(r)
+function skeleton = get_skeleton_aortic_generic(r, h1, hc)
 % 
 % hardcoded patient specific MV skeleton
 % 
@@ -71,10 +71,14 @@ skeleton.r_co = (1/2) * (r_aorta + r_sinus);
 
 % height from annulus to origin 
 % equal to height from annulus to height at which r_co is the radius
-h1 = .9 * r; 
+if ~exist('h1','var')
+    h1 = .9 * r; 
+end 
 
 % commissure height measured from origin (annulus is not at the origin)
-hc = .5 * r; 
+if ~exist('hc','var')
+    hc = .5 * r; 
+end 
 
 skeleton.height_min_comm = h1; 
 

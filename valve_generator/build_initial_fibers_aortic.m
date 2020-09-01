@@ -66,7 +66,7 @@ else
     free_edge_cusp_radius = 2*pi*r/6; 
     
     if free_edge_cusp_radius > normal_height
-        error('inconsistent radius and height'); 
+        warning('REMOVE THIS WARNING: inconsistent radius and height'); 
     end 
     
     if isfield(valve.skeleton, 'height_min_comm')

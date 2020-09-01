@@ -71,7 +71,7 @@ name = 'aortic';
 valve.name = name; 
 
 % does not place partition
-valve.in_heart = true; 
+valve.in_heart = false; 
 
 mri_box = true;
 
@@ -81,7 +81,7 @@ if valve.in_heart
     valve.extra_radius_hoops = 0.0; % adds points out the partition up to this amount 
 
     valve.tight_cylinder = true; 
-    valve.z_extra_cylinder = 0.3; 
+    valve.z_extra_cylinder = 0.28; 
                                      
     if mri_box
         valve.initial_rotation_aortic = rotation_matrix_y(-pi/2) * rotation_matrix_z(pi/6); 
@@ -164,7 +164,10 @@ valve.L = 2.25;
 
 
 r = 1.1; 
-valve.skeleton = get_skeleton_aortic_generic(r);
+normal_height = 0.845; 
+hc = 0.1; % 1 mm of commissure attachment (nearly zero)
+h1 = normal_height - hc; 
+valve.skeleton = get_skeleton_aortic_generic(r, h1, hc);
 
 valve.r = valve.skeleton.r; 
 
@@ -195,8 +198,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 4.56;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.2;  % radial
+tension_coeffs.c_circ_dec       = 4.43;  % circumferential 
+tension_coeffs.c_rad_dec        = 3.2;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.9;        
 
