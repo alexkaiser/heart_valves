@@ -2027,8 +2027,17 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
     % brute force minmum of function 
     z_min_scalar = min(z_min(linspace(0,2*pi,10000))); 
     
+    if isa(z_max, 'function_handle')
+        % brute force maximum of function 
+        z_max_scalar = max(z_max(linspace(0,2*pi,10000))); 
+    else 
+        z_max_scalar = z_max; 
+    end 
+    
+    
+    
     N_theta = floor(2*pi*r / ds);  
-    N_z     = floor((z_max - z_min_scalar)/ds); 
+    N_z     = floor((z_max_scalar - z_min_scalar)/ds); 
     N_r     = n_layers; 
     
     dtheta = 1/N_theta; 
@@ -2061,7 +2070,7 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
                        
                 theta_tmp = 2*pi*dtheta*(theta_idx-1); 
                 
-                z_coord = z_min(theta_tmp) + z_max * (z_idx - 1) * dz; 
+                z_coord = z_min(theta_tmp) + z_max_scalar * (z_idx - 1) * dz; 
                 
                 if exist('r_of_z', 'var')
                     r_tmp = r_of_z(z_coord) + (r_idx - 1)*dr; 
@@ -2105,7 +2114,11 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
                 y_coord = r_tmp * sin(2*pi*dtheta*(theta_idx-1)); 
                 
                 if tight_cylinder
-                    valid = (z_coord < (z_annulus + z_extra));                 
+                    if isa(z_max, 'function_handle')
+                        valid = z_coord <= z_max(theta_tmp); 
+                    else 
+                        valid = (z_coord < (z_annulus + z_extra));   
+                    end 
                 else 
                     valid = true; 
                 end 
