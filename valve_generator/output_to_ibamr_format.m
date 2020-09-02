@@ -2018,8 +2018,17 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
         z_extra = 0; 
     end 
     
+    if ~isa(z_min, 'function_handle')
+        if ~isscalar(z_min)
+            error('z_min must be function handle or scalar')
+        end 
+        z_min = @(theta) z_min * ones(size(theta)); 
+    end 
+    % brute force minmum of function 
+    z_min_scalar = min(z_min(linspace(0,2*pi,10000))); 
+    
     N_theta = floor(2*pi*r / ds);  
-    N_z     = floor((z_max - z_min)/ds); 
+    N_z     = floor((z_max - z_min_scalar)/ds); 
     N_r     = n_layers; 
     
     dtheta = 1/N_theta; 
@@ -2050,7 +2059,9 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
         for r_idx=1:N_r
             for theta_idx=1:N_theta
                        
-                z_coord = z_min + z_max * (z_idx - 1) * dz; 
+                theta_tmp = 2*pi*dtheta*(theta_idx-1); 
+                
+                z_coord = z_min(theta_tmp) + z_max * (z_idx - 1) * dz; 
                 
                 if exist('r_of_z', 'var')
                     r_tmp = r_of_z(z_coord) + (r_idx - 1)*dr; 
@@ -2058,7 +2069,6 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
                     r_tmp = r + (r_idx - 1)*dr; 
                 end
                 
-                theta_tmp = 2*pi*dtheta*(theta_idx-1); 
                 
                 % first check for exact mesh alignment
                 theta_leaflet_idx = find((theta_tmp == theta_leaflet), 1); 

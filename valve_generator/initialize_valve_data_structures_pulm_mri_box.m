@@ -71,7 +71,7 @@ name = 'aortic';
 valve.name = name; 
 
 % does not place partition
-valve.in_heart = false; 
+valve.in_heart = true; 
 
 mri_box = true;
 
@@ -259,6 +259,7 @@ valve.ds = dx/2; %2*pi*valve.skeleton.r / N;
 if mri_box
     thickness_cylinder = 0.3; 
     valve.n_layers_cylinder = ceil(thickness_cylinder/valve.ds) + 1; 
+    valve.z_min_cylinder = @(theta) -0.355*ones(size(theta)) + 0.11*cos(3*theta); 
 end 
 
 [leaflet valve] = initialize_leaflet_aortic(name,                                ... 
