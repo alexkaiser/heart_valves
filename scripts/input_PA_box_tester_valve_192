@@ -60,7 +60,7 @@ CONVECTIVE_OP_TYPE  = "PPM"               // convective differencing discretizat
 CONVECTIVE_FORM     = "ADVECTIVE"         // how to compute the convective terms
 NORMALIZE_PRESSURE  = FALSE               // whether to explicitly force the pressure to have mean zero
 CFL_MAX             = 0.3                 // maximum CFL number
-DT                  = 2.0e-05             // maximum timestep size
+DT                  = 2.5e-05             // maximum timestep size
 ERROR_ON_DT_CHANGE  = TRUE                // whether to emit an error message if the time step size changes
 VORTICITY_TAGGING   = TRUE                // whether to tag cells for refinement based on vorticity thresholds
 TAG_BUFFER          = 2                   // size of tag buffer used by grid generation algorithm
@@ -238,14 +238,14 @@ IBMethod {
 
 IBStandardInitializer {
    max_levels      = MAX_LEVELS
-   structure_names = "aortic_no_partition_192","aortic_no_partition_192_cylinder","vessel"
+   structure_names = "aortic_no_partition_192","aortic_no_partition_192_cylinder","vessel_192"
    aortic_no_partition_192 {
       level_number = MAX_LEVELS - 1
    }
    aortic_no_partition_192_cylinder {
       level_number = MAX_LEVELS - 1
    }
-   vessel {
+   vessel_192 {
       level_number = MAX_LEVELS - 1
    }
 }

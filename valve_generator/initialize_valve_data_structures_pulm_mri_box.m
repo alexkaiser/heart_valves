@@ -259,7 +259,7 @@ valve.ds = dx/2; %2*pi*valve.skeleton.r / N;
 if mri_box
     thickness_cylinder = 0.3; 
     valve.n_layers_cylinder = ceil(thickness_cylinder/valve.ds) + 1; 
-    valve.z_max_cylinder = @(theta)  0.28*ones(size(theta))  + (1.095 - 0.28)*0.5*(cos(3*theta)+1); 
+    valve.z_max_cylinder = @(theta)  0.28*ones(size(theta))  + (1.095 - 0.28)*cos((3/2)*theta).^2; 
     valve.z_min_cylinder = @(theta) -0.355*ones(size(theta)) +  0.11         *0.5*(cos(3*theta)+1); 
     
     debug_plot = true; 
