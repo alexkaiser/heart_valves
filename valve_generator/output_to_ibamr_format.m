@@ -2037,11 +2037,11 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
     
     
     N_theta = floor(2*pi*r / ds);  
-    N_z     = floor((z_max_scalar - z_min_scalar)/ds); 
+    N_z     = ceil((z_max_scalar - z_min_scalar)/ds); 
     N_r     = n_layers; 
     
     dtheta = 1/N_theta; 
-    dz     = 1/N_z; 
+    dz     = ds; %1/N_z; 
     dr     = ds; 
     
     % bottom leaflet ring
@@ -2115,7 +2115,7 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
                 
                 if tight_cylinder
                     if isa(z_max, 'function_handle')
-                        valid = z_coord <= z_max(theta_tmp); 
+                        valid = (z_coord <= z_max(theta_tmp)); 
                     else 
                         valid = (z_coord < (z_annulus + z_extra));   
                     end 
