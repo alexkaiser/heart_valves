@@ -19,7 +19,7 @@ BOUNDARY_FILENAME_LPA = "left_pa_bdry.vertex"
 CYCLE_DURATION = 8.3250000000000002e-01
 
 
-DX_FLUID = 0.045 
+DX_FLUID = 0.045 * (REF_RATIO^(MAX_LEVELS - 1))
 
 NX = 192 / 2 // 178 original 
 NY = 128 / 2
@@ -39,19 +39,19 @@ Z_HIGH = Z_LOW + NZ * DX_FLUID
 //left_pa_R_distal    = 46.15  // g / (cm^4 s)
 //left_pa_C           = 0.0154 // cm^3 / (g/ (cm s^2)) = 20.5925 mL/mmHg 
 
-right_pa_R_proximal = 174.84337333941744
-right_pa_C = 0.00081991669431
-right_pa_R_distal = 1650.10668294767152
-left_pa_R_proximal = 174.84337333941744
-left_pa_C = 0.00081991669431
-left_pa_R_distal = 1650.10668294767152
+right_pa_R_proximal = 86.90238363271851
+right_pa_C = 0.00077843090154
+right_pa_R_distal = 1738.04767265437044
+left_pa_R_proximal = 86.90238363271851
+left_pa_C = 0.00077843090154
+left_pa_R_distal = 1738.04767265437044
 
 
 // solver parameters
 DELTA_FUNCTION      = "IB_5"
 SOLVER_TYPE         = "STAGGERED"         // the fluid solver to use (STAGGERED or COLLOCATED)
 START_TIME          = 0.0e0               // initial simulation time
-END_TIME            = 2*CYCLE_DURATION    // final simulation time
+END_TIME            = CYCLE_DURATION    // final simulation time
 GROW_DT             = 2.0e0               // growth factor for timesteps
 NUM_CYCLES          = 1                   // number of cycles of fixed-point iteration
 CONVECTIVE_TS_TYPE = "ADAMS_BASHFORTH"    // convective time stepping type
