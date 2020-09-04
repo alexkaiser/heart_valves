@@ -71,7 +71,7 @@ name = 'aortic';
 valve.name = name; 
 
 % does not place partition
-valve.in_heart = true; 
+valve.in_heart = false; 
 
 mri_box = true;
 

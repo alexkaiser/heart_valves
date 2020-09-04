@@ -17,12 +17,12 @@ module load openmpi/2.0.2
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_384_22482b7_22mm_pulm_thick_scaffold_experimental_prox_to_dist_layers_up
+RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_384_193b93e_22mm_pulm_new_geo_2circ_0_rad_new_scaffold_3
 mkdir $RUNDIR
 
 # set up run info 
 BASE_NAME=aortic_no_partition_384
-BASE_NAME_VESSEL=vessel
+BASE_NAME_VESSEL=vessel_384
 INPUT_NAME=input_PA_box_tester_valve_384
 RUN_LINE="mpiexec --bind-to core -report-bindings main_rv_pa"
 OPTIONS="-velocity_ksp_type cg -velocity_pc_type none -velocity_ksp_max_it 1 -velocity_ksp_norm_type none > output.txt 2>&1"
