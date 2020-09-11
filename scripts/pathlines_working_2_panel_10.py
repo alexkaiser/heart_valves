@@ -19,7 +19,7 @@ materialLibrary1 = GetMaterialLibrary()
 
 # Create a new 'Render View'
 renderView1 = CreateView('RenderView')
-renderView1.ViewSize = [873, 1098]
+renderView1.ViewSize = [640*4, 1080*4] # was [640, 1080]
 renderView1.AxesGrid = 'GridAxes3DActor'
 renderView1.OrientationAxesVisibility = 0
 renderView1.CenterOfRotation = [0.0, 0.0, 0.75]
@@ -35,7 +35,7 @@ renderView1.OSPRayMaterialLibrary = materialLibrary1
 
 # Create a new 'Render View'
 renderView2 = CreateView('RenderView')
-renderView2.ViewSize = [763, 1098]
+renderView2.ViewSize = [640*4, 1080*4] # [640, 1080]
 renderView2.AxesGrid = 'GridAxes3DActor'
 renderView2.OrientationAxesVisibility = 0
 renderView2.CenterOfRotation = [-0.0001615285873413086, -0.0001615285873413086, 0.75]
@@ -58,7 +58,7 @@ SetActiveView(None)
 
 # create new layout object 'Layout #1'
 layout1 = CreateLayout(name='Layout #1')
-layout1.SplitHorizontal(0, 0.533333)
+layout1.SplitHorizontal(0, 0.5)
 layout1.AssignView(1, renderView1)
 layout1.AssignView(2, renderView2)
 
@@ -76,19 +76,24 @@ annotateTime1 = AnnotateTime()
 annotateTime1.Format = 't = %.4f s'
 
 # create a new 'PVD Reader'
-particles_velpvd = PVDReader(FileName='/Users/alex/data_to_remove/aortic_65595790_384_4495be5_circ_pt15_rad_pt54_2mm_radial_4mm_circ_circ_model_basic_updated_output_semifinal/exported_viz/particles_vel.pvd')
+# particles_velpvd = PVDReader(FileName='/Users/alex/data_to_remove/aortic_65595790_384_4495be5_circ_pt15_rad_pt54_2mm_radial_4mm_circ_circ_model_basic_updated_output_semifinal/exported_viz/particles_vel.pvd')
+particles_velpvd = PVDReader(FileName='aortic_384_particles_vel.pvd')
 particles_velpvd.PointArrays = ['velocity']
 
 # create a new 'Temporal Particles To Pathlines'
 temporalParticlesToPathlines1 = TemporalParticlesToPathlines(Input=particles_velpvd,
     Selection=None)
 temporalParticlesToPathlines1.MaskPoints = 1
+temporalParticlesToPathlines1.MaxTrackLength = 25 
 
 # create a new 'PVD Reader'
-cylinderpvd = PVDReader(FileName='/Users/alex/data_to_remove/aortic_65595790_384_4495be5_circ_pt15_rad_pt54_2mm_radial_4mm_circ_circ_model_basic_updated_output_semifinal/exported_viz/cylinder.pvd')
+# cylinderpvd = PVDReader(FileName='/Users/alex/data_to_remove/aortic_65595790_384_4495be5_circ_pt15_rad_pt54_2mm_radial_4mm_circ_circ_model_basic_updated_output_semifinal/exported_viz/cylinder.pvd')
+cylinderpvd = PVDReader(FileName='aortic_384_cylinder.pvd')
 
 # create a new 'PVD Reader'
-aortic_valvepvd = PVDReader(FileName='/Users/alex/data_to_remove/aortic_65595790_384_4495be5_circ_pt15_rad_pt54_2mm_radial_4mm_circ_circ_model_basic_updated_output_semifinal/exported_viz/aortic_valve.pvd')
+# aortic_valvepvd = PVDReader(FileName='/Users/alex/data_to_remove/aortic_65595790_384_4495be5_circ_pt15_rad_pt54_2mm_radial_4mm_circ_circ_model_basic_updated_output_semifinal/exported_viz/aortic_valve.pvd')
+aortic_valvepvd = PVDReader(FileName='aortic_384.pvd')
+
 
 # create a new 'Clip'
 clip1 = Clip(Input=aortic_valvepvd)
@@ -225,7 +230,9 @@ annotateTime1Display.Color = [0.0, 0.0, 0.0]
 annotateTime1Display.FontFamily = 'Times'
 annotateTime1Display.FontSize = 10
 annotateTime1Display.WindowLocation = 'AnyLocation'
-annotateTime1Display.Position = [0.5979380000000001, 0.801138]
+# annotateTime1Display.Position = [0.05556511864406785, 0.8133102846441947]
+
+annotateTime1Display.Position = [0.64, 0.79]
 
 # show data from clip4
 clip4Display = Show(clip4, renderView1, 'UnstructuredGridRepresentation')
@@ -264,25 +271,25 @@ clip4Display.OpacityTransferFunction.Points = [0.0, 0.2589285671710968, 0.5, 0.0
 # get color legend/bar for velocityLUT in view renderView1
 velocityLUTColorBar = GetScalarBar(velocityLUT, renderView1)
 velocityLUTColorBar.AutoOrient = 0
-velocityLUTColorBar.Orientation = 'Horizontal'
+velocityLUTColorBar.Orientation = 'Vertical'
 velocityLUTColorBar.WindowLocation = 'AnyLocation'
-velocityLUTColorBar.Position = [0.5276632302405492, 0.86]
-velocityLUTColorBar.Title = 'velocity (cm/s)'
+velocityLUTColorBar.Position = [0.05, 0.8058614232209736]
+velocityLUTColorBar.Title = '|u| (cm/s)'
 velocityLUTColorBar.ComponentTitle = ''
 velocityLUTColorBar.TitleColor = [0.0, 0.0, 0.0]
 velocityLUTColorBar.TitleFontFamily = 'Times'
-velocityLUTColorBar.TitleFontSize = 24
+velocityLUTColorBar.TitleFontSize = 24*4
 velocityLUTColorBar.LabelColor = [0.0, 0.0, 0.0]
 velocityLUTColorBar.LabelFontFamily = 'Times'
-velocityLUTColorBar.LabelFontSize = 20
+velocityLUTColorBar.LabelFontSize = 20*4
 velocityLUTColorBar.LabelFormat = '%-#1.0f'
 velocityLUTColorBar.UseCustomLabels = 1
 velocityLUTColorBar.CustomLabels = [0.0, 50.0, 100.0, 150.0, 200.0]
 velocityLUTColorBar.AddRangeLabels = 0
 velocityLUTColorBar.RangeLabelFormat = '%-#1.0f'
 velocityLUTColorBar.DrawAnnotations = 0
-velocityLUTColorBar.ScalarBarThickness = 24
-velocityLUTColorBar.ScalarBarLength = 0.40000000000000013
+velocityLUTColorBar.ScalarBarThickness = 20*4
+velocityLUTColorBar.ScalarBarLength = 0.17000000000000004
 
 # set color bar visibility
 velocityLUTColorBar.Visibility = 1
@@ -445,24 +452,76 @@ tk = GetTimeKeeper()
 timesteps = tk.TimestepValues
 numTimesteps = len(timesteps)
 
-basename = 'frames'
-res = (4880, 4320)
+# print "timesteps = ", timesteps
+# print "numTimesteps = ", numTimesteps
+
+if not ((numTimesteps == 1442) or (numTimesteps == 1443)): 
+    raise ValueError('incorrect numTimesteps')
+
+if len(sys.argv) >= 2:
+    basename = sys.argv[1]
+else: 
+    basename = 'frames'    
+
+if len(sys.argv) >= 4:
+    nprocs = int(sys.argv[2])
+    proc_num = int(sys.argv[3])
+else: 
+    print "using default proc_num 0, nprocs = 1"
+    proc_num = 0
+    nprocs = 1
+
+res = (5120, 4320)
 
 animationScene1 = GetAnimationScene()
 # animationScene1.GoToFirst()
 
-save_start = 1023
-previous = 26
+import time 
+
+save_start = 0
+previous = temporalParticlesToPathlines1.MaxTrackLength + 1 
 
 no_save_start = save_start - previous
 if no_save_start < 0:
     no_save_start = 0
 
-for frame in range(no_save_start,save_start):
-    animationScene1.AnimationTime = timesteps[frame]
-    Render()
+# run first iteration, then stop and start over 
+# hack to remove first 
+# for frame in range(len(timesteps)):
+#     animationScene1.AnimationTime = timesteps[frame]
+#     Render()
+#     SaveScreenshot(basename + str(frame).zfill(4) + '.jpeg', viewOrLayout=layout1, ImageResolution=res, Quality=100, Progressive=1)
+#     break 
 
-for frame in range(save_start,len(timesteps)):
-    animationScene1.AnimationTime = timesteps[frame]
-    Render()
-    SaveScreenshot(basename + str(frame).zfill(4) + '.jpeg', viewOrLayout=layout1, ImageResolution=res, Quality=100, Progressive=1, SeparatorWidth=0)
+# for frame in range(no_save_start,save_start):
+#     animationScene1.AnimationTime = timesteps[frame]
+#     Render()
+
+for frame in range(save_start, len(timesteps)-1):
+    if (frame % nprocs) == proc_num:
+        render_min = max(frame - previous,0)
+
+        t_start = time.time()
+
+        # run all the previous frames for making this tail 
+        for frame_temp in range(render_min, frame):
+            animationScene1.AnimationTime = timesteps[frame_temp]
+            Render()
+
+        t_mid = time.time()
+        t_preproc = t_mid - t_start
+
+        # finally the current frame 
+        animationScene1.AnimationTime = timesteps[frame]
+        Render()
+        SaveScreenshot(basename + str(frame).zfill(4) + '.jpeg', viewOrLayout=layout1, ImageResolution=res, Quality=100, Progressive=1)
+
+        t_final_and_render = time.time() - t_mid
+
+        print "On proc ", proc_num, " of ", nprocs, " writing frame ", frame, " preprocess time ",  t_preproc, "s, final frame ", t_final_and_render, "s"
+
+    # time.sleep(1)
+
+    # if (frame % 10) == 0:
+    #     time.sleep(10)
+
