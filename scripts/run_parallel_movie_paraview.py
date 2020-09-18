@@ -57,7 +57,19 @@ if __name__ == '__main__':
         base_name = cwd_split[4]
     else:
         base_name = 'frames'
-    base_name += "_paraview"
+
+    if len(sys.argv) < 2:
+        raise InputError("Must specify session_file_name")
+    session_file_name = sys.argv[1]
+
+    if len(sys.argv) < 3:
+        raise InputError("Must specify n_procs")
+    n_procs = int(sys.argv[2])
+
+    if ('particle' in session_file_name) or ('pathline' in session_file_name):
+        base_name += "_particles"
+    else:
+        base_name += "_paraview"
 
     if os.path.isfile('done.txt'):
         
@@ -71,16 +83,9 @@ if __name__ == '__main__':
                 os.chdir(f)
                 
                 viz_dir_name = os.getcwd()
-                
-                if len(sys.argv) < 2:
-                    raise InputError("Must specify session_file_name")
-                session_file_name = sys.argv[1]
+            
 
-                if len(sys.argv) < 3:
-                    raise InputError("Must specify n_procs")
-                n_procs = int(sys.argv[2])
-
-                call_str_base = "pvpython " + session_file_name + " " + base_name + " "
+                call_str_base = "pvbatch " + session_file_name + " " + base_name + " "
                 print "call_str_base = ", call_str_base 
                 run_command_parallel(call_str_base, n_procs)
 

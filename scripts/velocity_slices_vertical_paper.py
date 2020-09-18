@@ -92,7 +92,7 @@ SetActiveView(renderView1)
 # pVDReader1 = PVDReader(FileName='/Users/alex/data_to_remove/aortic_65595790_384_4495be5_circ_pt15_rad_pt54_2mm_radial_4mm_circ_circ_model_basic_updated_output_semifinal/exported_viz/particles_vel.pvd')
 # pVDReader1.PointArrays = ['velocity']
 
-local = True
+local = False
 if local:
     path = '/Users/alex/data_to_remove/aortic_65595790_384_4495be5_circ_pt15_rad_pt54_2mm_radial_4mm_circ_circ_model_basic_updated_output_semifinal/viz_IB3d_tree_cycle_256/'
 else:
@@ -530,13 +530,21 @@ if save:
     else: 
         basename = 'frames'    
 
-    if len(sys.argv) >= 4:
-        nprocs = int(sys.argv[2])
-        proc_num = int(sys.argv[3])
+    basename += '_paper'
+
+    # if len(sys.argv) >= 4:
+    #     nprocs = int(sys.argv[2])
+    #     proc_num = int(sys.argv[3])
+    # else: 
+    #     print "using default proc_num 0, nprocs = 1"
+    #     proc_num = 0
+    #     nprocs = 1
+
+    if 'aortic_2020486_384_f499232_0mm_radial_4mm_circ_basic_rcr_crease_removed_more_stiffness_down' in basename:
+        to_render = [1208, 1343, 1300, 1412, 1309, 1429, 1318, 1441]
     else: 
-        print "using default proc_num 0, nprocs = 1"
-        proc_num = 0
-        nprocs = 1
+        to_render = [1208]
+
 
     res = (width, height_side_view + height_top_view)
 
@@ -564,18 +572,14 @@ if save:
     # import pdb; pdb.set_trace()
 
     # run first iteration, then stop and start over 
-    for frame in range(len(timesteps)):
-        if (frame % nprocs) == proc_num:
-            animationScene1.AnimationTime = timesteps[frame]
+    # for frame in to_render:
+    #     animationScene1.AnimationTime = timesteps[frame]
+    #     Render()
+    #     SaveScreenshot(basename + str(frame).zfill(4) + '.jpeg', viewOrLayout=layout1, ImageResolution=res, Quality=100, Progressive=1)
+    #     break 
 
-            Render()
-            SaveScreenshot(basename + str(frame).zfill(4) + '.jpeg', viewOrLayout=layout1, ImageResolution=res, Quality=100, Progressive=1)
-            break 
-
-    for frame in range(3): #range(len(timesteps)-1):
-        if (frame % nprocs) == proc_num:
-            animationScene1.AnimationTime = timesteps[frame]
-
-            Render()
-            SaveScreenshot(basename + str(frame).zfill(4) + '.jpeg', viewOrLayout=layout1, ImageResolution=res, Quality=100, Progressive=1)
+    for frame in to_render:
+        animationScene1.AnimationTime = timesteps[frame]
+        Render()
+        SaveScreenshot(basename + str(frame).zfill(4) + '.jpeg', viewOrLayout=layout1, ImageResolution=res, Quality=100, Progressive=1)
 
