@@ -129,7 +129,6 @@ valve.dirichlet_free_edge = false;
 valve.dirichlet_free_edge_with_ref_only = true; 
 
 
-
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
 valve.collagen_constitutive_circ = 'aortic_circ'; 
@@ -163,8 +162,8 @@ valve.p_final = 0 * MMHG_TO_CGS;
 valve.L = 2.25; 
 
 
-r = 1.1; 
-normal_height = 0.845; 
+r = 1.0; 
+normal_height = 1.1; % 0.845; 
 hc = 0.1; % 1 mm of commissure attachment (nearly zero)
 h1 = normal_height - hc; 
 valve.skeleton = get_skeleton_aortic_generic(r, h1, hc);
@@ -199,7 +198,7 @@ tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
 tension_coeffs.c_circ_dec       = 4.8;  % circumferential 
-tension_coeffs.c_rad_dec        = 5.3;  % radial
+tension_coeffs.c_rad_dec        = 3.3;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.9;        
 
@@ -259,8 +258,48 @@ valve.ds = dx/2; %2*pi*valve.skeleton.r / N;
 if mri_box
     thickness_cylinder = 0.3; 
     valve.n_layers_cylinder = ceil(thickness_cylinder/valve.ds) + 1; 
-    valve.z_max_cylinder = @(theta)  0.28*ones(size(theta))  + (1.095 - 0.28)*abs(cos((3/2)*theta)).^4; 
-    valve.z_min_cylinder = @(theta) -0.355*ones(size(theta)) +  0.11         *0.5*(cos(3*theta)+1); 
+    
+    % top scaffold heights relative to table 
+    h_top_scaffold_min_table = 0.65; 
+    h_top_scaffold_max_table  = 1.5; 
+    
+    % bottom of scaffold goes up by this much at the supports 
+    h_min_amplitude = 0.2; 
+    h_min_scaffold_table = 0; % zero by definition, since this rests on the table  
+    
+    % origin is placed at this height relative to table 
+    % this is not required to be equal
+    origin_height_table = 0.2; 
+    
+    h_min_scaffold     = h_min_scaffold_table     - origin_height_table; 
+    h_top_scaffold_min = h_top_scaffold_min_table - origin_height_table; 
+    h_top_scaffold_max = h_top_scaffold_max_table - origin_height_table; 
+    
+    h_top_scaffold_amplitude = h_top_scaffold_max - h_top_scaffold_min; 
+    
+    % top gets cosine to a power 
+    % least squares fit this 
+    % valve.z_max_cylinder = @(theta) h_top_scaffold_min * ones(size(theta))  +  h_top_scaffold_amplitude * abs(cos((3/2)*theta)).^4; 
+    
+    % function with unspecified power 
+    z_max_tmp = @(p,theta) h_top_scaffold_min * ones(size(theta))  +  h_top_scaffold_amplitude * abs(cos((3/2)*theta)).^(p); 
+    
+    % heights measured 
+    heights_theta = [1.5 1.15 0.8 0.65] - origin_height_table;
+    angles = [0:3] * 2*pi/18;
+    
+    % least squares fit it 
+    myfittype = fittype(z_max_tmp,...
+    'dependent',{'h_tmp'},'independent',{'theta'},...
+    'coefficients',{'p'}); 
+    
+    myfit = fit(angles',heights_theta',myfittype); 
+    
+    % evaluate at least squares value of p 
+    valve.z_max_cylinder = @(theta) z_max_tmp(myfit.p, theta); 
+    
+    % bottom just looks like a cosine 
+    valve.z_min_cylinder = @(theta) h_min_scaffold * ones(size(theta)) +  h_min_amplitude * 0.5*(cos(3*theta)+1); 
     
     debug_plot = true; 
     if debug_plot
@@ -269,15 +308,21 @@ if mri_box
         hold on 
         plot(th,valve.z_max_cylinder(th))
 
-        f = @(theta)  0.28*ones(size(theta))  + (1.095 - 0.28)*0.5 * (cos(3*theta)+1);
-        plot(th, f(th)); 
+%         f = @(theta)  0.28*ones(size(theta))  + (1.095 - 0.28)*0.5 * (cos(3*theta)+1);
+%         plot(th, f(th)); 
         
-        legend('bottom', 'top', 'old')
+        legend('bottom', 'top')
         
-        plot(th, -0.355*ones(size(th))); 
-        plot(th, -0.245*ones(size(th))); 
-        plot(th,  0.28*ones(size(th))); 
-        plot(th,  1.095*ones(size(th)));
+        plot(th, h_min_scaffold * ones(size(th))); 
+        plot(th, (h_min_scaffold + h_min_amplitude)*ones(size(th))); 
+        plot(th,  h_top_scaffold_min * ones(size(th))); 
+        plot(th,  h_top_scaffold_max * ones(size(th)));
+        
+        % heights from top of scaffold to minimum 
+        plot(angles, heights_theta,'k*')
+        
+        axis equal
+        
     end 
 end 
 

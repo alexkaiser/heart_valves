@@ -177,15 +177,20 @@ coaptation_zone_start_fraction = coaptation_zone_start_index/k_max
 % ?f = .62 = 1.24r, free edge(is this entire free edge length?). this must be half length. 
 % lc = .7d = 1.4r. the inner length of the dotted line on the left,  leaflet height in 2d. 
 
+stretch_circ = valve.strain_circ + 1; 
+stretch_rad = valve.strain_rad + 1; 
+
 fprintf('Rest length height summary:\n'); 
 fprintf("And targets based on Swanson and Clark 1973\n")
 fprintf("Radius                       = %f\n", radius); 
 fprintf("Coaptation height            = %f\n", 0.17*2*radius); 
 fprintf("One third circumference      = %f\n", 2*pi*radius/3); 
-fprintf("Free edge target             = %f\n", 2*1.24*radius); 
+fprintf("Free edge target             = %f\t", 2*1.24*radius); 
+fprintf("Free edge rest target        = %f\n", 2*1.24*radius / stretch_circ); 
 fprintf("Circ free edge loaded length = %f\t", free_edge_length_single_loaded); 
 fprintf("Circ free edge rest length   = %f\n", length_one_leaflet_free_edge(k_max));
-fprintf("Leaflet height target        = %f\n", 1.4*radius); 
+fprintf("Leaflet height target        = %f\t", 1.4*radius); 
+fprintf("Leaflet height rest target   = %f\n", 1.4*radius / stretch_rad); 
 fprintf("Radial height loaded length  = %f\t", radial_leaflet_height_loaded); 
 fprintf("Radial height rest length    = %f\n", radial_leaflet_height); 
 
