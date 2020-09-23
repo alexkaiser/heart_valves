@@ -438,7 +438,14 @@ function [] = output_to_ibamr_format(valve)
                     extra_radius_hoops = 0; 
                 end 
                 
-                params = place_net(params, valve.leaflets(i), ds, r, r + extra_radius_hoops, k_rel, k_target_net, ref_frac_net, eta_net, hoop_springs); 
+                if strcmp(params.type, 'aortic') 
+                    % only place on the first copy here 
+                    if copy == 1 
+                        params = place_net(params, valve.leaflets(i), ds, r, r + extra_radius_hoops, k_rel, k_target_net, ref_frac_net, eta_net, hoop_springs); 
+                    end 
+                else
+                    params = place_net(params, valve.leaflets(i), ds, r, r + extra_radius_hoops, k_rel, k_target_net, ref_frac_net, eta_net, hoop_springs); 
+                end 
                 
                 if extra_radius_hoops > 0.0
                     max_to_place = max(0,floor(extra_radius_hoops / ds) - 1);
