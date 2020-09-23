@@ -4,7 +4,7 @@ MU  = 0.04                            // viscosity
 RHO = 1.0
 
 // grid spacing parameters
-MAX_LEVELS = 1                            // maximum number of levels in locally refined grid
+MAX_LEVELS = 2                            // maximum number of levels in locally refined grid
 REF_RATIO  = 4                            // refinement ratio between levels
 
 NAME = "aortic_384"
@@ -18,6 +18,7 @@ BOUNDARY_FILENAME_RPA = "right_pa_bdry.vertex"
 BOUNDARY_FILENAME_LPA = "left_pa_bdry.vertex"
 CYCLE_DURATION = 8.3250000000000002e-01
 
+// physical ratio 
 RATIO_TO_SCAN = 2
 
 DX_FLUID = (0.9 / RATIO_TO_SCAN) * (REF_RATIO^(MAX_LEVELS - 1))
