@@ -558,7 +558,7 @@ int main(int argc, char* argv[])
             fourier_series_data *fourier_series_lpa = new fourier_series_data(fourier_coeffs_name_lpa.c_str(), dt);
 
             double P_initial_pa = 32.0 * MMHG_TO_CGS; 
-            bool rcr_bcs_on = false;
+            bool rcr_bcs_on = true;
 
             CirculationModel_RV_PA *circ_model_rv_pa = new CirculationModel_RV_PA(input_db,
                                                                                   fourier_series_rv, 
