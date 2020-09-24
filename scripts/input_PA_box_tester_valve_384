@@ -4,7 +4,7 @@ MU  = 0.04                            // viscosity
 RHO = 1.0
 
 // grid spacing parameters
-MAX_LEVELS = 2                            // maximum number of levels in locally refined grid
+MAX_LEVELS = 1                            // maximum number of levels in locally refined grid
 REF_RATIO  = 4                            // refinement ratio between levels
 
 NAME = "aortic_384"
@@ -239,14 +239,14 @@ IBMethod {
 
 IBStandardInitializer {
    max_levels      = MAX_LEVELS
-   structure_names = "aortic_no_partition_384","aortic_no_partition_384_cylinder","vessel_384"
+   structure_names = "aortic_no_partition_384","aortic_no_partition_384_cylinder","vessel_192"
    aortic_no_partition_384 {
       level_number = MAX_LEVELS - 1
    }
    aortic_no_partition_384_cylinder {
       level_number = MAX_LEVELS - 1
    }
-   vessel_384 {
+   vessel_192 {
       level_number = MAX_LEVELS - 1
    }
 }
