@@ -18,12 +18,20 @@ BOUNDARY_FILENAME_RPA = "right_pa_bdry.vertex"
 BOUNDARY_FILENAME_LPA = "left_pa_bdry.vertex"
 CYCLE_DURATION = 8.3250000000000002e-01
 
+// no amr values 
+// DX_FLUID = 0.09 
+// NX = 192 // 178 original 
+// NY = 128
+// NZ = 96
 
-DX_FLUID = 0.09 
+// physical ratio 
+RATIO_TO_SCAN = 1.0
 
-NX = 192 // 178 original 
-NY = 128
-NZ = 96
+DX_FLUID = (0.09 / RATIO_TO_SCAN) * (REF_RATIO^(MAX_LEVELS - 1))
+
+NX = 192 * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1)) // 178 original 
+NY = 128 * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1))
+NZ = 96  * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1))
 
 X_LOW  = -9.4772
 X_HIGH = X_LOW + NX * DX_FLUID
