@@ -4,7 +4,7 @@ MU  = 0.04                            // viscosity
 RHO = 1.0
 
 // grid spacing parameters
-MAX_LEVELS = 2                            // maximum number of levels in locally refined grid
+MAX_LEVELS = 1                            // maximum number of levels in locally refined grid
 REF_RATIO  = 4                            // refinement ratio between levels
 
 NAME = "aortic_384"
@@ -284,7 +284,7 @@ Main {
 
 // visualization dump parameters
    viz_writer                  = "VisIt","Silo"
-   viz_dump_interval           = 1 //int(1.0/(DT*600.0))       // output at 600 fps, 10x slow motion at 60 fps
+   viz_dump_interval           = int(1.0/(DT*600.0))       // output at 600 fps, 10x slow motion at 60 fps
    viz_dump_dirname            = "viz_IB3d_tree_cycle_256"
    visit_number_procs_per_file = 1
 
