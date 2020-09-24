@@ -114,7 +114,7 @@ typedef struct{
     
     // papillary target point velocity
     // constant across all papillary points 
-    double u_papillary[3]; 
+    // double u_papillary[3]; 
     
 } papillary_info; 
 
@@ -834,6 +834,7 @@ papillary_info* initialize_moving_papillary_info(string structure_name,
         std::cout << "idx, coords = " << papillary->vertex_idx[i]  << " " <<  papillary->x_systole[i]  << " " << papillary->y_systole[i]  << " " << papillary->z_systole[i] << "\n";
     }
     
+    /*
     papillary->u_papillary[0] = 0.0; 
     papillary->u_papillary[1] = 0.0; 
     papillary->u_papillary[2] = 0.0; 
@@ -842,7 +843,8 @@ papillary_info* initialize_moving_papillary_info(string structure_name,
         
     std::cout << "Movement information in initialize\n"; 
     l_data_manager->print_movement_info(); 
-        
+    */ 
+
     return papillary; 
 }  
 
@@ -966,7 +968,7 @@ void update_target_point_positions(Pointer<PatchHierarchy<NDIM> > hierarchy,
     }
     
     // update velocity with data manager 
-    l_data_manager->set_movement_velocity(u_target); 
+    // l_data_manager->set_movement_velocity(u_target); 
     
     // Loop over all Lagrangian mesh nodes and update the target point
     // positions.
