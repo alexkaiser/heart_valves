@@ -173,8 +173,10 @@ tol = 1e-12;
 
 Q_mean_each = Q_mean / 2; 
 
+R_coeff = 2.0; 
+
 % total resistance is determined by mean pressure and mean flow 
-R_total = P_mean / Q_mean_each;  
+R_total = R_coeff * P_mean / Q_mean_each;  
 
 % ratio of resistors is constant 
 % resistors sum to total resistance 
