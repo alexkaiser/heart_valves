@@ -31,7 +31,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N_each_range = 2^7; % 2.^(2:8); 
+N_each_range = 2^3; % 2.^(2:8); 
 
 for N_each = N_each_range
 
@@ -46,7 +46,7 @@ for N_each = N_each_range
     % Initialize structures 
     % Many parameters are in this script 
 
-    pulm = true; 
+    pulm = false; 
     
     if pulm
         valve = initialize_valve_data_structures_pulm_mri_box(N); 
@@ -64,7 +64,7 @@ for N_each = N_each_range
     end 
 
 
-    interactive = true; 
+    interactive = false; 
 
     from_history = false; 
     if from_history 

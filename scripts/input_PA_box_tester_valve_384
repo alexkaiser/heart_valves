@@ -23,9 +23,9 @@ RATIO_TO_SCAN = 2.0
 
 DX_FLUID = (0.09 / RATIO_TO_SCAN) * (REF_RATIO^(MAX_LEVELS - 1))
 
-NX = 192 * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1)) // 178 original 
-NY = 128 * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1))
-NZ = 96  * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1))
+NX = int(192 * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1))) // 178 original 
+NY = int(128 * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1)))
+NZ = int(96  * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1)))
 
 X_LOW  = -9.4772
 X_HIGH = X_LOW + NX * DX_FLUID
@@ -322,7 +322,7 @@ GriddingAlgorithm {
       level_0 = 512,512,512  // all finer levels will use same values as level_0
    }
    smallest_patch_size {
-      level_0 =   8, 8, 8  // all finer levels will use same values as level_0
+      level_0 =   16, 16, 16  // all finer levels will use same values as level_0
    }
    efficiency_tolerance = 0.85e0  // min % of tag cells in new patch level
    combine_efficiency   = 0.85e0  // chop box if sum of volumes of smaller boxes < efficiency * vol of large box
@@ -331,8 +331,18 @@ GriddingAlgorithm {
    //extend_tags_to_bdry = FALSE
 }
 
+// next step finer mesh sizes 
+NX_1       = NX*REF_RATIO^1
+NY_1       = NY*REF_RATIO^1
+NZ_1       = NZ*REF_RATIO^1
+DX_FLUID_1 = DX_FLUID*REF_RATIO^1
+
 StandardTagAndInitialize {
-   tagging_method = "GRADIENT_DETECTOR"
+   tagging_method = "GRADIENT_DETECTOR","REFINE_BOXES"
+   RefineBoxes {
+      level_0 = [(0, int(NY/2   - NY/4  ), int(NZ/2   - NZ/4  )),  (int(1.0/DX_FLUID),   int(NY/2   + NY/4),   int(NZ/2   + NZ/4))  ]
+      level_1 = [(0, int(NY_1/2 - NY_1/4), int(NZ_1/2 - NZ_1/4)),  (int(1.0/DX_FLUID_1), int(NY_1/2 + NY_1/4), int(NZ_1/2 + NZ_1/4))]
+   }
 }
 
 LoadBalancer {

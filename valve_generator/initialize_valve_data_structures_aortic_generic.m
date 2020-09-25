@@ -75,6 +75,8 @@ valve.in_heart = false;
 
 mri_box = false;
 
+fused_commissure = true; 
+
 % name 
 if valve.in_heart
     valve.base_name = sprintf('aortic_no_partition_%d', N); 
@@ -257,6 +259,10 @@ valve.ds = 2*pi*valve.skeleton.r / N;
 
 valve.leaflets(1) = leaflet; 
     
+if fused_commissure
+    valve.leaflets(1).fused_commissure = true; 
+    valve.leaflets(1).fused_comm_idx    = 3; 
+end 
 
 % viscoelastic damping coefficients springs 
 % eta, damping coeff here, is multiplied by the coefficient on the 
