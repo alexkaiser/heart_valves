@@ -21,6 +21,7 @@ function leaflet = aortic_free_edge_to_dirichlet_bc(leaflet, extra_stretch_radia
     X = leaflet.X; 
 
     debug = true; 
+    debug_text = true; 
 
     is_bc = leaflet.is_bc; 
     linear_idx_offset         = zeros(j_max, k_max); 
@@ -31,10 +32,45 @@ function leaflet = aortic_free_edge_to_dirichlet_bc(leaflet, extra_stretch_radia
         if ~isfield(leaflet, 'fused_comm_idx')
             error('must supply fused_comm_idx if leaflet.fused_commissure is true')
         end 
-        fused_comm_idx = leaflet.fused_comm_idx;         
+        fused_comm_idx = leaflet.fused_comm_idx;   
+        
+        % find free_edge_radius, rest length of half of the free edge 
+        free_edge_radius = 0.0; 
+        for j_tmp = 1:(N_each/2)
+            j_nbr_tmp = j_tmp - 1; 
+            k_nbr_tmp = k_max; 
+            [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j_tmp, k_max, j_nbr_tmp, k_nbr_tmp); 
+            if valid && (~target_spring) && (~target_k_no_j_spring)
+                free_edge_radius = free_edge_radius + R_u(j_spr,k_spr); 
+            end 
+        end
+        
+        % find center leaflet height 
+        center_leaflet_height = sum(R_v(N_each/2, 1:(k_max-1))) 
+        
+        % annular radius 
+        radius = leaflet.r
+        
+        % height of entire annulus 
+        normal_height = leaflet.skeleton.normal_height
+        
+        radial_stretch_fused = (1/center_leaflet_height) * sqrt(radius^2 + (normal_height - sqrt(free_edge_radius^2 - radius^2))^2); 
+        
+        if radial_stretch_fused < 1
+            error('found compressive radial stretch')
+        end 
+        if radial_stretch_fused > extra_stretch_radial
+            error('required radial stretch larger than provided stretch for other leaflets')
+        end 
+        
+        center_point_from_formula = [0,0,normal_height - sqrt(free_edge_radius^2 - radius^2)]
+        
     else
         fused_commissure = false; 
     end 
+    
+    
+    
     
     for leaflet_idx = 1:3
 
@@ -77,7 +113,7 @@ function leaflet = aortic_free_edge_to_dirichlet_bc(leaflet, extra_stretch_radia
                     % and rest length along the free edge from the commissure 
                     
                     % leaflet rest height at current point 
-                    total_height_current = extra_stretch_radial * sum(R_v(j + min_idx, 1:(k_max-1))); 
+                    total_height_current = radial_stretch_fused * sum(R_v(j + min_idx, 1:(k_max-1))); 
                     
                     % this point on the leaflet is below the vertical midline and so paired to the previous commissure 
                     if j <= (N_each/2)
@@ -91,6 +127,9 @@ function leaflet = aortic_free_edge_to_dirichlet_bc(leaflet, extra_stretch_radia
                             [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j_tmp, k_max, j_nbr_tmp, k_nbr_tmp); 
                             if valid && (~target_spring) && (~target_k_no_j_spring)
                                 total_rest_length_free_edge = total_rest_length_free_edge + R_u(j_spr,k_spr); 
+                                if (k==k_max) && debug_text
+                                    fprintf('j_tmp = %d, j_spr = %d, R_u = %f\n', j_tmp, j_spr, R_u(j_spr,k_spr)); 
+                                end 
                             end 
                         end
                         
@@ -109,19 +148,22 @@ function leaflet = aortic_free_edge_to_dirichlet_bc(leaflet, extra_stretch_radia
                         ring_point_reflected = X(:,j_reflected,1); 
                         
                         % leaflet rest height at reflected point
-                        total_height_reflected = extra_stretch_radial * sum(R_v(j_reflected, 1:(k_max-1))); 
+                        total_height_reflected = radial_stretch_fused * sum(R_v(j_reflected, 1:(k_max-1))); 
                                                                         
                     else 
                         comm_for_fused_edge = comm_next; 
                         
                         total_rest_length_free_edge = 0.0; 
                         
-                        for j_tmp = (j+min_idx):(N_each+min_idx)
-                            j_nbr_tmp = j_tmp - 1; 
+                        for j_tmp = (j+min_idx):(N_each+min_idx-1)
+                            j_nbr_tmp = j_tmp + 1; 
                             k_nbr_tmp = k_max; 
                             [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j_tmp, k_max, j_nbr_tmp, k_nbr_tmp); 
                             if valid && (~target_spring) && (~target_k_no_j_spring)
                                 total_rest_length_free_edge = total_rest_length_free_edge + R_u(j_spr,k_spr); 
+                                if (k==k_max) && debug_text
+                                    fprintf('j_tmp = %d, j_spr = %d, R_u = %f\n', j_tmp, j_spr, R_u(j_spr,k_spr)); 
+                                end 
                             end 
                         end
                         
@@ -140,7 +182,7 @@ function leaflet = aortic_free_edge_to_dirichlet_bc(leaflet, extra_stretch_radia
                         ring_point_reflected = X(:,j_reflected,1); 
                         
                         % leaflet rest height at reflected point
-                        total_height_reflected = extra_stretch_radial * sum(R_v(j_reflected, 1:(k_max-1)));
+                        total_height_reflected = radial_stretch_fused * sum(R_v(j_reflected, 1:(k_max-1)));
                         
                         
 
@@ -150,31 +192,54 @@ function leaflet = aortic_free_edge_to_dirichlet_bc(leaflet, extra_stretch_radia
                     % this is the intersection of three spheres 
                     F = @(p) [norm(ring_point - p) - total_height_current; norm(ring_point_reflected - p) - total_height_reflected; norm(comm_for_fused_edge - p) - total_rest_length_free_edge]; 
 
-                    comm_interp_point = fsolve(F,[0;0;0]);                    
+                    options = optimset('Display','off');
+                    comm_interp_point = fsolve(F,[0;0;0],options);                    
                     
+                    tangent = (comm_interp_point - ring_point); 
+                    tangent = tangent / norm(tangent); 
+
+                    % total radial rest length of this radial fiber 
+                    total_rest_length = sum(R_v(j + min_idx, 1:(k-1))); 
+
+                    % based on the rest length 
+                    X(:,j + min_idx ,k) = total_rest_length * tangent * radial_stretch_fused + ring_point;   
+                    
+                    if (k==k_max) && debug_text 
+                        j
+                        total_height_current
+                        total_height_reflected
+                        total_rest_length_free_edge
+                        comm_interp_point
+                        X_from_interpolation = X(:,j + min_idx ,k)
+                        fprintf('\n')
+                    end 
+                    
+                    if (j==4) 
+                        'here'; 
+                    end 
                     
                     
                 else 
                     % default goes across 
                     comm_interp_point = (1 - j*dj_interp) * comm_prev ...
                                            + j*dj_interp  * comm_next; 
+                                       
+                    tangent = (comm_interp_point - ring_point); 
+                    tangent = tangent / norm(tangent); 
+
+                    % total radial rest length of this radial fiber 
+                    total_rest_length = sum(R_v(j + min_idx, 1:(k-1))); 
+
+                    % based on the rest length 
+                    X(:,j + min_idx ,k) = total_rest_length * tangent * extra_stretch_radial + ring_point; 
+
+                    % based on putting the free edge as a triangle between commn points 
+                    % generally bad 
+                    % X(:,j + min_idx ,k) = (k/k_max) * (comm_interp_point - ring_point) + ring_point; 
+                                       
                 end 
 
                 
-
-                tangent = (comm_interp_point - ring_point); 
-                tangent = tangent / norm(tangent); 
-
-                % total radial rest length of this radial fiber 
-                total_rest_length = sum(R_v(j + min_idx, 1:(k-1))); 
-
-                % based on the rest length 
-                X(:,j + min_idx ,k) = total_rest_length * tangent * extra_stretch_radial + ring_point; 
-
-                % based on putting the free edge as a triangle between commn points 
-                % generally bad 
-                % X(:,j + min_idx ,k) = (k/k_max) * (comm_interp_point - ring_point) + ring_point; 
-
                 if is_bc(j + min_idx ,k)
                     error('trying to set a bc as new position'); 
                 end 
