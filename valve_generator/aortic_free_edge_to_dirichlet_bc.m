@@ -54,7 +54,7 @@ function leaflet = aortic_free_edge_to_dirichlet_bc(leaflet, extra_stretch_radia
         % height of entire annulus 
         normal_height = leaflet.skeleton.normal_height
         
-        radial_stretch_fused = (1/center_leaflet_height) * sqrt(radius^2 + (normal_height - sqrt(free_edge_radius^2 - radius^2))^2); 
+        radial_stretch_fused = (1/center_leaflet_height) * sqrt(radius^2 + (normal_height - sqrt(free_edge_radius^2 - radius^2))^2) 
         
         if radial_stretch_fused < 1
             error('found compressive radial stretch')
@@ -191,9 +191,13 @@ function leaflet = aortic_free_edge_to_dirichlet_bc(leaflet, extra_stretch_radia
                     % relevant distances from each of three points 
                     % this is the intersection of three spheres 
                     F = @(p) [norm(ring_point - p) - total_height_current; norm(ring_point_reflected - p) - total_height_reflected; norm(comm_for_fused_edge - p) - total_rest_length_free_edge]; 
-
-                    options = optimset('Display','off');
+                                       
+                    options = optimset('Display','off','TolFun',1e-20);
                     comm_interp_point = fsolve(F,[0;0;0],options);                    
+                    
+                    if (k==k_max) && debug_text 
+                        fprintf("residual nonlinear solve for interp point %e = ", norm(F(comm_interp_point))); 
+                    end 
                     
                     tangent = (comm_interp_point - ring_point); 
                     tangent = tangent / norm(tangent); 
@@ -251,6 +255,48 @@ function leaflet = aortic_free_edge_to_dirichlet_bc(leaflet, extra_stretch_radia
         end 
 
     end 
+
+    % check for near equality at fused points, then set them to be literal floating point equal 
+    if fused_commissure
+        
+        tol = 1e-14; 
+        k=k_max; 
+        for leaflet_idx = 1:3            
+            
+            min_idx = (leaflet_idx-1)*N_each;     
+            
+            prev_comm_idx = min_idx; 
+            if prev_comm_idx == 0
+                prev_comm_idx = j_max; 
+            end 
+                        
+            for j=1:(N_each/2)
+                if fused_commissure && (... 
+                    ((fused_comm_idx == 1) && (leaflet_idx == 2)) || ...
+                    ((fused_comm_idx == 2) && (leaflet_idx == 3)) || ...
+                    ((fused_comm_idx == 3) && (leaflet_idx == 1)))
+                                    
+                    % setting 
+                    j_reflected_temp = mod(prev_comm_idx,j_max) - j; 
+                    j_reflected = mod(j_reflected_temp,j_max); 
+
+                    if norm(X(:,j + min_idx,k_max) - X(:,j_reflected,k_max)) > tol 
+                        pt_idx_j = j + min_idx
+                        point = X(:,j + min_idx,k_max)
+                        nbr_idx_j = j_reflected 
+                        neighbor = X(:,j_reflected,k_max)
+                        difference = norm(X(:,j + min_idx,k_max) - X(:,j_reflected,k_max))
+                        error('fused points differ by more than tolerance')
+                    else 
+                        % assign to be literally floating point equal 
+                        X(:,j_reflected,k_max) = X(:,j + min_idx,k_max); 
+                    end 
+
+                end                 
+            end 
+        end                 
+    end 
+    
 
     leaflet.X = X; 
 
