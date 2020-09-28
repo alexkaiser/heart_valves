@@ -12,8 +12,10 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
     debug = true; 
     debug_text = true; 
 
-    is_bc = leaflet.is_bc; 
-
+    is_bc = leaflet.is_bc;     
+    linear_idx_offset         = zeros(j_max, k_max); 
+    point_idx_with_bc         = zeros(j_max, k_max); 
+    
     if fused_comm_idx ~= 3
         error('only comm 3 supported for now')
     end 
@@ -199,6 +201,69 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
     end 
     
     
+    neumann_free_edge_fused = true; 
+    if neumann_free_edge_fused 
+
+        j_opposite = j_max - 1; 
+        for j=1:(N_each/2)
+            is_bc(j_opposite, k_max) = true; 
+            
+            j_opposite = j_opposite - 1; 
+        end 
+
+        leaflet.sync_fn = @sync_aortic_fused_comm; 
+    end 
+    
+    
+    dirichlet_free_edge_adjacent = true; 
+    if dirichlet_free_edge_adjacent
+        % set to dirichlet free edge on adjacent leaflet 
+        comm_idx = 2; 
+        % point one internal of commissure to point that m
+        % N_each is a power of two 
+        min_idx = (comm_idx-1)*N_each;         
+
+        dj_interp = 1/N_each; 
+
+        prev_comm_idx = min_idx; 
+        if prev_comm_idx == 0
+            prev_comm_idx = j_max; 
+        end 
+
+        comm_prev = X(:,prev_comm_idx,k_max); 
+        comm_next = X(:,min_idx + N_each,k_max); 
+
+        for j=1:(N_each-1)
+            for k=(2:k_max)
+
+                comm_interp_point = (1 - j*dj_interp) * comm_prev ...
+                                         + j*dj_interp  * comm_next; 
+
+                ring_point = X(:,j + min_idx ,1); 
+
+                tangent = (comm_interp_point - ring_point); 
+                tangent = tangent / norm(tangent); 
+
+                % total radial rest length of this radial fiber 
+                total_rest_length = sum(R_v(j + min_idx, 1:(k-1))); 
+
+                % based on the rest length 
+                X(:,j + min_idx ,k) = total_rest_length * tangent * extra_stretch_radial + ring_point; 
+
+                % based on putting the free edge as a triangle between commn points 
+                % generally bad 
+                % X(:,j + min_idx ,k) = (k/k_max) * (comm_interp_point - ring_point) + ring_point; 
+
+                if is_bc(j + min_idx ,k)
+                    error('trying to set a bc as new position'); 
+                end 
+
+                if k == k_max
+                    is_bc(j + min_idx ,k) = true; 
+                end 
+            end 
+        end 
+    end 
     
     % error checking        
     tol_err_check = 1e-14; 
@@ -241,11 +306,11 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
 
     leaflet.X = X; 
 
-    for j=1:j_max 
-        if ~is_bc(j,k)
-            error('did not set all bcs')
-        end 
-    end 
+%     for j=1:j_max 
+%         if ~is_bc(j,k)
+%             error('did not set all bcs')
+%         end 
+%     end 
 
     if debug 
         figure; 
@@ -261,6 +326,41 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
                
     end 
 
+    % cleanup on utility arrays 
+    is_internal = ~is_bc; 
+
+    % Indices for Jacobian building 
+    count = 0; 
+    for k=1:k_max
+        for j=1:j_max
+            if is_internal(j,k)
+                linear_idx_offset(j,k) = count; 
+                count = count + 3; 
+            end 
+        end 
+    end
+
+    % Indices for spring attachments 
+    count = 0;
+    for k=1:k_max
+        for j=1:j_max
+            if is_internal(j,k) || is_bc(j,k)
+                point_idx_with_bc(j,k) = count; 
+                count = count + 1; 
+            end 
+        end 
+    end
+
+
+    leaflet.is_internal           = is_internal;
+    leaflet.is_bc                 = is_bc;
+    leaflet.linear_idx_offset     = linear_idx_offset;
+    leaflet.point_idx_with_bc     = point_idx_with_bc;
+
+    leaflet.total_internal_leaflet    = 3*sum(leaflet.is_internal(:)); 
+    
+    
+    
 end 
 
 

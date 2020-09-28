@@ -965,7 +965,7 @@ function X_extruded = normal_extrude_aortic(params, leaflet)
                     end 
                     
                     if leaflet.fused_comm_idx ~= 3
-                        erorr('not implemented')
+                        error('not implemented')
                     end 
                     
                     if (j==j_max) && (k==k_max) % comm point 

@@ -311,8 +311,24 @@ if build_reference
             valve_with_reference.leaflets(i).sigma_rad_mean = sigma_rad_mean; 
             sigma_circ_mean  
             sigma_rad_mean
-            
-            if isfield(valve, 'dirichlet_free_edge_with_ref_only') && valve.dirichlet_free_edge_with_ref_only
+
+            if isfield(leaflet, 'fused_commissure') && leaflet.fused_commissure                     
+                if ~isfield(leaflet, 'fused_comm_idx')
+                    error('must supply fused_comm_idx if leaflet.fused_commissure is true')
+                end 
+                
+                if isfield(valve, 'extra_stretch_radial_dirichlet_free_edge')
+                    extra_stretch_radial = valve.extra_stretch_radial_dirichlet_free_edge; 
+                else
+                    extra_stretch_radial = valve.strain_rad + 1.0; 
+                end 
+                
+                leaflets_copy = aortic_free_edge_fuse_commissure(valve_with_reference.leaflets(i), extra_stretch_radial, leaflet.fused_comm_idx); 
+                valve_with_reference = rmfield(valve_with_reference, 'leaflets'); 
+                valve_with_reference.leaflets(1) = leaflets_copy; 
+                
+                
+            elseif isfield(valve, 'dirichlet_free_edge_with_ref_only') && valve.dirichlet_free_edge_with_ref_only
                 % multiplicative stretch for setting aortic valve initial condition 
                 % set to prescribed stain + 1 (prescribed stretch) for maintaining the leaflet height as the loaded height 
                 if isfield(valve, 'extra_stretch_radial_dirichlet_free_edge')
@@ -321,16 +337,7 @@ if build_reference
                     extra_stretch_radial = valve.strain_rad + 1.0; 
                 end 
                 valve_with_reference.leaflets(i) = aortic_free_edge_to_dirichlet_bc(valve_with_reference.leaflets(i), extra_stretch_radial); 
-                
-                
-                if isfield(leaflet, 'fused_commissure') && leaflet.fused_commissure                     
-                    if ~isfield(leaflet, 'fused_comm_idx')
-                        error('must supply fused_comm_idx if leaflet.fused_commissure is true')
-                    end 
-                    valve_with_reference.leaflets(i) = aortic_free_edge_fuse_commissure(valve_with_reference.leaflets(i), extra_stretch_radial, leaflet.fused_comm_idx); 
-                end 
 
-                
             end 
             
         else

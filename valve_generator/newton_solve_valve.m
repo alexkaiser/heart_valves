@@ -263,6 +263,10 @@ while true
     % copy data back to 2d 
     leaflet = internal_points_to_2d(X_linearized, leaflet); 
     
+    if isfield(leaflet, 'sync_fn')
+        leaflet = leaflet.sync_fn(leaflet); 
+    end
+    
     err = total_global_err(leaflet);         
     
     if back_tracking && (~optimization)
@@ -285,7 +289,12 @@ while true
 
             % copy data back to 2d 
             leaflet = internal_points_to_2d(X_linearized, leaflet); 
-
+            
+            if isfield(leaflet, 'sync_fn')
+                leaflet = leaflet.sync_fn(leaflet); 
+            end 
+            
+            
             err = total_global_err(leaflet); 
         
             back_tracking_it = back_tracking_it + 1; 
