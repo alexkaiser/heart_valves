@@ -954,7 +954,28 @@ function X_extruded = normal_extrude_aortic(params, leaflet)
                     
                 normal = cross(X(:,j_plus__1,k) - X(:,j_minus_1,k), X(:,j,k_plus__1) - X(:,j,k_minus_1));                     
                 normal = normal / norm(normal); 
+                
+%                 if (j==j_max) && (k==k_max)
+%                     'pause'
+%                 end 
     
+                if isfield(leaflet, 'fused_commissure') && leaflet.fused_commissure                     
+                    if ~isfield(leaflet, 'fused_comm_idx')
+                        error('must supply fused_comm_idx if leaflet.fused_commissure is true')
+                    end 
+                    
+                    if leaflet.fused_comm_idx ~= 3
+                        erorr('not implemented')
+                    end 
+                    
+                    if (j==j_max) && (k==k_max) % comm point 
+                        normal = [-1; 0; 0]; % just point straight in here 
+                    end 
+                    
+                end 
+
+                
+                
                 X_extruded(:,j,k) = X(:,j,k) - normal * extrude_length; 
                 
             end 
