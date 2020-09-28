@@ -122,7 +122,7 @@ end
 
 
 
-one_leaflet = false; 
+one_leaflet = true; 
 if one_leaflet 
 %     X_current(:,1:(N_each-1),:) = NaN;    
 %     X_current(:,(2*N_each:end),:) = NaN;
@@ -176,7 +176,7 @@ else
     max_tension = max(max_tension_circ, max_tension_radial) * 0.1;
 end
 
-observed_max = false; 
+observed_max = true; 
 if observed_max
     max_tension = 7.5e3; % 1.298292e+04; 
 end 
