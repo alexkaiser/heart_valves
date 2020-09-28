@@ -126,11 +126,10 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
         end 
 
         % set to literal zero for symmetry
-        tol_component = 1e-14; 
-        for component=1:3
-            if abs(free_edge_point(component)) < tol_component
-                free_edge_point(component) = 0.0; 
-            end 
+        tol_component = 1e-5; 
+        component = 2; 
+        if abs(free_edge_point(component)) < tol_component
+            free_edge_point(component) = 0.0; 
         end 
         
         % based on the rest length 
@@ -178,7 +177,7 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
 
         dk_interp = 1/k_max; 
         
-        for j=2:(N_each-1)
+        for j=1:(N_each-1)
             
             X_ring = X(:,j + min_idx, 1); 
             X_free = X(:,j + min_idx, k_max); 
