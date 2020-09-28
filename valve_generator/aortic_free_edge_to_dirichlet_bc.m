@@ -19,7 +19,7 @@ end
 
 X = leaflet.X; 
 
-debug = true; 
+debug = false; 
 
 is_bc = leaflet.is_bc; 
 linear_idx_offset         = zeros(j_max, k_max); 

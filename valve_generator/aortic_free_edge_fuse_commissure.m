@@ -7,13 +7,6 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
     R_v    = leaflet.R_v; 
     R_u    = leaflet.R_u; 
 
-    full_leaflet_interp = true; 
-    if full_leaflet_interp
-        k_range = 2:k_max; 
-    else
-        k_range = k_max; 
-    end 
-
     X = leaflet.X; 
 
     debug = true; 
@@ -21,7 +14,9 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
 
     is_bc = leaflet.is_bc; 
 
-
+    if fused_comm_idx ~= 3
+        error('only comm 3 supported for now')
+    end 
         
     % find free_edge_radius, rest length of half of the free edge 
     free_edge_radius = 0.0; 
@@ -35,185 +30,169 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
     end
 
     % find center leaflet height 
-    center_leaflet_height = sum(R_v(N_each/2, 1:(k_max-1))) 
+    center_leaflet_height = extra_stretch_radial * sum(R_v(N_each/2, 1:(k_max-1))); 
 
     % annular radius 
-    radius = leaflet.r
+    radius = leaflet.r; 
 
     % height of entire annulus 
-    normal_height = leaflet.skeleton.normal_height
-
-    radial_stretch_center = (1/center_leaflet_height) * sqrt(radius^2 + (normal_height - sqrt(free_edge_radius^2 - radius^2))^2) 
-
-    if radial_stretch_center < 1
-        error('found compressive radial stretch')
+    normal_height = leaflet.skeleton.normal_height; 
+    
+    free_edge_for_initial_conds = sqrt(radius^2 + (normal_height - sqrt(center_leaflet_height^2 - radius^2))^2); 
+    
+    if free_edge_for_initial_conds > free_edge_radius
+        error("requesting positive free edge strain"); 
     end 
-    if radial_stretch_center > extra_stretch_radial
-        error('required radial stretch larger than provided stretch for other leaflets')
+    
+
+    leaflet_idx = 1; 
+
+    % point one internal of commissure to point that m
+    % N_each is a power of two 
+    min_idx = (leaflet_idx-1)*N_each;         
+
+    prev_comm_idx = min_idx; 
+    if prev_comm_idx == 0
+        prev_comm_idx = j_max; 
     end 
 
-    center_point_from_formula = [0,0,normal_height - sqrt(free_edge_radius^2 - radius^2)]
+    % this point on the leaflet is below the vertical midline and so paired to the previous commissure 
+    comm_prev = X(:,prev_comm_idx,k_max); 
 
-
-    for leaflet_idx = 1:3
-
-        % point one internal of commissure to point that m
-        % N_each is a power of two 
-        min_idx = (leaflet_idx-1)*N_each;         
-
-        dj_interp = 1/N_each; 
-
-        prev_comm_idx = min_idx; 
-        if prev_comm_idx == 0
-            prev_comm_idx = j_max; 
-        end 
+    delta_f = free_edge_for_initial_conds / (N_each/2); 
+    
+    k=k_max;  
+    
+    for j=1:(N_each/2)
         
-        next_comm_idx = min_idx + N_each; 
+        ring_point = X(:,j + min_idx ,1); 
 
-        comm_prev = X(:,prev_comm_idx,k_max); 
-        comm_next = X(:,min_idx + N_each,k_max); 
+        % leaflets numbered 1-3
+        % comm 1 between leaflet 1,2
+        % comm 2 between 2 and 3
+        % comm 3 at j_max between leaflet 3 and 1
 
-        for j=1:(N_each-1)
-            for k=k_range
-                
-                ring_point = X(:,j + min_idx ,1); 
-                
-                if (((fused_comm_idx == 1) && (leaflet_idx == 1)) || ...
-                    ((fused_comm_idx == 1) && (leaflet_idx == 2)) || ...
-                    ((fused_comm_idx == 2) && (leaflet_idx == 2)) || ...
-                    ((fused_comm_idx == 2) && (leaflet_idx == 3)) || ...
-                    ((fused_comm_idx == 3) && (leaflet_idx == 1)) || ...
-                    ((fused_comm_idx == 3) && (leaflet_idx == 3)))
+        % free edge on inside of leaflet 1 only here 
+        
+        % leaflet rest height at current point 
+        total_height_current = extra_stretch_radial * sum(R_v(j + min_idx, 1:(k_max-1)));
+        
+        free_edge_this_j = j * delta_f; 
 
-                    % leaflets numbered 1-3
-                    % comm 1 between leaflet 1,2
-                    % comm 2 between 2 and 3
-                    % comm 3 at j_max between leaflet 3 and 1
-                    
-                    % point is total_rest_length * extra_stretch_radial from the ring
-                    % same distance from the mirrored point across the closest commissure                     
-                    % and rest length along the free edge from the commissure 
-                    
-                    % leaflet rest height at current point 
-                    radial_stretch_j = radial_stretch_local(j, N_each, radial_stretch_center, extra_stretch_radial);
-                    total_height_current = radial_stretch_j * sum(R_v(j + min_idx, 1:(k_max-1))); 
-                    
-                    % this point on the leaflet is below the vertical midline and so paired to the previous commissure 
-                    if j <= (N_each/2)
-                        comm_for_fused_edge = comm_prev; 
-                        
-                        total_rest_length_free_edge = 0.0; 
-                        
-                        for j_tmp = (1+min_idx):(j+min_idx)
-                            j_nbr_tmp = j_tmp - 1; 
-                            k_nbr_tmp = k_max; 
-                            [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j_tmp, k_max, j_nbr_tmp, k_nbr_tmp); 
-                            if valid && (~target_spring) && (~target_k_no_j_spring)
-                                total_rest_length_free_edge = total_rest_length_free_edge + R_u(j_spr,k_spr); 
-                                if (k==k_max) && debug_text
-                                    fprintf('j_tmp = %d, j_spr = %d, R_u = %f\n', j_tmp, j_spr, R_u(j_spr,k_spr)); 
-                                end 
-                            end 
-                        end
-                        
-                        % total_rest_length_free_edge = sum(R_v( min_idx:(j+min_idx), k_max)); 
-                
-                        % zero indexed prev_comm_idx minus j, number past the comm 
-                        j_reflected_temp = mod(prev_comm_idx,j_max) - j; 
-                        
-                        % then set that back with periodicity
-                        j_reflected = mod(j_reflected_temp,j_max); 
-                        
-                        if j_reflected == 0
-                            error('this shuold never be zero because zero is the comm point')
-                        end 
-                        
-                        ring_point_reflected = X(:,j_reflected,1); 
-                        
-                        % leaflet rest height at reflected point
-                        radial_stretch_j_reflected = radial_stretch_local(j_reflected, N_each, radial_stretch_center, extra_stretch_radial);
-                        total_height_reflected = radial_stretch_j_reflected * sum(R_v(j_reflected, 1:(k_max-1))); 
-                                                                        
-                    else 
-                        comm_for_fused_edge = comm_next; 
-                        
-                        total_rest_length_free_edge = 0.0; 
-                        
-                        for j_tmp = (j+min_idx):(N_each+min_idx-1)
-                            j_nbr_tmp = j_tmp + 1; 
-                            k_nbr_tmp = k_max; 
-                            [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j_tmp, k_max, j_nbr_tmp, k_nbr_tmp); 
-                            if valid && (~target_spring) && (~target_k_no_j_spring)
-                                total_rest_length_free_edge = total_rest_length_free_edge + R_u(j_spr,k_spr); 
-                                if (k==k_max) && debug_text
-                                    fprintf('j_tmp = %d, j_spr = %d, R_u = %f\n', j_tmp, j_spr, R_u(j_spr,k_spr)); 
-                                end 
-                            end 
-                        end
-                        
-                        % total_rest_length_free_edge = sum(R_v( min_idx:(j+min_idx), k_max)); 
-                
-                        % difference in points 
-                        j_difference = next_comm_idx - (j + min_idx); 
-                        
-                        % then set that back with periodicity
-                        j_reflected = mod(next_comm_idx + j_difference, j_max); 
-                        
-                        if j_reflected == 0
-                            error('this shuold never be zero because zero is the comm point')
-                        end 
-                        
-                        ring_point_reflected = X(:,j_reflected,1); 
-                        
-                        % leaflet rest height at reflected point
-                        radial_stretch_j_reflected = radial_stretch_local(j_reflected, N_each, radial_stretch_center, extra_stretch_radial);
-                        total_height_reflected = radial_stretch_j_reflected * sum(R_v(j_reflected, 1:(k_max-1)));
-                        
-                        
+        % this point on the leaflet is below the vertical midline and so paired to the previous commissure 
 
-                    end 
-                    
-                    % relevant distances from each of three points 
-                    % this is the intersection of three spheres 
-                    F = @(p) [norm(ring_point - p) - total_height_current; norm(ring_point_reflected - p) - total_height_reflected; norm(comm_for_fused_edge - p) - total_rest_length_free_edge]; 
-                                       
-                    options = optimset('Display','off','TolFun',1e-20);
-                    comm_interp_point = fsolve(F,[0;0;0],options);                    
-                    
-                    if (k==k_max) && debug_text 
-                        fprintf("residual nonlinear solve for interp point %e = ", norm(F(comm_interp_point))); 
-                    end 
-                    
-                    tangent = (comm_interp_point - ring_point); 
-                    tangent = tangent / norm(tangent); 
-
-                    % total radial rest length of this radial fiber 
-                    total_rest_length = sum(R_v(j + min_idx, 1:(k-1))); 
-
-                    % based on the rest length 
-                    X(:,j + min_idx ,k) = total_rest_length * tangent * radial_stretch_center + ring_point;   
-                    
-                    if (k==k_max) && debug_text 
-                        j
-                        total_height_current
-                        total_height_reflected
-                        total_rest_length_free_edge
-                        comm_interp_point
-                        X_from_interpolation = X(:,j + min_idx ,k)
-                        fprintf('\n')
-                    end 
-                    
-                    if (j==4) 
-                        'here'; 
-                    end 
-                    
+        % compute the rest length at the free edge and assure that there's a compressive strain there 
+        rest_length_free_edge = 0.0; 
+        for j_tmp = (1+min_idx):(j+min_idx)
+            j_nbr_tmp = j_tmp - 1; 
+            k_nbr_tmp = k_max; 
+            [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j_tmp, k_max, j_nbr_tmp, k_nbr_tmp); 
+            if valid && (~target_spring) && (~target_k_no_j_spring)
+                rest_length_free_edge = rest_length_free_edge + R_u(j_spr,k_spr); 
+                if (k==k_max) && debug_text
+                    fprintf('j_tmp = %d, j_spr = %d, R_u = %f\n', j_tmp, j_spr, R_u(j_spr,k_spr)); 
                 end 
             end 
-        end 
-    end 
+        end
 
+        if free_edge_this_j > rest_length_free_edge
+            error("found current free edge length longer than rest length");             
+        end 
+        
+        % zero indexed prev_comm_idx minus j, number past the comm 
+        j_reflected_temp = mod(prev_comm_idx,j_max) - j; 
+        % then set that back with periodicity
+        j_reflected = mod(j_reflected_temp,j_max); 
+        if j_reflected == 0
+            error('this shuold never be zero because zero is the comm point')
+        end 
+
+        ring_point_reflected = X(:,j_reflected,1); 
+
+        % leaflet rest height at reflected point
+        total_height_reflected = extra_stretch_radial * sum(R_v(j_reflected, 1:(k_max-1))); 
+
+        % relevant distances from each of three points 
+        % this is the intersection of three spheres 
+        F = @(p) [norm(ring_point - p) - total_height_current; norm(ring_point_reflected - p) - total_height_reflected; norm(comm_prev - p) - free_edge_this_j]; 
+
+        % really drive down that tolerance
+        % this is an easy solve 
+        options = optimset('Display','off','TolFun',1e-20);
+        free_edge_point = fsolve(F,[0;0;0],options);
+        
+        if (k==k_max) && debug_text 
+            fprintf("residual nonlinear solve for interp point %e = ", norm(F(free_edge_point))); 
+        end 
+
+        % set to literal zero for symmetry
+        tol_component = 1e-14; 
+        for component=1:3
+            if abs(free_edge_point(component)) < tol_component
+                free_edge_point(component) = 0.0; 
+            end 
+        end 
+        
+        % based on the rest length 
+        X(:,j + min_idx ,k) = free_edge_point; 
+
+        tol_symmetry = 1e-14; 
+        if abs(free_edge_point) > tol_symmetry
+            error('free edge point not on desired line of symmetry'); 
+        end 
+        
+        
+        if (k==k_max) && debug_text 
+            j
+            total_height_current
+            total_height_reflected
+            free_edge_this_j
+            free_edge_point
+            X_from_interpolation = X(:,j + min_idx ,k)
+            fprintf('\n')
+        end 
+
+    end 
+    
+    % rotate leaflet points for other half of leaflet 1 free edge 
+    k=k_max; 
+    j_reflected = N_each - 1; 
+    theta = 2*pi/3; 
+    for j=1:(N_each/2 - 1)
+        X(:,j_reflected,k) = rotation_matrix_z(theta) * X(:,j,k);         
+        j_reflected = j_reflected - 1;  
+    end
+    
+    % rotate leaflet points for leaflet 3 free edge 
+    k=k_max; 
+    j_reflected = 2*N_each + 1; 
+    theta = 4*pi/3; 
+    for j=1:(N_each - 1)
+        X(:,j_reflected,k) = rotation_matrix_z(theta) * X(:,j,k);         
+        j_reflected = j_reflected + 1;  
+    end 
+        
+    % interpolate remainder of leaflets 
+    for leaflet_idx = [1,3]
+        min_idx = (leaflet_idx-1)*N_each;         
+
+        dk_interp = 1/k_max; 
+        
+        for j=2:(N_each-1)
+            
+            X_ring = X(:,j + min_idx, 1); 
+            X_free = X(:,j + min_idx, k_max); 
+
+            for k=2:k_max
+                X(:,j + min_idx, k) = (1 - k*dk_interp) * X_ring + k*dk_interp * X_free; 
+            end 
+        end         
+    end 
+    
+    
+    
     % error checking        
-    tol = 1e-14; 
+    tol_err_check = 1e-14; 
     k=k_max; 
     for leaflet_idx = 1:3            
 
@@ -233,7 +212,7 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
                 j_reflected_temp = mod(prev_comm_idx,j_max) - j; 
                 j_reflected = mod(j_reflected_temp,j_max); 
 
-                if norm(X(:,j + min_idx,k_max) - X(:,j_reflected,k_max)) > tol 
+                if norm(X(:,j + min_idx,k_max) - X(:,j_reflected,k_max)) > tol_err_check
                     pt_idx_j = j + min_idx
                     point = X(:,j + min_idx,k_max)
                     nbr_idx_j = j_reflected 
@@ -275,14 +254,5 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
 
 end 
 
-function lambda_r = radial_stretch_local(j, N_each, radial_stretch_center, extra_stretch_radial)     
 
-    points = [0 N_each/2 N_each]; 
-    values = [extra_stretch_radial radial_stretch_center extra_stretch_radial]; 
-
-    % lambda_r = interp1(points, values, mod(j,N_each)); 
-
-    lambda_r = 1.0; radial_stretch_center; 
-    
-end 
 

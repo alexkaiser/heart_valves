@@ -321,6 +321,16 @@ if build_reference
                     extra_stretch_radial = valve.strain_rad + 1.0; 
                 end 
                 valve_with_reference.leaflets(i) = aortic_free_edge_to_dirichlet_bc(valve_with_reference.leaflets(i), extra_stretch_radial); 
+                
+                
+                if isfield(leaflet, 'fused_commissure') && leaflet.fused_commissure                     
+                    if ~isfield(leaflet, 'fused_comm_idx')
+                        error('must supply fused_comm_idx if leaflet.fused_commissure is true')
+                    end 
+                    valve_with_reference.leaflets(i) = aortic_free_edge_fuse_commissure(valve_with_reference.leaflets(i), extra_stretch_radial, leaflet.fused_comm_idx); 
+                end 
+
+                
             end 
             
         else
