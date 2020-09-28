@@ -175,15 +175,25 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
     for leaflet_idx = [1,3]
         min_idx = (leaflet_idx-1)*N_each;         
 
-        dk_interp = 1/k_max; 
+        % dk_interp = 1/k_max; 
         
         for j=1:(N_each-1)
             
             X_ring = X(:,j + min_idx, 1); 
             X_free = X(:,j + min_idx, k_max); 
+            
+            tangent = (X_free - X_ring); 
+            tangent = tangent / norm(tangent); 
 
             for k=2:k_max
-                X(:,j + min_idx, k) = (1 - k*dk_interp) * X_ring + k*dk_interp * X_free; 
+                
+                total_rest_length = sum(R_v(j + min_idx, 1:(k-1))); 
+                
+                % rest length based interpolation 
+                X(:,j + min_idx ,k) = total_rest_length * tangent * extra_stretch_radial + X_ring; 
+                
+                % even interpolation 
+                % X(:,j + min_idx, k) = (1 - k*dk_interp) * X_ring + k*dk_interp * X_free; 
             end 
         end         
     end 
@@ -248,7 +258,7 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
         surf(x_component, y_component, z_component, 'LineWidth',width);
         axis equal 
         axis auto 
-
+               
     end 
 
 end 
