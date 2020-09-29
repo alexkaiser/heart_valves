@@ -31,7 +31,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N_each_range = 2^3; % 2.^(2:8); 
+N_each_range = 2^6; % 2.^(2:8); 
 
 for N_each = N_each_range
 
@@ -47,14 +47,17 @@ for N_each = N_each_range
     % Many parameters are in this script 
 
     pulm = false; 
+    true_bicuspid = true; 
     
     if pulm
         valve = initialize_valve_data_structures_pulm_mri_box(N); 
+    elseif true_bicuspid
+        valve = initialize_valve_data_structures_aortic_true_bicuspid(N); 
     else 
         valve = initialize_valve_data_structures_aortic_generic(N); 
     end 
     
-    iteration_movie = true; 
+    iteration_movie = false; 
     if iteration_movie
         valve.leaflets(1).iteration_movie = true;
         % valve.leaflets(1).movie_name = 'const_tension_newton'; 
@@ -64,7 +67,7 @@ for N_each = N_each_range
     end 
 
 
-    interactive = false; 
+    interactive = true; 
 
     from_history = false; 
     if from_history 

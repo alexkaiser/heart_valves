@@ -41,19 +41,26 @@ N = leaflet.N;
 
 j_max = N; 
 
-% number for each leaflet 
-N_each = N/3; 
-if N_each ~= round(N_each)
-    error('Numerical error in N, must be multiple of three')
-end 
-if log2(N_each) ~= round(log2(N_each))
-    error('Numerical error in N_each, must be power of 2')
+if isfield(leaflet, 'variety') && strcmp(leaflet.variety, 'bicuspid') 
+    N_each = N/2; 
+    N_leaflets = 2; 
+else 
+    % number for each leaflet 
+    N_each = N/3; 
+    N_leaflets = 3; 
+    if N_each ~= round(N_each)
+        error('Numerical error in N, must be multiple of three')
+    end 
+    if log2(N_each) ~= round(log2(N_each))
+        error('Numerical error in N_each, must be power of 2')
+    end 
 end 
 
 leaflet.N_each = N_each; 
+leaflet.N_leaflets = N_leaflets; 
 
 % max possible k is determined by j 
-k_max = N_each/2 + 1; 
+k_max = N/6 + 1; % N_each/2 + 1 in standard tricuspid case 
 
 leaflet.j_max                = j_max; 
 leaflet.k_max                = k_max; 
@@ -74,7 +81,7 @@ point_idx_with_bc         = zeros(j_max, k_max);
     
 % edges are boundary conditions 
 % vertical boundaries at each commissure 
-for j=(N_each * (1:3))
+for j=(N_each * (1:N_leaflets))
     for k=1:k_max
         is_bc(j,k) = true; 
     end 

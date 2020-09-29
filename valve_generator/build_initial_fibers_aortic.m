@@ -36,7 +36,13 @@ k_max            = leaflet.k_max;
 
 N = leaflet.N; 
 N_each = leaflet.N_each; 
-    
+
+if isfield(leaflet, 'N_leaflets')
+    N_leaflets = leaflet.N_leaflets; 
+else 
+    % default tricuspid
+    N_leaflets = 3; 
+end 
 X = NaN * zeros(3,j_max,k_max); 
 
 debug = false; 
@@ -135,7 +141,7 @@ else
     
     k = k_max; 
     
-    for comm_idx = 1:3
+    for comm_idx = 1:N_leaflets
         
         % point one internal of commissure to point that m
         % N_each is a power of two 

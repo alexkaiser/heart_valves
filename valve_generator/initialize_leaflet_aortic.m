@@ -84,7 +84,14 @@ if isfield(valve, 'careful_early_steps')
     end     
 end 
 
+if isfield(valve, 'variety')
+    leaflet.variety = valve.variety; 
+end 
 
+if isfield(leaflet, 'variety') && strcmp(leaflet.variety, 'bicuspid') && (mod(N,2) ~= 0)
+    error('Bicuspid aortic valve N must be a multiple of two'); 
+end
+    
 if mod(N,3) ~= 0
     error('Aortic valve N must be a multiple of three'); 
 end 

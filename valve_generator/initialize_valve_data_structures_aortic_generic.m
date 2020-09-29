@@ -75,7 +75,7 @@ valve.in_heart = false;
 
 mri_box = false;
 
-fused_commissure = true; 
+fused_commissure = false; 
 
 % name 
 if valve.in_heart

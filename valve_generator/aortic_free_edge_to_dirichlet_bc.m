@@ -6,6 +6,14 @@ N_each = leaflet.N_each;
 
 R_v    = leaflet.R_v; 
 
+if isfield(leaflet, 'N_leaflets')
+    N_leaflets = leaflet.N_leaflets; 
+else 
+    N_leaflets = 3; 
+end 
+    
+
+
 full_leaflet_interp = true; 
 if full_leaflet_interp
     k_range = 2:k_max; 
@@ -19,13 +27,13 @@ end
 
 X = leaflet.X; 
 
-debug = false; 
+debug = true; 
 
 is_bc = leaflet.is_bc; 
 linear_idx_offset         = zeros(j_max, k_max); 
 point_idx_with_bc         = zeros(j_max, k_max); 
 
-for comm_idx = 1:3
+for comm_idx = 1:N_leaflets
 
     % point one internal of commissure to point that m
     % N_each is a power of two 
@@ -44,10 +52,21 @@ for comm_idx = 1:3
     for j=1:(N_each-1)
         for k=k_range
         
-            comm_interp_point = (1 - j*dj_interp) * comm_prev ...
-                                     + j*dj_interp  * comm_next; 
-
             ring_point = X(:,j + min_idx ,1); 
+            
+            if N_leaflets == 2 
+                th = atan2(ring_point(2), ring_point(2)); 
+                r = leaflet.r; 
+                
+                % make a litle 
+                % comm_interp_point = [ring_point(1) ; (r/2) * sin(th); comm_prev(3)]; 
+                comm_interp_point = [ring_point(1) ; 0; comm_prev(3)]; 
+                
+            else 
+                comm_interp_point = (1 - j*dj_interp) * comm_prev ...
+                                       + j*dj_interp  * comm_next; 
+            end 
+
 
             tangent = (comm_interp_point - ring_point); 
             tangent = tangent / norm(tangent); 
