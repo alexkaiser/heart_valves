@@ -11,6 +11,7 @@
 
 #### import the simple module from the paraview
 from paraview.simple import *
+import os 
 #### disable automatic camera reset on 'Show'
 paraview.simple._DisableFirstRenderCameraReset()
 
@@ -74,8 +75,14 @@ SetActiveView(renderView1)
 # pVDReader1 = PVDReader(FileName='/Users/alex/data_to_remove/aortic_65595790_384_4495be5_circ_pt15_rad_pt54_2mm_radial_4mm_circ_circ_model_basic_updated_output_semifinal/exported_viz/particles_vel.pvd')
 # pVDReader1.PointArrays = ['velocity']
 
+
+if '_192_' in os.getcwd(): 
+    resolution_string = '192'
+if '_384_' in os.getcwd(): 
+    resolution_string = '384'
+
 # create a new 'PVD Reader'
-pVDReader2 = PVDReader(FileName='aortic_384_cylinder.pvd')
+pVDReader2 = PVDReader(FileName='aortic_' + resolution_string +'_cylinder.pvd')
 
 # create a new 'PVD Reader'
 eulerian_varspvd = PVDReader(FileName='eulerian_vars.pvd')
@@ -107,7 +114,7 @@ slice1.SliceType.Normal = [0.0, 1.0, 0.0]
 slice1.HyperTreeGridSlicer.Origin = [0.0, 0.0, 0.5]
 
 # create a new 'PVD Reader'
-pVDReader3 = PVDReader(FileName='aortic_384.pvd')
+pVDReader3 = PVDReader(FileName='aortic_' + resolution_string + '.pvd')
 
 # create a new 'Clip'
 clip1 = Clip(Input=pVDReader3)

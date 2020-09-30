@@ -65,6 +65,7 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
     
     k=k_max;  
     
+    % sets first free edge 
     for j=1:(N_each/2)
         
         ring_point = X(:,j + min_idx ,1); 
@@ -132,6 +133,8 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
         component = 2; 
         if abs(free_edge_point(component)) < tol_component
             free_edge_point(component) = 0.0; 
+        else 
+            error('point did not lie close to symmetry plane')
         end 
         
         % based on the rest length 
@@ -173,6 +176,19 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
         j_reflected = j_reflected + 1;  
     end 
         
+    % sets the free edge to be fixed as a dirichlet bc 
+    % on the fused 
+    dirichlet_attached_fused_edge = true; 
+    if dirichlet_attached_fused_edge
+        k=k_max; 
+        j_reflected = j_max - 1; 
+        for j=1:(N_each/2)
+            is_bc(j,k) = true; 
+            is_bc(j_reflected,k) = true;  
+            j_reflected = j_reflected - 1; 
+        end         
+    end 
+        
     % interpolate remainder of leaflets 
     for leaflet_idx = [1,3]
         min_idx = (leaflet_idx-1)*N_each;         
@@ -201,9 +217,9 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
     end 
     
     
-    neumann_free_edge_fused = true; 
+    neumann_free_edge_fused = false; 
     if neumann_free_edge_fused 
-
+        error("diff eqns and jacobian super broken here");         
         j_opposite = j_max - 1; 
         for j=1:(N_each/2)
             is_bc(j_opposite, k_max) = true; 
@@ -302,6 +318,14 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
         end 
     end                 
      
+    
+    dirichlet_free_edge_everywhere = true; 
+    if dirichlet_free_edge_everywhere
+        for j=1:j_max 
+            is_bc(j,k_max) = true; 
+        end 
+    end 
+    
     
 
     leaflet.X = X; 
