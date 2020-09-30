@@ -167,13 +167,28 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
         j_reflected = j_reflected - 1;  
     end
     
-    % rotate leaflet points for leaflet 3 free edge 
+    % smooth interpolant to the commissure for other half of leaflet 1 free edge 
+    smooth_center = true; 
+    if smooth_center 
+        k = k_max; 
+        min_j_range = N_each/2+1; 
+        max_j_range = floor(3*N_each/4);
+        for j=min_j_range:max_j_range
+            for component=1:3
+                pts = [1:(N_each/2), max_j_range:N_each]; 
+                vals = X(component,pts,k_max);         
+                X(component,j,k) = interp1(pts, vals, j, 'spline');             
+            end 
+
+        end 
+    end 
+    
+    % reflect leaflet points for leaflet 3 free edge 
     k=k_max; 
-    j_reflected = 2*N_each + 1; 
-    theta = 4*pi/3; 
+    j_reflected = j_max - 1; 
     for j=1:(N_each - 1)
-        X(:,j_reflected,k) = rotation_matrix_z(theta) * X(:,j,k);         
-        j_reflected = j_reflected + 1;  
+        X(:,j_reflected,k) = [1; -1; 1] .* X(:,j,k);         
+        j_reflected = j_reflected - 1;  
     end 
         
     % sets the free edge to be fixed as a dirichlet bc 
