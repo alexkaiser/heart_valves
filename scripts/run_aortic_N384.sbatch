@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH --nodes=2
 #SBATCH --ntasks-per-node=24
-#SBATCH --time=47:59:00
+#SBATCH --time=72:00:00
 #SBATCH --mem=185GB
-#SBATCH --job-name=aortic_1
+#SBATCH --job-name=8mm_free
 #SBATCH --mail-user=adkaiser@gmail.com
 #SBATCH --mail-type=ALL
-#SBATCH --partition=amarsden
+#SBATCH --partition=willhies,amarsden
 # #SBATCH --exclude=sh-107-[59-64]
 
 module purge
@@ -17,7 +17,7 @@ module load openmpi/2.0.2
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_384_36a46e_high_res_same_as_9134a0c_rad_pt24_extra_bend
+RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_384_ce2eb5d_0mm_radial_8mm_circ_basic_rcr_extra_free_edge_redone
 mkdir $RUNDIR
 
 # set up run info 
@@ -59,3 +59,7 @@ python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS"
 # load stuff for movie making 
 source ~/.bash_profile
 python run_parallel_movie.py $SESSION_NAME $SLURM_NTASKS $VIEW_CLIPPING
+
+SESSION_NAME_PARAVIEW="~/copies_scripts/velocity_slices_5.py"
+visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py 48 $SLURM_NTASKS
+python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $SLURM_NTASKS
