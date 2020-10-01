@@ -54,13 +54,24 @@ for comm_idx = 1:N_leaflets
         
             ring_point = X(:,j + min_idx ,1); 
             
+            % total radial rest length of this radial fiber 
+            total_rest_length = sum(R_v(j + min_idx, 1:(k-1))); 
+            
             if N_leaflets == 2 
-                th = atan2(ring_point(2), ring_point(2)); 
+                th = atan2(ring_point(2), ring_point(1)); 
                 r = leaflet.r; 
                 
                 % make a litle 
-                % comm_interp_point = [ring_point(1) ; (r/2) * sin(th); comm_prev(3)]; 
-                comm_interp_point = [ring_point(1) ; 0; comm_prev(3)]; 
+                
+                strained_len_total = extra_stretch_radial * sum(R_v(j + min_idx, :)); 
+                
+                horiz_free_edge_end = (r/2) * sign(sin(th)) * sin(th)^4; 
+                               
+                % this would put the two free edges exactly coinciding 
+                interp_height = sqrt(strained_len_total^2 - (ring_point(2) - horiz_free_edge_end)^2) ; 
+                
+                % comm_interp_point = [ring_point(1) ; (r/2) * sin(th); comm_prev(3)];                 
+                comm_interp_point = [ring_point(1) ; horiz_free_edge_end; interp_height + ring_point(3)]; 
                 
             else 
                 comm_interp_point = (1 - j*dj_interp) * comm_prev ...
@@ -71,8 +82,6 @@ for comm_idx = 1:N_leaflets
             tangent = (comm_interp_point - ring_point); 
             tangent = tangent / norm(tangent); 
 
-            % total radial rest length of this radial fiber 
-            total_rest_length = sum(R_v(j + min_idx, 1:(k-1))); 
 
             % based on the rest length 
             X(:,j + min_idx ,k) = total_rest_length * tangent * extra_stretch_radial + ring_point; 

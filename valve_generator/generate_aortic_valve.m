@@ -47,7 +47,7 @@ for N_each = N_each_range
     % Many parameters are in this script 
 
     pulm = false; 
-    true_bicuspid = false; 
+    true_bicuspid = true; 
     
     if pulm
         valve = initialize_valve_data_structures_pulm_mri_box(N); 
@@ -67,7 +67,7 @@ for N_each = N_each_range
     end 
 
 
-    interactive = false; 
+    interactive = true; 
 
     from_history = false; 
     if from_history 
