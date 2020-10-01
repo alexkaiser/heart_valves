@@ -65,7 +65,7 @@ for comm_idx = 1:N_leaflets
                 
                 strained_len_total = extra_stretch_radial * sum(R_v(j + min_idx, :)); 
                 
-                horiz_free_edge_end = (r/2) * sign(sin(th)) * sin(th)^4; 
+                horiz_free_edge_end = (r/4) * sign(sin(th)) * sin(th)^4; 
                                
                 % this would put the two free edges exactly coinciding 
                 interp_height = sqrt(strained_len_total^2 - (ring_point(2) - horiz_free_edge_end)^2) ; 
@@ -102,13 +102,29 @@ for comm_idx = 1:N_leaflets
 
 end 
 
-leaflet.X = X; 
-
-for j=1:j_max 
-    if ~is_bc(j,k)
-        error('did not set all bcs')
+% allows a bit of equalizing at the free edge 
+if (N_leaflets == 2)
+    for comm_idx = 1:N_leaflets
+        % point one internal of commissure to point that m
+        % N_each is a power of two 
+        min_idx = (comm_idx-1)*N_each;         
+        for j=1:(N_each-1)
+            if abs(j - (N_each/2)) > (N_each/4 + N_each/8)
+                is_bc(j + min_idx ,k) = false; 
+            end 
+        end 
     end 
 end 
+
+
+
+leaflet.X = X; 
+
+% for j=1:j_max 
+%     if ~is_bc(j,k)
+%         error('did not set all bcs')
+%     end 
+% end 
 
 if debug 
     figure; 
