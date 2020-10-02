@@ -132,6 +132,7 @@ for j=1:j_max
     end 
 end
 
+
 % Copy all basic data structures 
 leaflet_with_reference = leaflet; 
 
@@ -145,3 +146,9 @@ leaflet_with_reference.diff_eqns = @difference_equations_aortic_with_reference;
 leaflet_with_reference.jacobian  = @build_jacobian_aortic_with_reference;
 
 leaflet_with_reference.ref_frac = 1.0; 
+
+if isfield(valve, 'k_bend_radial_ref_only')
+    leaflet_with_reference.k_bend_radial_ref_only = valve.k_bend_radial_ref_only; 
+end 
+
+

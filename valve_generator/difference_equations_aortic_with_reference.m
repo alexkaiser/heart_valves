@@ -94,6 +94,17 @@ function F = difference_equations_aortic_with_reference(leaflet)
     % set to -1 for all tensions 
     tension_tol = 1e4; 
     
+    if isfield(leaflet, 'k_bend_radial_ref_only') && (leaflet.k_bend_radial_ref_only ~= 0)
+        radial_bending_on = true; 
+        k_bend_radial_ref_only = leaflet.k_bend_radial_ref_only; 
+        du                     = leaflet.du; 
+    else 
+        radial_bending_on = false; 
+    end 
+    
+    
+    
+    
     F_leaflet = zeros(size(X_current)); 
 
     % Internal leaflet part 
@@ -182,6 +193,19 @@ function F = difference_equations_aortic_with_reference(leaflet)
                     end 
                     
                 end                
+                
+                if radial_bending_on
+                    if (k>3) && (k <= (k_max-2))                    
+                        % gets a 1/(du^2) because two powers of du were cleared 
+                        F_tmp = F_tmp - (k_bend_radial_ref_only/(du^2)) * (    X_current(:,j,k-2) ...
+                                                                           - 4*X_current(:,j,k-1) ...
+                                                                           + 6*X_current(:,j,k  ) ...
+                                                                           - 4*X_current(:,j,k+1) ...
+                                                                           +   X_current(:,j,k+2));                         
+                    end 
+                end 
+                
+                
                 
                 F_leaflet(:,j,k) = F_tmp;
 

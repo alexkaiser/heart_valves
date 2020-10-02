@@ -37,8 +37,12 @@
 N = 16*3; 
 
 % Initialize structures  
-valve = initialize_valve_data_structures_aortic_generic(N); 
-
+bicuspid = true; 
+if bicuspid
+    valve = initialize_valve_data_structures_aortic_true_bicuspid(N); 
+else 
+    valve = initialize_valve_data_structures_aortic_generic(N); 
+end 
 rand('twister',76599)
 
 epsilon_vals = 10.^(-1:-1:-8); 

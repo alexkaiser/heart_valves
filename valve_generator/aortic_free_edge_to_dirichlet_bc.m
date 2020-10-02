@@ -65,13 +65,13 @@ for comm_idx = 1:N_leaflets
                 
                 strained_len_total = extra_stretch_radial * sum(R_v(j + min_idx, :)); 
                 
-                horiz_free_edge_end = (r/4) * sign(sin(th)) * sin(th)^4; 
+                y_free_edge_end = (r/4) * sign(sin(th)) * sin(th)^4; 
                                
                 % this would put the two free edges exactly coinciding 
-                interp_height = sqrt(strained_len_total^2 - (ring_point(2) - horiz_free_edge_end)^2) ; 
+                interp_height = sqrt(strained_len_total^2 - (ring_point(2) - y_free_edge_end)^2) ; 
                 
                 % comm_interp_point = [ring_point(1) ; (r/2) * sin(th); comm_prev(3)];                 
-                comm_interp_point = [ring_point(1) ; horiz_free_edge_end; interp_height + ring_point(3)]; 
+                comm_interp_point = [ring_point(1) ; y_free_edge_end; interp_height + ring_point(3)]; 
                 
             else 
                 comm_interp_point = (1 - j*dj_interp) * comm_prev ...
@@ -107,10 +107,11 @@ if (N_leaflets == 2)
     for comm_idx = 1:N_leaflets
         % point one internal of commissure to point that m
         % N_each is a power of two 
+        neumann_fraction_each_half = 1/32;                 
         min_idx = (comm_idx-1)*N_each;         
         for j=1:(N_each-1)
-            if abs(j - (N_each/2)) > (N_each/4 + N_each/8)
-                is_bc(j + min_idx ,k) = false; 
+            if abs(j - (N_each/2)) > (N_each * (1/2 - neumann_fraction_each_half))
+                is_bc(j + min_idx ,k_max) = false;  
             end 
         end 
     end 

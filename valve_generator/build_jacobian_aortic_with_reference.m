@@ -60,6 +60,13 @@ function J = build_jacobian_aortic_with_reference(leaflet)
         targets_for_bcs = false; 
     end 
     
+    if isfield(leaflet, 'k_bend_radial_ref_only') && (leaflet.k_bend_radial_ref_only ~= 0)
+        radial_bending_on = true; 
+        k_bend_radial_ref_only = leaflet.k_bend_radial_ref_only; 
+        du                     = leaflet.du; 
+    else 
+        radial_bending_on = false; 
+    end 
     
     % there are fewer than 15 nnz per row
     % if using the redundant features on sparse creation use more 
@@ -202,6 +209,30 @@ function J = build_jacobian_aortic_with_reference(leaflet)
                         
                     end 
                 end
+                
+                if radial_bending_on
+                    if (k>3) && (k <= (k_max-2))                    
+                        j_nbr = j;
+                        k_nbr = k-2;  
+                        weights = -k_bend_radial_ref_only/(du^2) * [1 -4 6 -4 1]; 
+
+                        for stencil_step = 1:5
+                                                        
+                            [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor();                             
+                            J_tmp = weights(stencil_step) * eye(3); 
+                            
+                            if nbr_jacobian_needed 
+                                % no signs here 
+                                place_tmp_block(range_current, range_nbr, J_tmp); 
+                            end
+                            
+                            k_nbr = k_nbr + 1; 
+                        end 
+                    
+                    end 
+                    
+                    
+                end 
                                    
             end
         end
