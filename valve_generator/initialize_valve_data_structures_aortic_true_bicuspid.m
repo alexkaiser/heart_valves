@@ -134,8 +134,8 @@ valve.dirichlet_free_edge = false;
 valve.dirichlet_free_edge_with_ref_only = false; 
 
 valve.dirichlet_free_edge_comm_ref_only = true; 
-valve.n_fixed_comm = max(1, floor(1*N/192));  
-valve.p_final_fixed_comm = 0.01 * MMHG_TO_CGS;  
+valve.n_fixed_comm = max(1, floor(8*N/192));  
+valve.p_final_fixed_comm = 0.1 * MMHG_TO_CGS;  
 
 % provides a bending resistance for the final solve 
 % for initial conditions 
