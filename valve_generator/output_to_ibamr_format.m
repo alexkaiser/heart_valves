@@ -2077,11 +2077,12 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
     j_max = leaflet.j_max; 
     z_min_leaflet = X(3,:,1);     
     
+    theta_leaflet = atan2(X(2,:,1), X(1,:,1));
+    theta_leaflet = mod(theta_leaflet, 2*pi); % argument from 0 to 2 pi 
+    
     debug = false; 
     if debug 
-        figure; 
-        theta_leaflet = atan2(X(2,:,1), X(1,:,1));
-        theta_leaflet = mod(theta_leaflet, 2*pi); % argument from 0 to 2 pi  
+        figure;  
         plot(theta_leaflet, z_min_leaflet); 
         axis equal 
     end 
