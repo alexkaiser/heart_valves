@@ -148,19 +148,19 @@ if interactive && pass_all
         fig_dissection_plot = dissection_plot_rest_height(valve, fig_dissection_plot); 
     end 
     
-    if isfield(valve, 'name') && strcmp(valve.name, 'aortic')        
-        fiber_output    = true; 
-        fiber_stride    = 4; 
-        stride_offset_j = 0; 
-        circ  = false; 
-        rad   = false; 
-        ratio = true; 
-        height_plot = true; 
-        fig_ratio = figure; 
-        set(0, 'CurrentFigure', fig_ratio)
-        total_tension_surf_plot_aortic(valve.leaflets(1), fiber_output, fiber_stride, stride_offset_j, circ, rad, ratio, height_plot, fig_ratio)
-        title('ratio circ/radial tension')
-    end 
+%     if isfield(valve, 'name') && strcmp(valve.name, 'aortic')        
+%         fiber_output    = true; 
+%         fiber_stride    = 4; 
+%         stride_offset_j = 0; 
+%         circ  = false; 
+%         rad   = false; 
+%         ratio = true; 
+%         height_plot = true; 
+%         fig_ratio = figure; 
+%         set(0, 'CurrentFigure', fig_ratio)
+%         total_tension_surf_plot_aortic(valve.leaflets(1), fiber_output, fiber_stride, stride_offset_j, circ, rad, ratio, height_plot, fig_ratio)
+%         title('ratio circ/radial tension')
+%     end 
     
     while true 
     
@@ -303,15 +303,21 @@ if build_reference
         if isfield(valve, 'name') && strcmp(valve.name, 'aortic')
             valve_with_reference.leaflets(i) = set_rest_lengths_and_constants_aortic(valve.leaflets(i), valve); 
             
-            plots = true; 
-            [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean]  = estimate_tangent_modulus_aortic_with_reference(valve_with_reference.leaflets(i), valve.normal_thickness);
+            plots = false; 
+            fig = figure; 
+            [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean]  = estimate_tangent_modulus_aortic_with_reference(valve_with_reference.leaflets(i), valve.normal_thickness, fig);
             valve_with_reference.leaflets(i).sigma_circ = sigma_circ; 
             valve_with_reference.leaflets(i).sigma_rad = sigma_rad; 
             valve_with_reference.leaflets(i).sigma_circ_mean = sigma_circ_mean;  
             valve_with_reference.leaflets(i).sigma_rad_mean = sigma_rad_mean; 
             sigma_circ_mean  
             sigma_rad_mean
-
+            fprintf('\n')
+            
+            if ~plots
+                close(fig); 
+            end 
+            
             if isfield(valve, 'dirichlet_free_edge_with_ref_only') && valve.dirichlet_free_edge_with_ref_only && ... 
                isfield(valve, 'dirichlet_free_edge_comm_ref_only') && valve.dirichlet_free_edge_comm_ref_only
                 error('incompatible options')
@@ -378,6 +384,7 @@ if build_reference
 
         max_continuations_relaxed = 6; 
 
+        fprintf('\n\nRefernece configuration initial solve:\n')
         [valve_with_reference.leaflets(i) pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails); 
 
         if isfield(valve_with_reference, 'targets_for_bcs') && valve_with_reference.targets_for_bcs 
@@ -406,7 +413,8 @@ if build_reference
             p_goal = valve.p_final_fixed_comm; 
                         
             leaflet = aortic_comm_to_dirichlet_bc(valve_with_reference.leaflets(i), valve.n_fixed_comm);
-            
+
+            fprintf("\n\nRefernece config solve with fixed free edge near comm:\n")
             [valve_with_reference.leaflets(i) pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails);             
         end 
         

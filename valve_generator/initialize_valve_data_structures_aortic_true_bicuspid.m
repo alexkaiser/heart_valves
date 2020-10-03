@@ -134,19 +134,19 @@ valve.dirichlet_free_edge = false;
 valve.dirichlet_free_edge_with_ref_only = false; 
 
 valve.dirichlet_free_edge_comm_ref_only = true; 
-valve.n_fixed_comm = max(1, floor(8*N/192));  
-valve.p_final_fixed_comm = 0.05 * MMHG_TO_CGS;  
+valve.n_fixed_comm = max(1, floor(1*N/192));  
+valve.p_final_fixed_comm = 0.01 * MMHG_TO_CGS;  
 
 % provides a bending resistance for the final solve 
 % for initial conditions 
 % this is just to get a reasonable initial condition 
-valve.k_bend_radial_ref_only = 1; 
+valve.k_bend_radial_ref_only = 0; 1e-14 * (96/N); 
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
 valve.collagen_constitutive_circ = 'aortic_circ'; 
 valve.collagen_constitutive_rad  = 'aortic_rad'; 
-
+ 
 % Constant strain of pressurized configuration 
 valve.strain_circ = .15; 
 valve.strain_rad  = .54; 
@@ -282,7 +282,7 @@ end
 valve.eta_multiplier_linear   = 0; 
 valve.eta_multiplier_collagen = 0; 
 
-valve_plot(valve); 
+% valve_plot(valve); 
 pause(.1); 
 
 disp('Done with initialize.'); 
