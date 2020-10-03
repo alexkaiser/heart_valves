@@ -103,19 +103,19 @@ for comm_idx = 1:N_leaflets
 end 
 
 % allows a bit of equalizing at the free edge 
-if (N_leaflets == 2)
-    for comm_idx = 1:N_leaflets
-        % point one internal of commissure to point that m
-        % N_each is a power of two 
-        neumann_fraction_each_half = 1/32;                 
-        min_idx = (comm_idx-1)*N_each;         
-        for j=1:(N_each-1)
-            if abs(j - (N_each/2)) > (N_each * (1/2 - neumann_fraction_each_half))
-                is_bc(j + min_idx ,k_max) = false;  
-            end 
-        end 
-    end 
-end 
+% if (N_leaflets == 2)
+%     for comm_idx = 1:N_leaflets
+%         % point one internal of commissure to point that m
+%         % N_each is a power of two 
+%         neumann_fraction_each_half = 1/8;                 
+%         min_idx = (comm_idx-1)*N_each;         
+%         for j=1:(N_each-1)
+%             if abs(j - (N_each/2)) > (N_each * (1/2 - neumann_fraction_each_half))
+%                 is_bc(j + min_idx ,k_max) = false;  
+%             end 
+%         end 
+%     end 
+% end 
 
 
 

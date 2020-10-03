@@ -312,6 +312,12 @@ if build_reference
             sigma_circ_mean  
             sigma_rad_mean
 
+            if isfield(valve, 'dirichlet_free_edge_with_ref_only') && valve.dirichlet_free_edge_with_ref_only && ... 
+               isfield(valve, 'dirichlet_free_edge_comm_ref_only') && valve.dirichlet_free_edge_comm_ref_only
+                error('incompatible options')
+            end 
+                
+            
             if isfield(leaflet, 'fused_commissure') && leaflet.fused_commissure                     
                 if ~isfield(leaflet, 'fused_comm_idx')
                     error('must supply fused_comm_idx if leaflet.fused_commissure is true')
@@ -380,6 +386,30 @@ if build_reference
             valve_with_reference.leaflets(1).target_length_check = false; 
         end 
 
+        if isfield(valve, 'dirichlet_free_edge_comm_ref_only') && valve.dirichlet_free_edge_comm_ref_only
+            if ~isfield(valve, 'n_fixed_comm')
+                error('must provide n_fixed_comm if dirichlet_free_edge_comm_ref_only is true'); 
+            end
+            
+            if ~isfield(valve, 'p_final_fixed_comm') 
+                error('must provide p_final_fixed_comm if dirichlet_free_edge_comm_ref_only is true'); 
+            end 
+            
+            plots_temp = true; 
+            if plots_temp 
+                fig = figure; 
+                fig = valve_plot(valve_with_reference, fig); 
+                title('after initial neumann bc solve before comm bc set');
+            end     
+            
+            p_easy = p_goal; 
+            p_goal = valve.p_final_fixed_comm; 
+                        
+            leaflet = aortic_comm_to_dirichlet_bc(valve_with_reference.leaflets(i), valve.n_fixed_comm);
+            
+            [valve_with_reference.leaflets(i) pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails);             
+        end 
+        
         if isfield(valve, 'name') && strcmp(valve.name, 'aortic')
             if isfield(valve, 'dirichlet_free_edge_with_ref_only') && valve.dirichlet_free_edge_with_ref_only
                 valve_with_reference.leaflets(i) = aortic_free_edge_to_neumann_bc(valve_with_reference.leaflets(i)); 

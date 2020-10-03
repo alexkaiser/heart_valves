@@ -131,9 +131,16 @@ valve.output.stride_mesh    = N/32;
 
 valve.dirichlet_free_edge = false; 
 
-valve.dirichlet_free_edge_with_ref_only = true; 
+valve.dirichlet_free_edge_with_ref_only = false; 
 
+valve.dirichlet_free_edge_comm_ref_only = true; 
+valve.n_fixed_comm = max(1, floor(8*N/192));  
+valve.p_final_fixed_comm = 0.05 * MMHG_TO_CGS;  
 
+% provides a bending resistance for the final solve 
+% for initial conditions 
+% this is just to get a reasonable initial condition 
+valve.k_bend_radial_ref_only = 1; 
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
@@ -159,7 +166,7 @@ valve.p_physical = 60 * MMHG_TO_CGS;
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
 
-valve.p_final = 0 * MMHG_TO_CGS;  
+valve.p_final = 0.0 * MMHG_TO_CGS;  
 
 % valve.dip_anterior_systole = true; 
 % valve.r_dip = 0.75; 
@@ -197,8 +204,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 3.0;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.2;  % radial
+tension_coeffs.c_circ_dec       = 2.0;  % circumferential 
+tension_coeffs.c_rad_dec        = 1.0;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.8;        
 
