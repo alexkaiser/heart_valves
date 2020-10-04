@@ -163,7 +163,7 @@ valve.p_physical = 60 * MMHG_TO_CGS;
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
 
-valve.p_final = 0.01 * MMHG_TO_CGS;  
+valve.p_final = 0.0 * MMHG_TO_CGS;  
 
 
 valve.dirichlet_free_edge_comm_ref_only = false; 
