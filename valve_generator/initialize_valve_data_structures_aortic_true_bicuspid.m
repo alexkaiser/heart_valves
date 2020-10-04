@@ -133,9 +133,6 @@ valve.dirichlet_free_edge = false;
 
 valve.dirichlet_free_edge_with_ref_only = false; 
 
-valve.dirichlet_free_edge_comm_ref_only = true; 
-valve.n_fixed_comm = max(1, floor(8*N/192));  
-valve.p_final_fixed_comm = 0.1 * MMHG_TO_CGS;  
 
 % provides a bending resistance for the final solve 
 % for initial conditions 
@@ -166,7 +163,13 @@ valve.p_physical = 60 * MMHG_TO_CGS;
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
 
-valve.p_final = 0.0 * MMHG_TO_CGS;  
+valve.p_final = 0.01 * MMHG_TO_CGS;  
+
+
+valve.dirichlet_free_edge_comm_ref_only = false; 
+valve.n_fixed_comm = max(1, floor(8*N/192));  
+valve.p_final_fixed_comm = 0.1 * MMHG_TO_CGS;  
+
 
 % valve.dip_anterior_systole = true; 
 % valve.r_dip = 0.75; 
