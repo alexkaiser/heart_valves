@@ -173,7 +173,7 @@ tol = 1e-12;
 
 Q_mean_each = Q_mean / 2; 
 
-R_coeff = 2.0; 
+R_coeff = 1.0; 
 
 % total resistance is determined by mean pressure and mean flow 
 R_total = R_coeff * P_mean / Q_mean_each;  
@@ -187,8 +187,10 @@ if abs(R_distal + R_proximal - R_total) > tol
     error('resistors not adding up correctly')
 end
 
+C_prefactor = 1.5; 
+
 % timescale for pressure decrease during aortic valve closure 
-C = -decay_time / (R_distal * log(P_min/P_max)); 
+C = C_prefactor * -decay_time / (R_distal * log(P_min/P_max)); 
 
 fprintf("R_proximal = %.14f\n", R_proximal); 
 fprintf("C = %.14f\n", C); 
