@@ -187,7 +187,7 @@ if abs(R_distal + R_proximal - R_total) > tol
     error('resistors not adding up correctly')
 end
 
-C_prefactor = 2.0; 
+C_prefactor = 4.0; 
 
 % timescale for pressure decrease during aortic valve closure 
 C = C_prefactor * -decay_time / (R_distal * log(P_min/P_max)); 
