@@ -297,7 +297,7 @@ function leaflet = aortic_free_edge_fuse_commissure(leaflet, extra_stretch_radia
     end 
     
     % error checking        
-    tol_err_check = 1e-14; 
+    tol_err_check = 1e-4; 
     k=k_max; 
     for leaflet_idx = 1:3            
 
