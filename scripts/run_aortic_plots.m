@@ -1,7 +1,11 @@
-function run_aortic_plots(type)
+function run_aortic_plots(type, stride)
 
 if ~exist('type', 'var')
     type = '';
+end 
+
+if ~exist('stride', 'var')
+    stride = 333;
 end 
 
 if strcmp(type, 'high')
@@ -9,17 +13,17 @@ if strcmp(type, 'high')
     axis_vec_pressure = [0 2.4 -5 350]; 
     axis_vec_flow     = [0 2.4 -900 900]; 
     nframes = 1442; 
-    stride = 416; 
+%    stride = 416; 
 elseif strcmp(type, 'low')
     fprintf("type high")
     axis_vec_pressure = [0 2.4 -5 90]; 
     axis_vec_flow     = [0 2.4 -500 750]; 
     nframes = 1442; 
-    stride = 277; 
+%    stride = 277; 
 else    
     fprintf("type default")
     nframes = 1442; 
-    stride = 333; 
+%    stride = 333; 
     axis_vec_pressure = [0 2.4 -5 160]; 
     axis_vec_flow     = [0 2.4 -700 800];
 end
