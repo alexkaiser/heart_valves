@@ -50,12 +50,14 @@ smooth_kernel(const double r)
 
 FeedbackForcer::FeedbackForcer(const INSHierarchyIntegrator* fluid_solver,
                                const Pointer<PatchHierarchy<NDIM> > patch_hierarchy,
-                               CirculationModel_with_lv* circ_model_with_lv,
-                               CirculationModel_RV_PA* circ_model_rv_pa) 
+                               CirculationModel_with_lv* circ_model_with_lv, // = NULL 
+                               CirculationModel_RV_PA* circ_model_rv_pa, // = NULL 
+                               CirculationModel_aorta* circ_model_aorta) // = NULL 
   : d_fluid_solver(fluid_solver), 
     d_patch_hierarchy(patch_hierarchy),
     d_circ_model_with_lv(circ_model_with_lv), 
-    d_circ_model_rv_pa(circ_model_rv_pa)
+    d_circ_model_rv_pa(circ_model_rv_pa),
+    d_circ_model_aorta(circ_model_aorta)
 {
   // intentionally blank
   return;
@@ -454,6 +456,150 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
             } // for(int axis=0; axis<NDIM; axis++)
         } // if (d_circ_model_rv_pa)
 
+
+
+        if (d_circ_model_aorta){
+
+            // Attempt to prevent flow reversal points near the domain boundary.
+            double height_physical = 0.2;
+
+            // hardcoded z axis top here 
+            for(int axis=0; axis<NDIM; axis++){ 
+                for(int side=0; side<2; side++){ 
+
+                    const double L = max(dx_coarsest[axis], 2.0 * dx_finest[axis]);
+                    const int offset = static_cast<int>(L / dx[axis]);
+                    const bool is_lower = side == 0;
+
+                    if (pgeom->getTouchesRegularBoundary(axis, side)){
+                        Box<NDIM> bdry_box = domain_box;
+                        if (side == 0){
+                            bdry_box.upper(axis) = domain_box.lower(axis) + offset;
+                        }
+                        else{
+                            bdry_box.lower(axis) = domain_box.upper(axis) - offset;
+                        }
+                        bdry_box = bdry_box * patch_box;
+                        
+                        // here check all components 
+                        for (int component = 0; component<NDIM; component++){
+                        
+                            for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(bdry_box, component)); b; b++){
+
+                                const Index<NDIM>& i = b();
+                                const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
+                                const double U_current = U_current_data ? (*U_current_data)(i_s) : 0.0;
+                                const double U_new = U_new_data ? (*U_new_data)(i_s) : 0.0;
+                                const double U = (cycle_num > 0) ? 0.5 * (U_new + U_current) : U_current;
+                                
+                                double X[NDIM];
+
+                                for (int d = 0; d < NDIM; ++d){
+                                    X[d] = x_lower[d] + dx[d] * (double(i(d) - patch_box.lower(d)) + (d == component ? 0.0 : 0.5));
+                                }
+
+                                double X_in_plane_1 = 0.0; 
+                                double X_in_plane_2 = 0.0; 
+                                if (axis == 0)
+                                {
+                                    X_in_plane_1 = X[1]; 
+                                    X_in_plane_2 = X[2]; 
+                                }
+                                else if (axis == 1)
+                                {
+                                    X_in_plane_1 = X[0]; 
+                                    X_in_plane_2 = X[2]; 
+                                }
+                                else if (axis == 2)
+                                {
+                                    X_in_plane_1 = X[0]; 
+                                    X_in_plane_2 = X[1]; 
+                                }
+                                else{
+                                    TBOX_ERROR("Invalid axis\n"); 
+                                }
+
+                                const int in_ventricle  = d_circ_model_aorta->point_in_ventricle(X_in_plane_1, X_in_plane_2, axis, side);
+                                const int in_aorta      = d_circ_model_aorta->point_in_aorta    (X_in_plane_1, X_in_plane_2, axis, side);
+
+                                if (in_ventricle && in_aorta){
+                                    TBOX_ERROR("Position is within two inlets and outlets, should be impossible\n"); 
+                                }
+
+                                // no bdry stab unless one of the conditionals is met 
+                                double mask = 0.0;
+                                double U_goal = 0.0; 
+
+                                // bool tangential_damp_to_zero = false;
+
+                                if (in_ventricle){
+
+                                    const double n = is_lower ? -1.0 : +1.0;
+                                    const double U_dot_n = U * n;
+
+                                    if (axis == component){
+                                        // different signs give local flow reversal
+                                        if ((d_circ_model_aorta->d_Q_ventricle * U_dot_n) < 0.0){
+                                            mask = 1.0;
+                                        }
+                                    }
+
+                                    #ifdef FLOW_AVERAGER
+                                        // set goal to be equal to average flow 
+                                        if (d_circ_model_aorta->d_area_initialized){
+                                            if (axis == component){
+                                                U_goal = d_circ_model_aorta->d_Q_ventricle / d_circ_model_aorta->d_area_ventricle;
+                                                mask = 1.0;
+                                            }
+                                        }
+                                    #endif
+
+                                    // if ((axis != component) && (tangential_damp_to_zero)){
+                                    //     mask = 1.0;
+                                    // }
+
+                                }
+
+                                if (in_aorta){
+
+                                    const double n = is_lower ? -1.0 : +1.0;
+                                    const double U_dot_n = U * n;
+
+                                    if (axis == component){
+                                        // different signs give local flow reversal
+                                        if ((d_circ_model_aorta->d_Q_aorta * U_dot_n) < 0.0){
+                                            mask = 1.0;
+                                        }
+                                    }
+
+                                    #ifdef FLOW_AVERAGER
+                                        // set goal to be equal to average flow 
+                                        if (d_circ_model_aorta->d_area_initialized){
+                                            if (axis == component){
+                                                U_goal = d_circ_model_aorta->d_Q_aorta / d_circ_model_aorta->d_area_aorta;
+                                                mask = 1.0;
+                                            }
+                                        }
+                                    #endif
+
+                                    // if ((axis != component) && (tangential_damp_to_zero)){
+                                    //     mask = 1.0;
+                                    // }
+
+                                }
+
+                                if (mask > 0.0){
+                                    const double x_bdry = (is_lower ? x_lower[axis] : x_upper[axis]);
+                                    mask *= smooth_kernel((X[axis] - x_bdry) / (height_physical/2.0));
+                                    (*F_data)(i_s) += mask * (-kappa * (U - U_goal));
+                                }
+
+                            }
+                        } // for (int component = 0; component<NDIM; component++)
+                    } // if (pgeom->getTouchesRegularBoundary(axis, side)){
+                } // for(int side=0; side<2; side++)
+            } // for(int axis=0; axis<NDIM; axis++)
+        } // if (d_circ_model_aorta)
 
     #endif 
     

@@ -8,6 +8,7 @@
 // #include "CirculationModel.h"
 #include <CirculationModel_with_lv.h>
 #include <CirculationModel_RV_PA.h>
+#include <CirculationModel_aorta.h>
 
 /////////////////////////////// INCLUDES /////////////////////////////////////
 
@@ -478,6 +479,167 @@ void VelocityBcCoefs_RV_PA::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_
 
 IntVector<NDIM>
 VelocityBcCoefs_RV_PA::numberOfExtensionsFillable() const
+{
+    return 128;
+} // numberOfExtensionsFillable
+
+
+
+
+
+/////////////////////////////// NAMESPACE ////////////////////////////////////
+
+/////////////////////////////// STATIC ///////////////////////////////////////
+
+/////////////////////////////// PUBLIC ///////////////////////////////////////
+
+VelocityBcCoefs_aorta::VelocityBcCoefs_aorta(const int comp_idx,
+                                             CirculationModel_aorta* circ_model_aorta)
+    : d_comp_idx        (comp_idx), 
+      d_circ_model_aorta(circ_model_aorta)
+{
+    // intentionally blank
+    return;
+} // VelocityBcCoefs_aorta
+
+
+VelocityBcCoefs_aorta::~VelocityBcCoefs_aorta()
+{
+    // intentionally blank
+    return;
+} // ~VelocityBcCoefs_aorta
+
+
+void VelocityBcCoefs_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_data,
+                                       Pointer<ArrayData<NDIM, double> >& bcoef_data,
+                                       Pointer<ArrayData<NDIM, double> >& gcoef_data,
+                                       const Pointer<Variable<NDIM> >& /*variable*/,
+                                       const Patch<NDIM>& patch,
+                                       const BoundaryBox<NDIM>& bdry_box,
+                                       double fill_time) const {
+    
+    const int location_index = bdry_box.getLocationIndex();
+    const int axis = location_index / 2;
+    const int side = location_index % 2;
+
+    //static double last_debug_out = 0.0;  
+    
+    // std::cout << "location_index = " << location_index << "\n"; 
+    
+    #if !defined(NDEBUG)
+        TBOX_ASSERT(!acoef_data.isNull());
+    #endif
+        const Box<NDIM>& bc_coef_box = acoef_data->getBox();
+    #if !defined(NDEBUG)
+        TBOX_ASSERT(bcoef_data.isNull() || bc_coef_box == bcoef_data->getBox());
+        TBOX_ASSERT(gcoef_data.isNull() || bc_coef_box == gcoef_data->getBox());
+    #endif
+
+    const Box<NDIM>& patch_box = patch.getBox();
+    const Index<NDIM>& patch_lower = patch_box.lower();
+    Pointer<CartesianPatchGeometry<NDIM> > pgeom = patch.getPatchGeometry();
+    const double* const dx = pgeom->getDx();
+    const double* const x_lower = pgeom->getXLower();
+    for (Box<NDIM>::Iterator bc(bc_coef_box); bc; bc++)
+    {
+        const Index<NDIM>& i = bc();
+        
+        double dummy;
+        double& a = (!acoef_data.isNull() ? (*acoef_data)(i, 0) : dummy);
+        double& b = (!bcoef_data.isNull() ? (*bcoef_data)(i, 0) : dummy);
+        double& g = (!gcoef_data.isNull() ? (*gcoef_data)(i, 0) : dummy);
+        
+        if (axis == d_comp_idx){
+            // normal component has axis equal to comp_idx 
+
+            // take periodic reduction
+            unsigned int idx = d_circ_model_aorta->d_current_idx_series; 
+
+            double X[NDIM];
+            for (int d = 0; d < NDIM; ++d)
+            {
+                X[d] = x_lower[d] + dx[d] * (double(i(d) - patch_lower(d)) + (d == axis ? 0.0 : 0.5));
+            }
+
+            double X_in_plane_1 = 0.0; 
+            double X_in_plane_2 = 0.0; 
+            if (axis == 0)
+            {
+                X_in_plane_1 = X[1]; 
+                X_in_plane_2 = X[2]; 
+            }
+            else if (axis == 1)
+            {
+                X_in_plane_1 = X[0]; 
+                X_in_plane_2 = X[2]; 
+            }
+            else if (axis == 2)
+            {
+                X_in_plane_1 = X[0]; 
+                X_in_plane_2 = X[1]; 
+            }
+            else
+            {
+                TBOX_ERROR("Axis has value that is not 0 1 2\n"); 
+            }
+
+            const int in_ventricle  = d_circ_model_aorta->point_in_ventricle(X_in_plane_1, X_in_plane_2, axis, side);
+            const int in_aorta      = d_circ_model_aorta->point_in_aorta    (X_in_plane_1, X_in_plane_2, axis, side);
+
+            if (in_ventricle && in_aorta){
+                TBOX_ERROR("Position is within two inlets and outlets, should be impossible\n"); 
+            }
+
+            if (in_ventricle){
+                // sign for negative in stress tensor
+                a = 0.0; 
+                b = 1.0; 
+                g = -MMHG_TO_CGS * d_circ_model_aorta->d_fourier_ventricle->values[idx];
+                // pout << "Applying pressure of " << d_circ_model_rv_pa->d_fourier_right_ventricle->values[idx] 
+                //      << "mmHg to right ventricle at position (" << X[0] << ", " << X[1] << ", " << X[2] << ")\n"; 
+            }
+            else if (in_aorta){
+                // sign for negative in stress tensor
+                a = 0.0; 
+                b = 1.0; 
+                if (d_circ_model_aorta->d_rcr_bcs_on){
+                    g = -d_circ_model_aorta->d_aorta_P; 
+                }
+                else{
+                    TBOX_ERROR("not implemented\n");
+                }
+                // pout << "Applying pressure of " << d_circ_model_rv_pa->d_fourier_right_pa->values[idx] 
+                //      << "mmHg to right pa        at position (" << X[0] << ", " << X[1] << ", " << X[2] << ")\n"; 
+            }
+            else if (side == 1){
+                // no slip on upper boundary (all inlets and outlets are upper)
+                a = 1.0;
+                b = 0.0;
+                g = 0.0;                
+            }
+            else{
+                // no normal traction for zero pressure 
+                a = 0.0;
+                b = 1.0;
+                g = 0.0;
+            }
+        
+        }
+        else {
+            // no tangential slip everywhere on domain 
+            a = 1.0;
+            b = 0.0;
+            g = 0.0;
+        }
+
+    }
+     
+    return;
+} // setBcCoefs
+
+
+IntVector<NDIM>
+VelocityBcCoefs_aorta::numberOfExtensionsFillable() const
 {
     return 128;
 } // numberOfExtensionsFillable
