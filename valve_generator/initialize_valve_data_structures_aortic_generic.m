@@ -73,7 +73,7 @@ valve.name = name;
 % does not place partition
 valve.in_heart = true; 
 
-fused_commissure = false; 
+fused_commissure = true; 
 
 % name 
 if valve.in_heart
