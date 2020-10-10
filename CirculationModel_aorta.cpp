@@ -166,6 +166,8 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
 
     pout << "passed contstructor\n"; 
 
+    pout << "initial aorta pressure = " << P_initial_aorta << ", P_wk = " << d_aorta_P << "\n"; 
+
     return;
 } // CirculationModel
 
@@ -447,39 +449,42 @@ void CirculationModel_aorta::write_plot_code()
         fout.setf(ios_base::showpos);
         fout.precision(10);
         fout << "];\n";  
-        fout << "MMHG_TO_CGS = 1333.22368;\n"; 
-        fout << "fig = figure;\n";
-        fout << "times = bc_vals(:,1);\n"; 
-        fout << "p_aorta = bc_vals(:,2)/MMHG_TO_CGS;\n"; 
-        fout << "q_aorta = bc_vals(:,3);\n"; 
-        fout << "p_wk = bc_vals(:,4)/MMHG_TO_CGS;\n"; 
-        fout << "p_lv = bc_vals(:,5)/MMHG_TO_CGS;\n"; 
-        fout << "subplot(2,1,1)\n";
-        fout << "plot(times, p_aorta, 'k')\n";
+        fout << "times       =  bc_vals(:,1);\n"; 
+        fout << "p_lv        =  bc_vals(:,2);\n"; 
+        fout << "p_aorta     =  bc_vals(:,3); \n"; 
+        fout << "q_ventricle = -bc_vals(:,4);\n"; 
+        fout << "q_aorta     =  bc_vals(:,5);\n"; 
+        fout << "q_valve     =  bc_vals(:,6);\n"; 
+        fout << "p_wk        =  bc_vals(:,7);\n"; 
+        fout << "subplot(2,1,1)\n"; 
+        fout << "plot(times, p_aorta, 'k')\n"; 
         fout << "hold on\n"; 
-        fout << "plot(times, p_wk, ':k')\n";
-        fout << "plot(times, p_lv, '--k')\n";
-        fout << "legend('P_{Ao}', 'P_{Wk}', 'P_{LV}', 'Location','NorthEastOutside');\n";  
+        fout << "plot(times, p_wk, ':k')\n"; 
+        fout << "plot(times, p_lv, '--k')\n"; 
+        fout << "legend('P_{Ao}', 'P_{Wk}', 'P_{LV}', 'Location','NorthEastOutside');\n"; 
         fout << "xlabel('t (s)');\n"; 
         fout << "ylabel('P (mmHg)');\n"; 
-        fout << "subplot(2,1,2)\n";
-        fout << "plot(times, q_aorta, 'k')\n";
-        fout << "hold on\n";
+        fout << "subplot(2,1,2)\n"; 
+        fout << "plot(times, q_aorta, 'k')\n"; 
+        fout << "hold on\n"; 
         fout << "dt = times(2,1) - times(1);\n"; 
-        fout << "net_flux = dt*cumsum(q_aorta);\n";
-        fout << "plot(bc_vals(:,1), net_flux, '--k')\n";
-        fout << "plot(bc_vals(:,1), 0*net_flux, ':k')\n";
-        fout << "legend('Q', 'net Q', 'Location','NorthEastOutside')\n";
-        fout << "xlabel('t (s)')\n";
-        fout << "ylabel('Flow (ml/s), Net Flow (ml)')\n";
-        fout << "set(fig, 'Position', [100, 100, 1000, 750])\n";
-        fout << "set(fig,'PaperPositionMode','auto')\n";
-        fout << "printfig(fig, 'bc_model_variables')\n";
-        fout << "min_p_aorta_after_first_beat = min(p_aorta(floor(end/3):end))\n";
-        fout << "max_p_aorta_after_first_beat = max(p_aorta(floor(end/3):end))\n";
-        fout << "mean_p_aorta = mean(p_aorta)\n";
-        fout << "mean_p_wk    = mean(p_wk)\n";
-        fout << "mean_p_lv    = mean(p_lv)\n";
+        fout << "net_flux = dt*cumsum(q_aorta);\n"; 
+        fout << "plot(times, net_flux, '--k')\n"; 
+        fout << "plot(times, q_ventricle)\n"; 
+        fout << "plot(times, q_valve)\n"; 
+        fout << "plot(bc_vals(:,1), 0*net_flux, ':k')\n"; 
+        fout << "legend('Q', 'net Q', 'Q ventricle', 'Q valve', 'Location','NorthEastOutside')\n"; 
+        fout << "xlabel('t (s)')\n"; 
+        fout << "ylabel('Flow (ml/s), Net Flow (ml)')\n"; 
+        fout << "set(fig, 'Position', [100, 100, 1000, 750])\n"; 
+        fout << "set(fig,'PaperPositionMode','auto')\n"; 
+        fout << "printfig(fig, 'bc_model_variables')\n"; 
+        fout << "min_p_aorta_after_first_beat = min(p_aorta(floor(end/3):end))\n"; 
+        fout << "max_p_aorta_after_first_beat = max(p_aorta(floor(end/3):end))\n"; 
+        fout << "mean_p_aorta = mean(p_aorta)\n"; 
+        fout << "mean_p_wk    = mean(p_wk)\n"; 
+        fout << "mean_p_lv    = mean(p_lv)\n"; 
+
     }
     return;
 
