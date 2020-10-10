@@ -269,7 +269,7 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
                                 }
 
                                 const int in_ventricle  = this->point_in_ventricle(X_in_plane_1, X_in_plane_2, axis, side);
-                                const int in_aorta         = this->point_in_aorta       (X_in_plane_1, X_in_plane_2, axis, side);
+                                const int in_aorta      = this->point_in_aorta    (X_in_plane_1, X_in_plane_2, axis, side);
 
                                 if (in_ventricle && in_aorta){
                                     TBOX_ERROR("Position is within two inlets and outlets, should be impossible\n"); 

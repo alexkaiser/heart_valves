@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 debug = True
 
-def compute_rcr_parameters(P_min, P_max, P_mean, Q_mean, ratio_prox_to_distal_resistors, decay_time):
+def compute_rcr_parameters(P_min, P_max, P_mean, Q_mean, ratio_prox_to_distal_resistors, decay_time, C_prefactor=1.0):
 
     tol = 1e-14
 
@@ -19,7 +19,7 @@ def compute_rcr_parameters(P_min, P_max, P_mean, Q_mean, ratio_prox_to_distal_re
     assert abs(R_distal + R_proximal - R_total) < tol 
 
     # timescale for pressure decrease during aortic valve closure 
-    C = -decay_time / (R_distal * np.log(P_min/P_max))
+    C = -C_prefactor * decay_time / (R_distal * np.log(P_min/P_max))
 
     return R_proximal, C, R_distal, R_total
 
@@ -76,11 +76,13 @@ if __name__== "__main__":
     # P_mean = 1.0433437500000039e+02
     
     # 5.6 L/min
-    Q_mean = 4000.0 / 60 # ml/s 
+    Q_mean = 5600.0 / 60 # ml/s 
 
     ratio_prox_to_distal_resistors = 77.0 / 1185.0 
 
     decay_time = diastolic_time
+
+    C_prefactor = 2.0
 
     R_p_mmHg, C_mmHg, R_d_mmHg, R_total_mmHg = compute_rcr_parameters(P_min, P_max, P_mean, Q_mean, ratio_prox_to_distal_resistors, decay_time)
 
