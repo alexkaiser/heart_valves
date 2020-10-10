@@ -84,7 +84,7 @@ if __name__== "__main__":
 
     C_prefactor = 2.0
 
-    R_p_mmHg, C_mmHg, R_d_mmHg, R_total_mmHg = compute_rcr_parameters(P_min, P_max, P_mean, Q_mean, ratio_prox_to_distal_resistors, decay_time)
+    R_p_mmHg, C_mmHg, R_d_mmHg, R_total_mmHg = compute_rcr_parameters(P_min, P_max, P_mean, Q_mean, ratio_prox_to_distal_resistors, decay_time, C_prefactor)
 
     name = 'aorta'
 
@@ -96,7 +96,7 @@ if __name__== "__main__":
     P_max *= MMHG_TO_CGS
     P_mean *= MMHG_TO_CGS
 
-    R_p, C, R_d, R_total = compute_rcr_parameters(P_min, P_max, P_mean, Q_mean, ratio_prox_to_distal_resistors, decay_time)
+    R_p, C, R_d, R_total = compute_rcr_parameters(P_min, P_max, P_mean, Q_mean, ratio_prox_to_distal_resistors, decay_time, C_prefactor)
 
     print "Values CGS"
     print name, ",\t", R_p, ",\t", C, ",\t", R_d, ",\t", R_total
