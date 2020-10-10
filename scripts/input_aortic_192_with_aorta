@@ -14,9 +14,9 @@ REF_RATIO  = 4                            // refinement ratio between levels
 NAME = "aortic_192"
 MAX_RESTART_TO_WRITE = 20
 
-R_proximal =  93.7102007216
-C =  0.00149156575407
-R_distal =  1442.16347864
+R_proximal =  117.137750902
+C =  0.00119325260326
+R_distal =  1802.7043483
 
 P_aorta_0_MMHG = 100.0
 
