@@ -82,7 +82,7 @@ if __name__== "__main__":
 
     decay_time = diastolic_time
 
-    C_prefactor = 4.0
+    C_prefactor = 0.5
 
     R_p_mmHg, C_mmHg, R_d_mmHg, R_total_mmHg = compute_rcr_parameters(P_min, P_max, P_mean, Q_mean, ratio_prox_to_distal_resistors, decay_time, C_prefactor)
 
