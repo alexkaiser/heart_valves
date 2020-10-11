@@ -82,6 +82,9 @@ public:
     double        d_area_left_pa; 
     bool          d_area_initialized;
 
+    double d_p_extender_mean; 
+    double d_p_extender_point; 
+
     /*!
      * \brief The level of the patch hierarchy on which the Lagrangian
      * structures that interface the boundary are located.
@@ -117,6 +120,8 @@ public:
                                   const int wgt_sc_idx);
 
     void set_Q_valve(double Q_valve); 
+
+    void set_extender_pressures(double p_extender_mean, double p_extender_point); 
 
     /*!
      * \name Implementation of Serializable interface.

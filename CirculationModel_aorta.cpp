@@ -66,6 +66,8 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
       d_time(initial_time), 
       d_aorta_P(P_initial_aorta), 
       d_aorta_P_Wk(P_initial_aorta),
+      d_p_extender_mean(0.0),
+      d_p_extender_point(0.0),
       d_area_ventricle(0.0),
       d_area_aorta(0.0),
       d_area_initialized(false), 
@@ -373,6 +375,11 @@ void CirculationModel_aorta::set_Q_valve(double Q_valve){
     d_Q_valve = Q_valve; 
 }
 
+void CirculationModel_aorta::set_extender_pressures(double p_extender_mean, double p_extender_point){
+    d_p_extender_mean  = p_extender_mean; 
+    d_p_extender_point = p_extender_point;
+}
+
 
 
 void
@@ -385,6 +392,8 @@ CirculationModel_aorta::putToDatabase(Pointer<Database> db)
     db->putDouble("d_Q_valve", d_Q_valve);
     db->putDouble("d_aorta_P", d_aorta_P);
     db->putDouble("d_aorta_P_Wk", d_aorta_P_Wk);
+    db->putDouble("d_p_extender_mean", d_p_extender_mean);
+    db->putDouble("d_p_extender_point", d_p_extender_point);
     db->putDouble("d_time", d_time); 
     db->putBool("d_rcr_bcs_on", d_rcr_bcs_on); 
     return; 
@@ -393,26 +402,19 @@ CirculationModel_aorta::putToDatabase(Pointer<Database> db)
 void CirculationModel_aorta::print_summary(){
 
     double P_ventricle = d_fourier_ventricle->values[d_current_idx_series]; 
-    double P_aorta; 
+    double P_aorta = d_aorta_P / MMHG_TO_CGS;
 
-    if (d_rcr_bcs_on){
-        P_aorta        = d_aorta_P / MMHG_TO_CGS;
-    }
-    else{
+    if (!d_rcr_bcs_on){
         TBOX_ERROR("Not implemented\n"); 
         // P_aorta        = d_fourier_aorta->values[d_current_idx_series];
     }
 
     pout << "rcr_bcs_on = " << d_rcr_bcs_on << "\n"; 
     pout << "% time \t       P_ventricle (mmHg)\t   P_aorta (mmHg)\t  Q_ventricle (ml/s)\t    d_Q_aorta (ml/s)\t  d_Q_valve (ml/s)\t  Q_current_idx_series \t idx" ;
-    if (d_rcr_bcs_on){
-        pout << "\t aorta_P_Wk "; 
-    }
+    pout << "\t aorta_P_Wk \t p_extender_mean \t p_extender_point "; 
     pout << "\n";
     pout << d_time << " " << P_ventricle <<  " " << P_aorta << " " << d_Q_ventricle << " " << d_Q_aorta << " " << d_Q_valve << " " << d_current_idx_series; 
-    if (d_rcr_bcs_on){
-        pout  << " " << d_aorta_P_Wk; 
-    }
+    pout  << " " << d_aorta_P_Wk << " " << d_p_extender_mean/MMHG_TO_CGS << " " << d_p_extender_point/MMHG_TO_CGS; 
     pout << "\n";
 
 }
@@ -438,7 +440,7 @@ int CirculationModel_aorta::point_in_aorta(double testx, double testy, int axis,
 }
 
 
-void CirculationModel_aorta::write_plot_code()
+    void CirculationModel_aorta::write_plot_code()
 {
 
     static const int mpi_root = 0;
@@ -449,19 +451,23 @@ void CirculationModel_aorta::write_plot_code()
         fout.setf(ios_base::showpos);
         fout.precision(10);
         fout << "];\n";  
-        fout << "times       =  bc_vals(:,1);\n"; 
-        fout << "p_lv        =  bc_vals(:,2);\n"; 
-        fout << "p_aorta     =  bc_vals(:,3); \n"; 
-        fout << "q_ventricle = -bc_vals(:,4);\n"; 
-        fout << "q_aorta     =  bc_vals(:,5);\n"; 
-        fout << "q_valve     =  bc_vals(:,6);\n"; 
-        fout << "p_wk        =  bc_vals(:,7);\n"; 
+        fout << "times            =  bc_vals(:,1);\n"; 
+        fout << "p_lv             =  bc_vals(:,2);\n"; 
+        fout << "p_aorta          =  bc_vals(:,3); \n"; 
+        fout << "q_ventricle      = -bc_vals(:,4);\n"; 
+        fout << "q_aorta          =  bc_vals(:,5);\n"; 
+        fout << "q_valve          =  bc_vals(:,6);\n"; 
+        fout << "p_wk             =  bc_vals(:,7);\n"; 
+        fout << "p_extender_mean  =  bc_vals(:,8);\n"; 
+        fout << "p_extender_point =  bc_vals(:,9);\n"; 
         fout << "subplot(2,1,1)\n"; 
         fout << "plot(times, p_aorta, 'k')\n"; 
         fout << "hold on\n"; 
         fout << "plot(times, p_wk, ':k')\n"; 
         fout << "plot(times, p_lv, '--k')\n"; 
-        fout << "legend('P_{Ao}', 'P_{Wk}', 'P_{LV}', 'Location','NorthEastOutside');\n"; 
+        fout << "plot(times, p_extender_mean)\n"; 
+        fout << "plot(times, p_extender_point)\n";                         
+        fout << "legend('P_{Ao}', 'P_{Wk}', 'P_{LV}', 'P extender mean', 'P extender point', 'Location','NorthEastOutside');\n"; 
         fout << "xlabel('t (s)');\n"; 
         fout << "ylabel('P (mmHg)');\n"; 
         fout << "subplot(2,1,2)\n"; 
@@ -507,8 +513,9 @@ void
         if (!from_restart && !file_initialized)
         {
             ofstream fout(DATA_FILE_NAME.c_str(), ios::out);
-            fout << "% time \t P_ventricle (mmHg)\t P_aorta (mmHg)\t d_Q_ventricle (ml/s)\t d_Q_aorta (ml/s)\t d_Q_valve (ml/s)"
-                 << "\n"
+            fout << "% time \t P_ventricle (mmHg)\t P_aorta (mmHg)\t d_Q_ventricle (ml/s)\t d_Q_aorta (ml/s)\t d_Q_valve (ml/s)\t" 
+                 << "d_aorta_P_Wk (mmHg) \t d_p_extender_mean (mmHg) \t d_p_extender_point (mmHg)" 
+                 << "\n" 
                  << "bc_vals = [";
             file_initialized = true;
         }
@@ -535,6 +542,8 @@ void
         fout << " " << P_ventricle <<  " " << P_aorta;
         fout << " " << d_Q_ventricle << " " << d_Q_aorta << " " << d_Q_valve;         
         fout << " " << d_aorta_P_Wk/MMHG_TO_CGS;
+        fout << " " << d_p_extender_mean/MMHG_TO_CGS;
+        fout << " " << d_p_extender_point/MMHG_TO_CGS;                        
         fout << "; \n";
 
     }
@@ -562,6 +571,8 @@ CirculationModel_aorta::getFromRestart()
     d_Q_valve            = db->getDouble("d_Q_valve");
     d_aorta_P            = db->getDouble("d_aorta_P");
     d_aorta_P_Wk         = db->getDouble("d_aorta_P_Wk");
+    d_p_extender_mean    = db->getDouble("d_p_extender_mean");
+    d_p_extender_point   = db->getDouble("d_p_extender_point");
     d_time               = db->getDouble("d_time");
     d_rcr_bcs_on         = db->getBool("d_rcr_bcs_on"); 
     return;

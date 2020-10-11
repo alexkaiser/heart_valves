@@ -241,7 +241,7 @@ IBMethod {
 
 IBStandardInitializer {
    max_levels      = MAX_LEVELS
-   structure_names = "aortic_no_partition_192", "aortic_no_partition_192_cylinder", "aorta_192"
+   structure_names = "aortic_no_partition_192", "aortic_no_partition_192_cylinder", "aorta_192", "aorta_192_flow_extender_inside"
    aortic_no_partition_192 {
       level_number = MAX_LEVELS - 1
    }
@@ -251,6 +251,10 @@ IBStandardInitializer {
    aorta_192 {
       level_number = MAX_LEVELS - 1
    }
+   aorta_192_flow_extender_inside {
+      level_number = MAX_LEVELS - 1
+   }
+
 }
 
 

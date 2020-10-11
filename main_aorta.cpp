@@ -103,19 +103,11 @@ inline double deriv_spring_compressive_only_linear_spring(double R, const double
 #define DEBUG_OUTPUT 0 
 #define ENABLE_INSTRUMENTS
 
-// #define USE_CIRC_MODEL
 #define USE_CIRC_MODEL_AORTA
 
 #define MMHG_TO_CGS 1333.22368
 #define CGS_TO_MMHG 0.000750061683
 #define MPa_TO_CGS 1.0e7
-
-#define SOURCE_ON_TIME       0.1
-#define CONST_SRC_TIME       0.3
-#define CONST_SRC_STRENGTH  93.0
-
-#define MAX_STEP_FOR_CHANGE 1000
-
 
 namespace{
     inline double smooth_kernel(const double r){
@@ -292,17 +284,15 @@ int main(int argc, char* argv[])
         #ifdef ENABLE_INSTRUMENTS
          
             std::vector<double> flux_valve_ring;
-            std::ofstream flux_output_stream;
-        
-            flux_output_stream.precision(14);
-            flux_output_stream.setf(ios_base::scientific);
-    
-        
+            std::vector<double> p_extender_mean;
+            std::vector<double> p_extender_point;
+
             // set below in loop
             int u_data_idx = 0; 
             int p_data_idx = 0; 
             
-            Pointer<IBInstrumentPanel> instruments = new IBInstrumentPanel("meter_0", input_db);
+            Pointer<IBInstrumentPanel> instruments          = new IBInstrumentPanel("meter_0", input_db);
+            Pointer<IBInstrumentPanel> instruments_extender = new IBInstrumentPanel("aorta_0", input_db);
         #endif
         
 
@@ -485,21 +475,7 @@ int main(int argc, char* argv[])
             // do this after initialize patch hierarchy
             instruments->initializeHierarchyIndependentData(patch_hierarchy, l_data_manager);
             
-            // Stream to write-out flux data 
-            if (!from_restart){
-                if (SAMRAI_MPI::getRank() == 0){
-                    flux_output_stream.open("flux_plot_IBAMR.m", ios_base::out | ios_base::trunc);
-                    flux_output_stream << "data = [" ; 
-                }
-            }
-            // if we are restarting, we want to append to the file 
-            // we are assuming that the pressure plot write was not interuppted here in the previous run 
-            else{
-                if (SAMRAI_MPI::getRank() == 0){
-                    flux_output_stream.open("flux_plot_IBAMR.m", ios_base::out | ios_base::app);
-                }
-            }
-            
+            instruments_extender->initializeHierarchyIndependentData(patch_hierarchy, l_data_manager);
         #endif
 
         // Deallocate initialization objects.
@@ -540,9 +516,8 @@ int main(int argc, char* argv[])
                 instruments->initializeHierarchyDependentData(patch_hierarchy, l_data_manager, iteration_num, loop_time); 
                 instruments->readInstrumentData(u_data_idx, p_data_idx, patch_hierarchy, l_data_manager, iteration_num, loop_time); 
                 
-                flux_valve_ring = instruments->getFlowValues(); 
-                // pout << "flux at t = " << loop_time << ", Q = " << flux_valve_ring[0] << "\n"; 
-                
+                instruments_extender->initializeHierarchyDependentData(patch_hierarchy, l_data_manager, iteration_num, loop_time); 
+                instruments_extender->readInstrumentData(u_data_idx, p_data_idx, patch_hierarchy, l_data_manager, iteration_num, loop_time); 
             #endif
             
         }
@@ -631,39 +606,21 @@ int main(int argc, char* argv[])
                     instruments->initializeHierarchyDependentData(patch_hierarchy, l_data_manager, iteration_num, loop_time); 
                     instruments->readInstrumentData(U_current_idx, P_current_idx, patch_hierarchy, l_data_manager, iteration_num, loop_time); 
                     flux_valve_ring = instruments->getFlowValues(); 
+
+                    instruments_extender->initializeHierarchyDependentData(patch_hierarchy, l_data_manager, iteration_num, loop_time); 
+                    instruments_extender->readInstrumentData(U_current_idx, P_current_idx, patch_hierarchy, l_data_manager, iteration_num, loop_time); 
+                    p_extender_mean = instruments_extender->getMeanPressureValues(); 
+                    p_extender_point = instruments_extender->getPointwisePressureValues(); 
+
                     // pout << "flux at t = " << loop_time << ", Q = " << flux_valve_ring[0] << "\n";
-                    
-                    if (SAMRAI_MPI::getRank() == 0){
-                        flux_output_stream << loop_time << ",\t" << flux_valve_ring[0] << ";\n"; 
-                        flux_output_stream.flush();
-                    }                
-                
+                                    
                     #ifdef USE_CIRC_MODEL_AORTA
                         circ_model_aorta->set_Q_valve(flux_valve_ring[0]); 
+                        circ_model_aorta->set_extender_pressures(p_extender_mean[0], p_extender_point[0]); 
                     #endif 
                 }
             #endif
             
-            // Update the circulation model if used 
-            #ifdef USE_CIRC_MODEL
-                {
-/*              Pointer<hier::Variable<NDIM> > U_var = navier_stokes_integrator->getVelocityVariable();
-                Pointer<hier::Variable<NDIM> > P_var = navier_stokes_integrator->getPressureVariable();
-                Pointer<VariableContext> current_ctx = navier_stokes_integrator->getCurrentContext();
-                const int U_current_idx = var_db->mapVariableAndContextToIndex(U_var, current_ctx);
-                const int P_current_idx = var_db->mapVariableAndContextToIndex(P_var, current_ctx);
-                Pointer<HierarchyMathOps> hier_math_ops = navier_stokes_integrator->getHierarchyMathOps();
-                const int wgt_cc_idx = hier_math_ops->getCellWeightPatchDescriptorIndex();
-                const int wgt_sc_idx = hier_math_ops->getSideWeightPatchDescriptorIndex(); 
-                circ_model->advanceTimeDependentData(
-                    dt, patch_hierarchy, U_current_idx, P_current_idx, wgt_cc_idx, wgt_sc_idx);*/ 
-                    
-                // remember that instruments read 
-                circ_model->advanceTimeDependentData(dt, -flux_valve_ring[0]); 
-                    
-                }
-            #endif 
-
             // Update the circulation model if used 
             #ifdef USE_CIRC_MODEL_AORTA
                 {
@@ -698,20 +655,7 @@ int main(int argc, char* argv[])
                     SAMRAI_MPI::abort();
                 }
             }
-            
-            
-            if (iteration_num > MAX_STEP_FOR_CHANGE){
-                // if there is a change 
-                if (dt != dt_prev){
-                    // ignore the first and last steps  
-                    if (!last_step){
-                        pout << "Timestep change encountered (manual, after max change step).\n" ;
-                        pout << "dt = " << dt << ",\tdt_prev = " << dt_prev << "\n";
-                        SAMRAI_MPI::abort();
-                    }
-                }
-            }
-                        
+
 
             if (dump_timer_data && (iteration_num % timer_dump_interval == 0 || last_step))
             {
@@ -727,27 +671,9 @@ int main(int argc, char* argv[])
         
         pout << "total run time = " << total_time << " s. \n" ; 
         pout << "average run time = " << average_time << " s. \n" ;
-        
-        #ifdef ENABLE_INSTRUMENTS
-            if (SAMRAI_MPI::getRank() == 0){
-                flux_output_stream << "]; \n\n"; 
                 
-                flux_output_stream << "fig = figure;\n plot(data(:,1), -data(:,2), 'k');\n";
-                flux_output_stream << "hold on;\n";
-                flux_output_stream << "dt = " << dt_original << "; \n"; 
-                flux_output_stream << "net_flux = dt*cumsum(-data(:,2));\n "; 
-                flux_output_stream << "plot(data(:,1), net_flux, '--k');\n";
-                flux_output_stream << "xlabel('t');\n ylabel('ml/s, ml');\n";
-                flux_output_stream << "legend('flux', 'net flux', 'Location', 'NorthWest')\n";
-                flux_output_stream << "plot(data(:,1), 0*data(:,2), ':k');\n";
-                flux_output_stream << "printfig(fig,'flux.eps');\n"; 
-                
-                flux_output_stream.close();
-            }
-        #endif
-        
-        #ifdef USE_CIRC_MODEL
-            circ_model->write_plot_code(); 
+        #ifdef USE_CIRC_MODEL_AORTA
+            circ_model_aorta->write_plot_code(); 
         #endif 
         
         if (SAMRAI_MPI::getRank() == 0){
