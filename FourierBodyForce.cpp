@@ -156,77 +156,7 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
         (*F_data)(i_s) = force; // FORCE GOES HERE
     }
     
-    bool full_clamp_on = false; 
-
-    #ifdef FULL_FLOW_CLAMP
-        if (data_time < FULL_FLOW_CLAMP_TIME){
-            // F_data->fillAll(0.0);
-
-            // some stuff about the geometry
-            Pointer<CartesianPatchGeometry<NDIM> > pgeom = patch->getPatchGeometry();
-            const double* const dx = pgeom->getDx();
-            const double* const x_lower = pgeom->getXLower();
-            // const double* const x_upper = pgeom->getXUpper();
     
-            // always looking at the z axis here
-            const int axis = 2;
-    
-            // pull velocity variables
-            Pointer<SideData<NDIM, double> > U_current_data =
-            patch->getPatchData(d_fluid_solver->getVelocityVariable(), d_fluid_solver->getCurrentContext());
-            Pointer<SideData<NDIM, double> > U_new_data =
-            patch->getPatchData(d_fluid_solver->getVelocityVariable(), d_fluid_solver->getNewContext());
-            
-            #if !defined(NDEBUG)
-                TBOX_ASSERT(U_current_data);
-            #endif
-            
-            // physical height of region of stabilization
-            // stabilization is smoothed out from bottom of domain to here
-            double height_physical = 0.2;
-            // if (dx[axis] < 0.1){
-            //     height_physical = 0.2; 
-            // }
-            const double max_height_force_applied = height_physical + x_lower_global[2];
-            const double center = x_lower_global[axis] + 0.5*height_physical;
-    
-            // multiplies width of damping by this much
-            // full damping support is L*dx
-            // required that L*dx + center < height_physical for a continuous mask 
-            double L = 2.0; 
-
-            const int cycle_num = d_fluid_solver->getCurrentCycleNumber();
-            const double dt = d_fluid_solver->getCurrentTimeStepSize();
-            const double rho = d_fluid_solver->getStokesSpecifications()->getRho();
-
-            full_clamp_on = true; 
-
-            // linear decrease in coefficient value 
-            // from max 
-            double k_full_clamp; 
-            if (data_time > 0.0){
-                k_full_clamp = (1 - data_time/FULL_FLOW_CLAMP_TIME) * 0.25 * rho / dt;
-            }
-            else{
-                k_full_clamp = 0.0; 
-            }
-
-            // Clamp the velocity in all components
-            for (int component = 0; component < NDIM; ++component){
-                for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
-
-                    const Index<NDIM>& i = b();
-                    const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
-
-                    const double U_current = U_current_data ? (*U_current_data)(i_s) : 0.0;
-                    const double U_new     = U_new_data ? (*U_new_data)(i_s) : 0.0;
-                    const double U         = (cycle_num > 0) ? 0.5 * (U_new + U_current) : U_current;
-
-                    (*F_data)(i_s)        += -k_full_clamp * U;
-                }
-            }
-        }
-    #endif
     
     // Flow straightener (if desired)
     #ifdef FLOW_STRAIGHTENER
@@ -271,7 +201,40 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
             const double dt = d_fluid_solver->getCurrentTimeStepSize();
             const double rho = d_fluid_solver->getStokesSpecifications()->getRho();
             
+            bool full_clamp_on = false; 
 
+            #ifdef FULL_FLOW_CLAMP
+                if (data_time < FULL_FLOW_CLAMP_TIME){
+                    // F_data->fillAll(0.0);
+
+                    full_clamp_on = true; 
+
+                    // linear decrease in coefficient value 
+                    // from max 
+                    double k_full_clamp; 
+                    if (data_time > 0.0){
+                        k_full_clamp = (1 - data_time/FULL_FLOW_CLAMP_TIME) * 0.25 * rho / dt;
+                    }
+                    else{
+                        k_full_clamp = 0.0; 
+                    }
+
+                    // Clamp the velocity in all components
+                    for (int component = 0; component < NDIM; ++component){
+                        for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
+
+                            const Index<NDIM>& i = b();
+                            const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
+
+                            const double U_current = U_current_data ? (*U_current_data)(i_s) : 0.0;
+                            const double U_new     = U_new_data ? (*U_new_data)(i_s) : 0.0;
+                            const double U         = (cycle_num > 0) ? 0.5 * (U_new + U_current) : U_current;
+
+                            (*F_data)(i_s)        += -k_full_clamp * U;
+                        }
+                    }
+                }
+            #endif
 
             if (!full_clamp_on){
                 // this may be very, very large
