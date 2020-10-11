@@ -71,7 +71,7 @@ name = 'aortic';
 valve.name = name; 
 
 % does not place partition
-valve.in_heart = true; 
+valve.in_heart = false; 
 
 fused_commissure = false; 
 
@@ -87,7 +87,7 @@ if valve.in_heart
     valve.initial_rotation_aortic = rotation_matrix_z(pi/4); 
     
     % for normal_3
-    valve.initial_rotation_aortic = rotation_matrix_z(pi/3 + pi/12);
+    valve.initial_rotation_aortic = rotation_matrix_z(pi/3 + pi/12 + pi/48);
     valve.transformation_vertex_file = 'aortic_annulus.vertex';
 
 else 
