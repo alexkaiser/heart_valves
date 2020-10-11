@@ -544,15 +544,15 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                         }
                                     }
 
-                                    #ifdef FLOW_AVERAGER
-                                        // set goal to be equal to average flow 
-                                        if (d_circ_model_aorta->d_area_initialized){
-                                            if (axis == component){
-                                                U_goal = d_circ_model_aorta->d_Q_ventricle / d_circ_model_aorta->d_area_ventricle;
-                                                mask = 1.0;
-                                            }
+                                    //#ifdef FLOW_AVERAGER
+                                    // set goal to be equal to average flow 
+                                    if (d_circ_model_aorta->d_area_initialized){
+                                        if (axis == component){
+                                            U_goal = d_circ_model_aorta->d_Q_ventricle / d_circ_model_aorta->d_area_ventricle;
+                                            mask = 1.0;
                                         }
-                                    #endif
+                                    }
+                                    //#endif
 
                                     // if ((axis != component) && (tangential_damp_to_zero)){
                                     //     mask = 1.0;
