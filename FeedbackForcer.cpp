@@ -530,7 +530,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                 double mask = 0.0;
                                 double U_goal = 0.0; 
 
-                                bool tangential_damp_to_zero = true;
+                                //bool tangential_damp_to_zero = true;
 
                                 if (in_ventricle){
 
@@ -544,23 +544,22 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                         }
                                     }
 
-                                    //#ifdef FLOW_AVERAGER
-                                    // set goal to be equal to average flow 
-                                    if (d_circ_model_aorta->d_area_initialized){
-                                        if (axis == component){
-                                            U_goal = d_circ_model_aorta->d_Q_ventricle / d_circ_model_aorta->d_area_ventricle;
-                                            mask = 1.0;
+                                    #ifdef FLOW_AVERAGER
+                                        // set goal to be equal to average flow 
+                                        if (d_circ_model_aorta->d_area_initialized){
+                                            if (axis == component){
+                                                U_goal = d_circ_model_aorta->d_Q_ventricle / d_circ_model_aorta->d_area_ventricle;
+                                                mask = 1.0;
+                                            }
                                         }
-                                    }
-                                    //#endif
+                                    #endif
 
-                                    if ((axis != component) && (tangential_damp_to_zero)){
-                                        mask = 1.0;
-                                    }
+                                    // if ((axis != component) && (tangential_damp_to_zero)){
+                                    //     mask = 1.0;
+                                    // }
 
                                 }
-
-                                if (in_aorta){
+                                else if (in_aorta){
 
                                     const double n = is_lower ? -1.0 : +1.0;
                                     const double U_dot_n = U * n;
@@ -586,6 +585,10 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                     //     mask = 1.0;
                                     // }
 
+                                }
+                                else{
+                                    // damp all edges outside inlets and outlets
+                                    mask = 1.0; 
                                 }
 
                                 if (mask > 0.0){
