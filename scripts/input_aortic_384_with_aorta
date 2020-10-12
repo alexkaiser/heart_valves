@@ -14,9 +14,9 @@ REF_RATIO  = 4                            // refinement ratio between levels
 NAME = "aortic_384"
 MAX_RESTART_TO_WRITE = 20
 
-R_proximal =  83.6698220729
-C =  0.00167055364456
-R_distal =  1287.64596307
+R_proximal =  76.8116399358
+C =  0.00181971021997
+R_distal =  1182.101212
 
 P_aorta_0_MMHG = 100.0
 
@@ -60,7 +60,7 @@ ENABLE_LOGGING      = TRUE
 N=384 
 
 // cm 
-DX = 0.1 * (192.0/float(N))
+DX = 0.1 * (192.0/N)
 
 // computed from scans 
 X_HIGH =   4.6155 
@@ -69,9 +69,9 @@ Y_MID = -18.4862
 Y_HIGH = Y_MID + 4.8/2.0 // put 48 points centered 
 
 // number points 
-NX = (64 + 8)   * (float(N)/192.0)
-NY = 48         * (float(N)/192.0)
-NZ = (128 - 16) * (float(N)/192.0)
+NX = (64 + 8)   * int(N/192)
+NY = 48         * int(N/192)
+NZ = (128 - 16) * int(N/192)
 
 X_LOW = X_HIGH - DX*NX
 Y_LOW = Y_HIGH - DX*NY
