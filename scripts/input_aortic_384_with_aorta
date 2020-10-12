@@ -71,7 +71,7 @@ Y_HIGH = Y_MID + 4.8/2.0 // put 48 points centered
 // number points 
 NX = (64 + 8)   * int(N/192)
 NY = 48         * int(N/192)
-NZ = (128 - 16) * int(N/192)
+NZ = (128 ) * int(N/192)
 
 X_LOW = X_HIGH - DX*NX
 Y_LOW = Y_HIGH - DX*NY
