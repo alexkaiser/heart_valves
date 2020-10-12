@@ -546,7 +546,13 @@ function [] = output_to_ibamr_format(valve)
                 else
                     R_0 = eye(3);
                 end 
-                params_cylinder.vertices = coordinate_transformation_vertices(params_cylinder.vertices, valve.transformation_vertex_file, R_0);
+                if isfield(valve, 'initial_translation_aortic')
+                    T_0 = valve.initial_translation_aortic; 
+                else
+                    T_0 = zeros(3,1);
+                end 
+                
+                params_cylinder.vertices = coordinate_transformation_vertices(params_cylinder.vertices, valve.transformation_vertex_file, R_0, T_0);
             elseif isfield(valve, 'initial_rotation_aortic')
                 % rotation alone 
                 R_0 = valve.initial_rotation_aortic; 
@@ -599,7 +605,12 @@ function [] = output_to_ibamr_format(valve)
             else
                 R_0 = eye(3);
             end 
-            params_particles.vertices = coordinate_transformation_vertices(params_particles.vertices, valve.transformation_vertex_file, R_0);
+            if isfield(valve, 'initial_translation_aortic')
+                T_0 = valve.initial_translation_aortic; 
+            else
+                T_0 = zeros(3,1);
+            end 
+            params_particles.vertices = coordinate_transformation_vertices(params_particles.vertices, valve.transformation_vertex_file, R_0, T_0);
         elseif isfield(valve, 'initial_rotation_aortic')
             % rotation alone 
             R_0 = valve.initial_rotation_aortic; 
@@ -621,7 +632,13 @@ function [] = output_to_ibamr_format(valve)
         else
             R_0 = eye(3);
         end 
-        params.vertices = coordinate_transformation_vertices(params.vertices, valve.transformation_vertex_file, R_0);
+        if isfield(valve, 'initial_translation_aortic')
+            T_0 = valve.initial_translation_aortic; 
+        else
+            T_0 = zeros(3,1);
+        end 
+        
+        params.vertices = coordinate_transformation_vertices(params.vertices, valve.transformation_vertex_file, R_0, T_0);
     elseif isfield(valve, 'initial_rotation_aortic')
         % rotation alone 
         R_0 = valve.initial_rotation_aortic; 

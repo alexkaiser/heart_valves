@@ -84,12 +84,14 @@ if valve.in_heart
     valve.z_extra_cylinder = 0.3; 
                                      
     % for normal_1
-    valve.initial_rotation_aortic = rotation_matrix_z(pi/4); 
+    % valve.initial_rotation_aortic = rotation_matrix_z(pi/4); 
     
     % for normal_3
+    th = 2*pi/3; 
+    valve.initial_translation_aortic = -0.05 * [cos(th); sin(th); 0]; 
     valve.initial_rotation_aortic = rotation_matrix_z(pi/3 + pi/12 + pi/48);
     valve.transformation_vertex_file = 'aortic_annulus.vertex';
-
+    
 else 
     valve.base_name = sprintf('aortic_%d', N); 
 end 
@@ -232,6 +234,56 @@ valve.k_bend_circ_free_edge = 0;
 valve.k_bend_circ_free_edge_percentage = 0;
 
 valve.k_bend_cross_layer = 0;
+
+if valve.in_heart
+    dx = 5 /(N/4); 
+    valve.ds = dx/2; %2*pi*valve.skeleton.r / N; 
+
+    thickness_cylinder = 0.15; 
+    valve.n_layers_cylinder = ceil(thickness_cylinder/valve.ds) + 1; 
+        
+    h_top_scaffold_min = 0.2; 
+    
+    h_top_scaffold_max = valve.skeleton.normal_height; 
+    
+    h_top_scaffold_amplitude = h_top_scaffold_max - h_top_scaffold_min; 
+    
+    % value from least squares on pulm 
+    % p = 3.095653361985474; 
+    p = 20; 
+    
+    % function with unspecified power 
+    valve.z_max_cylinder = @(theta) h_top_scaffold_min * ones(size(theta))  +  h_top_scaffold_amplitude * abs(cos((3/2)*theta)).^(p); 
+        
+    % bottom flat at zero 
+    valve.z_min_cylinder = @(theta) zeros(size(theta)); 
+    
+    debug_plot = true; 
+    if debug_plot
+        th = linspace(0,2*pi,1000);
+        plot(th,valve.z_min_cylinder(th))
+        hold on 
+        plot(th,valve.z_max_cylinder(th))
+
+%         f = @(theta)  0.28*ones(size(theta))  + (1.095 - 0.28)*0.5 * (cos(3*theta)+1);
+%         plot(th, f(th)); 
+        
+        legend('bottom', 'top')
+        
+%         plot(th, h_min_scaffold * ones(size(th))); 
+%         plot(th, (h_min_scaffold + h_min_amplitude)*ones(size(th))); 
+%         plot(th,  h_top_scaffold_min * ones(size(th))); 
+%         plot(th,  h_top_scaffold_max * ones(size(th)));
+        
+        % heights from top of scaffold to minimum 
+%        plot(angles, heights_theta,'k*')
+        
+        axis equal
+        
+    end 
+end 
+
+
 
 % coaptation height for Swanson and Clark 
 % width is the same 

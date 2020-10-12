@@ -1,4 +1,4 @@
-function vertices = coordinate_transformation_vertices(vertices, ring_boundary_file, R_0)
+function vertices = coordinate_transformation_vertices(vertices, ring_boundary_file, R_0, T_0)
 % 
 % takes file containing ring points 
 % applies rigid translations and rotations that takes the unit circle to 
@@ -36,6 +36,11 @@ if normal(3) < 0
     normal = -normal; 
 end 
 normal = normal / norm(normal); 
+
+% initial rotation if requested 
+if exist('T_0', 'var')
+    vertices = T_0 + vertices; 
+end 
 
 % initial rotation if requested 
 if exist('R_0', 'var')
