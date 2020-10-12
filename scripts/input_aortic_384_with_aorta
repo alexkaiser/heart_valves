@@ -57,8 +57,10 @@ OUTPUT_OMEGA        = TRUE
 OUTPUT_DIV_U        = FALSE
 ENABLE_LOGGING      = TRUE
 
+N=384 
+
 // cm 
-DX = 0.1
+DX = 0.1 * (192.0/float(N))
 
 // computed from scans 
 X_HIGH =   4.6155 
@@ -67,9 +69,9 @@ Y_MID = -18.4862
 Y_HIGH = Y_MID + 4.8/2.0 // put 48 points centered 
 
 // number points 
-NX = 64 + 8
-NY = 48
-NZ = 128
+NX = (64 + 8)   * (float(N)/192.0)
+NY = 48         * (float(N)/192.0)
+NZ = (128 - 16) * (float(N)/192.0)
 
 X_LOW = X_HIGH - DX*NX
 Y_LOW = Y_HIGH - DX*NY
