@@ -25,8 +25,8 @@ points_one_cycle_ventricle = [0.0,   0;
 0.06, 2; 
 0.40, 6; 
 0.53, 14; 
-0.58, 120 * .5; 
-0.75, 130 * .5; 
+0.58, 120 + 10; 
+0.75, 130 + 10; 
 cycle_length, 8]; 
 
 points_one_cycle_atrium = [0.0, 24.555; 
