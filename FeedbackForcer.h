@@ -43,7 +43,10 @@ class FeedbackForcer : public CartGridFunction
             		 Pointer<PatchHierarchy<NDIM> > patch_hierarchy,
                  CirculationModel_with_lv* circ_model_with_lv=NULL, 
                  CirculationModel_RV_PA* circ_model_rv_pa=NULL, 
-                 CirculationModel_aorta* circ_model_aorta=NULL);
+                 CirculationModel_aorta* circ_model_aorta=NULL,
+                 bool damping_outside = false, 
+                 string lag_file_name = "",
+                 string internal_ring_file_name = "");
 
   /*!
    * \brief Destructor.
@@ -73,9 +76,26 @@ class FeedbackForcer : public CartGridFunction
 
   //\}
 
+  void initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid_geometry,
+                        string lag_file_name,
+                        string internal_ring_file_name); 
+
+  inline unsigned int get_1d_idx(const double *point);
+  inline unsigned int get_1d_idx_from_3d_idx(const int *idx);
+  inline void get_3d_idx(const unsigned int one_dimensional_idx, unsigned int *idx);
+  inline bool in_bounds(const int *idx); 
+
   CirculationModel_with_lv* d_circ_model_with_lv; 
   CirculationModel_RV_PA*   d_circ_model_rv_pa; 
   CirculationModel_aorta*   d_circ_model_aorta; 
+
+  bool d_damping_outside; 
+  unsigned int d_N[NDIM]; 
+  int d_N_Eulerian_total; 
+  double d_dx; 
+  const double *d_bdry_low; 
+  const double *d_bdry_up; 
+  double *d_masks_linear_array; 
 
  private:
   /*!

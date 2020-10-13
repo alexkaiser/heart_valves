@@ -371,6 +371,8 @@ int main(int argc, char* argv[])
 
 
         #ifdef USE_CIRC_MODEL_AORTA
+
+            bool damping_outside = true; 
              
             dt = input_db->getDouble("DT");
 
@@ -406,7 +408,17 @@ int main(int argc, char* argv[])
                 aorta_vertices_file_name = input_db->getString("BOUNDARY_FILENAME_AORTA");
             }
             else {
-                aorta_vertices_file_name = "right_pa_bdry.vertex"; 
+                aorta_vertices_file_name = "aorta_bdry.vertex"; 
+            }
+
+            std::string vessel_file_name; 
+            if (input_db->keyExists("VESSEL_FILENAME")){
+                vessel_file_name = input_db->getString("VESSEL_FILENAME");
+            }
+            else {
+                pout << "VESSEL_FILENAME not found, damping_outside vessel is off\n"; 
+                damping_outside = false; 
+                vessel_file_name = ""; 
             }
 
             // scaled cycle length for this patient 
@@ -445,7 +457,7 @@ int main(int argc, char* argv[])
             navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
 
             // flow straightener at boundary 
-            Pointer<FeedbackForcer> feedback_forcer = new FeedbackForcer(navier_stokes_integrator, patch_hierarchy, NULL, NULL, circ_model_aorta);
+            Pointer<FeedbackForcer> feedback_forcer = new FeedbackForcer(navier_stokes_integrator, patch_hierarchy, NULL, NULL, circ_model_aorta, damping_outside, vessel_file_name, aorta_vertices_file_name);
             time_integrator->registerBodyForceFunction(feedback_forcer);
 
 

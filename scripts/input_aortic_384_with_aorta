@@ -25,6 +25,8 @@ FOURIER_COEFFS_FILENAME_VENTRICLE = "fourier_coeffs_ventricle.txt"
 BOUNDARY_FILENAME_VENTRICLE = "lvot_bdry_384.vertex"
 BOUNDARY_FILENAME_AORTA = "aorta_bdry_384.vertex"
 
+VESSEL_FILENAME = "aorta_384.vertex"
+
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_zero.txt"
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_aorta_minus_ventricle.txt"
 

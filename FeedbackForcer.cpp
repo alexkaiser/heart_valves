@@ -23,7 +23,7 @@
 #include <SideData.h>
 #include <tbox/Utilities.h>
 
-
+#include <queue>
 
 // #define FLOW_STRAIGHTENER
 #define OPEN_BOUNDARY_STABILIZATION
@@ -52,14 +52,33 @@ FeedbackForcer::FeedbackForcer(const INSHierarchyIntegrator* fluid_solver,
                                const Pointer<PatchHierarchy<NDIM> > patch_hierarchy,
                                CirculationModel_with_lv* circ_model_with_lv, // = NULL 
                                CirculationModel_RV_PA* circ_model_rv_pa, // = NULL 
-                               CirculationModel_aorta* circ_model_aorta) // = NULL 
+                               CirculationModel_aorta* circ_model_aorta, // = NULL 
+                               bool damping_outside, // = false 
+                               string lag_file_name, // = ""
+                               string internal_ring_file_name) // = "" 
   : d_fluid_solver(fluid_solver), 
     d_patch_hierarchy(patch_hierarchy),
     d_circ_model_with_lv(circ_model_with_lv), 
     d_circ_model_rv_pa(circ_model_rv_pa),
-    d_circ_model_aorta(circ_model_aorta)
+    d_circ_model_aorta(circ_model_aorta),
+    d_damping_outside(damping_outside)
 {
-  // intentionally blank
+
+    if(d_damping_outside){
+
+        if (lag_file_name.empty()){
+            TBOX_ERROR("Must provide valid lag_file_name if damping_outside is on");
+        }
+        if (internal_ring_file_name.empty()){
+            TBOX_ERROR("Must provide valid internal_ring_file_name if damping_outside is on");
+        }
+
+        this->initialize_masks(d_patch_hierarchy->getGridGeometry(),
+                                              lag_file_name,
+                                              internal_ring_file_name);
+    }
+
+
   return;
 } // FeedbackForcer
 
@@ -640,6 +659,330 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
 
     return;
 } // setDataOnPatch
+
+void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid_geometry,
+                                      string lag_file_name,
+                                      string internal_ring_file_name){
+    
+    // Serial code, redundant in parallel 
+    //
+    // Marks all points outside of current Lagrangian stucture 
+    // 
+        
+    // set up the data
+    
+    // pout << "got some data from the ldata manager\n";
+    
+    // get data from petsc arrays
+    int N_Lagrangian;            // keeps the full list of all three components 
+    
+    // read file here 
+    ifstream f; 
+    f.open(lag_file_name.c_str(), ios::in);
+    
+    if (!f.is_open()){
+        std::cout << "Failed to open file\n" ; 
+    } 
+    
+    // total lagrangian points 
+    f >> N_Lagrangian;
+
+    // flattened array of lagrangian points 
+    double *X_lagrangian = new double[3*N_Lagrangian]; 
+    for (int j=0; j<(3*N_Lagrangian) && (!f.eof()); j++){
+        f >> X_lagrangian[j]; 
+    }
+
+    f.close(); 
+
+    // read file for seed point 
+    ifstream f_internal_ring; 
+    f_internal_ring.open(internal_ring_file_name.c_str(), ios::in);
+    
+    if (!f_internal_ring.is_open()){
+        std::cout << "Failed to open file\n" ; 
+    } 
+    
+    // lagrangian 
+    int N_ring; 
+    double internal_point[3] = {0.0, 0.0, 0.0}; 
+
+    double x_tmp, y_tmp, z_tmp; 
+
+    f_internal_ring >> N_ring;
+    pout << "N_ring = " << N_ring << "\n"; 
+
+    for (int j=0; j<N_ring && (!f_internal_ring.eof()); j++){
+        f_internal_ring >> x_tmp; 
+        f_internal_ring >> y_tmp; 
+        f_internal_ring >> z_tmp; 
+        internal_point[0] += x_tmp; 
+        internal_point[1] += y_tmp; 
+        internal_point[2] += z_tmp;         
+    }
+
+    pout << "sums:\n"; 
+    pout << "internal_point = " << internal_point[0] << ", " << internal_point[1] << ", " << internal_point[2] << "\n"; 
+
+    internal_point[0] /= N_ring; 
+    internal_point[1] /= N_ring; 
+    internal_point[2] /= N_ring; 
+
+    pout << "after mean:\n";
+    pout << "internal_point = " << internal_point[0] << ", " << internal_point[1] << ", " << internal_point[2] << "\n"; 
+
+    f_internal_ring.close();     
+
+    // set geometry information 
+    const double *dx_each = grid_geometry->getDx(); 
+    d_bdry_low            = grid_geometry->getXLower(); 
+    d_bdry_up             = grid_geometry->getXUpper(); 
+    
+    // consistency check 
+    if ( (dx_each[0] - dx_each[1] > 1e-12) || (dx_each[0] - dx_each[2] > 1e-12) ){
+        pout << "All meshes must be the same size to compute Lagrangian error\n" ; 
+        pout << "Mesh dimensions = (" << dx_each[0] << ", " << dx_each[1] << ", " << dx_each[2] << ")\n"; 
+        abort(); 
+    } 
+
+    d_dx = dx_each[0]; 
+        
+    // unsigned int N[NDIM]; 
+    for(int i=0; i<NDIM; i++){
+        d_N[i] = (int) ((d_bdry_up[i] - d_bdry_low[i]) / d_dx); 
+    }
+    
+    d_N_Eulerian_total = d_N[0] * d_N[1] * d_N[2]; 
+
+    int *indices_one_dimensional = new int[d_N_Eulerian_total]; 
+    d_masks_linear_array = new double[d_N_Eulerian_total]; 
+    
+    for(int i=0; i<d_N_Eulerian_total; i++){
+        indices_one_dimensional[i] = 0; 
+    }
+
+    unsigned int idx[3]; 
+    int idx_nbr[3];             // may be negative but then this is out of bounds 
+    unsigned int idx_one_dimensional; 
+    unsigned int idx_nbr_one_dimensional; 
+        
+    // Mark all elements near Lagrangian boundary. 
+    // This marks 8 points on the edges of the cube which contains the Lagrangian point. 
+    // Lower boundary is inclusive, upper exclusive. 
+    //     
+    unsigned int eulerian_pts_marked = 0; 
+    
+    for(int idx_lag=0; idx_lag<(3*N_Lagrangian); idx_lag+=3){
+        
+        idx_one_dimensional = this->get_1d_idx(X_lagrangian+idx_lag); 
+        
+        this->get_3d_idx(idx_one_dimensional, idx); 
+        
+        for(int i=0; i<=1; i++){
+            for(int j=0; j<=1; j++){
+                for(int k=0; k<=1; k++){
+                
+                    idx_nbr[0] = idx[0] + i; 
+                    idx_nbr[1] = idx[1] + j; 
+                    idx_nbr[2] = idx[2] + k;                     
+
+                    if( this->in_bounds(idx_nbr) ){
+                        
+                        idx_nbr_one_dimensional = this->get_1d_idx_from_3d_idx(idx_nbr); 
+                        
+                        // mark it 
+                        if (indices_one_dimensional[idx_nbr_one_dimensional] == 0){
+                            indices_one_dimensional[idx_nbr_one_dimensional] = 2;
+                            eulerian_pts_marked++;                             
+                        }
+                         
+                    }  
+                }
+            }
+        }
+    }
+
+
+    std::queue<unsigned int> indices_queue; 
+       
+    // physical points to 1d index 
+    idx_one_dimensional = this->get_1d_idx(internal_point); 
+   
+    pout << "idx_one_dimensional = " << idx_one_dimensional << "\n"; 
+    pout << "internal_point = " << internal_point[0] << ", " << internal_point[1] << ", " << internal_point[2] << "\n"; 
+
+    if ((idx_one_dimensional < 0) || (idx_one_dimensional > d_N_Eulerian_total)){
+        TBOX_ERROR("initial index out of range");
+    }
+
+    if(indices_one_dimensional[idx_one_dimensional] != 0){
+        TBOX_ERROR("index of internal point is aleardy marked \n");
+    }
+    
+    indices_queue.push( idx_one_dimensional ); 
+    indices_one_dimensional[idx_one_dimensional] = 1; 
+    
+    unsigned int total_internal = 0; 
+ 
+    while( !indices_queue.empty() ){
+        
+        // got a point... 
+        total_internal++; 
+        
+        idx_one_dimensional = indices_queue.front();
+        indices_queue.pop();
+
+        this->get_3d_idx(idx_one_dimensional, idx); 
+        
+        pout << "idx = " << idx[0] << ", " << idx[1] << ", " << idx[2] << "\n"; 
+
+        for(int i=-1; i<=1; i++){
+            for(int j=-1; j<=1; j++){
+                for(int k=-1; k<=1; k++){
+                                        
+                    // don't compare with self
+                    if((i==0) && (j==0) && (k==0))
+                        continue; 
+                
+                    idx_nbr[0] = idx[0] + i; 
+                    idx_nbr[1] = idx[1] + j; 
+                    idx_nbr[2] = idx[2] + k;                     
+                                    
+                    // is this a vaild index? 
+                    if( this->in_bounds(idx_nbr) ){
+                                                
+                        idx_nbr_one_dimensional = this->get_1d_idx_from_3d_idx(idx_nbr); 
+                        
+                        // is it unfilled? 
+                        if(indices_one_dimensional[idx_nbr_one_dimensional] == 0){
+                        
+                            // mark it 
+                            indices_one_dimensional[idx_nbr_one_dimensional] = 1; 
+                            
+                            // push on 
+                            indices_queue.push(idx_nbr_one_dimensional); 
+                        }
+                    }  
+                }
+            }
+        }
+    }
+ 
+    // finally set the masks 
+    for (int j=0; j<d_N_Eulerian_total; j++){
+        if (indices_one_dimensional[j] == 0){
+            // full mask 
+            d_masks_linear_array[j] = 1.0; 
+        }
+        else{
+            // no mask, on Lag structure 
+            // or inside of it 
+            d_masks_linear_array[j] = 0.0; 
+        }
+
+    }
+
+    delete[] indices_one_dimensional; 
+        
+    double internal_vol = ((double) total_internal) * d_dx*d_dx*d_dx;
+    double total_vol = ((double) total_internal + eulerian_pts_marked) * d_dx*d_dx*d_dx;
+    double total_eulerian_vol = d_dx*d_dx*d_dx * d_N[0] * d_N[1] * d_N[2];
+    pout << "found intenal volume " << internal_vol << ", internal and lag volume " << total_vol << ", total eulerian vol = " << total_eulerian_vol << "\n";
+
+}
+
+
+inline unsigned int FeedbackForcer::get_1d_idx(const double *point){
+    /*
+    Computes the global 1-d index of the given point. 
+    Assumes x,y,z order.  
+    
+    Input: 
+    const double *point      Cartesian coordinates of the point. 
+    const double *bdry_low   Lower boundary of domain 
+    const int *N             Number points in domain 
+    const double dx          Mesh width
+    
+    Output 
+    int (returned)           Global index 
+    */
+
+    int idx_x = (int) ((point[0] - d_bdry_low[0]) / d_dx); 
+    int idx_y = (int) ((point[1] - d_bdry_low[1]) / d_dx);         
+    int idx_z = (int) ((point[2] - d_bdry_low[2]) / d_dx); 
+    
+    return idx_x + idx_y * d_N[0] + idx_z * d_N[0] * d_N[1];
+}
+
+
+inline unsigned int FeedbackForcer::get_1d_idx_from_3d_idx(const int *idx){
+    /*
+    Computes the global 1-d index from the 3 variable local index
+    Assumes x,y,z order.  
+    
+    Input: 
+    const int *N               Number points in domain 
+    const unsigned int *idx    Index in 3 coordinates  
+    
+    Output 
+    int (returned)             Global index 
+    */
+
+    int idx_x = (unsigned int) idx[0]; 
+    int idx_y = (unsigned int) idx[1]; 
+    int idx_z = (unsigned int) idx[2]; 
+
+    return idx_x + idx_y * d_N[0] + idx_z * d_N[0] * d_N[1];
+}
+
+
+inline void FeedbackForcer::get_3d_idx(const unsigned int one_dimensional_idx, unsigned int *idx){
+    /*
+    Computes the 3 coordinates from the one idex
+    Assumes x,y,z order.  
+    
+    Input: 
+    const unsigned int one_dimensional_idx      Cartesian coordinates of the point. 
+    const int *N                       Number points in domain 
+
+    Output:
+    unsigned int *idx                  Three coordinates of the index. 
+    */
+
+    unsigned int temp; 
+    unsigned int i,j,k;
+    i      = one_dimensional_idx % d_N[0];           // first index from modding out the first dimension 
+    temp   = (one_dimensional_idx-i) / d_N[0];       // subtract from global and divide out first, gives   temp = j + k*N[1]  
+    j      = temp % d_N[1];                 // get j 
+    k      = (temp - j)/d_N[1];             // temp - j = k*N[1]
+    
+    idx[0] = i; 
+    idx[1] = j; 
+    idx[2] = k;     
+}
+
+
+inline bool FeedbackForcer::in_bounds(const int *idx){
+    /*
+    Checks whether the index is in bounds or not. 
+    
+    Input: 
+    const int *N                       Number points in domain 
+    unsigned int *idx                  Three coordinates of the index. 
+    
+    Output:
+    True if in bounds. 
+    */
+
+    if((idx[0] < 0) || (idx[1] < 0) || (idx[2] < 0))
+        return false; 
+        
+    if((idx[0] >= ((int) d_N[0]))  ||  (idx[1] >= ((int) d_N[1]))  ||  (idx[2] >= ((int) d_N[2]))) 
+        return false; 
+        
+    return true; 
+    
+}
 
 
 /////////////////////////////// PROTECTED ////////////////////////////////////
