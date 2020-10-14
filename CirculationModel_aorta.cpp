@@ -451,6 +451,7 @@ int CirculationModel_aorta::point_in_aorta(double testx, double testy, int axis,
         fout.setf(ios_base::showpos);
         fout.precision(10);
         fout << "];\n";  
+        fout << "fig = figure;\n";  
         fout << "times            =  bc_vals(:,1);\n"; 
         fout << "p_lv             =  bc_vals(:,2);\n"; 
         fout << "p_aorta          =  bc_vals(:,3); \n"; 
