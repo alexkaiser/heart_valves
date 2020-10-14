@@ -61,7 +61,8 @@ FeedbackForcer::FeedbackForcer(const INSHierarchyIntegrator* fluid_solver,
     d_circ_model_with_lv(circ_model_with_lv), 
     d_circ_model_rv_pa(circ_model_rv_pa),
     d_circ_model_aorta(circ_model_aorta),
-    d_damping_outside(damping_outside)
+    d_damping_outside(damping_outside), 
+    d_damping_initialized(false)
 {
 
     if(d_damping_outside){
@@ -192,6 +193,50 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
     
     #endif
     
+
+    if (d_damping_outside){
+        
+        if(!d_damping_initialized){
+            TBOX_ERROR("damping on but not initialized"); 
+        }
+
+        // Clamp the velocity in the interior of the rigid solid.
+        for (int component = 0; component < NDIM; ++component){
+            for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
+                const Index<NDIM>& i = b();
+                const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
+                const double U_current = U_current_data ? (*U_current_data)(i_s) : 0.0;
+                const double U_new = U_new_data ? (*U_new_data)(i_s) : 0.0;
+                const double U = (cycle_num > 0) ? 0.5 * (U_new + U_current) : U_current;
+                
+                double X[NDIM];
+                for (int d = 0; d < NDIM; ++d){
+                    X[d] = x_lower[d] + dx[d] * (double(i(d) - patch_box.lower(d)) + (d == component ? 0.0 : 0.5));
+                }
+
+                int idx = this->get_1d_idx(X); 
+
+                // top mask may be 1/2 mesh width over because of staggered scheme 
+                // just skip these points 
+                double mask = (idx < d_N_Eulerian_total) ? d_masks_linear_array[idx] : 0.0; 
+
+                (*F_data)(i_s) += (mask) * (-kappa * U);
+
+                // if ((idx < 0) || (idx >= d_N_Eulerian_total)){
+                //     pout << "bad index, idx = " << idx << ", X = " << X[0] << ", " << X[1] << ", " << X[2] << ")\n"; 
+                //     pout << "in outside damping, (*F_data)(i_s) = " << (*F_data)(i_s) << ", U = " <<  U << ", mask = " << mask << "\n\n"; 
+                // }
+                if (!((mask == 0.0) || (mask == 1.0))){
+                    pout << "bad mask value without bad index:\n"; 
+                    pout << "in outside damping, (*F_data)(i_s) = " << (*F_data)(i_s) << ", U = " <<  U << ", mask = " << mask << "\n\n"; 
+                }
+
+            }
+        }
+    }
+
+
+
     #ifdef OPEN_BOUNDARY_STABILIZATION
         if (d_circ_model_with_lv){
 
@@ -605,10 +650,10 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                     // }
 
                                 }
-                                else{
-                                    // damp all edges outside inlets and outlets
-                                    mask = 1.0; 
-                                }
+                                // else{
+                                //     // damp all edges outside inlets and outlets
+                                //     mask = 1.0; 
+                                // }
 
                                 if (mask > 0.0){
                                     const double x_bdry = (is_lower ? x_lower[axis] : x_upper[axis]);
@@ -650,7 +695,10 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                     const double U_new     = U_new_data ? (*U_new_data)(i_s) : 0.0;
                     const double U         = (cycle_num > 0) ? 0.5 * (U_new + U_current) : U_current;
 
-                    (*F_data)(i_s)        += -k_full_clamp * U;
+                    // only full clamp on spots that are not not already forced otherwise
+                    if ((*F_data)(i_s) == 0.0){
+                        (*F_data)(i_s) += -k_full_clamp * U;
+                    }
                 }
             }
         }
@@ -710,7 +758,6 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
     double x_tmp, y_tmp, z_tmp; 
 
     f_internal_ring >> N_ring;
-    pout << "N_ring = " << N_ring << "\n"; 
 
     for (int j=0; j<N_ring && (!f_internal_ring.eof()); j++){
         f_internal_ring >> x_tmp; 
@@ -720,16 +767,9 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
         internal_point[1] += y_tmp; 
         internal_point[2] += z_tmp;         
     }
-
-    pout << "sums:\n"; 
-    pout << "internal_point = " << internal_point[0] << ", " << internal_point[1] << ", " << internal_point[2] << "\n"; 
-
     internal_point[0] /= N_ring; 
     internal_point[1] /= N_ring; 
     internal_point[2] /= N_ring; 
-
-    pout << "after mean:\n";
-    pout << "internal_point = " << internal_point[0] << ", " << internal_point[1] << ", " << internal_point[2] << "\n"; 
 
     f_internal_ring.close();     
 
@@ -761,16 +801,16 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
         indices_one_dimensional[i] = 0; 
     }
 
-    unsigned int idx[3]; 
+    int idx[3]; 
     int idx_nbr[3];             // may be negative but then this is out of bounds 
-    unsigned int idx_one_dimensional; 
-    unsigned int idx_nbr_one_dimensional; 
+    int idx_one_dimensional; 
+    int idx_nbr_one_dimensional; 
         
     // Mark all elements near Lagrangian boundary. 
     // This marks 8 points on the edges of the cube which contains the Lagrangian point. 
     // Lower boundary is inclusive, upper exclusive. 
     //     
-    unsigned int eulerian_pts_marked = 0; 
+    int eulerian_pts_marked = 0; 
     
     for(int idx_lag=0; idx_lag<(3*N_Lagrangian); idx_lag+=3){
         
@@ -803,7 +843,7 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
     }
 
 
-    std::queue<unsigned int> indices_queue; 
+    std::queue<int> indices_queue; 
        
     // physical points to 1d index 
     idx_one_dimensional = this->get_1d_idx(internal_point); 
@@ -822,7 +862,7 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
     indices_queue.push( idx_one_dimensional ); 
     indices_one_dimensional[idx_one_dimensional] = 1; 
     
-    unsigned int total_internal = 0; 
+    int total_internal = 0; 
  
     while( !indices_queue.empty() ){
         
@@ -833,8 +873,6 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
         indices_queue.pop();
 
         this->get_3d_idx(idx_one_dimensional, idx); 
-        
-        pout << "idx = " << idx[0] << ", " << idx[1] << ", " << idx[2] << "\n"; 
 
         for(int i=-1; i<=1; i++){
             for(int j=-1; j<=1; j++){
@@ -883,11 +921,16 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
     }
 
     delete[] indices_one_dimensional; 
-        
-    double internal_vol = ((double) total_internal) * d_dx*d_dx*d_dx;
-    double total_vol = ((double) total_internal + eulerian_pts_marked) * d_dx*d_dx*d_dx;
-    double total_eulerian_vol = d_dx*d_dx*d_dx * d_N[0] * d_N[1] * d_N[2];
-    pout << "found intenal volume " << internal_vol << ", internal and lag volume " << total_vol << ", total eulerian vol = " << total_eulerian_vol << "\n";
+
+    bool debug_vol = true;  
+    if (debug_vol){
+        double internal_vol = ((double) total_internal) * d_dx*d_dx*d_dx;
+        double total_vol = ((double) total_internal + eulerian_pts_marked) * d_dx*d_dx*d_dx;
+        double total_eulerian_vol = d_dx*d_dx*d_dx * d_N[0] * d_N[1] * d_N[2];
+        pout << "found intenal volume " << internal_vol << ", internal and lag volume " << total_vol << ", total eulerian vol = " << total_eulerian_vol << "\n";
+    }
+
+    d_damping_initialized = true; 
 
 }
 
@@ -936,7 +979,7 @@ inline unsigned int FeedbackForcer::get_1d_idx_from_3d_idx(const int *idx){
 }
 
 
-inline void FeedbackForcer::get_3d_idx(const unsigned int one_dimensional_idx, unsigned int *idx){
+inline void FeedbackForcer::get_3d_idx(const int one_dimensional_idx, int *idx){
     /*
     Computes the 3 coordinates from the one idex
     Assumes x,y,z order.  
@@ -951,8 +994,10 @@ inline void FeedbackForcer::get_3d_idx(const unsigned int one_dimensional_idx, u
 
     unsigned int temp; 
     unsigned int i,j,k;
-    i      = one_dimensional_idx % d_N[0];           // first index from modding out the first dimension 
-    temp   = (one_dimensional_idx-i) / d_N[0];       // subtract from global and divide out first, gives   temp = j + k*N[1]  
+    unsigned int one_dimensional_idx_unsigned = (unsigned int) one_dimensional_idx; 
+
+    i      = one_dimensional_idx_unsigned % d_N[0];           // first index from modding out the first dimension 
+    temp   = (one_dimensional_idx_unsigned-i) / d_N[0];       // subtract from global and divide out first, gives   temp = j + k*N[1]  
     j      = temp % d_N[1];                 // get j 
     k      = (temp - j)/d_N[1];             // temp - j = k*N[1]
     

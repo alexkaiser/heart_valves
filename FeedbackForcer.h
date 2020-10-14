@@ -82,7 +82,7 @@ class FeedbackForcer : public CartGridFunction
 
   inline unsigned int get_1d_idx(const double *point);
   inline unsigned int get_1d_idx_from_3d_idx(const int *idx);
-  inline void get_3d_idx(const unsigned int one_dimensional_idx, unsigned int *idx);
+  inline void get_3d_idx(const int one_dimensional_idx, int *idx);
   inline bool in_bounds(const int *idx); 
 
   CirculationModel_with_lv* d_circ_model_with_lv; 
@@ -90,6 +90,7 @@ class FeedbackForcer : public CartGridFunction
   CirculationModel_aorta*   d_circ_model_aorta; 
 
   bool d_damping_outside; 
+  bool d_damping_initialized; 
   unsigned int d_N[NDIM]; 
   int d_N_Eulerian_total; 
   double d_dx; 
