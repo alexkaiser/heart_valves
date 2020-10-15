@@ -696,7 +696,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                     const double U_new     = U_new_data ? (*U_new_data)(i_s) : 0.0;
                     const double U         = (cycle_num > 0) ? 0.5 * (U_new + U_current) : U_current;
 
-                    if ((*F_data)(i_s) != 0.0){
+                    if ((*F_data)(i_s) == 0.0){
                         (*F_data)(i_s) += -k_full_clamp * U;
                     }
 
