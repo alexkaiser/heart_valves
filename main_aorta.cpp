@@ -439,6 +439,10 @@ int main(int argc, char* argv[])
 
             bool rcr_bcs_on = true;
 
+            // start with a linear ramp up in pressure 
+            bool P_initial_aorta_equal_to_ventricle = true; 
+            double rcr_on_time = 0.1; 
+
             CirculationModel_aorta *circ_model_aorta = new CirculationModel_aorta(input_db,
                                                                              fourier_series_ventricle, 
                                                                              ventricle_vertices_file_name,
@@ -447,7 +451,9 @@ int main(int argc, char* argv[])
                                                                              t_offset_start_bcs_unscaled, 
                                                                              time_integrator->getIntegratorTime(), 
                                                                              P_aorta_0,
-                                                                             rcr_bcs_on); 
+                                                                             rcr_bcs_on, 
+                                                                             P_initial_aorta_equal_to_ventricle, 
+                                                                             rcr_on_time); 
 
             // Create Eulerian boundary condition specification objects.
             vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM);

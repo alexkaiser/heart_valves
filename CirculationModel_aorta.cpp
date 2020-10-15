@@ -53,7 +53,9 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
                                                const double  t_offset_bcs_unscaled, 
                                                const double  initial_time, 
                                                double P_initial_aorta,
-                                               bool rcr_bcs_on)
+                                               bool rcr_bcs_on,
+                                               bool P_initial_aorta_equal_to_ventricle,
+                                               double rcr_on_time)
     : 
       d_object_name("circ_model_aorta"),  // constant name here  
       d_registered_for_restart(true),      // always true
@@ -64,14 +66,15 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
       d_Q_ventricle(0.0), 
       d_Q_aorta(0.0),
       d_time(initial_time), 
-      d_aorta_P(P_initial_aorta), 
       d_aorta_P_Wk(P_initial_aorta),
       d_p_extender_mean(0.0),
       d_p_extender_point(0.0),
       d_area_ventricle(0.0),
       d_area_aorta(0.0),
       d_area_initialized(false), 
-      d_rcr_bcs_on(rcr_bcs_on)
+      d_rcr_bcs_on(rcr_bcs_on), 
+      d_P_initial_aorta_equal_to_ventricle(P_initial_aorta_equal_to_ventricle), 
+      d_rcr_on_time(rcr_on_time)
 {
     
     if (d_registered_for_restart)
@@ -165,6 +168,33 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
     aorta_file.close(); 
     d_aorta_axis = 2; 
     d_aorta_side = 1; 
+
+    if (d_P_initial_aorta_equal_to_ventricle) {
+        double t_reduced = d_time - d_cycle_duration * floor(d_time/d_cycle_duration); 
+
+        // fourier series has its own period, scale to that 
+        double t_scaled = t_reduced * (d_fourier_ventricle->L  / d_cycle_duration); 
+
+        // start offset some arbitrary time in the cardiac cycle, but this is relative to the series length 
+        double t_scaled_offset = t_scaled + d_t_offset_bcs_unscaled; 
+
+        // Fourier data here
+        // index without periodicity 
+        unsigned int k = (unsigned int) floor(t_scaled_offset / (d_fourier_ventricle->dt));
+        
+        // // take periodic reduction
+        int idx = k % (d_fourier_ventricle->N_times);
+
+        if (idx != 0){
+            TBOX_ERROR("must use first index for initial pressure"); 
+        }
+
+        d_aorta_P = MMHG_TO_CGS * this->d_fourier_ventricle->values[idx];
+    }
+    else{
+        d_aorta_P = P_initial_aorta; 
+    }
+
 
     pout << "passed contstructor\n"; 
 
@@ -327,9 +357,15 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
     if (d_rcr_bcs_on){
         // The downstream pressure is determined by a three-element Windkessel model.
 
-        d_aorta_P_Wk = ((d_aorta_C / dt) * d_aorta_P_Wk + d_Q_aorta) / (d_aorta_C / dt + 1.0 / d_aorta_R_distal);        
-        d_aorta_P = d_aorta_P_Wk + d_aorta_R_proximal * d_Q_aorta;
-
+        if ((d_P_initial_aorta_equal_to_ventricle) && (d_time < d_rcr_on_time)){
+            // linear interpolation 
+            d_aorta_P = (1 - d_time/d_rcr_on_time) * MMHG_TO_CGS * this->d_fourier_ventricle->values[0] + 
+                        (    d_time/d_rcr_on_time) * d_aorta_P_Wk; // wk pressure is the end pressure for the interpolation
+        }
+        else{
+            d_aorta_P_Wk = ((d_aorta_C / dt) * d_aorta_P_Wk + d_Q_aorta) / (d_aorta_C / dt + 1.0 / d_aorta_R_distal);        
+            d_aorta_P = d_aorta_P_Wk + d_aorta_R_proximal * d_Q_aorta;
+        }
     }
 
     // print_summary();

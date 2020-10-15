@@ -85,6 +85,9 @@ public:
     double d_p_extender_mean; 
     double d_p_extender_point; 
 
+    bool d_P_initial_aorta_equal_to_ventricle; 
+    double d_rcr_on_time; 
+
     /*!
      * \brief The level of the patch hierarchy on which the Lagrangian
      * structures that interface the boundary are located.
@@ -102,7 +105,9 @@ public:
                                                const double  t_offset_bcs_unscaled, 
                                                const double  initial_time, 
                                                double P_initial_aorta,
-                                               bool rcr_bcs_on);  
+                                               bool rcr_bcs_on,
+                                               bool P_initial_aorta_equal_to_ventricle = false,
+                                               double rcr_on_time = 0.1);  
 
     /*!
      * \brief Destructor.
