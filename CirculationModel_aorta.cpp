@@ -169,27 +169,8 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
     d_aorta_axis = 2; 
     d_aorta_side = 1; 
 
-    if (d_P_initial_aorta_equal_to_ventricle) {
-        double t_reduced = d_time - d_cycle_duration * floor(d_time/d_cycle_duration); 
-
-        // fourier series has its own period, scale to that 
-        double t_scaled = t_reduced * (d_fourier_ventricle->L  / d_cycle_duration); 
-
-        // start offset some arbitrary time in the cardiac cycle, but this is relative to the series length 
-        double t_scaled_offset = t_scaled + d_t_offset_bcs_unscaled; 
-
-        // Fourier data here
-        // index without periodicity 
-        unsigned int k = (unsigned int) floor(t_scaled_offset / (d_fourier_ventricle->dt));
-        
-        // // take periodic reduction
-        int idx = k % (d_fourier_ventricle->N_times);
-
-        if (idx != 0){
-            TBOX_ERROR("must use first index for initial pressure"); 
-        }
-
-        d_aorta_P = MMHG_TO_CGS * this->d_fourier_ventricle->values[idx];
+    if (d_P_initial_aorta_equal_to_ventricle){
+        d_aorta_P = MMHG_TO_CGS * this->d_fourier_ventricle->values[0];
     }
     else{
         d_aorta_P = P_initial_aorta; 
