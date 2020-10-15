@@ -529,6 +529,8 @@ int CirculationModel_aorta::point_in_aorta(double testx, double testy, int axis,
         fout << "max_p_aorta_after_first_beat = max(p_aorta(floor(end/3):end))\n"; 
         fout << "mean_p_aorta = mean(p_aorta)\n"; 
         fout << "mean_p_wk    = mean(p_wk)\n"; 
+        fout << "max_p_exender_mean = max(p_extender_mean)\n"; 
+        fout << "max_p_exender_point = max(p_extender_point)\n"; 
         fout << "mean_p_lv    = mean(p_lv)\n"; 
 
     }
