@@ -679,7 +679,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
             double k_full_clamp; 
             if (cycle_num > 0){
                 // k_full_clamp = (1 - data_time/FULL_FLOW_CLAMP_TIME) * 0.25 * rho / dt;
-                k_full_clamp = 0.25 * rho / dt;
+                k_full_clamp = 0.5 * rho / dt;
             }
             else{
                 k_full_clamp = 0.0; 
