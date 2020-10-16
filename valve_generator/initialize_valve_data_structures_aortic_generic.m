@@ -73,7 +73,8 @@ valve.name = name;
 % does not place partition
 valve.in_heart = true; 
 
-fused_commissure = false; 
+fused_commissure = true;
+cusp_fused = 0; 
 
 % name 
 if valve.in_heart
@@ -89,7 +90,7 @@ if valve.in_heart
     % for normal_3
     th = 2*pi/3; 
     valve.initial_translation_aortic = -0.05 * [cos(th); sin(th); 0]; 
-    valve.initial_rotation_aortic = rotation_matrix_z(pi/3 + pi/12 + pi/48);
+    valve.initial_rotation_aortic = rotation_matrix_z(pi/3 + pi/12 + pi/48 + (cusp_fused * 2*pi/3));
     valve.transformation_vertex_file = 'aortic_annulus.vertex';
     
 else 
