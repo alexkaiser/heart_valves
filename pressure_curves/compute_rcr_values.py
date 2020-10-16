@@ -76,7 +76,7 @@ if __name__== "__main__":
     # P_mean = 1.0433437500000039e+02
     
     # 5.6 L/min
-    Q_mean = 5600.0 / 60 # ml/s 
+    Q_mean = 6100.0 / 60 # ml/s 
 
     ratio_prox_to_distal_resistors = 77.0 / 1185.0 
 
