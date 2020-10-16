@@ -74,7 +74,7 @@ valve.name = name;
 valve.in_heart = true; 
 
 fused_commissure = true;
-cusp_fused = 1; 
+cusp_fused = 2; 
 
 % name 
 if valve.in_heart
