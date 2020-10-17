@@ -74,7 +74,6 @@ public:
     unsigned int  d_current_idx_series; 
     double        d_Q_ventricle; 
     double        d_Q_aorta;
-    double        d_Q_left_pa;
     double        d_Q_valve;
     double        d_time; 
     double        d_area_ventricle; 

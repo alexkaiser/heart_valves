@@ -169,13 +169,14 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
     d_aorta_axis = 2; 
     d_aorta_side = 1; 
 
-    if (d_P_initial_aorta_equal_to_ventricle){
-        d_aorta_P = MMHG_TO_CGS * this->d_fourier_ventricle->values[0];
+    if (!from_restart){
+        if (d_P_initial_aorta_equal_to_ventricle){
+            d_aorta_P = MMHG_TO_CGS * this->d_fourier_ventricle->values[0];
+        }
+        else{
+            d_aorta_P = P_initial_aorta; 
+        }
     }
-    else{
-        d_aorta_P = P_initial_aorta; 
-    }
-
 
     pout << "passed contstructor\n"; 
 
@@ -513,6 +514,9 @@ int CirculationModel_aorta::point_in_aorta(double testx, double testy, int axis,
         fout << "max_p_exender_mean = max(p_extender_mean)\n"; 
         fout << "max_p_exender_point = max(p_extender_point)\n"; 
         fout << "mean_p_lv    = mean(p_lv)\n"; 
+        fout << "end_flux    = net_flux(end)\n"; 
+        fout << "max_flux    = max(net_flux)\n"; 
+        fout << "dairy off\n"; 
 
     }
     return;
