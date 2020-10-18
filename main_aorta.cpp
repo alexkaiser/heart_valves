@@ -372,7 +372,7 @@ int main(int argc, char* argv[])
 
         #ifdef USE_CIRC_MODEL_AORTA
 
-            bool damping_outside = true; 
+            bool damping_outside = false; 
              
             dt = input_db->getDouble("DT");
 
