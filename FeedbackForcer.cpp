@@ -724,7 +724,7 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
     
     // get data from petsc arrays
     int N_Lagrangian;            // keeps the full list of all three components 
-    
+
     // read file here 
     ifstream f; 
     f.open(lag_file_name.c_str(), ios::in);
@@ -819,9 +819,12 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
         
         this->get_3d_idx(idx_one_dimensional, idx); 
         
-        for(int i=0; i<=1; i++){
-            for(int j=0; j<=1; j++){
-                for(int k=0; k<=1; k++){
+        int min_range = -2; 
+        int max_range = 2; 
+
+        for(int i=min_range; i<=max_range; i++){
+            for(int j=min_range; j<=max_range; j++){
+                for(int k=min_range; k<=max_range; k++){
                 
                     idx_nbr[0] = idx[0] + i; 
                     idx_nbr[1] = idx[1] + j; 
@@ -920,6 +923,31 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
         }
 
     }
+
+    bool debug_plot_file = false; 
+    if (debug_plot_file){
+        std::ofstream mask_data;
+        mask_data.open("mask_data.csv", ios_base::out | ios_base::trunc);
+
+        mask_data << "x, y, z, v \n"; 
+
+        for(int i=0; i<d_N_Eulerian_total; i++){
+            get_3d_idx(i, idx); 
+
+            double x = d_dx * idx[0] + d_bdry_low[0]; 
+            double y = d_dx * idx[1] + d_bdry_low[1]; 
+            double z = d_dx * idx[2] + d_bdry_low[2]; 
+
+            if (indices_one_dimensional[i] != 0){
+                mask_data << x << ", " << y << ", " << z << ", " << indices_one_dimensional[i] << "\n";                 
+            }
+
+
+        }
+        mask_data.close(); 
+
+    }
+
 
     delete[] indices_one_dimensional; 
 
