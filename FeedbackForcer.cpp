@@ -192,49 +192,6 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
         }
     
     #endif
-    
-
-    if (d_damping_outside){
-        
-        if(!d_damping_initialized){
-            TBOX_ERROR("damping on but not initialized"); 
-        }
-
-        // Clamp the velocity in the interior of the rigid solid.
-        for (int component = 0; component < NDIM; ++component){
-            for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
-                const Index<NDIM>& i = b();
-                const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
-                const double U_current = U_current_data ? (*U_current_data)(i_s) : 0.0;
-                const double U_new = U_new_data ? (*U_new_data)(i_s) : 0.0;
-                const double U = (cycle_num > 0) ? 0.5 * (U_new + U_current) : U_current;
-                
-                double X[NDIM];
-                for (int d = 0; d < NDIM; ++d){
-                    X[d] = x_lower[d] + dx[d] * (double(i(d) - patch_box.lower(d)) + (d == component ? 0.0 : 0.5));
-                }
-
-                int idx = this->get_1d_idx(X); 
-
-                // top mask may be 1/2 mesh width over because of staggered scheme 
-                // just skip these points 
-                double mask = (idx < d_N_Eulerian_total) ? d_masks_linear_array[idx] : 0.0; 
-
-                (*F_data)(i_s) += (mask) * (-kappa * U);
-
-                // if ((idx < 0) || (idx >= d_N_Eulerian_total)){
-                //     pout << "bad index, idx = " << idx << ", X = " << X[0] << ", " << X[1] << ", " << X[2] << ")\n"; 
-                //     pout << "in outside damping, (*F_data)(i_s) = " << (*F_data)(i_s) << ", U = " <<  U << ", mask = " << mask << "\n\n"; 
-                // }
-                if (!((mask == 0.0) || (mask == 1.0))){
-                    pout << "bad mask value without bad index:\n"; 
-                    pout << "in outside damping, (*F_data)(i_s) = " << (*F_data)(i_s) << ", U = " <<  U << ", mask = " << mask << "\n\n"; 
-                }
-
-            }
-        }
-    }
-
 
 
     #ifdef OPEN_BOUNDARY_STABILIZATION
@@ -706,6 +663,71 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
     #endif
 
 
+    if (d_damping_outside){
+        
+        if(!d_damping_initialized){
+            TBOX_ERROR("damping on but not initialized"); 
+        }
+
+        bool debug_plot_file = false; 
+        static bool debug_file_writen = false; 
+        std::ofstream mask_data;
+        if (debug_plot_file && !debug_file_writen){
+            mask_data.open("mask_data.csv", ios_base::out | ios_base::trunc);
+            mask_data << "x, y, z, v \n"; 
+        }
+
+
+        // Clamp the velocity in the interior of the rigid solid.
+        for (int component = 0; component < NDIM; ++component){
+            for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
+                const Index<NDIM>& i = b();
+                const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
+                const double U_current = U_current_data ? (*U_current_data)(i_s) : 0.0;
+                const double U_new = U_new_data ? (*U_new_data)(i_s) : 0.0;
+                const double U = (cycle_num > 0) ? 0.5 * (U_new + U_current) : U_current;
+                
+                double X[NDIM];
+                for (int d = 0; d < NDIM; ++d){
+                    X[d] = x_lower[d] + dx[d] * (double(i(d) - patch_box.lower(d)) + (d == component ? 0.0 : 0.5));
+                }
+
+                int idx = this->get_1d_idx(X); 
+
+                // top mask may be 1/2 mesh width over because of staggered scheme 
+                // just skip these points 
+                double mask = (idx < d_N_Eulerian_total) ? d_masks_linear_array[idx] : 0.0; 
+
+                // only apply mask to locations that have not already gotten any damping 
+                if ((*F_data)(i_s) == 0.0){
+                    (*F_data)(i_s) += (mask) * (-kappa * U);
+                }
+
+                // if ((idx < 0) || (idx >= d_N_Eulerian_total)){
+                //     pout << "bad index, idx = " << idx << ", X = " << X[0] << ", " << X[1] << ", " << X[2] << ")\n"; 
+                //     pout << "in outside damping, (*F_data)(i_s) = " << (*F_data)(i_s) << ", U = " <<  U << ", mask = " << mask << "\n\n"; 
+                // }
+                if (!((mask == 0.0) || (mask == 1.0))){
+                    pout << "bad mask value without bad index:\n"; 
+                    pout << "in outside damping, (*F_data)(i_s) = " << (*F_data)(i_s) << ", U = " <<  U << ", mask = " << mask << "\n\n"; 
+                }
+
+                if (debug_plot_file && (!debug_file_writen) && (mask != 0.0)){
+                    mask_data << X[0] << ", " << X[1] << ", " << X[2] << ", " << mask << "\n";
+                }
+
+            }
+        }
+
+        if (debug_plot_file && !debug_file_writen){
+            mask_data.close(); 
+            debug_file_writen = true; 
+        }
+
+
+    }
+
+
     return;
 } // setDataOnPatch
 
@@ -790,9 +812,10 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
         
     // unsigned int N[NDIM]; 
     for(int i=0; i<NDIM; i++){
-        d_N[i] = (int) ((d_bdry_up[i] - d_bdry_low[i]) / d_dx); 
+        // + 1 since things are half a mesh width off with staggered grid depending on component 
+        d_N[i] = (int) ((d_bdry_up[i] - d_bdry_low[i]) / d_dx) + 1; 
     }
-    
+
     d_N_Eulerian_total = d_N[0] * d_N[1] * d_N[2]; 
 
     int *indices_one_dimensional = new int[d_N_Eulerian_total]; 
@@ -819,8 +842,8 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
         
         this->get_3d_idx(idx_one_dimensional, idx); 
         
-        int min_range = -2; 
-        int max_range = 2; 
+        int min_range = 0; 
+        int max_range = 1; 
 
         for(int i=min_range; i<=max_range; i++){
             for(int j=min_range; j<=max_range; j++){
