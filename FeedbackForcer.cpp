@@ -607,10 +607,10 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                     // }
 
                                 }
-                                else{
-                                    // damp all edges outside inlets and outlets
-                                    mask = 1.0; 
-                                }
+                                // else{
+                                //     // damp all edges outside inlets and outlets
+                                //     mask = 1.0; 
+                                // }
 
                                 if (mask > 0.0){
                                     const double x_bdry = (is_lower ? x_lower[axis] : x_upper[axis]);
