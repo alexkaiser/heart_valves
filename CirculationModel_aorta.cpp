@@ -516,7 +516,7 @@ int CirculationModel_aorta::point_in_aorta(double testx, double testy, int axis,
         fout << "mean_p_lv    = mean(p_lv)\n"; 
         fout << "end_flux    = net_flux(end)\n"; 
         fout << "max_flux    = max(net_flux)\n"; 
-        fout << "dairy off\n"; 
+        fout << "diary off\n"; 
 
     }
     return;
