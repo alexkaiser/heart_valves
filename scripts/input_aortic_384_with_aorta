@@ -299,7 +299,7 @@ Main {
    visit_number_procs_per_file = 1
 
 // restart dump parameters
-   restart_dump_interval       = 4000
+   restart_dump_interval       = int(CYCLE_DURATION / (DT*MAX_RESTART_TO_WRITE))
    restart_dump_dirname        = "restart_IB3d_tree_cycle"
 
 // hierarchy data dump parameters
