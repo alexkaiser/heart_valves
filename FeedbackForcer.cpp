@@ -31,7 +31,7 @@
 // #define FLOW_AVERAGER
 
 #define FULL_FLOW_CLAMP 
-#define FULL_FLOW_CLAMP_TIME 0.1
+#define FULL_FLOW_CLAMP_TIME 0.2
 
 /////////////////////////////// NAMESPACE ////////////////////////////////////
 
