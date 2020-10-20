@@ -635,8 +635,8 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
             // from max 
             double k_full_clamp; 
             if (cycle_num > 0){
-                k_full_clamp = (1 - data_time/FULL_FLOW_CLAMP_TIME) * 0.25 * rho / dt;
-                // k_full_clamp = 0.25 * rho / dt;
+                // k_full_clamp = (1 - data_time/FULL_FLOW_CLAMP_TIME) * 0.25 * rho / dt;
+                k_full_clamp = 0.25 * rho / dt;
             }
             else{
                 k_full_clamp = 0.0; 
@@ -653,9 +653,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                     const double U_new     = U_new_data ? (*U_new_data)(i_s) : 0.0;
                     const double U         = (cycle_num > 0) ? 0.5 * (U_new + U_current) : U_current;
 
-                    if ((*F_data)(i_s) == 0.0){
-                        (*F_data)(i_s) += -k_full_clamp * U;
-                    }
+                    (*F_data)(i_s) += -k_full_clamp * U;                    
 
                 }
             }
