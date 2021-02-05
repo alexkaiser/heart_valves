@@ -28,6 +28,14 @@ else
     axis_vec_flow     = [0 2.4 -700 800];
 end
 
+bicuspid_paper = true; 
+if bicuspid_paper
+    nframes = 1442; 
+    axis_vec_pressure = [0 2.4 -5 150]; 
+    axis_vec_flow     = [0 2.4 -300 600];
+end 
+
+
 addpath('~/mitral_fully_discrete/scripts')
 addpath('~/copies_scripts')
 
