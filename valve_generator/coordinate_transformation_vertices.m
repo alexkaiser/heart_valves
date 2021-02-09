@@ -1,4 +1,4 @@
-function vertices = coordinate_transformation_vertices(vertices, ring_boundary_file, R_0, T_0)
+function [vertices normal] = coordinate_transformation_vertices(vertices, ring_boundary_file, R_0, T_0)
 % 
 % takes file containing ring points 
 % applies rigid translations and rotations that takes the unit circle to 

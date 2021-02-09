@@ -31,8 +31,8 @@ end
 bicuspid_paper = true; 
 if bicuspid_paper
     nframes = 1442; 
-    axis_vec_pressure = [0 2.4 -5 150]; 
-    axis_vec_flow     = [0 2.4 -300 600];
+    axis_vec_pressure = [0 2.4 -5 160]; 
+    axis_vec_flow     = [0 2.4 -300 800];
 end 
 
 

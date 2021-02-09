@@ -88,12 +88,14 @@ if valve.in_heart
     valve.tight_cylinder = true; 
     valve.z_extra_cylinder = 0.3; 
                                      
-    if mri_box
-        valve.initial_rotation_aortic = rotation_matrix_y(-pi/2) * rotation_matrix_z(pi/6); 
-    else 
-        valve.initial_rotation_aortic = rotation_matrix_z(pi/4); 
-        valve.transformation_vertex_file = 'aortic_annulus.vertex';
-    end 
+    % for normal_1
+    % valve.initial_rotation_aortic = rotation_matrix_z(pi/4); 
+    
+    % for normal_3
+    th = 2*pi/3; 
+    valve.initial_translation_aortic = -0.05 * [cos(th); sin(th); 0]; 
+    valve.initial_rotation_aortic = rotation_matrix_z(pi/3 + pi/12 + pi/48);
+    valve.transformation_vertex_file = 'aortic_annulus.vertex';
 else 
     valve.base_name = sprintf('aortic_%d', N); 
 end 
