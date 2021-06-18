@@ -57,8 +57,8 @@ Z_HIGH = Z_LOW + NZ * DX_FLUID
 //left_pa_C = 0.00038921545077
 //left_pa_R_distal = 1738.04767265437044
 
-right_pa_R = 100.0 
-left_pa_R  = 100.0
+right_pa_R = 50.0 
+left_pa_R  = 50.0
 
 
 
