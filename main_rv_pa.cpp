@@ -96,9 +96,6 @@ inline double deriv_spring_aortic_circ(double R, const double* params, int lag_m
 inline double spring_function_aortic_rad(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
 inline double deriv_spring_aortic_rad(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
 
-inline double spring_function_compressive_only_linear_spring(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
-inline double deriv_spring_compressive_only_linear_spring(double R, const double* params, int lag_mastr_idx, int lag_slave_idx);
-
 
 #define DEBUG_OUTPUT 0 
 #define ENABLE_INSTRUMENTS
@@ -110,12 +107,6 @@ inline double deriv_spring_compressive_only_linear_spring(double R, const double
 #define MMHG_TO_CGS 1333.22368
 #define CGS_TO_MMHG 0.000750061683
 #define MPa_TO_CGS 1.0e7
-
-#define SOURCE_ON_TIME       0.1
-#define CONST_SRC_TIME       0.3
-#define CONST_SRC_STRENGTH  93.0
-
-#define MAX_STEP_FOR_CHANGE 1000
 
 
 namespace{
@@ -285,7 +276,6 @@ int main(int argc, char* argv[])
         ib_force_fcn->registerSpringForceFunction(1, &spring_function_collagen,    &deriv_spring_collagen);
         ib_force_fcn->registerSpringForceFunction(2, &spring_function_aortic_circ, &deriv_spring_aortic_circ);
         ib_force_fcn->registerSpringForceFunction(3, &spring_function_aortic_rad,  &deriv_spring_aortic_rad);
-        ib_force_fcn->registerSpringForceFunction(4, &spring_function_compressive_only_linear_spring,  &deriv_spring_compressive_only_linear_spring);
 
         ib_method_ops->registerIBLagrangianForceFunction(ib_force_fcn);
         
@@ -438,6 +428,8 @@ int main(int argc, char* argv[])
 
         #ifdef USE_CIRC_MODEL_RV_PA
              
+            bool damping_outside = true; 
+
             dt = input_db->getDouble("DT");
 
             std::string fourier_coeffs_name_rv; 
@@ -504,13 +496,28 @@ int main(int argc, char* argv[])
                 t_offset_start_bcs_unscaled = 0.0; 
             }
 
+            std::string vessel_file_name; 
+            if (input_db->keyExists("VESSEL_FILENAME")){
+                vessel_file_name = input_db->getString("VESSEL_FILENAME");
+            }
+            else {
+                pout << "VESSEL_FILENAME not found, damping_outside vessel is off\n"; 
+                damping_outside = false; 
+                vessel_file_name = ""; 
+            }
+
+
             // start in physical time with relation to Fourier series 
             double t_offeset_start = t_offset_start_bcs_unscaled * (t_cycle_length / fourier_series_rv->L);
 
             fourier_series_data *fourier_series_lpa = new fourier_series_data(fourier_coeffs_name_lpa.c_str(), dt);
 
-            double P_initial_pa = 32.0 * MMHG_TO_CGS; 
-            bool rcr_bcs_on = true;
+            // 
+            double P_initial_pa = fourier_series_lpa->values[0]; //32.0 * MMHG_TO_CGS; 
+            pout << "P_initial_pa = " << P_initial_pa << "\n"; 
+
+            bool rcr_bcs_on = false;
+            bool resistance_bcs_on = true; 
 
             CirculationModel_RV_PA *circ_model_rv_pa = new CirculationModel_RV_PA(input_db,
                                                                                   fourier_series_rv, 
@@ -523,7 +530,8 @@ int main(int argc, char* argv[])
                                                                                   t_offset_start_bcs_unscaled, 
                                                                                   time_integrator->getIntegratorTime(), 
                                                                                   P_initial_pa,
-                                                                                  rcr_bcs_on); 
+                                                                                  rcr_bcs_on,
+                                                                                  resistance_bcs_on); 
 
             // Create Eulerian boundary condition specification objects.
             vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM);
@@ -533,26 +541,12 @@ int main(int argc, char* argv[])
             navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
 
             // flow straightener at boundary 
-            Pointer<FeedbackForcer> feedback_forcer = new FeedbackForcer(navier_stokes_integrator, patch_hierarchy, NULL, circ_model_rv_pa);
+            Pointer<FeedbackForcer> feedback_forcer = new FeedbackForcer(navier_stokes_integrator, patch_hierarchy, NULL, circ_model_rv_pa, NULL, damping_outside, vessel_file_name, right_ventricle_vertices_file_name);
             time_integrator->registerBodyForceFunction(feedback_forcer);
 
 
         #endif // #ifdef USE_CIRC_MODEL_RV_PA
 
-
-        #ifdef MOVING_PAPILLARY
-            #ifdef FOURIER_SERIES_BODY_FORCE
-                
-                // get base name and 
-                std::string structure_name = input_db->getString("NAME"); 
-                
-                papillary_info* papillary = initialize_moving_papillary_info(structure_name, fourier_series, l_data_manager); 
-                
-            #else
-                pout << "other papillary movement not implemented, must use periodic with fourier series for now\n";
-                SAMRAI_MPI::abort();
-            #endif
-        #endif
 
 
         // Set up visualization plot file writers.
@@ -683,17 +677,6 @@ int main(int argc, char* argv[])
                     prev_step_initialized = true;
             }
             
-            // update target locations if they are moving
-            #ifdef MOVING_PAPILLARY
-                #ifdef FOURIER_SERIES_BODY_FORCE
-                    if (z_periodic){
-                        update_target_point_positions(patch_hierarchy, l_data_manager, loop_time, dt, fourier_series, papillary);
-                    }
-                #else
-                    pout << "other papillary movement not implemented, must use periodic with fourier series for now\n";
-                    SAMRAI_MPI::abort();
-                #endif
-            #endif
                         
             // step the whole thing
             time_integrator->advanceHierarchy(dt);
@@ -807,20 +790,7 @@ int main(int argc, char* argv[])
                     SAMRAI_MPI::abort();
                 }
             }
-            
-            
-            if (iteration_num > MAX_STEP_FOR_CHANGE){
-                // if there is a change 
-                if (dt != dt_prev){
-                    // ignore the first and last steps  
-                    if (!last_step){
-                        pout << "Timestep change encountered (manual, after max change step).\n" ;
-                        pout << "dt = " << dt << ",\tdt_prev = " << dt_prev << "\n";
-                        SAMRAI_MPI::abort();
-                    }
-                }
-            }
-                        
+                                    
 
             if (dump_timer_data && (iteration_num % timer_dump_interval == 0 || last_step))
             {
@@ -1013,30 +983,3 @@ inline double deriv_spring_aortic_rad(double R, const double* params, int lag_ma
 } // deriv_spring_aortic_rad
 
 
-inline double spring_function_compressive_only_linear_spring(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
-    // function idx 4
-    const double kappa    = params[0];
-    const double rest_len = params[1];
-    
-    // Strain, dimension 1
-    const double E = R/rest_len - 1.0;
-    
-    // Compute the force
-    if (E > 0.0){
-        // zero under extension 
-        return 0.0; 
-    }
-    else{
-        // linear for compressive strains
-        return kappa * E; 
-    }
-    return 0.0;
-} // spring_function_compressive_only_linear_spring
-
-
-inline double deriv_spring_compressive_only_linear_spring(double R, const double* params, int lag_mastr_idx, int lag_slave_idx){
-    // not implemented
-
-    SAMRAI_MPI::abort();
-    return 0.0;
-} // deriv_spring_compressive_only_linear_spring

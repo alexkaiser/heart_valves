@@ -4,7 +4,7 @@ file_name = 'meshes/aortic_semifinal_6fa5a93/aortic_384_final_data.mat';
 load(file_name, 'valve', 'valve_with_reference', 'N')
 
 
-closed_valve_figure = false; 
+closed_valve_figure = true; 
 if closed_valve_figure 
     fig = figure; 
     set(fig, 'Renderer', 'Painters');

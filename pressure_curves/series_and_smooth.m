@@ -1,4 +1,4 @@
-function [a_0 a_n b_n Series] = series_and_smooth(points_one_cycle, dt, bump_radius, n_fourier_coeffs, plots)
+function [a_0 a_n b_n Series times linear_interp_vals_one_cycle] = series_and_smooth(points_one_cycle, dt, bump_radius, n_fourier_coeffs, plots)
 % 
 % Takes data, computes piecewise linear interpolant, 
 % smooths with convolution with cosine squared bump,
@@ -43,6 +43,8 @@ n_times = length(times);
 
 % piecewise linear interpolant 
 vals = interp1(points_one_cycle(:,1), points_one_cycle(:,2), times); 
+
+linear_interp_vals_one_cycle = vals; 
 
 if plots 
     fig = figure; 

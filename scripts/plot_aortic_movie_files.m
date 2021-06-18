@@ -54,7 +54,7 @@ for step = 0:(nframes-1)  % floor(nframes/2)
 
     hold on
     % plot(times, p_wk, ':k')
-    plot(times(range), p_lv(range), '-.k', 'LineWidth', width)
+    plot(times(range), p_lv(range), '--k', 'LineWidth', width)
     legend('Aorta', 'Left Ventricle', 'Location','NorthEast', 'AutoUpdate','off');
     xlabel('Time (s)');
     ylabel('Pressure (mmHg)');
@@ -70,7 +70,7 @@ for step = 0:(nframes-1)  % floor(nframes/2)
     ax.FontName = font;  
         
     hold on
-    plot(times(range), net_flux(range), '-.k', 'LineWidth', width)
+    plot(times(range), net_flux(range), '--k', 'LineWidth', width)
     legend('Flow', 'Cumulative Flow', 'Location', 'NorthEast', 'AutoUpdate','off')
     plot(times, 0*net_flux,':k', 'LineWidth', width/2); 
     xlabel('Time (s)')

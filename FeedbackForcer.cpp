@@ -947,7 +947,7 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
 
     }
 
-    bool debug_plot_file = false; 
+    bool debug_plot_file = true; 
     if (debug_plot_file){
         std::ofstream mask_data;
         mask_data.open("mask_data.csv", ios_base::out | ios_base::trunc);
@@ -961,8 +961,8 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
             double y = d_dx * idx[1] + d_bdry_low[1]; 
             double z = d_dx * idx[2] + d_bdry_low[2]; 
 
-            if (indices_one_dimensional[i] != 0){
-                mask_data << x << ", " << y << ", " << z << ", " << indices_one_dimensional[i] << "\n";                 
+            if (d_masks_linear_array[i] != 0){
+                mask_data << x << ", " << y << ", " << z << ", " << d_masks_linear_array[i] << "\n";                 
             }
 
 

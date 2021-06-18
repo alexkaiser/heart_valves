@@ -31,7 +31,7 @@ pa_pressure = [pa_pressure(end); pa_pressure];
 
 cycle_length = max(times); 
 base_name = 'fourier_coeffs';
-bump_radius = .017; 
+bump_radius = .05; % .017; 
 n_fourier_coeffs = 600; 
 
 points_one_cycle_right_ventricle = [times, rv_pressure]; 
@@ -82,7 +82,7 @@ points_one_cycle_pa              = [times, pa_pressure];
 suffix_right_ventricle = "_right_ventricle"; 
 
 file_name = strcat(base_name, suffix_right_ventricle, '.txt'); 
-[a_0_right_ventricle a_n_right_ventricle b_n_right_ventricle Series_right_ventricle] = series_and_smooth(points_one_cycle_right_ventricle, dt, bump_radius, n_fourier_coeffs, plots); 
+[a_0_right_ventricle a_n_right_ventricle b_n_right_ventricle Series_right_ventricle times_rv linear_interp_vals_rv] = series_and_smooth(points_one_cycle_right_ventricle, dt, bump_radius, n_fourier_coeffs, plots); 
 
 t = 0:dt:cycle_length; 
 vals_right_ventricle_series = Series_right_ventricle(t); 
@@ -95,7 +95,7 @@ output_series_coeffs_to_txt(a_0_right_ventricle, a_n_right_ventricle, b_n_right_
 suffix_pa = "_pa"; 
 
 file_name = strcat(base_name, suffix_pa, '.txt'); 
-[a_0_pa a_n_pa b_n_pa Series_pa] = series_and_smooth(points_one_cycle_pa, dt, bump_radius, n_fourier_coeffs, plots); 
+[a_0_pa a_n_pa b_n_pa Series_pa times_pa linear_interp_vals_pa] = series_and_smooth(points_one_cycle_pa, dt, bump_radius, n_fourier_coeffs, plots); 
 
 t = 0:dt:cycle_length; 
 vals_pa_series = Series_pa(t); 
@@ -221,9 +221,18 @@ subplot(2,1,1)
 plot(times, p_rv_exp , 'k')
 hold on
 plot(times, p_pa_exp , ':k')
-legend('P_{RV}', 'P_{PA}', 'Location','NorthEastOutside');
+
+% interpolant values on top 
+plot(times_rv, linear_interp_vals_rv)
+plot(times_pa, linear_interp_vals_pa)
+
+legend('P_{RV}', 'P_{PA}', 'rv exp', 'pa exp', 'Location','NorthEastOutside');
 xlabel('t (s)')
 ylabel('P (mmHg)')
+
+
+
+
 subplot(2,1,2)
 plot(times_two_cycles, q_rv_exp, 'k')
 hold on

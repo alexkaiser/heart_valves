@@ -56,6 +56,7 @@ public:
     int     d_right_ventricle_side; 
 
     bool d_rcr_bcs_on; 
+    bool d_resistance_bcs_on; 
 
     const fourier_series_data *d_fourier_right_pa;
     int     d_n_pts_right_pa;
@@ -68,6 +69,7 @@ public:
     double  d_right_pa_R_proximal; 
     double  d_right_pa_R_distal; 
     double  d_right_pa_C;
+    double  d_right_pa_resistance; 
 
     const fourier_series_data *d_fourier_left_pa; 
     int     d_n_pts_left_pa;
@@ -80,6 +82,7 @@ public:
     double  d_left_pa_R_proximal; 
     double  d_left_pa_R_distal; 
     double  d_left_pa_C;
+    double  d_left_pa_resistance;
 
     double  d_cycle_duration;
     double  d_t_offset_bcs_unscaled;
@@ -114,7 +117,8 @@ public:
                                                const double  t_offset_bcs_unscaled, 
                                                const double  initial_time, 
                                                double P_initial_pa,
-                                               bool rcr_bcs_on);  
+                                               bool rcr_bcs_on,
+                                               bool resistance_bcs_on);  
 
     /*!
      * \brief Destructor.

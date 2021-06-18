@@ -56,7 +56,8 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
                                                const double  t_offset_bcs_unscaled, 
                                                const double  initial_time, 
                                                double P_initial_pa,
-                                               bool rcr_bcs_on)
+                                               bool rcr_bcs_on,
+                                               bool resistance_bcs_on)
     : 
       d_object_name("circ_model_rv_pa"),  // constant name here  
       d_registered_for_restart(true),      // always true
@@ -78,7 +79,8 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
       d_area_right_pa(0.0),
       d_area_left_pa (0.0),
       d_area_initialized(false), 
-      d_rcr_bcs_on(rcr_bcs_on)
+      d_rcr_bcs_on(rcr_bcs_on),
+      d_resistance_bcs_on(resistance_bcs_on)
 {
     
     if (d_registered_for_restart)
@@ -111,6 +113,18 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
         else {
             TBOX_ERROR("Must provide valid input_db");
         }
+    }
+
+    if (d_resistance_bcs_on){
+        d_right_pa_resistance = input_db->getDouble("right_pa_R");
+        d_left_pa_resistance  = input_db->getDouble("left_pa_R");
+        std::cout << "input db got values:\n";
+        std::cout << "right: resistance = " << d_right_pa_resistance << "\n";
+        std::cout << "left : R_proximal = " << d_left_pa_resistance << "\n";
+    }
+
+    if (d_rcr_bcs_on && d_resistance_bcs_on){
+        TBOX_ERROR("Cannot us rcr and resistance simulataneously"); 
     }
 
     double x,x_prev,y,y_prev,z,z_prev; 
@@ -427,6 +441,17 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
     // // take periodic reduction
     d_current_idx_series = k % (d_fourier_right_ventricle->N_times);
 
+
+    if (d_resistance_bcs_on){
+        // pressure upstream of resistance determined by series 
+        d_right_pa_P_Wk = d_fourier_right_pa->values[d_current_idx_series]; 
+        d_left_pa_P_Wk  = d_fourier_left_pa->values[d_current_idx_series]; 
+
+        // resistance bcs determine outlet pressure 
+        d_right_pa_P = d_right_pa_P_Wk + d_right_pa_resistance * d_Q_right_pa;
+        d_left_pa_P  = d_left_pa_P_Wk  + d_left_pa_resistance  * d_Q_left_pa;
+    }
+
     // bool debug_out = false; 
     // if (debug_out){
     //     pout << "circ mode: d_time = " << d_time << ", d_current_idx_series = " << d_current_idx_series << "\n"; 
@@ -460,6 +485,7 @@ CirculationModel_RV_PA::putToDatabase(Pointer<Database> db)
     db->putDouble("d_left_pa_P_Wk",d_left_pa_P_Wk);
     db->putDouble("d_time", d_time); 
     db->putBool("d_rcr_bcs_on", d_rcr_bcs_on); 
+    db->putBool("d_resistance_bcs_on", d_resistance_bcs_on); 
     return; 
 } // putToDatabase
 
@@ -649,6 +675,7 @@ CirculationModel_RV_PA::getFromRestart()
     d_left_pa_P_Wk       = db->getDouble("d_left_pa_P_Wk");
     d_time               = db->getDouble("d_time");
     d_rcr_bcs_on         = db->getBool("d_rcr_bcs_on"); 
+    d_resistance_bcs_on  = db->getBool("d_resistance_bcs_on"); 
     return;
 } // getFromRestart
 
