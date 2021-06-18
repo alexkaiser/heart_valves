@@ -403,16 +403,6 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
         d_area_initialized = true;       
     }
 
-    if (d_rcr_bcs_on){
-        // The downstream pressure is determined by a three-element Windkessel model.
-
-        d_right_pa_P_Wk = ((d_right_pa_C / dt) * d_right_pa_P_Wk + d_Q_right_pa) / (d_right_pa_C / dt + 1.0 / d_right_pa_R_distal);        
-        d_right_pa_P = d_right_pa_P_Wk + d_right_pa_R_proximal * d_Q_right_pa;
-
-        d_left_pa_P_Wk = ((d_left_pa_C / dt) * d_left_pa_P_Wk + d_Q_left_pa) / (d_left_pa_C / dt + 1.0 / d_left_pa_R_distal);        
-        d_left_pa_P = d_left_pa_P_Wk + d_left_pa_R_proximal * d_Q_left_pa;
-    }
-
     // print_summary();
 
     // bool debug_out_areas = false; 
@@ -442,14 +432,27 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
     d_current_idx_series = k % (d_fourier_right_ventricle->N_times);
 
 
-    if (d_resistance_bcs_on){
+    if (d_rcr_bcs_on){
+        // The downstream pressure is determined by a three-element Windkessel model.
+
+        d_right_pa_P_Wk = ((d_right_pa_C / dt) * d_right_pa_P_Wk + d_Q_right_pa) / (d_right_pa_C / dt + 1.0 / d_right_pa_R_distal);        
+        d_right_pa_P = d_right_pa_P_Wk + d_right_pa_R_proximal * d_Q_right_pa;
+
+        d_left_pa_P_Wk = ((d_left_pa_C / dt) * d_left_pa_P_Wk + d_Q_left_pa) / (d_left_pa_C / dt + 1.0 / d_left_pa_R_distal);        
+        d_left_pa_P = d_left_pa_P_Wk + d_left_pa_R_proximal * d_Q_left_pa;
+    }
+    else if (d_resistance_bcs_on){
         // pressure upstream of resistance determined by series 
-        d_right_pa_P_Wk = d_fourier_right_pa->values[d_current_idx_series]; 
-        d_left_pa_P_Wk  = d_fourier_left_pa->values[d_current_idx_series]; 
+        d_right_pa_P_Wk = MMHG_TO_CGS * d_fourier_right_pa->values[d_current_idx_series]; 
+        d_left_pa_P_Wk  = MMHG_TO_CGS * d_fourier_left_pa->values[d_current_idx_series]; 
 
         // resistance bcs determine outlet pressure 
         d_right_pa_P = d_right_pa_P_Wk + d_right_pa_resistance * d_Q_right_pa;
         d_left_pa_P  = d_left_pa_P_Wk  + d_left_pa_resistance  * d_Q_left_pa;
+    }
+    else {
+        d_right_pa_P = MMHG_TO_CGS * d_fourier_right_pa->values[d_current_idx_series]; 
+        d_left_pa_P  = MMHG_TO_CGS * d_fourier_left_pa->values[d_current_idx_series]; 
     }
 
     // bool debug_out = false; 
@@ -506,12 +509,12 @@ void CirculationModel_RV_PA::print_summary(){
 
     pout << "rcr_bcs_on = " << d_rcr_bcs_on << "\n"; 
     pout << "% time \t P_right_ventricle (mmHg)\t P_right_pa (mmHg)\t P_left_pa (mmHg)\t Q_right_ventricle (ml/s)\t d_Q_right_pa (ml/s)\t d_Q_right_pa (ml/s)\tQ_valve (ml/s) \t idx" ;
-    if (d_rcr_bcs_on){
+    if (d_rcr_bcs_on || d_resistance_bcs_on){
         pout << "\t right_pa_P_Wk\t left_pa_P_Wk\t "; 
     }
     pout << "\n";
     pout << d_time << " " << P_right_ventricle <<  " " << P_right_pa << " " << P_left_pa << " " << d_Q_right_ventricle << " " << d_Q_right_pa << " " << d_Q_left_pa << " " << d_Q_valve << " " << d_current_idx_series; 
-    if (d_rcr_bcs_on){
+    if (d_rcr_bcs_on || d_resistance_bcs_on){
         pout  << " " << d_right_pa_P_Wk << " " << d_left_pa_P_Wk; 
     }
     pout << "\n";
@@ -561,23 +564,28 @@ void CirculationModel_RV_PA::write_plot_code()
         fout << "];\n";
         fout << "MMHG_TO_CGS = 1333.22368;\n";
         fout << "fig = figure;\n";
-        fout << "times    =  bc_vals(:,1);\n";
-        fout << "p_rv     =  bc_vals(:,2);\n";
-        fout << "p_rpa    =  bc_vals(:,3);\n";
-        fout << "p_lpa    =  bc_vals(:,4);\n";
-        fout << "q_rv     = -bc_vals(:,5);\n";
-        fout << "q_rpa    =  bc_vals(:,6);\n";
-        fout << "q_lpa    =  bc_vals(:,7);\n";
-        fout << "q_valve  =  bc_vals(:,8);\n";
+        fout << "times   =  bc_vals(:,1);\n";
+        fout << "p_rv    =  bc_vals(:,2);\n";
+        fout << "p_rpa   =  bc_vals(:,3);\n";
+        fout << "p_lpa   =  bc_vals(:,4);\n";
+        fout << "q_rv    = -bc_vals(:,5); \n";
+        fout << "q_rpa   =  bc_vals(:,6);\n";
+        fout << "q_lpa   =  bc_vals(:,7);\n";
+        fout << "q_valve =  bc_vals(:,8);\n";
         fout << "p_wk_rpa =  bc_vals(:,9);\n";
         fout << "p_wk_lpa =  bc_vals(:,10);\n";
-        fout << "\n";
+        fout << "load '../bc_variables_experimental.mat'\n";
         fout << "subplot(2,1,1)\n";
         fout << "plot(times, p_rv, 'k')\n";
         fout << "hold on\n";
         fout << "plot(times, p_rpa, ':k')\n";
         fout << "plot(times, p_lpa, '-.k')\n";
-        fout << "legend('P_{RV}', 'P_{RPA}', 'P_{LPA}', 'Location','NorthEastOutside');\n";
+        fout << "plot(times_exp, p_rv_exp)\n";
+        fout << "plot(times_exp, p_pa_exp)\n";
+        fout << "plot(times, p_wk_rpa)\n";
+        fout << "plot(times, p_wk_lpa)\n";
+        fout << "% legend('P RV', 'P RPA', 'PWK RPA', 'P LPA', 'PWK LPA', 'P EXP RV', 'P EXP PA', Location','NorthEastOutside');\n";
+        fout << "legend('P RV', 'P RPA', 'P LPA', 'P EXP RV', 'P EXP PA', 'WK RPA', 'WK LPA', 'Location','NorthEastOutside');\n";
         fout << "xlabel('t (s)')\n";
         fout << "ylabel('P (mmHg)')\n";
         fout << "subplot(2,1,2)\n";
@@ -585,13 +593,15 @@ void CirculationModel_RV_PA::write_plot_code()
         fout << "hold on\n";
         fout << "plot(times, q_rpa, '--k')\n";
         fout << "plot(times, q_lpa, '-.k')\n";
+        fout << "plot(times_two_cycles, q_rv_exp)\n";
         fout << "plot(bc_vals(:,1), zeros(size(q_rv)), ':k')\n";
-        fout << "legend('Q RV', 'Q RPA', 'Q LPA', 'Location', 'NorthEastOutside')\n";
+        fout << "legend('Q RV', 'Q RPA', 'Q LPA', 'Q EXP RV', 'Location', 'NorthEastOutside')\n";
         fout << "xlabel('t (s)')\n";
-        fout << "ylabel('Flow (ml/s), Net Flow (ml)')\n";
+        fout << "ylabel('Flow (ml/s)')\n";
         fout << "set(fig, 'Position', [100, 100, 1000, 750])\n";
         fout << "set(fig,'PaperPositionMode','auto')\n";
-        fout << "printfig(fig, 'bc_model_variables')\n";
+        fout << "printfig(fig, 'bc_model_variables_with_experimental')\n";
+        fout << "q_mean = mean(q_rv)\n";
     }
     return;
 }
@@ -613,7 +623,7 @@ void
         if (!from_restart && !file_initialized)
         {
             ofstream fout(DATA_FILE_NAME.c_str(), ios::out);
-            fout << "% time \t P_right_ventricle (mmHg)\t P_right_pa (mmHg)\t P_left_pa (mmHg)\t d_Q_right_ventricle (ml/s)\t d_Q_right_pa (ml/s)\td_Q_left_pa (ml/s) \td_Q_valve (ml/s)"
+            fout << "% time \t P_right_ventricle (mmHg)\t P_right_pa (mmHg)\t P_left_pa (mmHg)\t d_Q_right_ventricle (ml/s)\t d_Q_right_pa (ml/s)\td_Q_left_pa (ml/s) \td_Q_valve (ml/s) \t d_right_pa_P_Wk \t d_left_pa_P_Wk"
                  << "\n"
                  << "bc_vals = [";
             file_initialized = true;
@@ -628,19 +638,7 @@ void
 
         double P_right_ventricle = d_fourier_right_ventricle->values[d_current_idx_series]; 
 
-        double P_right_pa = 0.0; 
-        double P_left_pa = 0.0; 
-
-        if (d_rcr_bcs_on){
-            P_right_pa        = d_right_pa_P/MMHG_TO_CGS;
-            P_left_pa         = d_left_pa_P/MMHG_TO_CGS;
-        }
-        else{
-            P_right_pa        = d_fourier_right_pa->values[d_current_idx_series];
-            P_left_pa         = d_fourier_left_pa->values[d_current_idx_series];
-        }
-
-        fout << " " << P_right_ventricle <<  " " << P_right_pa << " " << P_left_pa;
+        fout << " " << P_right_ventricle <<  " " << d_right_pa_P/MMHG_TO_CGS << " " << d_left_pa_P/MMHG_TO_CGS;
         fout << " " << d_Q_right_ventricle << " " << d_Q_right_pa << " " << d_Q_left_pa << " " << d_Q_valve;         
         fout << " " << d_right_pa_P_Wk/MMHG_TO_CGS << " " << d_left_pa_P_Wk/MMHG_TO_CGS;
         fout << "; \n";

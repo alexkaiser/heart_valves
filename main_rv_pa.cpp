@@ -829,6 +829,10 @@ int main(int argc, char* argv[])
             circ_model->write_plot_code(); 
         #endif 
         
+        #ifdef USE_CIRC_MODEL_RV_PA
+            circ_model_rv_pa->write_plot_code(); 
+        #endif 
+
         if (SAMRAI_MPI::getRank() == 0){
             std::ofstream done_stream;
             done_stream.open("done.txt", ios_base::out | ios_base::trunc);
