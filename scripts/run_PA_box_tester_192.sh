@@ -62,3 +62,9 @@ python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS"
 # load stuff for movie making 
 source ~/.bash_profile
 python run_parallel_movie.py $SESSION_NAME $SLURM_NTASKS $VIEW_CLIPPING
+
+# convert to paraview formats 
+visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py $SLURM_NTASKS $SLURM_NTASKS
+
+
+

@@ -303,6 +303,7 @@ if mri_box
     
     debug_plot = true; 
     if debug_plot
+        fig = figure; 
         th = linspace(0,2*pi,1000);
         plot(th,valve.z_min_cylinder(th))
         hold on 
@@ -320,9 +321,9 @@ if mri_box
         
         % heights from top of scaffold to minimum 
         plot(angles, heights_theta,'k*')
-        
+
         axis equal
-        
+        printfig(fig, "annulus morphology")
     end 
 end 
 
