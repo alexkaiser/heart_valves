@@ -532,12 +532,18 @@ function [] = output_to_ibamr_format(valve)
                 z_extra_cylinder = 0; 
             end 
             
+            if isfield(valve, 'r_max_cylinder')
+                r_max_cylinder = valve.r_max_cylinder; 
+            else 
+                r_max_cylinder = inf; 
+            end 
+            
             if isfield(valve.skeleton, 'r_of_z')
                 % r that follows z 
-                params_cylinder = place_cylinder(params_cylinder, valve.leaflets(1), r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, eta_net, tight_cylinder, z_extra_cylinder, valve.skeleton.r_of_z); 
+                params_cylinder = place_cylinder(params_cylinder, valve.leaflets(1), r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, eta_net, tight_cylinder, z_extra_cylinder, r_max_cylinder, valve.skeleton.r_of_z); 
             else 
                 % constant r 
-                params_cylinder = place_cylinder(params_cylinder, valve.leaflets(1), r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, eta_net, tight_cylinder, z_extra_cylinder); 
+                params_cylinder = place_cylinder(params_cylinder, valve.leaflets(1), r, ds, valve.z_min_cylinder, valve.z_max_cylinder, valve.n_layers_cylinder, k_rel, k_target_net, eta_net, tight_cylinder, z_extra_cylinder, r_max_cylinder); 
             end 
             
             if valve.in_heart && isfield(valve, 'transformation_vertex_file')
@@ -2051,7 +2057,7 @@ function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac
 
 end 
 
-function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers, k_rel, k_target, eta, tight_cylinder, z_extra, r_of_z)
+function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers, k_rel, k_target, eta, tight_cylinder, z_extra, r_max, r_of_z)
     % Places n_layers cylinders
     % cylinders have axial radial and circumferential fibers 
     % 
@@ -2127,7 +2133,7 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
                 else 
                     r_tmp = r + (r_idx - 1)*dr; 
                 end
-                
+               
                 
                 % first check for exact mesh alignment
                 theta_leaflet_idx = find((theta_tmp == theta_leaflet), 1); 
@@ -2171,6 +2177,11 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
                     end 
                 else 
                     valid = true; 
+                end 
+                
+                % no upper springs
+                if exist('r_max', 'var') && (r_tmp > r_max)
+                    valid = false; 
                 end 
                                 
                 if valid

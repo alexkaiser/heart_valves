@@ -170,6 +170,20 @@ valve.skeleton = get_skeleton_aortic_generic(r, h1, hc);
 
 valve.r = valve.skeleton.r; 
 
+% little nub at top of valve 
+r_subtract_nub = 0.15; 
+valve.skeleton.r_of_z = @(z) r .* ones(size(z)) - (abs(z - 1.2) < .1) .* r_subtract_nub .* cos( (pi/2)*(z - 1.2)/.1 ); 
+                         
+                         
+r_of_z_debug = true; 
+if r_of_z_debug 
+    z_range = linspace(-.2, 1.3, 1000); 
+    figure; 
+    plot(valve.skeleton.r_of_z(z_range), z_range); 
+end
+
+                         
+
 valve.place_cylinder = true; 
 valve.z_max_cylinder = (pi/3) * valve.r; 
 valve.z_min_cylinder = 0.0; 
@@ -256,8 +270,10 @@ dx = 5 /(N/4);
 valve.ds = dx/2; %2*pi*valve.skeleton.r / N; 
 
 if mri_box
-    thickness_cylinder = 0.3; 
+    thickness_cylinder = 0.3 + r_subtract_nub; 
     valve.n_layers_cylinder = ceil(thickness_cylinder/valve.ds) + 1; 
+    
+    valve.r_max_cylinder = 1.3; 
     
     % top scaffold heights relative to table 
     h_top_scaffold_min_table = 0.65; 
@@ -325,6 +341,11 @@ if mri_box
         axis equal
         printfig(fig, "annulus morphology")
     end 
+    
+    
+    
+    
+    
 end 
 
 [leaflet valve] = initialize_leaflet_aortic(name,                                ... 
