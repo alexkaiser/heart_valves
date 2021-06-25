@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=3
+#SBATCH --nodes=4
 #SBATCH --ntasks-per-node=24
 #SBATCH --time=167:00:00
 #SBATCH --mem=185GB
@@ -17,7 +17,7 @@ module load openmpi/2.0.2
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_384__51e9653_pressure_bc
+RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_384_19617dd6_pressure_bc_lil_nub
 mkdir $RUNDIR
 
 # set up run info 

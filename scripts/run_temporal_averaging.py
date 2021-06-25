@@ -73,11 +73,10 @@ if __name__ == '__main__':
     for line in times_file:
         times.append(float(line)) 
 
-    eulerian = False 
+    eulerian = True
     lagrangian = True 
 
-
-    cycle_duration = 0.8 # 8.3250000000000002e-01
+    cycle_duration = 8.3250000000000002e-01
     mri_read_times_per_cycle = 10 
     dt_mri_read = cycle_duration / mri_read_times_per_cycle
     output_times_per_cycle   = 20 
@@ -131,7 +130,7 @@ if __name__ == '__main__':
                 cycle_num = math.floor(t / cycle_duration)
 
                 # skip cycle one 
-                if cycle_num > 0:
+                if cycle_num == 1:
 
                     dir_name = "eulerian_vars" + str(idx).zfill(4)
                     fname    = "eulerian_vars" + str(idx).zfill(4) + '.' + str(proc_num) + '.vtr'
@@ -214,7 +213,7 @@ if __name__ == '__main__':
                     cycle_num = math.floor(t / cycle_duration)
 
                     # skip cycle one 
-                    if cycle_num > 0:
+                    if cycle_num == 1:
 
                         fname    = base_name_lag + str(idx).zfill(4) + '.vtu'
 
