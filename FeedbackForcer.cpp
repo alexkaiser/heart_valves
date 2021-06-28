@@ -947,7 +947,7 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
 
     }
 
-    bool debug_plot_file = true; 
+    bool debug_plot_file = false; 
     if (debug_plot_file){
         std::ofstream mask_data;
         mask_data.open("mask_data.csv", ios_base::out | ios_base::trunc);
