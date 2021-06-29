@@ -3,7 +3,7 @@ import os, sys, glob
 import subprocess
 import math 
 from natsort import natsorted
-
+import multiprocessing 
 
 def write_pvd(base_name, dt, nsteps, extension, nprocs_sim=1):
 
@@ -125,7 +125,7 @@ if __name__ == '__main__':
         times.append(float(line)) 
 
     eulerian = True
-    lagrangian = False 
+    lagrangian = True 
 
     cycles_to_output = [1] # zero indexed 
 
@@ -153,8 +153,17 @@ if __name__ == '__main__':
         base_name_out = "eulerian_vars_mri_freq"
 
         # average all the Eulerian files here 
+        # for idx_mri_read in range(mri_read_times_per_cycle):
+        #     average_eulerian_mesh_one_step(idx_mri_read, eulerian_var_names, times, cycle_duration, cycles_to_output, dt_mri_read, base_dir, base_name_out, extension)
+
+        jobs = []
         for idx_mri_read in range(mri_read_times_per_cycle):
-            average_eulerian_mesh_one_step(idx_mri_read, eulerian_var_names, times, cycle_duration, cycles_to_output, dt_mri_read, base_dir, base_name_out, extension)
+            p = multiprocessing.Process(target=average_eulerian_mesh_one_step, args=(idx_mri_read, eulerian_var_names, times, cycle_duration, cycles_to_output, dt_mri_read, base_dir, base_name_out, extension))
+            jobs.append(p)
+            p.start()
+
+        for p in jobs:
+            p.join()
 
 
         # for idx_output in range(output_times_per_cycle):
