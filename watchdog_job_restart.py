@@ -232,7 +232,7 @@ if __name__ == '__main__':
     number_crash_restarts = 0
     max_crash_restarts = 2
 
-    time.sleep(20*60)
+    time.sleep(wait_time_s)
 
     run_restart = False
 
@@ -279,7 +279,8 @@ if __name__ == '__main__':
                     print 'Exit python watchdog loop.'
                     break
 
-        if mod_time == prev_time:
+        # this was only catching slow initializations, remove for now 
+        if False: #mod_time == prev_time:
             print 'On check number ', check_number, ', modification time unchanged'
             
             try:
