@@ -61,6 +61,51 @@ def read_distributed_vtr(dir_name):
     return blocks.combine()
 
 
+def average_eulerian_mesh_one_step(idx_mri_read, eulerian_var_names, times, cycle_duration, cycles_to_output, dt_mri_read, base_dir, base_name_out, extension):
+
+    # always start with initial eulerian mesh 
+    dir_name = "eulerian_vars" + str(0).zfill(4)
+
+    mesh = read_distributed_vtr(dir_name)
+    n_to_average = 0
+    for var_name in eulerian_var_names: 
+        mesh[var_name] *= 0.0
+
+    # average over times 
+    for idx, t in enumerate(times): 
+
+        # check if time in range 
+        cycle_num = math.floor(t / cycle_duration)
+
+        # skip cycle one 
+        if cycle_num in cycles_to_output:
+            
+            dir_name = "eulerian_vars" + str(idx).zfill(4)
+
+            # time since start of this cycle 
+            t_reduced = t % cycle_duration
+
+            idx_mri_read_temp = math.floor(t_reduced / dt_mri_read)
+
+            if idx_mri_read == idx_mri_read_temp:
+                print("processing step ", idx)
+
+                mesh_tmp = read_distributed_vtr(dir_name)
+
+                for var_name in eulerian_var_names: 
+                    mesh[var_name] += mesh_tmp[var_name]
+                    
+                n_to_average += 1.0
+
+            # print("t = ", t, "t_reduced = ", t_reduced, "idx_mri_read = ", idx_mri_read)
+
+    for var_name in eulerian_var_names: 
+        mesh[var_name] /= float(n_to_average)
+
+    fname = base_name_out + str(idx_mri_read).zfill(4) + '.' + extension
+    mesh.save(base_dir + "/" + fname)    
+
+
 
 if __name__ == '__main__':
 
@@ -80,7 +125,7 @@ if __name__ == '__main__':
         times.append(float(line)) 
 
     eulerian = True
-    lagrangian = True 
+    lagrangian = False 
 
     cycles_to_output = [1] # zero indexed 
 
@@ -92,7 +137,7 @@ if __name__ == '__main__':
 
 
     # set up some directories 
-    base_dir = "vis_data_averaged"
+    base_dir = "vis_data_averaged_parallel"
     if not os.path.exists(base_dir):
         os.mkdir(base_dir)
 
@@ -104,11 +149,18 @@ if __name__ == '__main__':
         extension = 'vtu'
 
         suffix = "_averaged"
+
+        base_name_out = "eulerian_vars_mri_freq"
+
+        # average all the Eulerian files here 
+        for idx_mri_read in range(mri_read_times_per_cycle):
+            average_eulerian_mesh_one_step(idx_mri_read, eulerian_var_names, times, cycle_duration, cycles_to_output, dt_mri_read, base_dir, base_name_out, extension)
+
+
         # for idx_output in range(output_times_per_cycle):
         #     eulerian_dir_name = base_dir + '/' + 'eulerian_vars' + suffix + str(idx_output).zfill(4)
         #     if not os.path.exists(eulerian_dir_name):
         #         os.mkdir(eulerian_dir_name)
-
 
         # only average cycle 2 
         # cycles_to_include = [2] 
@@ -119,13 +171,20 @@ if __name__ == '__main__':
         # read and zero meshes to use to accumulate from first mesh 
         dir_name = "eulerian_vars" + str(0).zfill(4)
 
+
+        # read all time zero meshes 
+        # meshes_mri_read = []
+        # n_to_average = []
+        # for idx_mri_read in range(mri_read_times_per_cycle):
+        #     meshes_mri_read.append(read_distributed_vtr(dir_name))
+        #     n_to_average.append(0)
+        #     for var_name in eulerian_var_names: 
+        #         meshes_mri_read[idx_mri_read][var_name] *= 0.0
+
         meshes_mri_read = []
-        n_to_average = []
         for idx_mri_read in range(mri_read_times_per_cycle):
-            meshes_mri_read.append(read_distributed_vtr(dir_name))
-            n_to_average.append(0)
-            for var_name in eulerian_var_names: 
-                meshes_mri_read[idx_mri_read][var_name] *= 0.0
+            fname = base_name_out + str(idx_mri_read).zfill(4) + '.' + extension
+            meshes_mri_read.append( pyvista.read(base_dir + "/" + fname) )
 
         meshes_output = []
         for idx_output in range(output_times_per_cycle):
@@ -133,38 +192,38 @@ if __name__ == '__main__':
             for var_name in eulerian_var_names: 
                 meshes_output[idx_output][var_name] *= 0.0
 
-        # average over times 
-        for idx, t in enumerate(times): 
+        # # average over times 
+        # for idx, t in enumerate(times): 
 
-            # check if time in range 
-            cycle_num = math.floor(t / cycle_duration)
+        #     # check if time in range 
+        #     cycle_num = math.floor(t / cycle_duration)
 
-            # skip cycle one 
-            if cycle_num in cycles_to_output:
-                print("processing step ", idx)
+        #     # skip cycle one 
+        #     if cycle_num in cycles_to_output:
+        #         print("processing step ", idx)
 
-                dir_name = "eulerian_vars" + str(idx).zfill(4)
+        #         dir_name = "eulerian_vars" + str(idx).zfill(4)
 
-                # time since start of this cycle 
-                t_reduced = t % cycle_duration
+        #         # time since start of this cycle 
+        #         t_reduced = t % cycle_duration
 
-                idx_mri_read = math.floor(t_reduced / dt_mri_read)
+        #         idx_mri_read = math.floor(t_reduced / dt_mri_read)
 
-                mesh_tmp = read_distributed_vtr(dir_name)
+        #         mesh_tmp = read_distributed_vtr(dir_name)
 
-                for var_name in eulerian_var_names: 
-                    meshes_mri_read[idx_mri_read][var_name] += mesh_tmp[var_name]
+        #         for var_name in eulerian_var_names: 
+        #             meshes_mri_read[idx_mri_read][var_name] += mesh_tmp[var_name]
                     
-                n_to_average[idx_mri_read] += 1.0
+        #         n_to_average[idx_mri_read] += 1.0
 
-                # print("t = ", t, "t_reduced = ", t_reduced, "idx_mri_read = ", idx_mri_read)
+        #         # print("t = ", t, "t_reduced = ", t_reduced, "idx_mri_read = ", idx_mri_read)
 
-        print("n_to_average = ", n_to_average)
+        # print("n_to_average = ", n_to_average)
 
-        # convert sums to averages
-        for idx_mri_read in range(mri_read_times_per_cycle):
-            for var_name in eulerian_var_names: 
-                meshes_mri_read[idx_mri_read][var_name] /= float(n_to_average[idx_mri_read])
+        # # convert sums to averages
+        # for idx_mri_read in range(mri_read_times_per_cycle):
+        #     for var_name in eulerian_var_names: 
+        #         meshes_mri_read[idx_mri_read][var_name] /= float(n_to_average[idx_mri_read])
 
         # linearly interpolate before output         
         for idx_mri_read in range(mri_read_times_per_cycle):
