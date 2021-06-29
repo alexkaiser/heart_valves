@@ -80,9 +80,11 @@ if __name__ == '__main__':
         times.append(float(line)) 
 
     eulerian = True
-    lagrangian = False 
+    lagrangian = True 
 
-    cycle_duration = 0.8  #8.3250000000000002e-01
+    cycles_to_output = [1] # zero indexed 
+
+    cycle_duration = 8.3250000000000002e-01
     mri_read_times_per_cycle = 10 
     dt_mri_read = cycle_duration / mri_read_times_per_cycle
     output_times_per_cycle   = 20 
@@ -138,7 +140,7 @@ if __name__ == '__main__':
             cycle_num = math.floor(t / cycle_duration)
 
             # skip cycle one 
-            if (cycle_num == 1) and ((idx % 40) == 0):
+            if cycle_num in cycles_to_output:
                 print("processing step ", idx)
 
                 dir_name = "eulerian_vars" + str(idx).zfill(4)
@@ -221,7 +223,7 @@ if __name__ == '__main__':
                     cycle_num = math.floor(t / cycle_duration)
 
                     # skip cycle one 
-                    if cycle_num == 1:
+                    if cycle_num in cycles_to_output:
 
                         fname    = base_name_lag + str(idx).zfill(4) + '.vtu'
 
