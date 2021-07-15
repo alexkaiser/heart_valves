@@ -75,7 +75,8 @@ SetActiveView(renderView1)
 # pVDReader1 = PVDReader(FileName='/Users/alex/data_to_remove/aortic_65595790_384_4495be5_circ_pt15_rad_pt54_2mm_radial_4mm_circ_circ_model_basic_updated_output_semifinal/exported_viz/particles_vel.pvd')
 # pVDReader1.PointArrays = ['velocity']
 
-
+if '_96_' in os.getcwd(): 
+    resolution_string = '96'
 if '_192_' in os.getcwd(): 
     resolution_string = '192'
 if '_384_' in os.getcwd(): 
@@ -514,7 +515,7 @@ if len(sys.argv) >= 4:
     nprocs = int(sys.argv[2])
     proc_num = int(sys.argv[3])
 else: 
-    print "using default proc_num 0, nprocs = 1"
+    print("using default proc_num 0, nprocs = 1")
     proc_num = 0
     nprocs = 1
 
