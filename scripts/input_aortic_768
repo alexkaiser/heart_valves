@@ -1,0 +1,330 @@
+ 
+// physical parameters
+MU  = 0.04                            // viscosity
+RHO = 1.0
+
+L = 2.25   // box sizing 
+N_FLUID = 192 // fluid mesh width 
+
+
+// grid spacing parameters
+MAX_LEVELS = 1                            // maximum number of levels in locally refined grid
+REF_RATIO  = 4                            // refinement ratio between levels
+
+NAME = "aortic_384"
+MAX_RESTART_TO_WRITE = 20
+
+// from "Estimation of total systemic arterial compliance in humans"
+// https://www.physiology.org/doi/10.1152/jappl.1990.69.1.112
+// R_proximal =  77.0
+// C = 0.001154
+// R_distal =  1185.0
+// 
+
+P_aorta_0_MMHG = 120.0
+
+R_proximal =  76.8116399358
+C =  0.00181971021997
+R_distal =  1182.101212
+FOURIER_COEFFS_FILENAME = "fourier_coeffs_ventricle.txt"
+
+// FOURIER_COEFFS_FILENAME = "fourier_coeffs_aorta_minus_ventricle.txt"
+
+
+
+// solver parameters
+DELTA_FUNCTION      = "IB_5"
+SOLVER_TYPE         = "STAGGERED"         // the fluid solver to use (STAGGERED or COLLOCATED)
+START_TIME          = 0.0e0               // initial simulation time
+END_TIME            = 2.4                 // final simulation time
+GROW_DT             = 2.0e0               // growth factor for timesteps
+NUM_CYCLES          = 1                   // number of cycles of fixed-point iteration
+CONVECTIVE_TS_TYPE = "ADAMS_BASHFORTH"    // convective time stepping type
+CONVECTIVE_OP_TYPE  = "PPM"               // convective differencing discretization type
+CONVECTIVE_FORM     = "ADVECTIVE"         // how to compute the convective terms
+NORMALIZE_PRESSURE  = FALSE               // whether to explicitly force the pressure to have mean zero
+CFL_MAX             = 0.3                 // maximum CFL number
+DT                  = 1.25e-6              // maximum timestep size
+ERROR_ON_DT_CHANGE  = TRUE                // whether to emit an error message if the time step size changes
+VORTICITY_TAGGING   = TRUE                // whether to tag cells for refinement based on vorticity thresholds
+TAG_BUFFER          = 2                   // size of tag buffer used by grid generation algorithm
+REGRID_CFL_INTERVAL = 0.5                 // regrid whenever any material point could have moved 0.5 meshwidths since previous regrid
+OUTPUT_U            = TRUE
+OUTPUT_P            = TRUE
+OUTPUT_F            = TRUE
+OUTPUT_OMEGA        = TRUE
+OUTPUT_DIV_U        = FALSE
+ENABLE_LOGGING      = TRUE
+
+
+VelocityInitialConditions {
+   function_0 = "0.0"
+   function_1 = "0.0"
+   function_2 = "0.0"
+}
+
+PressureInitialConditions {
+      function = "0.0"
+}
+
+VelocityBcCoefs_0 {
+
+   acoef_function_0 = "1.0"
+   acoef_function_1 = "1.0"
+   acoef_function_2 = "1.0"
+   acoef_function_3 = "1.0"
+   acoef_function_4 = "1.0"
+   acoef_function_5 = "1.0"
+
+   bcoef_function_0 = "0.0"
+   bcoef_function_1 = "0.0"
+   bcoef_function_2 = "0.0"
+   bcoef_function_3 = "0.0"
+   bcoef_function_4 = "0.0"
+   bcoef_function_5 = "0.0"
+
+   gcoef_function_0 = "0.0"
+   gcoef_function_1 = "0.0"
+   gcoef_function_2 = "0.0"
+   gcoef_function_3 = "0.0"
+   gcoef_function_4 = "0.0"
+   gcoef_function_5 = "0.0"
+}
+
+VelocityBcCoefs_1 {
+   acoef_function_0 = "1.0"
+   acoef_function_1 = "1.0"
+   acoef_function_2 = "1.0"
+   acoef_function_3 = "1.0"
+   acoef_function_4 = "1.0"
+   acoef_function_5 = "1.0"
+
+   bcoef_function_0 = "0.0"
+   bcoef_function_1 = "0.0"
+   bcoef_function_2 = "0.0"
+   bcoef_function_3 = "0.0"
+   bcoef_function_4 = "0.0"
+   bcoef_function_5 = "0.0"
+
+   gcoef_function_0 = "0.0"
+   gcoef_function_1 = "0.0"
+   gcoef_function_2 = "0.0"
+   gcoef_function_3 = "0.0"
+   gcoef_function_4 = "0.0"
+   gcoef_function_5 = "0.0"
+}
+
+VelocityBcCoefs_2 {
+   acoef_function_0 = "1.0"
+   acoef_function_1 = "1.0"
+   acoef_function_2 = "1.0"
+   acoef_function_3 = "1.0"
+   acoef_function_4 = "0.0"
+   acoef_function_5 = "0.0"
+
+   bcoef_function_0 = "0.0"
+   bcoef_function_1 = "0.0"
+   bcoef_function_2 = "0.0"
+   bcoef_function_3 = "0.0"
+   bcoef_function_4 = "1.0"
+   bcoef_function_5 = "1.0"
+
+   gcoef_function_0 = "0.0"
+   gcoef_function_1 = "0.0"
+   gcoef_function_2 = "0.0"
+   gcoef_function_3 = "0.0"
+   gcoef_function_4 = "0.0"  // face with normal -e_z, do not change this 
+   
+   // 
+   // all pressures are applied at face 5, that is, the atrial side 
+   // negative of pressure goes in g
+   // positive pressure on atrial side opens 
+   // negative pressure on atrial side = positive on ventricular = closed 
+   // 
+   
+    MMHG_TO_CGS = 1333.22368
+    
+    // pressures, higher pressure in atrium is positive 
+    diastolic_p =    2.5 * MMHG_TO_CGS
+    systolic__p = -100.0 * MMHG_TO_CGS
+
+    // times for opening, open, closing and closed  
+    t_opening  = 0.08
+    t_diastole = 0.5
+    t_closing  = 0.02
+    t_systole  = 0.2
+
+    beat_time = t_diastole + t_systole + t_opening + t_closing
+
+    // slope on opening part of curve 
+    a_opening = (diastolic_p - systolic__p)/t_opening
+    a_closing = (systolic__p - diastolic_p)/t_closing
+    
+    // time at which valve is completely open 
+    t_1 = diastolic_p / a_opening
+    
+    // time at which closing begins 
+    t_2 = t_1 + t_diastole
+    
+    // linear offset for closing part of function 
+    b = diastolic_p - a_closing * t_2
+    
+    // time at which constant systolic pressure is achieved 
+    t_3 = t_2 + t_closing
+    
+    // time at which opening begins 
+    t_4 = t_3 + t_systole
+    
+    // linear offset for opening part of function at end 
+    c = systolic__p - a_opening * t_4
+
+    // apparently this all has to go on one line
+    gcoef_function_5 = "-1.0*if( (t - beat_time*rint(t/beat_time - 0.5)) < t_1, a_opening * (t - beat_time*rint(t/beat_time - 0.5)), if( (t - beat_time*rint(t/beat_time - 0.5)) < t_2, diastolic_p, if( (t - beat_time*rint(t/beat_time - 0.5)) < t_3, a_closing * (t - beat_time*rint(t/beat_time - 0.5)) + b, if( (t - beat_time*rint(t/beat_time - 0.5)) < t_4, systolic__p, a_opening * (t - beat_time*rint(t/beat_time - 0.5)) + c))))"
+
+
+}
+
+
+
+   // unclear how to make variables that are not constants 
+   // will have to just push it all on one line 
+   // 
+   //N_beats         = "floor(t/BEAT_TIME)"
+   //t_this_cycle    = "t - BEAT_TIME*N_beats"
+   //p_across_valve  = "if( t_this_cycle < DIASTOLE_TIME, DIASTOLIC_ATRIAL_P, SYSTOLIC_VENTRICULAR_P)"  
+   //gcoef_function_5 = "p_across_valve"  // face with normal  e_z
+
+//  from ex0 input2d  
+//  function = "if( (X_0-0.5)^2 + (X_1-0.5)^2 <= R^2,mu*(1/R - pi*R),-mu*pi*R )"
+
+// from IB ex2, time dep function 
+//    gcoef_function_0 = "(tanh((t-t_half)/tau)+tanh(t_half/tau))/(1+tanh(t_half/tau))"
+
+
+
+IBHierarchyIntegrator {
+   start_time          = START_TIME
+   end_time            = END_TIME
+   grow_dt             = GROW_DT
+   num_cycles          = NUM_CYCLES
+   regrid_cfl_interval = REGRID_CFL_INTERVAL
+   dt_max              = DT
+   error_on_dt_change  = ERROR_ON_DT_CHANGE
+   tag_buffer          = TAG_BUFFER
+   enable_logging      = ENABLE_LOGGING
+}
+
+IBMethod {
+   delta_fcn      = DELTA_FUNCTION
+   enable_logging = ENABLE_LOGGING
+}
+
+
+IBStandardInitializer {
+   max_levels      = MAX_LEVELS
+   structure_names = "aortic_768", "aortic_768_cylinder", "aortic_768_particles"
+   aortic_768 {
+      level_number = MAX_LEVELS - 1
+   }
+   aortic_768_cylinder {
+      level_number = MAX_LEVELS - 1
+   }
+   aortic_768_particles {
+      level_number = MAX_LEVELS - 1
+   }
+}
+
+INSStaggeredHierarchyIntegrator {
+   mu                            = MU
+   rho                           = RHO
+   start_time                    = START_TIME
+   end_time                      = END_TIME
+   grow_dt                       = GROW_DT
+   convective_time_stepping_type = CONVECTIVE_TS_TYPE
+   convective_op_type            = CONVECTIVE_OP_TYPE
+   convective_difference_form    = CONVECTIVE_FORM
+   normalize_pressure            = NORMALIZE_PRESSURE
+   cfl                           = CFL_MAX
+   dt_max                        = DT
+   using_vorticity_tagging       = VORTICITY_TAGGING
+   vorticity_abs_thresh          = 0.125
+   tag_buffer                    = TAG_BUFFER
+   output_U                      = OUTPUT_U
+   output_P                      = OUTPUT_P
+   output_F                      = OUTPUT_F
+   output_Omega                  = OUTPUT_OMEGA
+   output_Div_U                  = OUTPUT_DIV_U
+   enable_logging                = ENABLE_LOGGING
+}
+
+Main {
+   solver_type = SOLVER_TYPE
+
+// log file parameters
+   log_file_name               = "IB3d.log"
+   log_all_nodes               = FALSE
+
+// visualization dump parameters
+   viz_writer                  = "VisIt","Silo"
+   viz_dump_interval           = int(1.0/(DT*600.0))       // output at 600 fps, 10x slow motion at 60 fps
+   viz_dump_dirname            = "viz_IB3d_tree_cycle_256"
+   visit_number_procs_per_file = 1
+
+// restart dump parameters
+   restart_dump_interval       = 4000
+   restart_dump_dirname        = "restart_IB3d_tree_cycle"
+
+// hierarchy data dump parameters
+   data_dump_interval          = 0
+   data_dump_dirname           = "hier_data_IB3d"
+
+// timer dump parameters
+   timer_dump_interval         = 0
+}
+
+CartesianGeometry {
+domain_boxes = [ (0,0,0),(N_FLUID - 1,N_FLUID - 1, 2*N_FLUID - 1) ]
+x_lo =  -L, -L,  -4.0 
+x_up =   L,  L,  -4.0 + 4*L
+   periodic_dimension = 0,0,1
+}
+
+GriddingAlgorithm {
+   max_levels = MAX_LEVELS
+   ratio_to_coarser {
+      level_1 = REF_RATIO,REF_RATIO,REF_RATIO
+      level_2 = REF_RATIO,REF_RATIO,REF_RATIO
+      level_3 = REF_RATIO,REF_RATIO,REF_RATIO
+      level_4 = REF_RATIO,REF_RATIO,REF_RATIO
+      level_5 = REF_RATIO,REF_RATIO,REF_RATIO
+      level_6 = REF_RATIO,REF_RATIO,REF_RATIO
+      level_7 = REF_RATIO,REF_RATIO,REF_RATIO
+   }
+   largest_patch_size {
+      level_0 = 512,512,512  // all finer levels will use same values as level_0
+   }
+   smallest_patch_size {
+      level_0 =   16, 16, 16  // all finer levels will use same values as level_0
+   }
+   efficiency_tolerance = 0.65e0  // min % of tag cells in new patch level
+   combine_efficiency   = 0.65e0  // chop box if sum of volumes of smaller boxes < efficiency * vol of large box
+   allow_patches_smaller_than_ghostwidth = TRUE
+   allow_patches_smaller_than_minimum_size_to_prevent_overlaps = TRUE
+   extend_tags_to_bdry = TRUE
+}
+
+StandardTagAndInitialize {
+   tagging_method = "GRADIENT_DETECTOR"
+}
+
+LoadBalancer {
+   bin_pack_method     = "SPATIAL"
+   max_workload_factor = 1
+}
+
+TimerManager{
+   print_exclusive = FALSE
+   print_total     = TRUE
+   print_threshold = 0.1
+   timer_list      = "IBAMR::*::*","IBTK::*::*","*::*::*"
+}
