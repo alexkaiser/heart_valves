@@ -17,7 +17,7 @@ module load openmpi/2.0.2
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_62969b_fused_bicuspid
+RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_8f290e8_convergence_check_layers_up
 mkdir $RUNDIR
 
 # set up run info 
@@ -57,7 +57,7 @@ python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS"
 
 # load stuff for movie making 
 source ~/.bash_profile
-python run_parallel_movie.py $SESSION_NAME $SLURM_NTASKS $VIEW_CLIPPING
+# python run_parallel_movie.py $SESSION_NAME $SLURM_NTASKS $VIEW_CLIPPING
 
 SESSION_NAME_PARAVIEW="~/copies_scripts/velocity_slices_5.py"
 visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py $SLURM_NTASKS $SLURM_NTASKS
