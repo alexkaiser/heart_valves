@@ -11,6 +11,7 @@
 
 #### import the simple module from the paraview
 from paraview.simple import *
+import os 
 #### disable automatic camera reset on 'Show'
 paraview.simple._DisableFirstRenderCameraReset()
 
@@ -98,9 +99,18 @@ if local:
 else:
     path = ''
 
+if '_96_' in os.getcwd(): 
+    resolution_string = '96'
+if '_192_' in os.getcwd(): 
+    resolution_string = '192'
+if '_384_' in os.getcwd(): 
+    resolution_string = '384'
+if '_384_' in os.getcwd(): 
+    resolution_string = '768'
+
 
 # create a new 'PVD Reader'
-pVDReader2 = PVDReader(FileName= path + 'aortic_384_cylinder.pvd')
+pVDReader2 = PVDReader(FileName= path + 'aortic_' + resolution_string + '_cylinder.pvd')
 
 # create a new 'PVD Reader'
 eulerian_varspvd = PVDReader(FileName= path + 'eulerian_vars.pvd')
@@ -132,7 +142,7 @@ slice1.SliceType.Normal = [0.0, 1.0, 0.0]
 slice1.HyperTreeGridSlicer.Origin = [0.0, 0.0, 0.5]
 
 # create a new 'PVD Reader'
-pVDReader3 = PVDReader(FileName= path + 'aortic_384.pvd')
+pVDReader3 = PVDReader(FileName= path + 'aortic_' + resolution_string + '.pvd')
 
 # create a new 'Clip'
 clip1 = Clip(Input=pVDReader3)
@@ -543,7 +553,9 @@ if save:
     if 'aortic_2020486_384_f499232_0mm_radial_4mm_circ_basic_rcr_crease_removed_more_stiffness_down' in basename:
         to_render = [1208, 1343, 1300, 1412, 1309, 1429, 1318, 1441]
     else: 
-        to_render = [1208]
+        # do all useful frames here 
+        to_render = [1208, 1343, 1300, 1412, 1309, 1429, 1318, 1441]
+        # to_render = [1208]
 
 
     res = (width, height_side_view + height_top_view)
