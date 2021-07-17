@@ -81,6 +81,8 @@ if '_192_' in os.getcwd():
     resolution_string = '192'
 if '_384_' in os.getcwd(): 
     resolution_string = '384'
+if '_384_' in os.getcwd(): 
+    resolution_string = '768'
 
 # create a new 'PVD Reader'
 pVDReader2 = PVDReader(FileName='aortic_' + resolution_string +'_cylinder.pvd')
