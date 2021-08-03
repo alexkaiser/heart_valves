@@ -31,9 +31,9 @@ RATIO_TO_SCAN = 1.0
 
 DX_FLUID = (0.09 / RATIO_TO_SCAN) * (REF_RATIO^(MAX_LEVELS - 1))
 
-NX = 192 * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1)) // 178 original 
-NY = 128 * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1))
-NZ = 96  * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1))
+NX = int(192 * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1))) // 178 original 
+NY = int(128 * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1)))
+NZ = int(96  * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1)))
 
 X_LOW  = -9.4772
 X_HIGH = X_LOW + NX * DX_FLUID
@@ -60,7 +60,8 @@ Z_HIGH = Z_LOW + NZ * DX_FLUID
 right_pa_R = 100.0 
 left_pa_R  = 100.0
 
-
+left_pa_L = 0.1
+right_pa_L = 0.1
 
 // solver parameters
 DELTA_FUNCTION      = "IB_5"

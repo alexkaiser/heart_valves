@@ -518,6 +518,7 @@ int main(int argc, char* argv[])
 
             bool rcr_bcs_on = false;
             bool resistance_bcs_on = false; 
+            bool inductance_bcs_on = true; 
 
             CirculationModel_RV_PA *circ_model_rv_pa = new CirculationModel_RV_PA(input_db,
                                                                                   fourier_series_rv, 
@@ -531,7 +532,8 @@ int main(int argc, char* argv[])
                                                                                   time_integrator->getIntegratorTime(), 
                                                                                   P_initial_pa,
                                                                                   rcr_bcs_on,
-                                                                                  resistance_bcs_on); 
+                                                                                  resistance_bcs_on,
+                                                                                  inductance_bcs_on); 
 
             // Create Eulerian boundary condition specification objects.
             vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM);

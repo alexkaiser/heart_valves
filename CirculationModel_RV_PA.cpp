@@ -57,7 +57,8 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
                                                const double  initial_time, 
                                                double P_initial_pa,
                                                bool rcr_bcs_on,
-                                               bool resistance_bcs_on)
+                                               bool resistance_bcs_on,
+                                               bool inductor_bcs_on)
     : 
       d_object_name("circ_model_rv_pa"),  // constant name here  
       d_registered_for_restart(true),      // always true
@@ -68,8 +69,10 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
       d_t_offset_bcs_unscaled(t_offset_bcs_unscaled),
       d_current_idx_series(0),
       d_Q_right_ventricle(0.0), 
-      d_Q_right_pa       (0.0),
-      d_Q_left_pa        (0.0),
+      d_Q_right_pa(0.0),
+      d_Q_left_pa(0.0),
+      d_Q_right_pa_previous(0.0),
+      d_Q_left_pa_previous(0.0),
       d_time(initial_time), 
       d_right_pa_P(P_initial_pa), 
       d_right_pa_P_Wk(P_initial_pa),
@@ -80,7 +83,8 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
       d_area_left_pa (0.0),
       d_area_initialized(false), 
       d_rcr_bcs_on(rcr_bcs_on),
-      d_resistance_bcs_on(resistance_bcs_on)
+      d_resistance_bcs_on(resistance_bcs_on),
+      d_inductor_bcs_on(inductor_bcs_on)
 {
     
     if (d_registered_for_restart)
@@ -123,8 +127,18 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
         std::cout << "left : R_proximal = " << d_left_pa_resistance << "\n";
     }
 
-    if (d_rcr_bcs_on && d_resistance_bcs_on){
-        TBOX_ERROR("Cannot us rcr and resistance simulataneously"); 
+    if (d_inductor_bcs_on){
+        d_right_pa_inductance = input_db->getDouble("right_pa_L");
+        d_left_pa_inductance  = input_db->getDouble("left_pa_L");
+        std::cout << "input db got values:\n";
+        std::cout << "right: inductance = " << d_right_pa_inductance << "\n";
+        std::cout << "left : inductance = " << d_left_pa_inductance << "\n";
+    }
+
+    if ((d_rcr_bcs_on && d_resistance_bcs_on) || 
+        (d_rcr_bcs_on && d_inductor_bcs_on)   ||
+        (d_inductor_bcs_on && d_resistance_bcs_on)) {
+        TBOX_ERROR("Cannot us two types of bc simulataneously"); 
     }
 
     double x,x_prev,y,y_prev,z,z_prev; 
@@ -249,6 +263,12 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
     double area_right_ventricle_local = 0.0; 
     double area_right_pa_local = 0.0; 
     double area_left_pa_local = 0.0; 
+
+    // save old values of Q for taking time derivatives  
+    d_Q_right_pa_previous = d_Q_right_pa;
+    d_Q_left_pa_previous = d_Q_left_pa;
+
+
 
     for (int ln = 0; ln <= hierarchy->getFinestLevelNumber(); ++ln)
     {
@@ -450,6 +470,17 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
         d_right_pa_P = d_right_pa_P_Wk + d_right_pa_resistance * d_Q_right_pa;
         d_left_pa_P  = d_left_pa_P_Wk  + d_left_pa_resistance  * d_Q_left_pa;
     }
+
+    else if (d_inductor_bcs_on){
+        // pressure upstream of resistance determined by series 
+        d_right_pa_P_Wk = MMHG_TO_CGS * d_fourier_right_pa->values[d_current_idx_series]; 
+        d_left_pa_P_Wk  = MMHG_TO_CGS * d_fourier_left_pa->values[d_current_idx_series]; 
+
+        // inductance bcs determine update on pressure 
+        d_right_pa_P = d_right_pa_P_Wk + d_right_pa_inductance * (d_Q_right_pa - d_Q_right_pa_previous)/dt;
+        d_left_pa_P  = d_left_pa_P_Wk  + d_left_pa_inductance  * (d_Q_left_pa  - d_Q_left_pa_previous )/dt ;
+    }
+
     else {
         d_right_pa_P = MMHG_TO_CGS * d_fourier_right_pa->values[d_current_idx_series]; 
         d_left_pa_P  = MMHG_TO_CGS * d_fourier_left_pa->values[d_current_idx_series]; 
@@ -481,6 +512,8 @@ CirculationModel_RV_PA::putToDatabase(Pointer<Database> db)
     db->putDouble("d_Q_right_ventricle", d_Q_right_ventricle); 
     db->putDouble("d_Q_right_pa", d_Q_right_pa);
     db->putDouble("d_Q_left_pa", d_Q_left_pa);
+    db->putDouble("d_Q_right_pa_previous", d_Q_right_pa_previous);
+    db->putDouble("d_Q_left_pa_previous", d_Q_left_pa_previous);
     db->putDouble("d_Q_valve", d_Q_valve);
     db->putDouble("d_right_pa_P", d_right_pa_P);
     db->putDouble("d_right_pa_P_Wk", d_right_pa_P_Wk);
@@ -489,6 +522,7 @@ CirculationModel_RV_PA::putToDatabase(Pointer<Database> db)
     db->putDouble("d_time", d_time); 
     db->putBool("d_rcr_bcs_on", d_rcr_bcs_on); 
     db->putBool("d_resistance_bcs_on", d_resistance_bcs_on); 
+    db->putBool("d_inductor_bcs_on", d_inductor_bcs_on); 
     return; 
 } // putToDatabase
 
@@ -662,18 +696,21 @@ CirculationModel_RV_PA::getFromRestart()
         TBOX_ERROR("Restart database corresponding to " << d_object_name << " not found in restart file.");
     }
 
-    d_current_idx_series = db->getInteger("d_current_idx_series"); 
-    d_Q_right_ventricle  = db->getDouble("d_Q_right_ventricle"); 
-    d_Q_right_pa         = db->getDouble("d_Q_right_pa");
-    d_Q_left_pa          = db->getDouble("d_Q_left_pa");
-    d_Q_valve            = db->getDouble("d_Q_valve");
-    d_right_pa_P         = db->getDouble("d_right_pa_P");
-    d_right_pa_P_Wk      = db->getDouble("d_right_pa_P_Wk");
-    d_left_pa_P          = db->getDouble("d_left_pa_P");
-    d_left_pa_P_Wk       = db->getDouble("d_left_pa_P_Wk");
-    d_time               = db->getDouble("d_time");
-    d_rcr_bcs_on         = db->getBool("d_rcr_bcs_on"); 
-    d_resistance_bcs_on  = db->getBool("d_resistance_bcs_on"); 
+    d_current_idx_series  = db->getInteger("d_current_idx_series"); 
+    d_Q_right_ventricle   = db->getDouble("d_Q_right_ventricle"); 
+    d_Q_right_pa          = db->getDouble("d_Q_right_pa");
+    d_Q_left_pa           = db->getDouble("d_Q_left_pa");
+    d_Q_right_pa_previous = db->getDouble("d_Q_right_pa_previous");
+    d_Q_left_pa_previous  = db->getDouble("d_Q_left_pa_previous");
+    d_Q_valve             = db->getDouble("d_Q_valve");
+    d_right_pa_P          = db->getDouble("d_right_pa_P");
+    d_right_pa_P_Wk       = db->getDouble("d_right_pa_P_Wk");
+    d_left_pa_P           = db->getDouble("d_left_pa_P");
+    d_left_pa_P_Wk        = db->getDouble("d_left_pa_P_Wk");
+    d_time                = db->getDouble("d_time");
+    d_rcr_bcs_on          = db->getBool("d_rcr_bcs_on"); 
+    d_resistance_bcs_on   = db->getBool("d_resistance_bcs_on"); 
+    d_inductor_bcs_on     = db->getBool("d_inductor_bcs_on"); 
     return;
 } // getFromRestart
 
