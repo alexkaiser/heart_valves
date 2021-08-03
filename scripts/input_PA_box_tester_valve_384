@@ -50,8 +50,8 @@ left_pa_R_proximal = 173.80476726543702
 left_pa_C = 0.00038921545077
 left_pa_R_distal = 3476.09534530874089
 
-left_pa_L = 0.1
-right_pa_L = 0.1
+left_pa_L = 0.01
+right_pa_L = 0.01
 
 // solver parameters
 DELTA_FUNCTION      = "IB_5"
