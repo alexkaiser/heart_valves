@@ -6,7 +6,8 @@
 #SBATCH --job-name=aortic_1
 #SBATCH --mail-user=adkaiser@gmail.com
 #SBATCH --mail-type=ALL
-#SBATCH --partition=willhies,amarsden
+#SBATCH --partition=amarsden
+#SBATCH --exclude=sh03-16n02
 # #SBATCH --exclude=sh-107-[59-64]
 
 module purge
@@ -17,7 +18,7 @@ module load openmpi/2.0.2
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_384_19617dd6_pressure_bc_lil_nub
+RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_384_fe19a2f_inductance_pt1_lil_nub
 mkdir $RUNDIR
 
 # set up run info 

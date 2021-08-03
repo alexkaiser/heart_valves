@@ -7,7 +7,7 @@
 #SBATCH --mail-user=kaiser@cims.nyu.edu
 #SBATCH --mail-type=ALL
 #SBATCH --exclusive
-
+#SBATCH --exclude=sh03-16n02
 
 module purge
 module load openmpi/gnu/2.0.2

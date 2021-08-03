@@ -7,6 +7,7 @@
 #SBATCH --mail-user=adkaiser@gmail.com
 #SBATCH --mail-type=ALL
 #SBATCH --partition=amarsden
+#SBATCH --exclude=sh03-16n02
 
 module purge
 module load gcc/8.1.0
