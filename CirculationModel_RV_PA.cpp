@@ -663,7 +663,7 @@ void
             file_initialized = true;
         }
 
-        static ofstream fout(DATA_FILE_NAME.c_str(), ios::app);
+        ofstream fout(DATA_FILE_NAME.c_str(), ios::app);
 
         fout << d_time;
         fout.setf(ios_base::scientific);
