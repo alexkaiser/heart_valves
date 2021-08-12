@@ -76,8 +76,12 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
       d_time(initial_time), 
       d_right_pa_P(P_initial_pa), 
       d_right_pa_P_Wk(P_initial_pa),
+      d_right_pa_P_distal(P_initial_pa),
+      d_right_pa_P_distal_previous(P_initial_pa),
       d_left_pa_P(P_initial_pa),
       d_left_pa_P_Wk(P_initial_pa),
+      d_left_pa_P_distal(P_initial_pa),
+      d_left_pa_P_distal_previous(P_initial_pa),
       d_area_right_ventricle(0.0),
       d_area_right_pa(0.0),
       d_area_left_pa (0.0),
@@ -264,10 +268,11 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
     double area_right_pa_local = 0.0; 
     double area_left_pa_local = 0.0; 
 
-    // save old values of Q for taking time derivatives  
-    d_Q_right_pa_previous = d_Q_right_pa;
-    d_Q_left_pa_previous = d_Q_left_pa;
-
+    if (d_inductor_bcs_on){
+        // save old values of Q for taking time derivatives  
+        d_Q_right_pa_previous = d_Q_right_pa;
+        d_Q_left_pa_previous = d_Q_left_pa;
+    }
 
 
     for (int ln = 0; ln <= hierarchy->getFinestLevelNumber(); ++ln)
@@ -455,11 +460,29 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
     if (d_rcr_bcs_on){
         // The downstream pressure is determined by a three-element Windkessel model.
 
-        d_right_pa_P_Wk = ((d_right_pa_C / dt) * d_right_pa_P_Wk + d_Q_right_pa) / (d_right_pa_C / dt + 1.0 / d_right_pa_R_distal);        
+        double coeff_left = (d_left_pa_C / dt + 1.0 / d_left_pa_R_distal); 
+        double coeff_right = (d_right_pa_C / dt + 1.0 / d_right_pa_R_distal);
+
+        // grab the downstream pressures 
+        d_right_pa_P_distal_previous = d_right_pa_P_distal; 
+        d_right_pa_P_distal = MMHG_TO_CGS * d_fourier_right_pa->values[d_current_idx_series]; 
+
+        d_left_pa_P_distal_previous = d_left_pa_P_distal; 
+        d_left_pa_P_distal = MMHG_TO_CGS * d_fourier_left_pa->values[d_current_idx_series]; 
+
+        // hooked to ground version 
+        // d_right_pa_P_Wk = ((d_right_pa_C / dt) * d_right_pa_P_Wk + d_Q_right_pa) / (d_right_pa_C / dt + 1.0 / d_right_pa_R_distal);        
+        // d_right_pa_P = d_right_pa_P_Wk + d_right_pa_R_proximal * d_Q_right_pa;
+
+        // d_left_pa_P_Wk = ((d_left_pa_C / dt) * d_left_pa_P_Wk + d_Q_left_pa) / (d_left_pa_C / dt + 1.0 / d_left_pa_R_distal);        
+        // d_left_pa_P = d_left_pa_P_Wk + d_left_pa_R_proximal * d_Q_left_pa;
+
+        d_right_pa_P_Wk = ((d_right_pa_C / dt) * (d_right_pa_P_Wk - d_right_pa_P_distal_previous) + coeff_right*d_right_pa_P_distal + d_Q_right_pa) / coeff_right;        
         d_right_pa_P = d_right_pa_P_Wk + d_right_pa_R_proximal * d_Q_right_pa;
 
-        d_left_pa_P_Wk = ((d_left_pa_C / dt) * d_left_pa_P_Wk + d_Q_left_pa) / (d_left_pa_C / dt + 1.0 / d_left_pa_R_distal);        
+        d_left_pa_P_Wk = ((d_left_pa_C / dt) * (d_left_pa_P_Wk - d_left_pa_P_distal_previous) + coeff_right*d_left_pa_P_distal + d_Q_left_pa) / coeff_left;        
         d_left_pa_P = d_left_pa_P_Wk + d_left_pa_R_proximal * d_Q_left_pa;
+
     }
     else if (d_resistance_bcs_on){
         // pressure upstream of resistance determined by series 

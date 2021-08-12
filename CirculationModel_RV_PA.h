@@ -67,6 +67,8 @@ public:
     int     d_right_pa_side;
     double  d_right_pa_P;
     double  d_right_pa_P_Wk;
+    double  d_right_pa_P_distal;
+    double  d_right_pa_P_distal_previous;
     double  d_right_pa_R_proximal; 
     double  d_right_pa_R_distal; 
     double  d_right_pa_C;
@@ -80,6 +82,8 @@ public:
     int     d_left_pa_axis; 
     int     d_left_pa_side;
     double  d_left_pa_P;
+    double  d_left_pa_P_distal;
+    double  d_left_pa_P_distal_previous;
     double  d_left_pa_P_Wk;
     double  d_left_pa_R_proximal; 
     double  d_left_pa_R_distal; 
