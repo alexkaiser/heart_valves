@@ -540,8 +540,12 @@ CirculationModel_RV_PA::putToDatabase(Pointer<Database> db)
     db->putDouble("d_Q_valve", d_Q_valve);
     db->putDouble("d_right_pa_P", d_right_pa_P);
     db->putDouble("d_right_pa_P_Wk", d_right_pa_P_Wk);
+    db->putDouble("d_right_pa_P_distal", d_right_pa_P_distal);
+    db->putDouble("d_right_pa_P_distal_previous", d_right_pa_P_distal_previous);
     db->putDouble("d_left_pa_P",d_left_pa_P);
     db->putDouble("d_left_pa_P_Wk",d_left_pa_P_Wk);
+    db->putDouble("d_left_pa_P_distal", d_left_pa_P_distal);
+    db->putDouble("d_left_pa_P_distal_previous", d_left_pa_P_distal_previous);
     db->putDouble("d_time", d_time); 
     db->putBool("d_rcr_bcs_on", d_rcr_bcs_on); 
     db->putBool("d_resistance_bcs_on", d_resistance_bcs_on); 
@@ -680,8 +684,11 @@ void
         if (!from_restart && !file_initialized)
         {
             ofstream fout(DATA_FILE_NAME.c_str(), ios::out);
-            fout << "% time \t P_right_ventricle (mmHg)\t P_right_pa (mmHg)\t P_left_pa (mmHg)\t d_Q_right_ventricle (ml/s)\t d_Q_right_pa (ml/s)\td_Q_left_pa (ml/s) \td_Q_valve (ml/s) \t d_right_pa_P_Wk \t d_left_pa_P_Wk"
-                 << "\n"
+            fout << "% time \t P_right_ventricle (mmHg)\t P_right_pa (mmHg)\t P_left_pa (mmHg)\t d_Q_right_ventricle (ml/s)\t d_Q_right_pa (ml/s)\td_Q_left_pa (ml/s) \td_Q_valve (ml/s) \t d_right_pa_P_Wk \t d_left_pa_P_Wk"; 
+            if (d_rcr_bcs_on){
+                fout << "d_right_pa_P_distal \t d_left_pa_P_distal"; 
+            }
+            fout << "\n"
                  << "bc_vals = [";
             file_initialized = true;
         }
@@ -698,6 +705,9 @@ void
         fout << " " << P_right_ventricle <<  " " << d_right_pa_P/MMHG_TO_CGS << " " << d_left_pa_P/MMHG_TO_CGS;
         fout << " " << d_Q_right_ventricle << " " << d_Q_right_pa << " " << d_Q_left_pa << " " << d_Q_valve;         
         fout << " " << d_right_pa_P_Wk/MMHG_TO_CGS << " " << d_left_pa_P_Wk/MMHG_TO_CGS;
+        if(d_rcr_bcs_on){
+            fout << " " << d_right_pa_P_distal/MMHG_TO_CGS << " " << d_left_pa_P_distal/MMHG_TO_CGS;
+        }
         fout << "; \n";
 
     }
@@ -719,21 +729,25 @@ CirculationModel_RV_PA::getFromRestart()
         TBOX_ERROR("Restart database corresponding to " << d_object_name << " not found in restart file.");
     }
 
-    d_current_idx_series  = db->getInteger("d_current_idx_series"); 
-    d_Q_right_ventricle   = db->getDouble("d_Q_right_ventricle"); 
-    d_Q_right_pa          = db->getDouble("d_Q_right_pa");
-    d_Q_left_pa           = db->getDouble("d_Q_left_pa");
-    d_Q_right_pa_previous = db->getDouble("d_Q_right_pa_previous");
-    d_Q_left_pa_previous  = db->getDouble("d_Q_left_pa_previous");
-    d_Q_valve             = db->getDouble("d_Q_valve");
-    d_right_pa_P          = db->getDouble("d_right_pa_P");
-    d_right_pa_P_Wk       = db->getDouble("d_right_pa_P_Wk");
-    d_left_pa_P           = db->getDouble("d_left_pa_P");
-    d_left_pa_P_Wk        = db->getDouble("d_left_pa_P_Wk");
-    d_time                = db->getDouble("d_time");
-    d_rcr_bcs_on          = db->getBool("d_rcr_bcs_on"); 
-    d_resistance_bcs_on   = db->getBool("d_resistance_bcs_on"); 
-    d_inductor_bcs_on     = db->getBool("d_inductor_bcs_on"); 
+    d_current_idx_series         = db->getInteger("d_current_idx_series"); 
+    d_Q_right_ventricle          = db->getDouble("d_Q_right_ventricle"); 
+    d_Q_right_pa                 = db->getDouble("d_Q_right_pa");
+    d_Q_left_pa                  = db->getDouble("d_Q_left_pa");
+    d_Q_right_pa_previous        = db->getDouble("d_Q_right_pa_previous");
+    d_Q_left_pa_previous         = db->getDouble("d_Q_left_pa_previous");
+    d_Q_valve                    = db->getDouble("d_Q_valve");
+    d_right_pa_P                 = db->getDouble("d_right_pa_P");
+    d_right_pa_P_Wk              = db->getDouble("d_right_pa_P_Wk");
+    d_right_pa_P_distal          = db->getDouble("d_right_pa_P_distal");
+    d_right_pa_P_distal_previous = db->getDouble("d_right_pa_P_distal_previous");
+    d_left_pa_P                  = db->getDouble("d_left_pa_P");
+    d_left_pa_P_Wk               = db->getDouble("d_left_pa_P_Wk");
+    d_left_pa_P_distal           = db->getDouble("d_left_pa_P_distal");
+    d_left_pa_P_distal_previous  = db->getDouble("d_left_pa_P_distal_previous");
+    d_time                       = db->getDouble("d_time");
+    d_rcr_bcs_on                 = db->getBool("d_rcr_bcs_on"); 
+    d_resistance_bcs_on          = db->getBool("d_resistance_bcs_on"); 
+    d_inductor_bcs_on            = db->getBool("d_inductor_bcs_on"); 
     return;
 } // getFromRestart
 
