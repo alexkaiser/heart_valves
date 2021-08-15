@@ -44,10 +44,10 @@ Z_HIGH = Z_LOW + NZ * DX_FLUID
 //left_pa_C           = 0.0154 // cm^3 / (g/ (cm s^2)) = 20.5925 mL/mmHg 
 
 right_pa_R_proximal = 4.89
-right_pa_C = 0.0154 * 10 
+right_pa_C = 0.0154 * 100.0 
 right_pa_R_distal = 46.15
 left_pa_R_proximal = 4.89
-left_pa_C = 0.0154 * 10
+left_pa_C = 0.0154 * 100.0
 left_pa_R_distal = 46.15
 
 left_pa_L = 1.0
