@@ -663,7 +663,7 @@ fourier_series_data::fourier_series_data(string file_name, double dt_input){
     f.open(file_name.c_str(), ios::in);
     
     if (!f.is_open()){
-        std::cout << "Failed to open file in Fourier series intialization\n" ; 
+        TBOX_ERROR("Failed to open file in Fourier series intialization\n"); 
     } 
     
     // set the local dt 
