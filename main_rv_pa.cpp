@@ -446,7 +446,7 @@ int main(int argc, char* argv[])
                 fourier_coeffs_name_rpa = input_db->getString("FOURIER_COEFFS_FILENAME_RPA");
             }
             else {
-                fourier_coeffs_name_rpa = "fourier_coeffs_rv.txt"; 
+                fourier_coeffs_name_rpa = "fourier_coeffs_rpa.txt"; 
             }
             fourier_series_data *fourier_series_rpa = new fourier_series_data(fourier_coeffs_name_rpa.c_str(), dt);
 
