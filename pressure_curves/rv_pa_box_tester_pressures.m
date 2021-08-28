@@ -36,9 +36,9 @@ bump_radius_pa = .05;
 n_fourier_coeffs = 600; 
 
 % for outputting resistance/flow adjusted series 
-r_dynespercm2 = 100; 
+r_dynespercm2 = 250; 
 r_mmHg = r_dynespercm2 / MMHG_TO_CGS; 
-r_suffix = "_r_100"; 
+r_suffix = "_r_250"; 
 
 points_one_cycle_right_ventricle = [times, rv_pressure]; 
 points_one_cycle_pa              = [times, pa_pressure]; 
