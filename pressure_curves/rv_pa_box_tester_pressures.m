@@ -1,6 +1,6 @@
 
 % quadrature spacing 
-debug = true; 
+debug = false; 
 if debug 
     dt = 5e-5; 
 else 
@@ -36,9 +36,9 @@ bump_radius_pa = .05;
 n_fourier_coeffs = 600; 
 
 % for outputting resistance/flow adjusted series 
-r_dynespercm2 = 250; 
+r_dynespercm2 = 100; 
 r_mmHg = r_dynespercm2 / MMHG_TO_CGS; 
-r_suffix = "_r_250"; 
+r_suffix = "_r_100"; 
 
 points_one_cycle_right_ventricle = [times, rv_pressure]; 
 points_one_cycle_pa              = [times, pa_pressure]; 
@@ -58,6 +58,10 @@ flows_rv_exp = [-4.679 3.558 34.035 101.834 180.228 226.853 230.468 192.169 123.
 flows_lpa_exp = [-1.623108 1.62083 13.35831 39.69248 73.04993 94.478 97.37274 82.16487 55.11997 23.08761 1.514264 -2.709484 -2.605704 -3.754506 -4.046469 -4.016213 -4.166175 -4.095049 -3.645273 -2.907113]'; 
 flows_rpa_exp = [5.198252 6.404848 18.99174 48.68156 84.09315 106.0516 106.0705 87.31557 55.59498 20.70115 1.003064 0.279315 4.22013 5.346351 6.04164 6.95495 7.087463 6.348237 5.817579 5.577208]'; 
 
+
+
+
+
 % puts final elements at beginning 
 permute_flows = false; 
 if permute_flows
@@ -67,14 +71,13 @@ if permute_flows
     flows_pa_exp  = [flows_rpa_exp(end-n_to_permute+1:end); flows_rpa_exp(1:end-n_to_permute)]; 
 end
 
-% adds last flows to time zero 
-periodic_wrap_flows = true; 
-if permute_flows
-    n_to_permute = 1; 
-    flows_rv_exp  = [flows_rv_exp(end); flows_rv_exp]; 
-    flows_lpa_exp = [flows_lpa_exp(end); flows_lpa_exp]; 
-    flows_pa_exp  = [flows_rpa_exp(end); flows_rpa_exp]; 
-end
+% % adds last flows to time zero 
+% periodic_wrap_flows = true; 
+% if periodic_wrap_flows
+%     flows_rv_exp  = [flows_rv_exp(end); flows_rv_exp]; 
+%     flows_lpa_exp = [flows_lpa_exp(end); flows_lpa_exp]; 
+%     flows_pa_exp  = [flows_rpa_exp(end); flows_rpa_exp]; 
+% end
 
 % times_flows = linspace(0, cycle_length, length(flows)); 
 times_flows = linspace(cycle_length/length(flows_rv_exp), cycle_length, length(flows_rv_exp)); 
@@ -84,8 +87,14 @@ flows_spline_rv  = interp1(times_flows, flows_rv_exp, times, 'spline');
 flows_spline_rpa = interp1(times_flows, flows_rpa_exp, times, 'spline'); 
 flows_spline_lpa = interp1(times_flows, flows_lpa_exp, times, 'spline'); 
 
-rpa_pressure_adjusted_rq = pa_pressure - r_mmHg * flows_spline_rpa; 
-lpa_pressure_adjusted_rq = pa_pressure - r_mmHg * flows_spline_lpa; 
+individual_flow_adjust = false; 
+if individual_flow_adjust
+    rpa_pressure_adjusted_rq = pa_pressure - r_mmHg * flows_spline_rpa; 
+    lpa_pressure_adjusted_rq = pa_pressure - r_mmHg * flows_spline_lpa; 
+else 
+    rpa_pressure_adjusted_rq = pa_pressure - r_mmHg * flows_spline_rv/2; 
+    lpa_pressure_adjusted_rq = pa_pressure - r_mmHg * flows_spline_rv/2; 
+end 
 
 points_one_cycle_rpa              = [times, rpa_pressure_adjusted_rq]; 
 points_one_cycle_lpa              = [times, lpa_pressure_adjusted_rq]; 
@@ -113,10 +122,27 @@ if flow_plot
     total_flow = flows_rv_exp - flows_rpa_exp - flows_lpa_exp; 
     plot(times_flows, total_flow)
     
-    legend('q rv', 'q rpa', 'q lpa', 'total')
+    plot(times_flows, flows_rv_exp/2); 
+    
+    legend('q rv', 'q rpa', 'q lpa', 'total', 'qrv/2')
     title('experimental flows')
 end 
 
+
+output_experimental_flows = true; 
+if output_experimental_flows    
+    % output the data directly instead 
+    times_exp = [table.Time; table.Time + table.Time(end)]; 
+    p_rv_exp = [table.RightVentriclePressure_Inlet_; table.RightVentriclePressure_Inlet_]; 
+    p_pa_exp = [table.MainPulmonaryArteryPressure_Outlets_; table.MainPulmonaryArteryPressure_Outlets_]; 
+
+    times_two_cycles = [times_flows, times_flows + cycle_length]'; 
+    q_rv_exp = [flows_rv_exp; flows_rv_exp];  
+    q_rpa_exp = [flows_rpa_exp; flows_rpa_exp];  
+    q_lpa_exp = [flows_lpa_exp; flows_lpa_exp];  
+        
+    save 'bc_variables_experimental.mat' times_two_cycles q_rv_exp q_rpa_exp q_lpa_exp times_exp p_rv_exp p_pa_exp
+end 
 
 
 basic_series_plots = true; 
