@@ -1,7 +1,7 @@
 
 // physical parameters
-MU  = 0.04                            // viscosity
-RHO = 1.0
+MU  = 0.039                            // viscosity
+RHO = 1.09
 
 // grid spacing parameters
 MAX_LEVELS = 1                            // maximum number of levels in locally refined grid
@@ -50,8 +50,8 @@ left_pa_R_proximal = 0.0
 left_pa_C = 0.0001
 left_pa_R_distal = 250.0
 
-right_pa_R = 100  
-left_pa_R = 100
+right_pa_R = 250.0 
+left_pa_R = 250.0
 
 left_pa_L = 1.0
 right_pa_L = 1.0

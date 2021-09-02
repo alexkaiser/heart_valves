@@ -1,7 +1,7 @@
 
 // physical parameters
-MU  = 0.04                            // viscosity
-RHO = 1.0
+MU  = 0.039                            // viscosity
+RHO = 1.09
 
 // grid spacing parameters
 MAX_LEVELS = 1                            // maximum number of levels in locally refined grid
@@ -11,8 +11,8 @@ NAME = "aortic_192"
 MAX_RESTART_TO_WRITE = 20
 
 FOURIER_COEFFS_FILENAME_RV = "fourier_coeffs_right_ventricle.txt"
-FOURIER_COEFFS_FILENAME_RPA = "fourier_coeffs_pa.txt"
-FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_pa.txt"
+FOURIER_COEFFS_FILENAME_RPA = "fourier_coeffs_rpa_r_250.txt"
+FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_lpa_r_250.txt"
 BOUNDARY_FILENAME_RV = "right_ventricle_bdry.vertex"
 BOUNDARY_FILENAME_RPA = "right_pa_bdry.vertex"
 BOUNDARY_FILENAME_LPA = "left_pa_bdry.vertex"
@@ -57,8 +57,8 @@ Z_HIGH = Z_LOW + NZ * DX_FLUID
 //left_pa_C = 0.00038921545077
 //left_pa_R_distal = 1738.04767265437044
 
-right_pa_R = 100.0 
-left_pa_R  = 100.0
+right_pa_R = 250.0 
+left_pa_R  = 250.0
 
 left_pa_L = 0.1
 right_pa_L = 0.1
