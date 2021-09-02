@@ -1,6 +1,6 @@
 
 % quadrature spacing 
-debug = false; 
+debug = true; 
 if debug 
     dt = 5e-5; 
 else 
@@ -113,7 +113,7 @@ output_series_coeffs_to_txt(a_0_lpa, a_n_lpa, b_n_lpa, n_fourier_coeffs, cycle_l
 
 flow_plot = true; 
 if flow_plot
-    figure; 
+    fig = figure; 
     plot(times_flows, flows_rv_exp); 
     hold on; 
     plot(times_flows, flows_rpa_exp); 
@@ -124,10 +124,28 @@ if flow_plot
     
     plot(times_flows, flows_rv_exp/2); 
     
+    xlim([0 .835])
     legend('q rv', 'q rpa', 'q lpa', 'total', 'qrv/2')
     title('experimental flows')
+    printfig(fig, 'exp_flow_pa_4dmri')
 end 
 
+pressure_plot = true; 
+if pressure_plot
+    fig = figure; 
+    times_exp = [table.Time]; 
+    p_rv_exp = [table.RightVentriclePressure_Inlet_]; 
+    p_pa_exp = [table.MainPulmonaryArteryPressure_Outlets_];
+    
+    plot(times_exp, p_rv_exp)
+    hold on 
+    plot(times_exp, p_pa_exp)
+    xlim([0 .835])
+    legend('P RV', 'P PA')
+    title('experimental pressures')
+    printfig(fig, 'exp_pressure_4dmri')
+    
+end 
 
 output_experimental_flows = true; 
 if output_experimental_flows    
