@@ -20,6 +20,8 @@ CYCLE_DURATION = 8.3250000000000002e-01
 
 VESSEL_FILENAME = "vessel_192.vertex"
 
+GRAVITY_Y_ON = TRUE
+
 // no amr values 
 // DX_FLUID = 0.09 
 // NX = 192 // 178 original 

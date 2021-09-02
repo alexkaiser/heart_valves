@@ -58,6 +58,7 @@ public:
     bool d_rcr_bcs_on; 
     bool d_resistance_bcs_on; 
     bool d_inductor_bcs_on; 
+    bool d_gravity_y_on;
 
     const fourier_series_data *d_fourier_right_pa;
     int     d_n_pts_right_pa;
@@ -128,7 +129,8 @@ public:
                                                double P_initial_pa,
                                                bool rcr_bcs_on,
                                                bool resistance_bcs_on,
-                                               bool inductor_bcs_on);  
+                                               bool inductor_bcs_on,
+                                               bool gravity_y_on);  
 
     /*!
      * \brief Destructor.

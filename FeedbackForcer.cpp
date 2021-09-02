@@ -724,7 +724,22 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
             debug_file_writen = true; 
         }
 
+    }
 
+
+    if(d_circ_model_rv_pa){
+        if (d_circ_model_rv_pa->d_gravity_y_on){
+            // hardcoded y, component always 1 
+            int component = 1; 
+            double g = 980.0; 
+
+            for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
+                const Index<NDIM>& i = b();
+                const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
+
+                (*F_data)(i_s) += rho * g;                 
+            }
+        }
     }
 
 

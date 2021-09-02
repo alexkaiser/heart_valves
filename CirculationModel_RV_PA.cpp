@@ -58,7 +58,8 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
                                                double P_initial_pa,
                                                bool rcr_bcs_on,
                                                bool resistance_bcs_on,
-                                               bool inductor_bcs_on)
+                                               bool inductor_bcs_on, 
+                                               bool gravity_y_on)
     : 
       d_object_name("circ_model_rv_pa"),  // constant name here  
       d_registered_for_restart(true),      // always true
@@ -88,7 +89,8 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
       d_area_initialized(false), 
       d_rcr_bcs_on(rcr_bcs_on),
       d_resistance_bcs_on(resistance_bcs_on),
-      d_inductor_bcs_on(inductor_bcs_on)
+      d_inductor_bcs_on(inductor_bcs_on),
+      d_gravity_y_on(gravity_y_on)
 {
     
     if (d_registered_for_restart)
@@ -550,6 +552,7 @@ CirculationModel_RV_PA::putToDatabase(Pointer<Database> db)
     db->putBool("d_rcr_bcs_on", d_rcr_bcs_on); 
     db->putBool("d_resistance_bcs_on", d_resistance_bcs_on); 
     db->putBool("d_inductor_bcs_on", d_inductor_bcs_on); 
+    db->putBool("d_gravity_y_on", d_gravity_y_on); 
     return; 
 } // putToDatabase
 
@@ -748,6 +751,7 @@ CirculationModel_RV_PA::getFromRestart()
     d_rcr_bcs_on                 = db->getBool("d_rcr_bcs_on"); 
     d_resistance_bcs_on          = db->getBool("d_resistance_bcs_on"); 
     d_inductor_bcs_on            = db->getBool("d_inductor_bcs_on"); 
+    d_gravity_y_on               = db->getBool("d_gravity_y_on");
     return;
 } // getFromRestart
 

@@ -506,6 +506,13 @@ int main(int argc, char* argv[])
                 vessel_file_name = ""; 
             }
 
+            bool gravity_y_on; 
+            if (input_db->keyExists("GRAVITY_Y_ON")){
+                gravity_y_on = input_db->getBool("GRAVITY_Y_ON");
+            }
+            else {
+                gravity_y_on = false; 
+            }
 
             // start in physical time with relation to Fourier series 
             double t_offeset_start = t_offset_start_bcs_unscaled * (t_cycle_length / fourier_series_rv->L);
@@ -533,7 +540,8 @@ int main(int argc, char* argv[])
                                                                                   P_initial_pa,
                                                                                   rcr_bcs_on,
                                                                                   resistance_bcs_on,
-                                                                                  inductance_bcs_on); 
+                                                                                  inductance_bcs_on,
+                                                                                  gravity_y_on); 
 
             // Create Eulerian boundary condition specification objects.
             vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM);
