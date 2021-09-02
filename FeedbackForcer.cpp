@@ -737,7 +737,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                 const Index<NDIM>& i = b();
                 const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
 
-                (*F_data)(i_s) += rho * g;                 
+                (*F_data)(i_s) += -rho * g;                 
             }
         }
     }
