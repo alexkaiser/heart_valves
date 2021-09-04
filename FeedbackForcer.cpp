@@ -475,6 +475,21 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                     } // if (pgeom->getTouchesRegularBoundary(axis, side)){
                 } // for(int side=0; side<2; side++)
             } // for(int axis=0; axis<NDIM; axis++)
+
+            // gravity force if requrested 
+            if (d_circ_model_rv_pa->d_gravity_y_on){
+                // hardcoded y, component always 1 
+                int component = 1; 
+                double g = 980.0; 
+
+                for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
+                    const Index<NDIM>& i = b();
+                    const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
+
+                    (*F_data)(i_s) += -rho * g;                 
+                }
+            }
+
         } // if (d_circ_model_rv_pa)
 
 
@@ -726,21 +741,6 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
 
     }
 
-
-    if(d_circ_model_rv_pa){
-        if (d_circ_model_rv_pa->d_gravity_y_on){
-            // hardcoded y, component always 1 
-            int component = 1; 
-            double g = 980.0; 
-
-            for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
-                const Index<NDIM>& i = b();
-                const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
-
-                (*F_data)(i_s) += -rho * g;                 
-            }
-        }
-    }
 
 
     return;
