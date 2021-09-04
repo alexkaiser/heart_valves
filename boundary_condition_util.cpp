@@ -447,8 +447,8 @@ void VelocityBcCoefs_RV_PA::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_
             else if ((axis == 1) && (side == 1)){
                 // y component top 
                 // no normal traction for zero pressure on top of box
-                a = 1.0;
-                b = 0.0;
+                a = 0.0;
+                b = 1.0;
                 g = 0.0;
             }
             else{
