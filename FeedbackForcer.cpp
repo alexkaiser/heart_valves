@@ -508,14 +508,14 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
 
                     // top mask may be 1/2 mesh width over because of staggered scheme 
                     // just skip these points 
-                    double mask = (idx < d_N_Eulerian_total) ? d_masks_linear_array[idx] : 0.0; 
+                    double mask = (idx < d_N_Eulerian_total) ? d_masks_gravity_linear_array[idx] : 0.0; 
 
-                    // only apply gravity to locations not getting masked 
-                    if (mask == 0.0){
+                    // only apply gravity to locations with mask
+                    if (mask != 0.0){
                         (*F_data)(i_s) += -rho * g;
                     }
 
-                    if (debug_plot_file && (!debug_file_writen) && (mask == 0.0)){
+                    if (debug_plot_file && (!debug_file_writen) && (mask != 0.0)){
                         mask_data << X[0] << ", " << X[1] << ", " << X[2] << ", " << mask << "\n";
                     }
                     
@@ -873,7 +873,8 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
 
     int *indices_one_dimensional = new int[d_N_Eulerian_total]; 
     d_masks_linear_array = new double[d_N_Eulerian_total]; 
-    
+    d_masks_gravity_linear_array = new double[d_N_Eulerian_total]; 
+
     for(int i=0; i<d_N_Eulerian_total; i++){
         indices_one_dimensional[i] = 0; 
     }
@@ -988,7 +989,7 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
  
     // finally set the masks 
     for (int j=0; j<d_N_Eulerian_total; j++){
-        if ((indices_one_dimensional[j] == 0) || (indices_one_dimensional[j] == 2)){
+        if (indices_one_dimensional[j] == 0){
             // full mask 
             d_masks_linear_array[j] = 1.0; 
         }
@@ -996,6 +997,20 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
             // no mask, on Lag structure 
             // or inside of it 
             d_masks_linear_array[j] = 0.0; 
+        }
+
+    }
+
+    // finally set the masks 
+    for (int j=0; j<d_N_Eulerian_total; j++){
+        if (indices_one_dimensional[j] == 1){
+            // full mask 
+            d_masks_gravity_linear_array[j] = 1.0; 
+        }
+        else{
+            // no mask, on Lag structure 
+            // or inside of it 
+            d_masks_gravity_linear_array[j] = 0.0; 
         }
 
     }
