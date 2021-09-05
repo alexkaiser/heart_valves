@@ -483,7 +483,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                     TBOX_ERROR("must have damping masks on and initialized for gravity"); 
                 }
 
-                bool debug_plot_file = true; 
+                bool debug_plot_file = false; 
                 static bool debug_file_writen = false; 
                 std::ofstream mask_data;
                 if (debug_plot_file && !debug_file_writen){
@@ -520,6 +520,12 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                     }
                     
                 }
+
+                if (debug_plot_file && !debug_file_writen){
+                    mask_data.close(); 
+                    debug_file_writen = true; 
+                }
+
             }
 
         } // if (d_circ_model_rv_pa)
