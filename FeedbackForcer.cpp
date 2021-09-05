@@ -988,7 +988,7 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
  
     // finally set the masks 
     for (int j=0; j<d_N_Eulerian_total; j++){
-        if (indices_one_dimensional[j] == 0){
+        if ((indices_one_dimensional[j] == 0) || (indices_one_dimensional[j] == 2)){
             // full mask 
             d_masks_linear_array[j] = 1.0; 
         }
