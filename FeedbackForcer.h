@@ -97,7 +97,6 @@ class FeedbackForcer : public CartGridFunction
   const double *d_bdry_low; 
   const double *d_bdry_up; 
   double *d_masks_linear_array; 
-  double *d_masks_gravity_linear_array; 
 
  private:
   /*!

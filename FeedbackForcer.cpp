@@ -475,59 +475,6 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                     } // if (pgeom->getTouchesRegularBoundary(axis, side)){
                 } // for(int side=0; side<2; side++)
             } // for(int axis=0; axis<NDIM; axis++)
-
-            // gravity force if requrested 
-            if (d_circ_model_rv_pa->d_gravity_y_on){
-
-                if ((!d_damping_outside) || (!d_damping_initialized)){
-                    TBOX_ERROR("must have damping masks on and initialized for gravity"); 
-                }
-
-                bool debug_plot_file = false; 
-                static bool debug_file_writen = false; 
-                std::ofstream mask_data;
-                if (debug_plot_file && !debug_file_writen){
-                    mask_data.open("mask_data_for_gravity.csv", ios_base::out | ios_base::trunc);
-                    mask_data << "x, y, z, v \n"; 
-                }
-
-                // hardcoded y, component always 1 
-                int component = 1; 
-                double g = 980.0; 
-
-                for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
-                    const Index<NDIM>& i = b();
-                    const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
-                    
-                    double X[NDIM];
-                    for (int d = 0; d < NDIM; ++d){
-                        X[d] = x_lower[d] + dx[d] * (double(i(d) - patch_box.lower(d)) + (d == component ? 0.0 : 0.5));
-                    }
-
-                    int idx = this->get_1d_idx(X); 
-
-                    // top mask may be 1/2 mesh width over because of staggered scheme 
-                    // just skip these points 
-                    double mask = (idx < d_N_Eulerian_total) ? d_masks_gravity_linear_array[idx] : 0.0; 
-
-                    // only apply gravity to locations with mask
-                    if (mask != 0.0){
-                        (*F_data)(i_s) += -rho * g;
-                    }
-
-                    if (debug_plot_file && (!debug_file_writen) && (mask != 0.0)){
-                        mask_data << X[0] << ", " << X[1] << ", " << X[2] << ", " << mask << "\n";
-                    }
-                    
-                }
-
-                if (debug_plot_file && !debug_file_writen){
-                    mask_data.close(); 
-                    debug_file_writen = true; 
-                }
-
-            }
-
         } // if (d_circ_model_rv_pa)
 
 
@@ -777,8 +724,8 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
             debug_file_writen = true; 
         }
 
-    }
 
+    }
 
 
     return;
@@ -805,7 +752,7 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
     f.open(lag_file_name.c_str(), ios::in);
     
     if (!f.is_open()){
-        TBOX_ERROR("Failed to open file\n") ; 
+        std::cout << "Failed to open file\n" ; 
     } 
     
     // total lagrangian points 
@@ -824,7 +771,7 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
     f_internal_ring.open(internal_ring_file_name.c_str(), ios::in);
     
     if (!f_internal_ring.is_open()){
-        TBOX_ERROR("Failed to open file\n") ; 
+        std::cout << "Failed to open file\n" ; 
     } 
     
     // lagrangian 
@@ -873,8 +820,7 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
 
     int *indices_one_dimensional = new int[d_N_Eulerian_total]; 
     d_masks_linear_array = new double[d_N_Eulerian_total]; 
-    d_masks_gravity_linear_array = new double[d_N_Eulerian_total]; 
-
+    
     for(int i=0; i<d_N_Eulerian_total; i++){
         indices_one_dimensional[i] = 0; 
     }
@@ -997,20 +943,6 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
             // no mask, on Lag structure 
             // or inside of it 
             d_masks_linear_array[j] = 0.0; 
-        }
-
-    }
-
-    // finally set the masks 
-    for (int j=0; j<d_N_Eulerian_total; j++){
-        if (indices_one_dimensional[j] == 1){
-            // full mask 
-            d_masks_gravity_linear_array[j] = 1.0; 
-        }
-        else{
-            // no mask, on Lag structure 
-            // or inside of it 
-            d_masks_gravity_linear_array[j] = 0.0; 
         }
 
     }
