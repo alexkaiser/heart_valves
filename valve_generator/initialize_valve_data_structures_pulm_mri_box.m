@@ -172,7 +172,7 @@ valve.r = valve.skeleton.r;
 
 % little nub at top of valve 
 r_subtract_nub = 0.21;
-height_nub_half = 0.125; 
+height_nub_half = 0.1; 
 scaffold_top = 1.3; 
 nub_center = scaffold_top - height_nub_half; 
 

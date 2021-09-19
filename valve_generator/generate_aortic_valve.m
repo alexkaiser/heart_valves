@@ -67,7 +67,7 @@ for N_each = N_each_range
     end 
 
 
-    interactive = true; 
+    interactive = false; 
 
     from_history = false; 
     if from_history 
