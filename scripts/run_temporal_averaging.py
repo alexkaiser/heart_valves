@@ -127,7 +127,17 @@ if __name__ == '__main__':
     eulerian = True
     lagrangian = True 
 
-    cycles_to_output = [1] # zero indexed 
+    second_cycle = True
+
+    if second_cycle:
+        cycles_to_output = [1] # zero indexed 
+        # set up some directories 
+        base_dir = "vis_data_averaged_cycle_2"
+    else:
+        cycles_to_output = [1,2,3] # zero indexed 
+        # set up some directories 
+        base_dir = "vis_data_averaged_cycle_2_3_4"
+
 
     cycle_duration = 8.3250000000000002e-01
     mri_read_times_per_cycle = 10 
@@ -136,8 +146,7 @@ if __name__ == '__main__':
     dt_output = cycle_duration / output_times_per_cycle
 
 
-    # set up some directories 
-    base_dir = "vis_data_averaged_parallel"
+
     if not os.path.exists(base_dir):
         os.mkdir(base_dir)
 
