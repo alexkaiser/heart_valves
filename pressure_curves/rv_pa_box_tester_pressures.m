@@ -145,6 +145,14 @@ if pressure_plot
     title('experimental pressures')
     printfig(fig, 'exp_pressure_4dmri')
     
+    fig = figure; 
+    plot(times_exp, p_rv_exp - p_pa_exp); 
+    axis([0 .4 0 20])    
+    title('experimental pressure difference')
+    max_fwd_delta_p = max(p_rv_exp - p_pa_exp)
+    
+    
+    
 end 
 
 output_experimental_flows = true; 
