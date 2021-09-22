@@ -171,7 +171,7 @@ valve.skeleton = get_skeleton_aortic_generic(r, h1, hc);
 valve.r = valve.skeleton.r; 
 
 % little nub at top of valve 
-r_subtract_nub = 0.3;
+r_subtract_nub = 0.4;
 height_nub_half = 0.125; 
 scaffold_top = 1.3; 
 nub_center = scaffold_top - height_nub_half; 
