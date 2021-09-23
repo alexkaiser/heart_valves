@@ -162,7 +162,7 @@ valve.p_final = 0 * MMHG_TO_CGS;
 valve.L = 2.25; 
 
 
-r = 0.95; 
+r = 0.9; 
 normal_height = 1.1; % 0.845; 
 hc = 0.1; % 1 mm of commissure attachment (nearly zero)
 h1 = normal_height - hc; 
@@ -224,8 +224,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 5.74;  % circumferential 
-tension_coeffs.c_rad_dec        = 2.725;  % radial
+tension_coeffs.c_circ_dec       = 5.9;  % circumferential 
+tension_coeffs.c_rad_dec        = 2.65;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.9;        
 
