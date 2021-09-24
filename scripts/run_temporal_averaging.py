@@ -99,8 +99,10 @@ def average_eulerian_mesh_one_step(idx_mri_read, eulerian_var_names, times, cycl
 
             # print("t = ", t, "t_reduced = ", t_reduced, "idx_mri_read = ", idx_mri_read)
 
-    for var_name in eulerian_var_names: 
-        mesh[var_name] /= float(n_to_average)
+    for var_name in eulerian_var_names:
+        # if none to average, mesh output as all zeros  
+        if n_to_average != 0:
+            mesh[var_name] /= float(n_to_average)
 
     fname = base_name_out + str(idx_mri_read).zfill(4) + '.' + extension
     mesh.save(base_dir + "/" + fname)    
