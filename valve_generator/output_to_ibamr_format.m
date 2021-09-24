@@ -559,12 +559,20 @@ function [] = output_to_ibamr_format(valve)
                 end 
                 
                 params_cylinder.vertices = coordinate_transformation_vertices(params_cylinder.vertices, valve.transformation_vertex_file, R_0, T_0);
-            elseif isfield(valve, 'initial_rotation_aortic')
-                % rotation alone 
-                R_0 = valve.initial_rotation_aortic; 
-                params_cylinder.vertices = R_0 * params_cylinder.vertices; 
             elseif valve.in_heart && isfield(valve.skeleton, 'inverse_transformation_initial_condition')
                 params_cylinder.vertices = valve.skeleton.inverse_transformation_initial_condition(params_cylinder.vertices) 
+            else 
+                
+                if isfield(valve, 'initial_translation_aortic')
+                    % translation
+                    params_cylinder.vertices = params_cylinder.vertices + valve.initial_translation_aortic;
+                end 
+                
+                if isfield(valve, 'initial_rotation_aortic')
+                    % rotation alone 
+                    R_0 = valve.initial_rotation_aortic; 
+                    params_cylinder.vertices = R_0 * params_cylinder.vertices;
+                end 
             end 
 
             % finally, write all vertices 
@@ -617,12 +625,20 @@ function [] = output_to_ibamr_format(valve)
                 T_0 = zeros(3,1);
             end 
             params_particles.vertices = coordinate_transformation_vertices(params_particles.vertices, valve.transformation_vertex_file, R_0, T_0);
-        elseif isfield(valve, 'initial_rotation_aortic')
-            % rotation alone 
-            R_0 = valve.initial_rotation_aortic; 
-            params_particles.vertices = R_0 * params_particles.vertices; 
         elseif valve.in_heart && isfield(valve.skeleton, 'inverse_transformation_initial_condition')
-            params_particles.vertices = valve.skeleton.inverse_transformation_initial_condition(params_particles.vertices);  
+            params_particles.vertices = valve.skeleton.inverse_transformation_initial_condition(params_particles.vertices); 
+        else 
+                
+                if isfield(valve, 'initial_translation_aortic')
+                    % translation
+                    params_particles.vertices = params_particles.vertices + valve.initial_translation_aortic;
+                end 
+                
+                if isfield(valve, 'initial_rotation_aortic')
+                    % rotation alone 
+                    R_0 = valve.initial_rotation_aortic; 
+                    params_particles.vertices = R_0 * params_particles.vertices;
+                end
         end 
         
         params_particles = write_all_vertices(params_particles); 
@@ -644,13 +660,21 @@ function [] = output_to_ibamr_format(valve)
             T_0 = zeros(3,1);
         end 
         
-        params.vertices = coordinate_transformation_vertices(params.vertices, valve.transformation_vertex_file, R_0, T_0);
-    elseif isfield(valve, 'initial_rotation_aortic')
-        % rotation alone 
-        R_0 = valve.initial_rotation_aortic; 
-        params.vertices = R_0 * params.vertices; 
+        params.vertices = coordinate_transformation_vertices(params.vertices, valve.transformation_vertex_file, R_0, T_0); 
     elseif valve.in_heart && isfield(valve.skeleton, 'inverse_transformation_initial_condition')
         params.vertices = valve.skeleton.inverse_transformation_initial_condition(params.vertices) 
+    else 
+
+        if isfield(valve, 'initial_translation_aortic')
+            % translation
+            params_cylinder.vertices = params_cylinder.vertices + valve.initial_translation_aortic;
+        end 
+
+        if isfield(valve, 'initial_rotation_aortic')
+            % rotation alone 
+            R_0 = valve.initial_rotation_aortic; 
+            params_cylinder.vertices = R_0 * params_cylinder.vertices;
+        end
     end 
     
     % finally, write all vertices 

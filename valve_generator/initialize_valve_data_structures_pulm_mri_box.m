@@ -84,6 +84,7 @@ if valve.in_heart
     valve.z_extra_cylinder = 0.28; 
                                      
     if mri_box
+        valve.initial_translation_aortic = [0; 0; -0.2]; % 2mm down from origin, translation applied first 
         valve.initial_rotation_aortic = rotation_matrix_y(-pi/2) * rotation_matrix_z(pi/6); 
     else 
         valve.initial_rotation_aortic = rotation_matrix_z(pi/4); 
