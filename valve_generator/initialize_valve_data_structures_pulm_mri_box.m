@@ -162,7 +162,7 @@ valve.p_final = 0 * MMHG_TO_CGS;
 valve.L = 2.25; 
 
 
-r = 0.9; 
+r = 1.0; 
 normal_height = 1.1; % 0.845; 
 hc = 0.1; % 1 mm of commissure attachment (nearly zero)
 h1 = normal_height - hc; 
@@ -171,28 +171,15 @@ valve.skeleton = get_skeleton_aortic_generic(r, h1, hc);
 valve.r = valve.skeleton.r; 
 
 % little nub at top of valve 
-r_subtract_nub = 0.21;
-height_nub_half = 0.125; 
-scaffold_top = 1.3; 
-nub_center = scaffold_top - height_nub_half; 
-
-half_circle = @(z) (abs(z) < 1) .* sqrt(1 - z.^2); 
-
-% smooth bump 
-% valve.skeleton.r_of_z = @(z) r .* ones(size(z)) - (abs(z - 1.2) < .1) .* r_subtract_nub .* cos( (pi/2)*(z - 1.2)/.1 ); 
-
-% half circle bump 
-valve.skeleton.r_of_z = @(z) r .* ones(size(z)) - r_subtract_nub .* half_circle((z - nub_center)/height_nub_half); 
-
+r_subtract_nub = 0.15; 
+valve.skeleton.r_of_z = @(z) r .* ones(size(z)) - (abs(z - 1.2) < .1) .* r_subtract_nub .* cos( (pi/2)*(z - 1.2)/.1 ); 
                          
-r_of_z_debug = false; 
+                         
+r_of_z_debug = true; 
 if r_of_z_debug 
     z_range = linspace(-.2, 1.3, 1000); 
     figure; 
     plot(valve.skeleton.r_of_z(z_range), z_range); 
-    hold on;     
-    plot(-valve.skeleton.r_of_z(z_range), z_range);     
-    axis equal 
 end
 
                          
@@ -224,8 +211,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 5.9;  % circumferential 
-tension_coeffs.c_rad_dec        = 2.65;  % radial
+tension_coeffs.c_circ_dec       = 5.65;  % circumferential 
+tension_coeffs.c_rad_dec        = 3.0;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.9;        
 
