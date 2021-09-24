@@ -66,5 +66,5 @@ python run_parallel_movie.py $SESSION_NAME $SLURM_NTASKS $VIEW_CLIPPING
 # convert to paraview formats 
 visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py $SLURM_NTASKS $SLURM_NTASKS
 
-
+sbatch ~/copies_scripts/post_process_pa.sh 
 

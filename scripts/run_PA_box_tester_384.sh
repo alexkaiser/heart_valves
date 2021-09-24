@@ -6,7 +6,7 @@
 #SBATCH --job-name=aortic_1
 #SBATCH --mail-user=adkaiser@gmail.com
 #SBATCH --mail-type=ALL
-#SBATCH --partition=amarsden
+#SBATCH --partition=amarsden,willhies
 #SBATCH --exclude=sh03-16n02
 # #SBATCH --exclude=sh-107-[59-64]
 
@@ -18,7 +18,7 @@ module load openmpi/2.0.2
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_384_e3551752_r_250_to_exp_pressure_adjusted_half_rv_rho_mu_updated
+RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_384_5de3b6a_18mm_valve_2pt1mm_nub
 mkdir $RUNDIR
 
 # set up run info 
@@ -67,4 +67,4 @@ python run_parallel_movie.py $SESSION_NAME $SLURM_NTASKS $VIEW_CLIPPING
 # convert to paraview formats 
 visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py $SLURM_NTASKS $SLURM_NTASKS
 
-
+sbatch ~/copies_scripts/post_process_pa.sh 
