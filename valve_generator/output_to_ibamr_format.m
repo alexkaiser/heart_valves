@@ -667,13 +667,13 @@ function [] = output_to_ibamr_format(valve)
 
         if isfield(valve, 'initial_translation_aortic')
             % translation
-            params_cylinder.vertices = params_cylinder.vertices + valve.initial_translation_aortic;
+            params.vertices = params.vertices + valve.initial_translation_aortic;
         end 
 
         if isfield(valve, 'initial_rotation_aortic')
             % rotation alone 
             R_0 = valve.initial_rotation_aortic; 
-            params_cylinder.vertices = R_0 * params_cylinder.vertices;
+            params.vertices = R_0 * params.vertices;
         end
     end 
     
