@@ -6,7 +6,7 @@
 #SBATCH --job-name=aortic_1
 #SBATCH --mail-user=adkaiser@gmail.com
 #SBATCH --mail-type=ALL
-#SBATCH --partition=amarsden,willhies
+#SBATCH --partition=amarsden
 #SBATCH --exclude=sh03-16n02
 # #SBATCH --exclude=sh-107-[59-64]
 
@@ -18,7 +18,7 @@ module load openmpi/2.0.2
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_384_5de3b6a_18mm_valve_2pt1mm_nub
+RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_384_b073b3b_basic_down2mm_rv_pressure_adjust
 mkdir $RUNDIR
 
 # set up run info 
@@ -38,7 +38,7 @@ cp left_pa_bdry.vertex                $RUNDIR
 cp right_pa_bdry.vertex               $RUNDIR 
 cp right_ventricle_bdry.vertex        $RUNDIR
 cp fourier_coeffs*pa*                 $RUNDIR
-cp fourier_coeffs_right_ventricle.txt $RUNDIR
+cp fourier_coeffs_right_ventricle*    $RUNDIR
 cp $BASE_NAME*                        $RUNDIR
 cp $BASE_NAME_VESSEL*                 $RUNDIR
 cp $INPUT_NAME                        $RUNDIR
