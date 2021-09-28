@@ -1,6 +1,6 @@
 
 % quadrature spacing 
-debug = true; 
+debug = false; 
 if debug 
     dt = 5e-5; 
 else 
@@ -40,6 +40,12 @@ r_dynespercm2 = 250;
 r_mmHg = r_dynespercm2 / MMHG_TO_CGS; 
 r_suffix = "_r_250"; 
 
+% IB flow lost 
+radius_valve = 1; 
+dx_fluid = 0.045; 
+frac_flow_expected = (radius_valve - dx_fluid)^4; 
+coeff_pressure_diff_adjust = 1/frac_flow_expected - 1; 
+
 points_one_cycle_right_ventricle = [times, rv_pressure]; 
 points_one_cycle_pa              = [times, pa_pressure]; 
 
@@ -52,6 +58,25 @@ suffix_pa = "_pa";
 file_name = strcat(base_name, suffix_pa, '.txt'); 
 [a_0_pa a_n_pa b_n_pa Series_pa times_pa linear_interp_vals_pa] = series_and_smooth(points_one_cycle_pa, dt, bump_radius_pa, n_fourier_coeffs, plots); 
 output_series_coeffs_to_txt(a_0_pa, a_n_pa, b_n_pa, n_fourier_coeffs, cycle_length, file_name); 
+
+% points_one_cycle_difference = [times, rv_pressure - pa_pressure]; 
+% [a_0_difference a_n_difference b_n_difference Series_difference times_difference linear_interp_vals_difference] = series_and_smooth(points_one_cycle_difference, dt, bump_radius_pa, n_fourier_coeffs, plots); 
+
+% smoothed differences 
+pressure_diff_positive = max(rv_pressure - pa_pressure, 0); 
+points_one_cycle_difference_positive = [times, pressure_diff_positive]; 
+[a_0_difference_positive a_n_difference_positive b_n_difference_positive Series_difference_positive times_difference_positive linear_interp_vals_differenc_positivee] = series_and_smooth(points_one_cycle_difference_positive, dt, bump_radius_pa, n_fourier_coeffs, plots); 
+
+% rv adjusted 
+pressure_rv_plus_diff_positive = rv_pressure + coeff_pressure_diff_adjust * pressure_diff_positive; 
+points_one_cycle_right_ventricle_plus_diff_positive = [times, pressure_rv_plus_diff_positive]; 
+suffix_right_ventricle__plus_diff_positive = "_right_ventricle_plus_diff_positive"; 
+file_name = strcat(base_name, suffix_right_ventricle__plus_diff_positive, '.txt'); 
+[a_0_right_ventricle_plus_diff_positive a_n_right_ventricle_plus_diff_positive  b_n_right_ventricle_plus_diff_positive  ...
+    Series_right_ventricle_plus_diff_positive  times_rv_plus_diff_positive  linear_interp_vals_rv_plus_diff_positive] = ...
+    series_and_smooth(points_one_cycle_right_ventricle_plus_diff_positive, dt, bump_radius_rv, n_fourier_coeffs, plots); 
+output_series_coeffs_to_txt(a_0_right_ventricle_plus_diff_positive, a_n_right_ventricle_plus_diff_positive, b_n_right_ventricle_plus_diff_positive, n_fourier_coeffs, cycle_length, file_name); 
+
 
 
 flows_rv_exp = [-4.679 3.558 34.035 101.834 180.228 226.853 230.468 192.169 123.601 48.604 4.302 -2.023 -0.795 0.197 0.101 -0.209 -1.054 -2.747 -2.837 -3.134]'; 
@@ -191,7 +216,21 @@ if basic_series_plots
     vals_lpa_series = Series_lpa(t); 
     plot(t, vals_lpa_series, 'g'); 
     
-    legend('RV', 'PA', 'RPA adjusted', 'LPA adjusted')
+%     t = 0:dt:cycle_length; 
+%     vals_rv_plus_diff_series = Series_right_ventricle(t) + coeff_pressure_diff_adjust * Series_difference(t); 
+%     plot(t, vals_rv_plus_diff_series); 
+%     
+    t = 0:dt:cycle_length; 
+    vals_rv_plus_diff_positive_series = Series_right_ventricle_plus_diff_positive(t); 
+    plot(t, vals_rv_plus_diff_positive_series); 
+    
+    times_exp = [table.Time]; 
+    p_rv_exp = [table.RightVentriclePressure_Inlet_]; 
+    p_pa_exp = [table.MainPulmonaryArteryPressure_Outlets_];    
+    plot(times_exp, p_rv_exp)
+    plot(times_exp, p_pa_exp)
+    
+    legend('RV', 'PA', 'RPA adjusted', 'LPA adjusted', 'RV plus diff postive', 'P RV EXP', 'P PA EXP')
     
     title('RV PA pressure')
     xlabel('t')
