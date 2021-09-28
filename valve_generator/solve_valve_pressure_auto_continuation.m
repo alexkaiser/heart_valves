@@ -1,4 +1,4 @@
-function [leaflet pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet, tol, max_it, max_continuations, p_easy, p_goal, max_consecutive_fails, max_total_fails)
+function [leaflet pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet, tol, max_it, max_continuations, p_easy, p_goal, max_consecutive_fails, max_total_fails, goal_first)
 % 
 % Automatically runs a continutation sequence 
 % 
@@ -38,9 +38,11 @@ function [leaflet pass err any_passed] = solve_valve_pressure_auto_continuation(
 initial_p_plot = true; 
 plots = true; 
 
-easy_first = false; 
+if ~exist('goal_first', 'var')
+    goal_first = true; 
+end 
 
-if easy_first
+if goal_first
     leaflet.p_0 = p_goal; 
 
     try
