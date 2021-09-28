@@ -38,25 +38,27 @@ function [leaflet pass err any_passed] = solve_valve_pressure_auto_continuation(
 initial_p_plot = true; 
 plots = true; 
 
+easy_first = false; 
 
-leaflet.p_0 = p_goal; 
+if easy_first
+    leaflet.p_0 = p_goal; 
 
-try
-    [leaflet_current pass err] = newton_solve_valve(leaflet, tol, max_it, max_consecutive_fails, max_total_fails);  
+    try
+        [leaflet_current pass err] = newton_solve_valve(leaflet, tol, max_it, max_consecutive_fails, max_total_fails);  
 
-    % quick exit if fail 
-    if pass 
-        fprintf('Initial solve at goal passed.\n'); 
-        leaflet = leaflet_current; 
-        any_passed = true; 
-        return; 
-    else
+        % quick exit if fail 
+        if pass 
+            fprintf('Initial solve at goal passed.\n'); 
+            leaflet = leaflet_current; 
+            any_passed = true; 
+            return; 
+        else
+            fprintf('Initial solve at goal failed. Running continuations.\n'); 
+        end 
+    catch 
         fprintf('Initial solve at goal failed. Running continuations.\n'); 
     end 
-catch 
-    fprintf('Initial solve at goal failed. Running continuations.\n'); 
 end 
-
 
 leaflet.p_0 = p_easy; 
 
