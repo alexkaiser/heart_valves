@@ -13,8 +13,8 @@ function leaflet = aortic_free_edge_pinch_comms(leaflet, extra_stretch_radial, N
         N_leaflets = 3; 
     end 
     
-    if N_to_pinch == 0 
-        error('must pinch non zero number of points')
+    if N_to_pinch < 2 
+        error('must pinch at least 2 points for a smooth spline')
     end 
     
     if N_to_pinch > N_each/2
@@ -25,7 +25,7 @@ function leaflet = aortic_free_edge_pinch_comms(leaflet, extra_stretch_radial, N
     X = leaflet.X; 
 
     debug = true; 
-    debug_text = true; 
+    debug_text = false; 
 
     is_bc = leaflet.is_bc;     
     linear_idx_offset         = zeros(j_max, k_max); 
@@ -235,7 +235,7 @@ function leaflet = aortic_free_edge_pinch_comms(leaflet, extra_stretch_radial, N
             % viewing this as a mapping from index j to value 
             pts = zeros(N_each,1); 
             pts_placed = 0; 
-            for j=j_range_this_leaflet
+            for j=min_j_range:max_j_range
                 if free_edge_idx_set(j)
                     pts_placed = pts_placed + 1; 
                     pts(pts_placed) = j; 

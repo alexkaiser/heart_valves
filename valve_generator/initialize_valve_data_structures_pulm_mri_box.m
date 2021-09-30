@@ -130,7 +130,8 @@ valve.dirichlet_free_edge = false;
 valve.dirichlet_free_edge_with_ref_only = true; 
 
 pinch_commissure = true; 
-N_to_pinch = (N/3)/4;  
+N_points_half_free_edge = (N/3)/2; 
+N_to_pinch = N_points_half_free_edge/32;  
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
