@@ -129,6 +129,8 @@ valve.dirichlet_free_edge = false;
 
 valve.dirichlet_free_edge_with_ref_only = true; 
 
+pinch_commissure = true; 
+N_to_pinch = (N/3)/4;  
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 
@@ -357,6 +359,11 @@ end
 
 valve.leaflets(1) = leaflet; 
     
+if pinch_commissure
+    valve.leaflets(1).pinch_commissure = true; 
+    valve.leaflets(1).N_to_pinch       = N_to_pinch; 
+end 
+
 
 % viscoelastic damping coefficients springs 
 % eta, damping coeff here, is multiplied by the coefficient on the 

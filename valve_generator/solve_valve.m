@@ -339,7 +339,22 @@ if build_reference
                 leaflets_copy = aortic_free_edge_fuse_commissure(valve_with_reference.leaflets(i), extra_stretch_radial, leaflet.fused_comm_idx); 
                 valve_with_reference = rmfield(valve_with_reference, 'leaflets'); 
                 valve_with_reference.leaflets(1) = leaflets_copy; 
+            
+            elseif isfield(leaflet, 'pinch_commissure') && leaflet.pinch_commissure                     
+                if ~isfield(leaflet, 'N_to_pinch')
+                    error('must supply N_to_pinch if leaflet.pinch_commissure is true')
+                end 
                 
+                if isfield(valve, 'extra_stretch_radial_dirichlet_free_edge')
+                    extra_stretch_radial = valve.extra_stretch_radial_dirichlet_free_edge; 
+                else
+                    extra_stretch_radial = valve.strain_rad + 1.0; 
+                end
+                
+                valve_with_reference.leaflets(i) = aortic_free_edge_pinch_comms(valve_with_reference.leaflets(i), extra_stretch_radial, leaflet.N_to_pinch);
+%                 leaflets_copy = aortic_free_edge_pinch_comms(valve_with_reference.leaflets(i), extra_stretch_radial, leaflet.N_to_pinch); 
+%                 valve_with_reference = rmfield(valve_with_reference, 'leaflets'); 
+%                 valve_with_reference.leaflets(1) = leaflets_copy;    
                 
             elseif isfield(valve, 'dirichlet_free_edge_with_ref_only') && valve.dirichlet_free_edge_with_ref_only
                 % multiplicative stretch for setting aortic valve initial condition 
