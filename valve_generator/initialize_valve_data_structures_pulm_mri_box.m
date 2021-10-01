@@ -115,6 +115,8 @@ valve.normal_thicken = true;
 % nominal aortic valve thickness
 valve.normal_thickness = 0.044; 
 
+valve.center_extrusion = true; 
+
 % add flags to spring files 
 % to view and output with a stride 
 
@@ -131,7 +133,7 @@ valve.dirichlet_free_edge_with_ref_only = true;
 
 pinch_commissure = true; 
 N_points_half_free_edge = (N/3)/2; 
-N_to_pinch = N_points_half_free_edge/4;  
+N_to_pinch = N_points_half_free_edge/16;  
 
 % Uses collagen spring function implemented in IBAMR 
 % Spring constants are different here 

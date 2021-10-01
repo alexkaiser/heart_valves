@@ -278,6 +278,14 @@ function [] = output_to_ibamr_format(valve)
         params.normal_thicken = valve.normal_thicken; 
         params.ds_extrude = valve.normal_thickness / (valve.num_copies-1); 
         params.rest_len_cross_layer = params.ds_extrude; 
+        
+        if isfield(valve, 'center_extrusion')
+            params.center_extrusion = valve.center_extrusion;
+            
+            % remove outer layer at comms everywhere 
+            valve.leaflets(1) = add_bc_layer_at_commmissure_aortic(valve.leaflets(1)); 
+        end
+        
     end 
     
     % copies, if needed, will be placed this far down 
@@ -340,7 +348,10 @@ function [] = output_to_ibamr_format(valve)
         end 
         
         for i=1:length(valve.leaflets)
-            params = add_springs(params, valve.leaflets(i), ds, collagen_constitutive); 
+%             if copy ~= 1 
+%                 warning('REMOVE DEBUG REMOVE')
+                params = add_springs(params, valve.leaflets(i), ds, collagen_constitutive); 
+%             end 
         end 
         
         for i=1:length(valve.leaflets)
@@ -476,7 +487,12 @@ function [] = output_to_ibamr_format(valve)
         if strcmp(params.type, 'aortic') && (copy == 1) && isfield(params, 'normal_thicken') && params.normal_thicken 
             % set end links in circ fibers to be bc in the normal thicken since they cross each other 
             % with the discontinuous normal at the commissure 
-            valve.leaflets(1) = add_bc_layer_at_commmissure_aortic(valve.leaflets(1)); 
+            
+            if isfield(params, 'center_extrusion') && params.center_extrusion
+                % nothing, already set  
+            else
+                valve.leaflets(1) = add_bc_layer_at_commmissure_aortic(valve.leaflets(1)); 
+            end 
         end 
             
         if (copy > 1) && ~strcmp(params.type, 'aortic')  
@@ -991,7 +1007,16 @@ function X_extruded = normal_extrude_aortic(params, leaflet)
     
     X_extruded  = zeros(size(X));  
     
-    extrude_length = (params.copy - 1) * params.ds_extrude; 
+    if isfield(params, 'center_extrusion') && params.center_extrusion
+        
+        if params.num_copies ~= 3
+            error('cneter extrusion only implemted with 3 layers') 
+        end 
+        
+        extrude_length = (params.copy - 2) * params.ds_extrude; 
+    else 
+        extrude_length = (params.copy - 1) * params.ds_extrude; 
+    end 
     
     for j=1:j_max
         for k=1:k_max
