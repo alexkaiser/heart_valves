@@ -1027,6 +1027,10 @@ function X_extruded = normal_extrude_aortic(params, leaflet)
                 normal = cross(X(:,j_plus__1,k) - X(:,j_minus_1,k), X(:,j,k_plus__1) - X(:,j,k_minus_1));                     
                 normal = normal / norm(normal); 
                 
+                if isfield(leaflet, 'extrusion_out') && leaflet.extrusion_out
+                    normal = -normal; 
+                end 
+                
 %                 if (j==j_max) && (k==k_max)
 %                     'pause'
 %                 end 
@@ -1046,7 +1050,16 @@ function X_extruded = normal_extrude_aortic(params, leaflet)
                     
                 end 
 
-                
+                % if leaflet is being pinched
+                % at comm point, ignore extrusion 
+                % this point is removed anyway when thicken
+                if isfield(leaflet, 'N_to_pinch') && (leaflet.N_to_pinch > 0)
+                    if (mod(j, leaflet.N_each) == 0) && (k == k_max)
+                        if any(isnan(normal))
+                            normal = [0; 0; 0]; 
+                        end 
+                    end 
+                end 
                 
                 X_extruded(:,j,k) = X(:,j,k) - normal * extrude_length; 
                 
@@ -1566,6 +1579,14 @@ function params = place_cross_layer_springs_aortic(params, leaflet)
                 idx          = params.layer_indices(copy  ).indices_global(j,k); 
                 nbr_idx      = params.layer_indices(copy+1).indices_global(j,k);  
 
+                % when comms are attached and normal is undefined
+                % do not place this single spring 
+                if isfield(leaflet, 'N_to_pinch') && (leaflet.N_to_pinch > 0)
+                    if (mod(j, leaflet.N_each) == 0) && (k == k_max)
+                        continue; 
+                    end 
+                end 
+                
                 if debug
                    coords = params.vertices(:,idx+1); 
                    coords_nbr = params.vertices(:,nbr_idx+1);
