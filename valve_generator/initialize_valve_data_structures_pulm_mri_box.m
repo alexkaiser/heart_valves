@@ -107,17 +107,17 @@ valve.X_config_is_reference = true;
 % places this many exact copies of the leaflet downward in z 
 % spring constants are all reduced by num_copies 
 % spacing is always half a mesh width 
-valve.num_copies = 2; 
+valve.num_copies = 3; 
 
 % valve.copy_spring_weights = [1/2 1/4 1/4];
 
 valve.normal_thicken = true; 
 % nominal aortic valve thickness
-valve.normal_thickness = 0.044 / 2; 
+valve.normal_thickness = 0.044; 
 
-valve.center_extrusion = false; 
+valve.center_extrusion = true; 
 
-valve.extrusion_out = true; 
+valve.extrusion_out = false; 
 
 % add flags to spring files 
 % to view and output with a stride 
@@ -222,7 +222,7 @@ tension_coeffs.beta  = 0.055;   % radial
 tension_coeffs.c_circ_dec       = 5.65;  % circumferential 
 tension_coeffs.c_rad_dec        = 3.0;  % radial
 
-tension_coeffs.c_circ_dec_annulus = 2.5;        
+tension_coeffs.c_circ_dec_annulus = 1.9;        
 
 % tension_coeffs.c_circ_dec_free_edge = 5.0;
 tension_coeffs.c_circ_dec_free_edge_percentage = 0.0;
