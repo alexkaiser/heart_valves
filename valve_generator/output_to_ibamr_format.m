@@ -279,7 +279,7 @@ function [] = output_to_ibamr_format(valve)
         params.ds_extrude = valve.normal_thickness / (valve.num_copies-1); 
         params.rest_len_cross_layer = params.ds_extrude; 
         
-        if isfield(valve, 'center_extrusion')
+        if isfield(valve, 'center_extrusion') && valve.center_extrusion
             params.center_extrusion = valve.center_extrusion;
             
             % remove outer layer at comms everywhere 
