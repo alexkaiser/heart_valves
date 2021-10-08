@@ -464,6 +464,9 @@ if build_reference
                     % turns off final radial layer at comms of extruded aortic 
                     leaflet_temp = add_bc_layer_at_commmissure_aortic(leaflet_temp); 
                     
+                    % remove another layer since that is where all the problems are 
+                    leaflet_temp = add_bc_layer_at_commmissure_aortic(leaflet_temp); 
+                    
                     % relax 
                     [leaflet_temp pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet_temp, tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails);             
                     
