@@ -859,21 +859,21 @@ function params = place_spring_and_split(params, idx, nbr_idx, k_rel, rest_len, 
     max_strain_circ = .15; 
     max_strain_rad = 2*.54; 
     
-    [j_idx, k_idx] = find(params.layer_indices(params.copy).indices_global == idx); 
-    [j_nbr_idx, k_nbr_idx] = find(params.layer_indices(params.copy).indices_global == nbr_idx); 
-    if k_idx == 65
-        fprintf('copy %d, %s, strain = %f, idx = %d, j = %d, k = %d, nbr = %d, j_nbr = %d, k_nbr = %d\n', params.copy, collagen_spring, strain, idx, j_idx, k_idx, nbr_idx, j_nbr_idx, k_nbr_idx);
-    end 
-    
-    
-%     if (strcmp(collagen_spring, 'aortic_circ') && (strain > max_strain_circ)) || ...
-%        (strcmp(collagen_spring, 'aortic_rad') && (strain > max_strain_rad)) 
-%         
-%         [j_idx, k_idx] = find(params.layer_indices(params.copy).indices_global == idx); 
-%         [j_nbr_idx, k_nbr_idx] = find(params.layer_indices(params.copy).indices_global == nbr_idx); 
-%         
+%     [j_idx, k_idx] = find(params.layer_indices(params.copy).indices_global == idx); 
+%     [j_nbr_idx, k_nbr_idx] = find(params.layer_indices(params.copy).indices_global == nbr_idx); 
+%     if k_idx == 65
 %         fprintf('copy %d, %s, strain = %f, idx = %d, j = %d, k = %d, nbr = %d, j_nbr = %d, k_nbr = %d\n', params.copy, collagen_spring, strain, idx, j_idx, k_idx, nbr_idx, j_nbr_idx, k_nbr_idx);
 %     end 
+    
+    
+    if (strcmp(collagen_spring, 'aortic_circ') && (strain > max_strain_circ)) || ...
+       (strcmp(collagen_spring, 'aortic_rad') && (strain > max_strain_rad)) 
+        
+        [j_idx, k_idx] = find(params.layer_indices(params.copy).indices_global == idx); 
+        [j_nbr_idx, k_nbr_idx] = find(params.layer_indices(params.copy).indices_global == nbr_idx); 
+        
+        fprintf('copy %d, %s, strain = %f, idx = %d, j = %d, k = %d, nbr = %d, j_nbr = %d, k_nbr = %d\n', params.copy, collagen_spring, strain, idx, j_idx, k_idx, nbr_idx, j_nbr_idx, k_nbr_idx);
+    end 
     
     % Just one spring placed here 
     if N_springs <= 1 
