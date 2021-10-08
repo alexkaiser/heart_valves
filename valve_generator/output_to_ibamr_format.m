@@ -90,7 +90,13 @@ function [] = output_to_ibamr_format(valve)
     else 
         params.type = 'default_mitral'; 
     end 
-        
+    
+    if strcmp(valve.name, 'aortic') 
+        if length(valve.leaflets) ~= 1
+            error('only one aortic leaflet supported'); 
+        end 
+    end 
+    
     params.vertex        = fopen(strcat(base_name, '.vertex'), 'w'); 
     params.spring        = fopen(strcat(base_name, '.spring'), 'w'); 
     params.target        = fopen(strcat(base_name, '.target'), 'w'); 
@@ -282,8 +288,12 @@ function [] = output_to_ibamr_format(valve)
         if isfield(valve, 'center_extrusion') && valve.center_extrusion
             params.center_extrusion = valve.center_extrusion;
             
-            % remove outer layer at comms everywhere 
-            valve.leaflets(1) = add_bc_layer_at_commmissure_aortic(valve.leaflets(1)); 
+            if isfield(valve, 'pre_extrude') && valve.pre_extrude
+                % already handled 
+            else
+                % remove outer layer at comms everywhere 
+                valve.leaflets(1) = add_bc_layer_at_commmissure_aortic(valve.leaflets(1)); 
+            end 
         end
         
     end 
@@ -308,9 +318,22 @@ function [] = output_to_ibamr_format(valve)
         fprintf(params.papillary, '%.14f\t %.14f\t %.14f %.14f %.14f\n', times(1), times(2), times(3), times(4), times(5)); 
     end 
     
+    
+    % main loop over copies 
     for copy = 1:params.num_copies
         
         params.copy = copy; 
+        
+        if strcmp(valve.name, 'aortic') && ... 
+           isfield(valve, 'pre_extrude') && valve.pre_extrude && ... 
+           isfield(valve.leaflets(1), 'pre_extrude') && valve.leaflets(1).pre_extrude
+       
+              % extra leaflet copies already extruded  
+              valve.leaflets(1).X           = valve.leaflets_pre_extruded(copy).X; 
+              valve.leaflets(1).is_bc       = valve.leaflets_pre_extruded(copy).is_bc; 
+              valve.leaflets(1).is_internal = valve.leaflets_pre_extruded(copy).is_internal; 
+            
+        end 
             
         if params.cross_layer_on
             params.min_idx_for_cross_layer = params.global_idx; 
@@ -348,10 +371,7 @@ function [] = output_to_ibamr_format(valve)
         end 
         
         for i=1:length(valve.leaflets)
-%             if copy ~= 1 
-%                 warning('REMOVE DEBUG REMOVE')
-                params = add_springs(params, valve.leaflets(i), ds, collagen_constitutive); 
-%             end 
+            params = add_springs(params, valve.leaflets(i), ds, collagen_constitutive); 
         end 
         
         for i=1:length(valve.leaflets)
@@ -490,6 +510,8 @@ function [] = output_to_ibamr_format(valve)
             
             if isfield(params, 'center_extrusion') && params.center_extrusion
                 % nothing, already set  
+            elseif isfield(valve_with_reference, 'pre_extrude') && valve_with_reference.pre_extrude 
+                % nothing, already set      
             else
                 valve.leaflets(1) = add_bc_layer_at_commmissure_aortic(valve.leaflets(1)); 
             end 
@@ -1034,20 +1056,22 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_targ
     end 
     
     if strcmp(params.type, 'aortic')
-        if isfield(params, 'normal_thicken') && params.normal_thicken 
-            
-            if isfield(params, 'center_extrusion') && params.center_extrusion
+        if ~(isfield(leaflet, 'pre_extrude') && leaflet.pre_extrude)
+            if isfield(params, 'normal_thicken') && params.normal_thicken 
 
-                if params.num_copies ~= 3
-                    error('cneter extrusion only implemted with 3 layers') 
+                if isfield(params, 'center_extrusion') && params.center_extrusion
+
+                    if params.num_copies ~= 3
+                        error('cneter extrusion only implemted with 3 layers') 
+                    end 
+
+                    extrude_length = (params.copy - 2) * params.ds_extrude; 
+                else 
+                    extrude_length = (params.copy - 1) * params.ds_extrude; 
                 end 
 
-                extrude_length = (params.copy - 2) * params.ds_extrude; 
-            else 
-                extrude_length = (params.copy - 1) * params.ds_extrude; 
+                X = normal_extrude_aortic(leaflet, extrude_length); 
             end 
-            
-            X = normal_extrude_aortic(leaflet, extrude_length); 
         end 
     end 
     

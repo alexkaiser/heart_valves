@@ -119,6 +119,8 @@ valve.center_extrusion = true;
 
 valve.extrusion_out = false; 
 
+valve.pre_extrude = true; 
+
 % add flags to spring files 
 % to view and output with a stride 
 
@@ -371,8 +373,11 @@ end
 
 if isfield(valve, 'extrusion_out') 
     valve.leaflets(1).extrusion_out = valve.extrusion_out; 
-end 
+end
 
+if isfield(valve, 'pre_extrude')
+    valve.leaflets(1).pre_extrude = valve.pre_extrude; 
+end 
 
 % viscoelastic damping coefficients springs 
 % eta, damping coeff here, is multiplied by the coefficient on the 

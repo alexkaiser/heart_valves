@@ -434,6 +434,60 @@ if build_reference
             [valve_with_reference.leaflets(i) pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails);             
         end 
         
+        % pre_extrude leaflet before  
+        % this should probably be in a function 
+        if isfield(valve_with_reference.leaflets(i), 'pre_extrude') && valve_with_reference.leaflets(i).pre_extrude
+            
+            ds_extrude = valve_with_reference.normal_thickness / (valve_with_reference.num_copies-1); 
+            
+            for copy = 1:valve_with_reference.num_copies
+            
+            
+                if isfield(valve_with_reference, 'center_extrusion') && valve_with_reference.center_extrusion
+
+                    if valve_with_reference.num_copies ~= 3
+                        error('center extrusion only implemted with 3 layers') 
+                    end 
+
+                    extrude_length = (copy - 2) * ds_extrude; 
+                else 
+                    extrude_length = (copy - 1) * ds_extrude; 
+                end 
+
+                leaflet_temp = valve_with_reference.leaflets(i); 
+                
+                leaflet_temp.X = normal_extrude_aortic(leaflet_temp, extrude_length); 
+            
+
+                if extrude_length ~= 0
+                    
+                    % turns off final radial layer at comms of extruded aortic 
+                    leaflet_temp = add_bc_layer_at_commmissure_aortic(leaflet_temp); 
+                    
+                    % relax 
+                    [leaflet_temp pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet_temp, tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails);             
+                    
+                    if ~pass
+                        error('Extruded leaflet failed to converge'); 
+                    end 
+                    
+                end 
+                 
+                valve_with_reference.leaflets_pre_extruded(copy) = leaflet_temp; 
+                
+                fig = figure; 
+                surf_plot(leaflet_temp, fig); 
+                title(sprintf('leaflet copy %d', copy));
+                
+            end 
+                
+        end 
+        
+        
+        
+        
+        
+        % reset the free edges of the aortic to neumann bc for final output 
         if isfield(valve, 'name') && strcmp(valve.name, 'aortic')
             if isfield(valve, 'dirichlet_free_edge_with_ref_only') && valve.dirichlet_free_edge_with_ref_only
                 valve_with_reference.leaflets(i) = aortic_free_edge_to_neumann_bc(valve_with_reference.leaflets(i)); 
