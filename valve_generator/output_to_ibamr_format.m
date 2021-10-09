@@ -1521,9 +1521,9 @@ function params = place_cross_layer_springs_aortic(params, leaflet)
                 nbr_idx      = params.layer_indices(copy+1).indices_global(j,k);  
 
                 % when comms are attached and normal is undefined
-                % do not place this single spring 
+                % do not place these springs 
                 if isfield(leaflet, 'N_to_pinch') && (leaflet.N_to_pinch > 0)
-                    if (mod(j, leaflet.N_each) == 0) && (k == k_max)
+                    if (mod(j, leaflet.N_each) == 0)
                         continue; 
                     end 
                 end 
