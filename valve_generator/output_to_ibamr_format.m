@@ -510,7 +510,7 @@ function [] = output_to_ibamr_format(valve)
             
             if isfield(params, 'center_extrusion') && params.center_extrusion
                 % nothing, already set  
-            elseif isfield(valve_with_reference, 'pre_extrude') && valve_with_reference.pre_extrude 
+            elseif isfield(valve, 'pre_extrude') && valve.pre_extrude 
                 % nothing, already set      
             else
                 valve.leaflets(1) = add_bc_layer_at_commmissure_aortic(valve.leaflets(1)); 
