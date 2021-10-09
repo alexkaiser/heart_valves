@@ -1528,19 +1528,26 @@ function params = place_cross_layer_springs_aortic(params, leaflet)
                     end 
                 end 
                 
+                % override rest length to the initial length 
+                if isfield(leaflet, 'pre_extrude') && leaflet.pre_extrude
+                    coords = params.vertices(:,idx+1); 
+                    coords_nbr = params.vertices(:,nbr_idx+1);
+                    rest_len = norm(coords - coords_nbr); 
+                end 
+                
                 if debug
-                   coords = params.vertices(:,idx+1); 
-                   coords_nbr = params.vertices(:,nbr_idx+1);
+                    coords = params.vertices(:,idx+1); 
+                    coords_nbr = params.vertices(:,nbr_idx+1);
 
-                   if abs(norm(coords - coords_nbr) - rest_len) > tol
-                       if err_count < 5
-                           fprintf('nonrest len spring, rest_len = %f, current_len = %f\n', rest_len, norm(coords - coords_nbr)); 
-                           fprintf('    idx = %d, coords = %f %f %f\n', idx, coords(1), coords(2), coords(3)); 
-                           fprintf('nbr_idx = %d, coords = %f %f %f\n',nbr_idx, coords_nbr(1), coords_nbr(2), coords_nbr(3)); 
-                           fprintf('\n'); 
-                           err_count = err_count + 1; 
-                       end 
-                   end 
+                    if abs(norm(coords - coords_nbr) - rest_len) > tol
+                        if err_count < 5
+                            fprintf('nonrest len spring, rest_len = %f, current_len = %f\n', rest_len, norm(coords - coords_nbr)); 
+                            fprintf('    idx = %d, coords = %f %f %f\n', idx, coords(1), coords(2), coords(3)); 
+                            fprintf('nbr_idx = %d, coords = %f %f %f\n',nbr_idx, coords_nbr(1), coords_nbr(2), coords_nbr(3)); 
+                            fprintf('\n'); 
+                            err_count = err_count + 1; 
+                        end 
+                    end 
 
                 end 
 
