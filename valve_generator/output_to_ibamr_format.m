@@ -528,7 +528,7 @@ function [] = output_to_ibamr_format(valve)
     
     if strcmp(params.type, 'aortic') 
         
-        params = place_cross_layer_springs_aortic(params, valve.leaflets(1)); 
+        % params = place_cross_layer_springs_aortic(params, valve.leaflets(1)); 
         
         if isfield(params, 'k_bend_cross_layer') && params.cross_layer_on
             params = place_cross_layer_beams_aortic(params, valve.leaflets(1)); 
