@@ -469,7 +469,7 @@ if build_reference
                     
                     % relax 
                     warning('relaxation on pre extrude is off!')
-                    % [leaflet_temp pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet_temp, tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails);             
+                    [leaflet_temp pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet_temp, tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails);             
                     
                     if ~pass
                         error('Extruded leaflet failed to converge'); 

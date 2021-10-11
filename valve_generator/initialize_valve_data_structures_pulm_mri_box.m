@@ -119,7 +119,7 @@ valve.center_extrusion = true;
 
 valve.extrusion_out = false; 
 
-valve.pre_extrude = false; 
+valve.pre_extrude = true; 
 
 % add flags to spring files 
 % to view and output with a stride 
