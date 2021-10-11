@@ -115,11 +115,11 @@ valve.normal_thicken = true;
 % nominal aortic valve thickness
 valve.normal_thickness = 0.044; 
 
-valve.center_extrusion = false; 
+valve.center_extrusion = true; 
 
 valve.extrusion_out = false; 
 
-valve.pre_extrude = false; 
+valve.pre_extrude = true; 
 
 % add flags to spring files 
 % to view and output with a stride 
@@ -176,16 +176,13 @@ r = 1.0;
 normal_height = 1.1; % 0.845; 
 hc = 0.3; % 1 mm of commissure attachment (nearly zero)
 h1 = normal_height - hc; 
-% valve.skeleton = get_skeleton_aortic_generic(r, h1, hc);
-% 25 mm default 
-valve.skeleton = get_skeleton_aortic_generic();
+valve.skeleton = get_skeleton_aortic_generic(r, h1, hc);
 
 valve.r = valve.skeleton.r; 
 
 % little nub at top of valve 
 r_subtract_nub = 0.15; 
-r_cylinder = 1.0; 
-valve.skeleton.r_of_z = @(z) r_cylinder .* ones(size(z)) - (abs(z - 1.2) < .1) .* r_subtract_nub .* cos( (pi/2)*(z - 1.2)/.1 ); 
+valve.skeleton.r_of_z = @(z) r .* ones(size(z)) - (abs(z - 1.2) < .1) .* r_subtract_nub .* cos( (pi/2)*(z - 1.2)/.1 ); 
                          
                          
 r_of_z_debug = true; 
@@ -224,10 +221,10 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 4.99;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.45;  % radial
+tension_coeffs.c_circ_dec       = 5.65;  % circumferential 
+tension_coeffs.c_rad_dec        = 3.0;  % radial
 
-tension_coeffs.c_circ_dec_annulus = 1.8;        
+tension_coeffs.c_circ_dec_annulus = 2.05;        
 
 % tension_coeffs.c_circ_dec_free_edge = 5.0;
 tension_coeffs.c_circ_dec_free_edge_percentage = 0.0;
