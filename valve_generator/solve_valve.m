@@ -468,7 +468,7 @@ if build_reference
                     leaflet_temp = add_bc_layer_at_commmissure_aortic(leaflet_temp); 
                     
                     % relax 
-                    warning('relaxation on pre extrude is off!')
+                    % warning('relaxation on pre extrude is off!')
                     [leaflet_temp pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet_temp, tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails);             
                     
                     if ~pass
