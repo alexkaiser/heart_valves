@@ -295,6 +295,7 @@ function [] = output_to_ibamr_format(valve)
                 valve.leaflets(1) = add_bc_layer_at_commmissure_aortic(valve.leaflets(1)); 
                 % remove next layer too 
                 valve.leaflets(1) = add_bc_layer_at_commmissure_aortic(valve.leaflets(1)); 
+                valve.leaflets(1) = add_bc_layer_at_commmissure_aortic(valve.leaflets(1)); 
             end 
         end
         
