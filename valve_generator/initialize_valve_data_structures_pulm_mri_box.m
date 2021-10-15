@@ -158,7 +158,7 @@ valve.tol_global = 1e-3;
 
 % commissural tree version 
 % but without explicit commissural leaflets 
-valve.p_physical = 30 * MMHG_TO_CGS; 
+valve.p_physical = 15 * MMHG_TO_CGS; 
 
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
