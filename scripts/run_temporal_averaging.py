@@ -129,8 +129,8 @@ if __name__ == '__main__':
     eulerian = True
     lagrangian = True 
 
-    first_cycle = True 
-    second_cycle = False
+    first_cycle = False
+    second_cycle = True
 
     if first_cycle:
         cycles_to_output = [0] # zero indexed 

@@ -158,7 +158,7 @@ valve.tol_global = 1e-3;
 
 % commissural tree version 
 % but without explicit commissural leaflets 
-valve.p_physical = 15 * MMHG_TO_CGS; 
+valve.p_physical = 30 * MMHG_TO_CGS; 
 
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
@@ -222,9 +222,9 @@ tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
 tension_coeffs.c_circ_dec       = 5.65;  % circumferential 
-tension_coeffs.c_rad_dec        = 5.0;  % radial
+tension_coeffs.c_rad_dec        = 7.0;  % radial
 
-tension_coeffs.c_circ_dec_annulus = 2.35;        
+tension_coeffs.c_circ_dec_annulus = 2.1;        
 
 % tension_coeffs.c_circ_dec_free_edge = 5.0;
 tension_coeffs.c_circ_dec_free_edge_percentage = 0.0;
