@@ -174,7 +174,7 @@ valve.L = 2.25;
 
 r = 1.0; 
 normal_height = 1.1; % 0.845; 
-hc = 0.4; % 1 mm of commissure attachment (nearly zero)
+hc = 0.3; % 1 mm of commissure attachment (nearly zero)
 h1 = normal_height - hc; 
 valve.skeleton = get_skeleton_aortic_generic(r, h1, hc);
 
@@ -222,9 +222,9 @@ tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
 tension_coeffs.c_circ_dec       = 5.65;  % circumferential 
-tension_coeffs.c_rad_dec        = 10.0;  % radial
+tension_coeffs.c_rad_dec        = 7.0;  % radial
 
-tension_coeffs.c_circ_dec_annulus = 1.7;        
+tension_coeffs.c_circ_dec_annulus = 2.1;        
 
 % tension_coeffs.c_circ_dec_free_edge = 5.0;
 tension_coeffs.c_circ_dec_free_edge_percentage = 0.0;
