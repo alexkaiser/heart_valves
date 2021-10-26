@@ -171,6 +171,27 @@ function leaflet = aortic_free_edge_pinch_comms(leaflet, extra_stretch_radial, N
         
     end
     
+    
+    % new free edge length check 
+    length_one_leaflet_free_edge = 0; 
+    for j=1:N_each
+        k=k_max; 
+        if ~free_edge_idx_set(j)
+            j_nbr_tmp = j+1; 
+            k_nbr_tmp = k; 
+            [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+
+            if ~valid 
+                error('trying to compute lengths with an invalid rest length')
+            end
+
+            length_one_leaflet_free_edge = length_one_leaflet_free_edge + R_u(j_spr,k_spr);                         
+        end         
+    end 
+    fprintf("Circ free edge rest length minus pinched = %f\n", length_one_leaflet_free_edge);
+    
+    
+    
     % set the leaflet center point 
     for comm_idx = 1:N_leaflets
 
