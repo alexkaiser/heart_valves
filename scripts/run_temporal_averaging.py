@@ -129,8 +129,10 @@ if __name__ == '__main__':
     eulerian = True
     lagrangian = True 
 
-    first_cycle = True
-    second_cycle = False
+    first_cycle = False
+    second_cycle = True
+    third_cycle = False
+    second_third_cycle = False
 
     if first_cycle:
         cycles_to_output = [0] # zero indexed 
@@ -140,6 +142,14 @@ if __name__ == '__main__':
         cycles_to_output = [1] # zero indexed 
         # set up some directories 
         base_dir = "vis_data_averaged_cycle_2"
+    elif third_cycle:
+        cycles_to_output = [2] # zero indexed 
+        # set up some directories 
+        base_dir = "vis_data_averaged_cycle_3"
+    elif second_third_cycle:
+        cycles_to_output = [1,2] # zero indexed 
+        # set up some directories 
+        base_dir = "vis_data_averaged_cycle_2_3"
     else:
         cycles_to_output = [1,2,3] # zero indexed 
         # set up some directories 
