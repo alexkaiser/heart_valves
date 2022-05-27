@@ -6,7 +6,7 @@
 #SBATCH --job-name=aortic_1
 #SBATCH --mail-user=adkaiser@gmail.com
 #SBATCH --mail-type=ALL
-#SBATCH --partition=amarsden
+#SBATCH --partition=amarsden,willhies
 #SBATCH --exclude=sh03-16n02
 # #SBATCH --exclude=sh-107-[59-64]
 
@@ -18,7 +18,7 @@ module load openmpi/2.0.2
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_384_b073b3b_basic_down2mm_rv_pressure_adjust
+RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_384_951ccf7_plus_8_circ_plus_half_rad_1_over_4_pinch_outer3_off_pressure_bc
 mkdir $RUNDIR
 
 # set up run info 
