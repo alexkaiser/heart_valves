@@ -517,7 +517,7 @@ int main(int argc, char* argv[])
             pout << "P_initial_pa = " << P_initial_pa << "\n"; 
 
             bool rcr_bcs_on = false;
-            bool resistance_bcs_on = true; 
+            bool resistance_bcs_on = false; 
             bool inductance_bcs_on = false; 
 
             CirculationModel_RV_PA *circ_model_rv_pa = new CirculationModel_RV_PA(input_db,

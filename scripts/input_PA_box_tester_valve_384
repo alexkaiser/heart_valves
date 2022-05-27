@@ -10,10 +10,14 @@ REF_RATIO  = 4                            // refinement ratio between levels
 NAME = "aortic_384"
 MAX_RESTART_TO_WRITE = 20
 
-// FOURIER_COEFFS_FILENAME_RV = "fourier_coeffs_right_ventricle.txt"
-FOURIER_COEFFS_FILENAME_RV = "fourier_coeffs_right_ventricle_plus_diff_positive.txt"
-FOURIER_COEFFS_FILENAME_RPA = "fourier_coeffs_rpa_r_250.txt"
-FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_lpa_r_250.txt"
+// FOURIER_COEFFS_FILENAME_RV = "fourier_coeffs_right_ventricle_plus_diff_positive.txt"
+// FOURIER_COEFFS_FILENAME_RPA = "fourier_coeffs_rpa_r_250.txt"
+// FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_lpa_r_250.txt"
+
+FOURIER_COEFFS_FILENAME_RV = "fourier_coeffs_right_ventricle.txt"
+FOURIER_COEFFS_FILENAME_RPA = "fourier_coeffs_pa.txt"
+FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_pa.txt"
+
 BOUNDARY_FILENAME_RV = "right_ventricle_bdry.vertex"
 BOUNDARY_FILENAME_RPA = "right_pa_bdry.vertex"
 BOUNDARY_FILENAME_LPA = "left_pa_bdry.vertex"
