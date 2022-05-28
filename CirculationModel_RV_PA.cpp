@@ -58,7 +58,8 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
                                                double P_initial_pa,
                                                bool rcr_bcs_on,
                                                bool resistance_bcs_on,
-                                               bool inductor_bcs_on)
+                                               bool inductor_bcs_on, 
+                                               bool variable_resistance)
     : 
       d_object_name("circ_model_rv_pa"),  // constant name here  
       d_registered_for_restart(true),      // always true
@@ -71,6 +72,7 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
       d_Q_right_ventricle(0.0), 
       d_Q_right_pa(0.0),
       d_Q_left_pa(0.0),
+      d_Q_right_ventricle_previous(0.0),
       d_Q_right_pa_previous(0.0),
       d_Q_left_pa_previous(0.0),
       d_time(initial_time), 
@@ -88,7 +90,9 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
       d_area_initialized(false), 
       d_rcr_bcs_on(rcr_bcs_on),
       d_resistance_bcs_on(resistance_bcs_on),
-      d_inductor_bcs_on(inductor_bcs_on)
+      d_inductor_bcs_on(inductor_bcs_on),
+      d_variable_resistance(variable_resistance), 
+      d_variable_resistor_on(true)
 {
     
     if (d_registered_for_restart)
@@ -137,6 +141,13 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
         std::cout << "input db got values:\n";
         std::cout << "right: inductance = " << d_right_pa_inductance << "\n";
         std::cout << "left : inductance = " << d_left_pa_inductance << "\n";
+    }
+
+    if (d_variable_resistance){
+        if (!d_resistance_bcs_on){
+            TBOX_ERROR("Must have resistance on to use variable resistance"); 
+        }
+        d_variable_resistor_on = true; 
     }
 
     if ((d_rcr_bcs_on && d_resistance_bcs_on) || 
@@ -273,6 +284,8 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
         d_Q_right_pa_previous = d_Q_right_pa;
         d_Q_left_pa_previous = d_Q_left_pa;
     }
+
+    d_Q_right_ventricle_previous = d_Q_right_ventricle; 
 
 
     for (int ln = 0; ln <= hierarchy->getFinestLevelNumber(); ++ln)
@@ -485,13 +498,36 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
 
     }
     else if (d_resistance_bcs_on){
+
+        if (d_variable_resistance){
+
+            // resistor turns on when flow goes negative 
+            if (!d_variable_resistor_on){
+                if ((d_Q_right_ventricle_previous > 0.0) && (d_Q_right_ventricle <= 0.0)){
+                    d_variable_resistor_on = true; 
+                }
+            }
+
+            // resistor turns off when pressure difference goes positive 
+            if (d_variable_resistor_on){
+                double pressure_diff =  d_fourier_right_ventricle->values[d_current_idx_series] - 
+                                        d_fourier_right_pa->values[d_current_idx_series]; 
+
+                if (pressure_diff > 0.0){
+                    d_variable_resistor_on = false; 
+                }
+
+            }
+        }
+
+
         // pressure upstream of resistance determined by series 
         d_right_pa_P_Wk = MMHG_TO_CGS * d_fourier_right_pa->values[d_current_idx_series]; 
         d_left_pa_P_Wk  = MMHG_TO_CGS * d_fourier_left_pa->values[d_current_idx_series]; 
 
         // resistance bcs determine outlet pressure 
-        d_right_pa_P = d_right_pa_P_Wk + d_right_pa_resistance * d_Q_right_pa;
-        d_left_pa_P  = d_left_pa_P_Wk  + d_left_pa_resistance  * d_Q_left_pa;
+        d_right_pa_P = d_right_pa_P_Wk + d_right_pa_resistance * d_variable_resistor_on * d_Q_right_pa;
+        d_left_pa_P  = d_left_pa_P_Wk  + d_left_pa_resistance  * d_variable_resistor_on * d_Q_left_pa;
     }
 
     else if (d_inductor_bcs_on){
@@ -535,6 +571,7 @@ CirculationModel_RV_PA::putToDatabase(Pointer<Database> db)
     db->putDouble("d_Q_right_ventricle", d_Q_right_ventricle); 
     db->putDouble("d_Q_right_pa", d_Q_right_pa);
     db->putDouble("d_Q_left_pa", d_Q_left_pa);
+    db->putDouble("d_Q_right_ventricle_previous", d_Q_right_ventricle_previous);
     db->putDouble("d_Q_right_pa_previous", d_Q_right_pa_previous);
     db->putDouble("d_Q_left_pa_previous", d_Q_left_pa_previous);
     db->putDouble("d_Q_valve", d_Q_valve);
@@ -550,6 +587,8 @@ CirculationModel_RV_PA::putToDatabase(Pointer<Database> db)
     db->putBool("d_rcr_bcs_on", d_rcr_bcs_on); 
     db->putBool("d_resistance_bcs_on", d_resistance_bcs_on); 
     db->putBool("d_inductor_bcs_on", d_inductor_bcs_on); 
+    db->putBool("d_variable_resistance", d_variable_resistance); 
+    db->putBool("d_variable_resistor_on", d_variable_resistor_on); 
     return; 
 } // putToDatabase
 
@@ -733,6 +772,7 @@ CirculationModel_RV_PA::getFromRestart()
     d_Q_right_ventricle          = db->getDouble("d_Q_right_ventricle"); 
     d_Q_right_pa                 = db->getDouble("d_Q_right_pa");
     d_Q_left_pa                  = db->getDouble("d_Q_left_pa");
+    d_Q_right_ventricle          = db->getDouble("d_Q_right_ventricle_previous"); 
     d_Q_right_pa_previous        = db->getDouble("d_Q_right_pa_previous");
     d_Q_left_pa_previous         = db->getDouble("d_Q_left_pa_previous");
     d_Q_valve                    = db->getDouble("d_Q_valve");
@@ -748,6 +788,8 @@ CirculationModel_RV_PA::getFromRestart()
     d_rcr_bcs_on                 = db->getBool("d_rcr_bcs_on"); 
     d_resistance_bcs_on          = db->getBool("d_resistance_bcs_on"); 
     d_inductor_bcs_on            = db->getBool("d_inductor_bcs_on"); 
+    d_variable_resistance        = db->getBool("d_variable_resistance"); 
+    d_variable_resistor_on       = db->getBool("d_variable_resistor_on"); 
     return;
 } // getFromRestart
 
