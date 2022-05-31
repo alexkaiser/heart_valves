@@ -31,7 +31,7 @@ pa_pressure = [pa_pressure(end); pa_pressure];
 
 cycle_length = max(times); 
 base_name = 'fourier_coeffs';
-bump_radius_rv = .05; 
+bump_radius_rv = .01; 
 bump_radius_pa = .05; 
 n_fourier_coeffs = 600; 
 
@@ -107,32 +107,41 @@ end
 % times_flows = linspace(0, cycle_length, length(flows)); 
 times_flows = linspace(cycle_length/length(flows_rv_exp), cycle_length, length(flows_rv_exp)); 
 
+
+
+    
 % times are experimental pressure times 
 flows_spline_rv  = interp1(times_flows, flows_rv_exp, times, 'spline'); 
 flows_spline_rpa = interp1(times_flows, flows_rpa_exp, times, 'spline'); 
 flows_spline_lpa = interp1(times_flows, flows_lpa_exp, times, 'spline'); 
 
-individual_flow_adjust = false; 
-if individual_flow_adjust
-    rpa_pressure_adjusted_rq = pa_pressure - r_mmHg * flows_spline_rpa; 
-    lpa_pressure_adjusted_rq = pa_pressure - r_mmHg * flows_spline_lpa; 
-else 
-    rpa_pressure_adjusted_rq = pa_pressure - r_mmHg * flows_spline_rv/2; 
-    lpa_pressure_adjusted_rq = pa_pressure - r_mmHg * flows_spline_rv/2; 
+
+resistance_adjusted_pressures = false; 
+
+if resistance_adjusted_pressures
+
+    individual_flow_adjust = false; 
+    if individual_flow_adjust
+        rpa_pressure_adjusted_rq = pa_pressure - r_mmHg * flows_spline_rpa; 
+        lpa_pressure_adjusted_rq = pa_pressure - r_mmHg * flows_spline_lpa; 
+    else 
+        rpa_pressure_adjusted_rq = pa_pressure - r_mmHg * flows_spline_rv/2; 
+        lpa_pressure_adjusted_rq = pa_pressure - r_mmHg * flows_spline_rv/2; 
+    end 
+
+    points_one_cycle_rpa              = [times, rpa_pressure_adjusted_rq]; 
+    points_one_cycle_lpa              = [times, lpa_pressure_adjusted_rq]; 
+
+    suffix_rpa = "_rpa"; 
+    file_name = strcat(base_name, suffix_rpa, r_suffix, '.txt'); 
+    [a_0_rpa a_n_rpa b_n_rpa Series_rpa times_rpa linear_interp_vals_rpa] = series_and_smooth(points_one_cycle_rpa, dt, bump_radius_pa, n_fourier_coeffs, plots); 
+    output_series_coeffs_to_txt(a_0_rpa, a_n_rpa, b_n_rpa, n_fourier_coeffs, cycle_length, file_name); 
+
+    suffix_lpa = "_lpa"; 
+    file_name = strcat(base_name, suffix_lpa, r_suffix, '.txt'); 
+    [a_0_lpa a_n_lpa b_n_lpa Series_lpa times_lpa linear_interp_vals_lpa] = series_and_smooth(points_one_cycle_lpa, dt, bump_radius_pa, n_fourier_coeffs, plots); 
+    output_series_coeffs_to_txt(a_0_lpa, a_n_lpa, b_n_lpa, n_fourier_coeffs, cycle_length, file_name); 
 end 
-
-points_one_cycle_rpa              = [times, rpa_pressure_adjusted_rq]; 
-points_one_cycle_lpa              = [times, lpa_pressure_adjusted_rq]; 
-
-suffix_rpa = "_rpa"; 
-file_name = strcat(base_name, suffix_rpa, r_suffix, '.txt'); 
-[a_0_rpa a_n_rpa b_n_rpa Series_rpa times_rpa linear_interp_vals_rpa] = series_and_smooth(points_one_cycle_rpa, dt, bump_radius_pa, n_fourier_coeffs, plots); 
-output_series_coeffs_to_txt(a_0_rpa, a_n_rpa, b_n_rpa, n_fourier_coeffs, cycle_length, file_name); 
-
-suffix_lpa = "_lpa"; 
-file_name = strcat(base_name, suffix_lpa, r_suffix, '.txt'); 
-[a_0_lpa a_n_lpa b_n_lpa Series_lpa times_lpa linear_interp_vals_lpa] = series_and_smooth(points_one_cycle_lpa, dt, bump_radius_pa, n_fourier_coeffs, plots); 
-output_series_coeffs_to_txt(a_0_lpa, a_n_lpa, b_n_lpa, n_fourier_coeffs, cycle_length, file_name); 
 
 
 
@@ -208,13 +217,15 @@ if basic_series_plots
     vals_pa_series = Series_pa(t); 
     plot(t, vals_pa_series, 'b'); 
     
-    t = 0:dt:cycle_length; 
-    vals_rpa_series = Series_rpa(t); 
-    plot(t, vals_rpa_series, 'r'); 
-    
-    t = 0:dt:cycle_length; 
-    vals_lpa_series = Series_lpa(t); 
-    plot(t, vals_lpa_series, 'g'); 
+    if resistance_adjusted_pressures
+        t = 0:dt:cycle_length; 
+        vals_rpa_series = Series_rpa(t); 
+        plot(t, vals_rpa_series, 'r'); 
+
+        t = 0:dt:cycle_length; 
+        vals_lpa_series = Series_lpa(t); 
+        plot(t, vals_lpa_series, 'g'); 
+    end 
     
 %     t = 0:dt:cycle_length; 
 %     vals_rv_plus_diff_series = Series_right_ventricle(t) + coeff_pressure_diff_adjust * Series_difference(t); 
@@ -230,7 +241,11 @@ if basic_series_plots
     plot(times_exp, p_rv_exp)
     plot(times_exp, p_pa_exp)
     
-    legend('RV', 'PA', 'RPA adjusted', 'LPA adjusted', 'RV plus diff postive', 'P RV EXP', 'P PA EXP')
+    if resistance_adjusted_pressures
+        legend('RV', 'PA', 'RPA adjusted', 'LPA adjusted', 'RV plus diff postive', 'P RV EXP', 'P PA EXP')
+    else 
+        legend('RV', 'PA', 'RV plus diff postive', 'P RV EXP', 'P PA EXP')
+    end 
     
     title('RV PA pressure')
     xlabel('t')
