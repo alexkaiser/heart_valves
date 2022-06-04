@@ -1,6 +1,6 @@
 
 % quadrature spacing 
-debug = false; 
+debug = true; 
 if debug 
     dt = 5e-5; 
 else 
@@ -378,7 +378,32 @@ if more_plots
 
 end 
 
+% poiseuille flow estimates 
+poiseuille_flow_est = true; 
+if poiseuille_flow_est
 
+    mu = 0.039; 
+    
+    q_max_rpa = max(flows_rpa_exp); 
+    q_max_lpa = max(flows_lpa_exp); 
+    
+    len_lpa = 6.75; 
+    rad_lpa = 1.35/2; 
+    
+    len_rpa = 3.08; 
+    rad_rpa = 1.47/2; 
+    
+    deltap_at_qmax_dynes_rpa = 8 * mu * len_rpa * q_max_rpa / (pi * rad_rpa^4); 
+    deltap_at_qmax_rpa = deltap_at_qmax_dynes_rpa / MMHG_TO_CGS 
+    
+    deltap_at_qmax_dynes_lpa = 8 * mu * len_lpa * q_max_lpa / (pi * rad_lpa^4);     
+    deltap_at_qmax_lpa = deltap_at_qmax_dynes_lpa / MMHG_TO_CGS
+    
+    
+    
+    
+end 
+    
 
 
 

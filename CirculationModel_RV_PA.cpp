@@ -92,7 +92,8 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
       d_resistance_bcs_on(resistance_bcs_on),
       d_inductor_bcs_on(inductor_bcs_on),
       d_variable_resistance(variable_resistance), 
-      d_variable_resistor_on(true)
+      d_left_variable_resistor_on(true),
+      d_right_variable_resistor_on(true)
 {
     
     if (d_registered_for_restart)
@@ -147,7 +148,8 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
         if (!d_resistance_bcs_on){
             TBOX_ERROR("Must have resistance on to use variable resistance"); 
         }
-        d_variable_resistor_on = true; 
+        d_left_variable_resistor_on = true; 
+        d_right_variable_resistor_on = true; 
     }
 
     if ((d_rcr_bcs_on && d_resistance_bcs_on) || 
@@ -502,26 +504,46 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
         if (d_variable_resistance){
 
             // resistor turns on when flow goes negative 
-            if (!d_variable_resistor_on){
+            if (!d_left_variable_resistor_on){
 
                 // d_Q_right_ventricle stores *outward* flux
                 // if previous is negative and current is nonnegative 
                 // then have 
-                if ((d_Q_right_ventricle_previous < 0.0) && (d_Q_right_ventricle >= 0.0)){
-                    d_variable_resistor_on = true; 
+                if ((d_Q_left_pa_previous < 0.0) && (d_Q_left_pa >= 0.0)){
+                    d_left_variable_resistor_on = true; 
+                }
+            }
+            // resistor turns on when flow goes negative 
+            if (!d_right_variable_resistor_on){
+
+                // d_Q_right_ventricle stores *outward* flux
+                // if previous is negative and current is nonnegative 
+                // then have 
+                if ((d_Q_right_pa_previous < 0.0) && (d_Q_right_pa >= 0.0)){
+                    d_right_variable_resistor_on = true; 
                 }
             }
 
             // resistor turns off when pressure difference goes positive 
-            if (d_variable_resistor_on){
-                double pressure_diff =  d_fourier_right_ventricle->values[d_current_idx_series] - 
-                                        d_fourier_right_pa->values[d_current_idx_series]; 
+            if (d_left_variable_resistor_on){
+                double pressure_diff_left =  d_fourier_right_ventricle->values[d_current_idx_series] - 
+                                             d_fourier_left_pa->values[d_current_idx_series]; 
 
-                if (pressure_diff > 0.0){
-                    d_variable_resistor_on = false; 
+                if (pressure_diff_left > 0.0){
+                    d_left_variable_resistor_on = false; 
                 }
-
             }
+
+            // resistor turns off when pressure difference goes positive 
+            if (d_right_variable_resistor_on){
+                double pressure_diff_right =  d_fourier_right_ventricle->values[d_current_idx_series] - 
+                                             d_fourier_right_pa->values[d_current_idx_series]; 
+
+                if (pressure_diff_right > 0.0){
+                    d_right_variable_resistor_on = false; 
+                }
+            }
+
         }
 
 
@@ -530,8 +552,8 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
         d_left_pa_P_Wk  = MMHG_TO_CGS * d_fourier_left_pa->values[d_current_idx_series]; 
 
         // resistance bcs determine outlet pressure 
-        d_right_pa_P = d_right_pa_P_Wk + d_right_pa_resistance * d_variable_resistor_on * d_Q_right_pa;
-        d_left_pa_P  = d_left_pa_P_Wk  + d_left_pa_resistance  * d_variable_resistor_on * d_Q_left_pa;
+        d_right_pa_P = d_right_pa_P_Wk + d_right_pa_resistance * d_right_variable_resistor_on * d_Q_right_pa;
+        d_left_pa_P  = d_left_pa_P_Wk  + d_left_pa_resistance  * d_left_variable_resistor_on  * d_Q_left_pa;
     }
 
     else if (d_inductor_bcs_on){
@@ -592,7 +614,8 @@ CirculationModel_RV_PA::putToDatabase(Pointer<Database> db)
     db->putBool("d_resistance_bcs_on", d_resistance_bcs_on); 
     db->putBool("d_inductor_bcs_on", d_inductor_bcs_on); 
     db->putBool("d_variable_resistance", d_variable_resistance); 
-    db->putBool("d_variable_resistor_on", d_variable_resistor_on); 
+    db->putBool("d_left_variable_resistor_on", d_left_variable_resistor_on); 
+    db->putBool("d_right_variable_resistor_on", d_right_variable_resistor_on); 
     return; 
 } // putToDatabase
 
@@ -793,7 +816,8 @@ CirculationModel_RV_PA::getFromRestart()
     d_resistance_bcs_on          = db->getBool("d_resistance_bcs_on"); 
     d_inductor_bcs_on            = db->getBool("d_inductor_bcs_on"); 
     d_variable_resistance        = db->getBool("d_variable_resistance"); 
-    d_variable_resistor_on       = db->getBool("d_variable_resistor_on"); 
+    d_left_variable_resistor_on  = db->getBool("d_left_variable_resistor_on");
+    d_right_variable_resistor_on = db->getBool("d_right_variable_resistor_on"); 
     return;
 } // getFromRestart
 
