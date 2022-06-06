@@ -517,11 +517,12 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
             }
 
             // resistor turns off when pressure difference goes positive 
+            // and flow turns positive 
             if (d_left_variable_resistor_on){
                 double pressure_diff_left =  d_fourier_right_ventricle->values[d_current_idx_series] - 
                                              d_fourier_left_pa->values[d_current_idx_series]; 
 
-                if (pressure_diff_left > 0.0){
+                if ((pressure_diff_left > 0.0) && (d_Q_left_pa >= 0.0)){
                     d_left_variable_resistor_on = false; 
                 }
             }
@@ -530,7 +531,7 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
                 double pressure_diff_right = d_fourier_right_ventricle->values[d_current_idx_series] - 
                                              d_fourier_right_pa->values[d_current_idx_series]; 
 
-                if (pressure_diff_right > 0.0){
+                if ((pressure_diff_right > 0.0) && (d_Q_right_pa >= 0.0)){
                     d_right_variable_resistor_on = false; 
                 }
             }
