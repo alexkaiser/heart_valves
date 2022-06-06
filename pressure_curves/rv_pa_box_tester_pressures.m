@@ -86,7 +86,6 @@ flows_rpa_exp = [5.198252 6.404848 18.99174 48.68156 84.09315 106.0516 106.0705 
 
 
 
-
 % puts final elements at beginning 
 permute_flows = false; 
 if permute_flows
@@ -144,6 +143,59 @@ if resistance_adjusted_pressures
 end 
 
 
+% poiseuille flow estimates 
+poiseuille_flow_est = true; 
+poiseuille_adjusted_pressures = true; 
+if poiseuille_flow_est
+
+    mu = 0.039; 
+    
+    q_max_rpa = max(flows_rpa_exp); 
+    q_max_lpa = max(flows_lpa_exp); 
+    
+    len_lpa = 7.71; 
+    rad_lpa = 1.35/2; 
+    
+    len_rpa = 3.08; 
+    rad_rpa = 1.47/2; 
+    
+    deltap_at_qmax_dynes_rpa = 8 * mu * len_rpa * q_max_rpa / (pi * rad_rpa^4); 
+    deltap_at_qmax_rpa = deltap_at_qmax_dynes_rpa / MMHG_TO_CGS 
+    
+    deltap_at_qmax_dynes_lpa = 8 * mu * len_lpa * q_max_lpa / (pi * rad_lpa^4);     
+    deltap_at_qmax_lpa = deltap_at_qmax_dynes_lpa / MMHG_TO_CGS
+    
+    rad_lpa_effective_ib_adjust = rad_lpa - dx_fluid; 
+    
+    deltap_at_qmax_dynes_ib_adjust_lpa = 8 * mu * len_lpa * q_max_lpa / (pi * rad_lpa_effective_ib_adjust^4);     
+    deltap_at_qmax_ib_adjust_lpa = deltap_at_qmax_dynes_ib_adjust_lpa / MMHG_TO_CGS
+
+       
+    if poiseuille_adjusted_pressures
+        
+        rpa_pressure_adjusted_rq = pa_pressure - deltap_at_qmax_rpa; 
+        lpa_pressure_adjusted_rq = pa_pressure - deltap_at_qmax_lpa; 
+
+        points_one_cycle_rpa              = [times, rpa_pressure_adjusted_rq]; 
+        points_one_cycle_lpa              = [times, lpa_pressure_adjusted_rq]; 
+        
+        suffix_rpa = "_rpa"; 
+        file_name = strcat(base_name, suffix_rpa, r_suffix, '.txt'); 
+        [a_0_rpa a_n_rpa b_n_rpa Series_rpa times_rpa linear_interp_vals_rpa] = series_and_smooth(points_one_cycle_rpa, dt, bump_radius_pa, n_fourier_coeffs, plots); 
+        output_series_coeffs_to_txt(a_0_rpa, a_n_rpa, b_n_rpa, n_fourier_coeffs, cycle_length, file_name); 
+
+        suffix_lpa = "_lpa"; 
+        file_name = strcat(base_name, suffix_lpa, r_suffix, '.txt'); 
+        [a_0_lpa a_n_lpa b_n_lpa Series_lpa times_lpa linear_interp_vals_lpa] = series_and_smooth(points_one_cycle_lpa, dt, bump_radius_pa, n_fourier_coeffs, plots); 
+        output_series_coeffs_to_txt(a_0_lpa, a_n_lpa, b_n_lpa, n_fourier_coeffs, cycle_length, file_name); 
+    end 
+    
+end 
+
+
+if resistance_adjusted_pressures && poiseuille_adjusted_pressures
+    error('resistance_adjusted_pressures && poiseuille_adjusted_pressures cannot both be true')
+end 
 
 flow_plot = true; 
 if flow_plot
@@ -217,7 +269,7 @@ if basic_series_plots
     vals_pa_series = Series_pa(t); 
     plot(t, vals_pa_series, 'b'); 
     
-    if resistance_adjusted_pressures
+    if resistance_adjusted_pressures || poiseuille_adjusted_pressures
         t = 0:dt:cycle_length; 
         vals_rpa_series = Series_rpa(t); 
         plot(t, vals_rpa_series, 'r'); 
@@ -241,7 +293,7 @@ if basic_series_plots
     plot(times_exp, p_rv_exp)
     plot(times_exp, p_pa_exp)
     
-    if resistance_adjusted_pressures
+    if resistance_adjusted_pressures || poiseuille_adjusted_pressures
         legend('RV', 'PA', 'RPA adjusted', 'LPA adjusted', 'RV plus diff postive', 'P RV EXP', 'P PA EXP')
     else 
         legend('RV', 'PA', 'RV plus diff postive', 'P RV EXP', 'P PA EXP')
@@ -378,36 +430,7 @@ if more_plots
 
 end 
 
-% poiseuille flow estimates 
-poiseuille_flow_est = true; 
-if poiseuille_flow_est
 
-    mu = 0.039; 
-    
-    q_max_rpa = max(flows_rpa_exp); 
-    q_max_lpa = max(flows_lpa_exp); 
-    
-    len_lpa = 6.75; 
-    rad_lpa = 1.35/2; 
-    
-    len_rpa = 3.08; 
-    rad_rpa = 1.47/2; 
-    
-    deltap_at_qmax_dynes_rpa = 8 * mu * len_rpa * q_max_rpa / (pi * rad_rpa^4); 
-    deltap_at_qmax_rpa = deltap_at_qmax_dynes_rpa / MMHG_TO_CGS 
-    
-    deltap_at_qmax_dynes_lpa = 8 * mu * len_lpa * q_max_lpa / (pi * rad_lpa^4);     
-    deltap_at_qmax_lpa = deltap_at_qmax_dynes_lpa / MMHG_TO_CGS
-    
-    rad_lpa_effective_ib_adjust = rad_lpa - dx_fluid; 
-    
-    deltap_at_qmax_dynes_ib_adjust_lpa = 8 * mu * len_lpa * q_max_lpa / (pi * rad_lpa_effective_ib_adjust^4);     
-    deltap_at_qmax_ib_adjust_lpa = deltap_at_qmax_dynes_ib_adjust_lpa / MMHG_TO_CGS
-    
-    
-    
-end 
-    
 
 
 
