@@ -180,12 +180,12 @@ if poiseuille_flow_est
         points_one_cycle_lpa              = [times, lpa_pressure_adjusted_rq]; 
         
         suffix_rpa = "_rpa"; 
-        file_name = strcat(base_name, suffix_rpa, r_suffix, '.txt'); 
+        file_name = strcat(base_name, suffix_rpa, '.txt'); 
         [a_0_rpa a_n_rpa b_n_rpa Series_rpa times_rpa linear_interp_vals_rpa] = series_and_smooth(points_one_cycle_rpa, dt, bump_radius_pa, n_fourier_coeffs, plots); 
         output_series_coeffs_to_txt(a_0_rpa, a_n_rpa, b_n_rpa, n_fourier_coeffs, cycle_length, file_name); 
 
         suffix_lpa = "_lpa"; 
-        file_name = strcat(base_name, suffix_lpa, r_suffix, '.txt'); 
+        file_name = strcat(base_name, suffix_lpa, '.txt'); 
         [a_0_lpa a_n_lpa b_n_lpa Series_lpa times_lpa linear_interp_vals_lpa] = series_and_smooth(points_one_cycle_lpa, dt, bump_radius_pa, n_fourier_coeffs, plots); 
         output_series_coeffs_to_txt(a_0_lpa, a_n_lpa, b_n_lpa, n_fourier_coeffs, cycle_length, file_name); 
     end 
