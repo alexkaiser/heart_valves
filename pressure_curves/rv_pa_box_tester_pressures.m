@@ -32,7 +32,7 @@ pa_pressure = [pa_pressure(end); pa_pressure];
 cycle_length = max(times); 
 base_name = 'fourier_coeffs';
 bump_radius_rv = .01; 
-bump_radius_pa = .01; 
+bump_radius_pa = .05; 
 n_fourier_coeffs = 600; 
 
 % for outputting resistance/flow adjusted series 
@@ -399,6 +399,10 @@ if poiseuille_flow_est
     deltap_at_qmax_dynes_lpa = 8 * mu * len_lpa * q_max_lpa / (pi * rad_lpa^4);     
     deltap_at_qmax_lpa = deltap_at_qmax_dynes_lpa / MMHG_TO_CGS
     
+    rad_lpa_effective_ib_adjust = rad_lpa - dx_fluid; 
+    
+    deltap_at_qmax_dynes_ib_adjust_lpa = 8 * mu * len_lpa * q_max_lpa / (pi * rad_lpa_effective_ib_adjust^4);     
+    deltap_at_qmax_ib_adjust_lpa = deltap_at_qmax_dynes_ib_adjust_lpa / MMHG_TO_CGS
     
     
     

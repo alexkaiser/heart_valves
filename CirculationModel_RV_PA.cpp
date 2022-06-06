@@ -504,20 +504,14 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
             // resistor turns on when flow goes negative 
             if (!d_left_variable_resistor_on){
 
-                // d_Q_right_ventricle stores *outward* flux
-                // if previous is negative and current is nonnegative 
-                // then have 
-                if ((d_Q_left_pa_previous < 0.0) && (d_Q_left_pa >= 0.0)){
+                if ((d_Q_left_pa_previous > 0.0) && (d_Q_left_pa <= 0.0)){
                     d_left_variable_resistor_on = true; 
                 }
             }
             // resistor turns on when flow goes negative 
             if (!d_right_variable_resistor_on){
 
-                // d_Q_right_ventricle stores *outward* flux
-                // if previous is negative and current is nonnegative 
-                // then have 
-                if ((d_Q_right_pa_previous < 0.0) && (d_Q_right_pa >= 0.0)){
+                if ((d_Q_right_pa_previous > 0.0) && (d_Q_right_pa <= 0.0)){
                     d_right_variable_resistor_on = true; 
                 }
             }
