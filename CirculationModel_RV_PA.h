@@ -60,6 +60,9 @@ public:
     bool d_inductor_bcs_on; 
     bool d_variable_resistance; 
 
+    double d_systole_start;
+    double d_diastole_start;
+
     const fourier_series_data *d_fourier_right_pa;
     int     d_n_pts_right_pa;
     double* d_right_pa_points_idx1;
@@ -74,7 +77,6 @@ public:
     double  d_right_pa_R_distal; 
     double  d_right_pa_C;
     double  d_right_pa_resistance; 
-    bool    d_right_variable_resistor_on; 
     double  d_right_pa_inductance; 
 
     const fourier_series_data *d_fourier_left_pa; 
@@ -91,7 +93,6 @@ public:
     double  d_left_pa_R_distal; 
     double  d_left_pa_C;
     double  d_left_pa_resistance;
-    bool    d_left_variable_resistor_on; 
     double  d_left_pa_inductance;
 
     double  d_cycle_duration;

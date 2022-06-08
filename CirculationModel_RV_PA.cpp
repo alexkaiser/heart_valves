@@ -91,9 +91,7 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
       d_rcr_bcs_on(rcr_bcs_on),
       d_resistance_bcs_on(resistance_bcs_on),
       d_inductor_bcs_on(inductor_bcs_on),
-      d_variable_resistance(variable_resistance), 
-      d_left_variable_resistor_on(true),
-      d_right_variable_resistor_on(true)
+      d_variable_resistance(variable_resistance)
 {
     
     if (d_registered_for_restart)
@@ -148,8 +146,83 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
         if (!d_resistance_bcs_on){
             TBOX_ERROR("Must have resistance on to use variable resistance"); 
         }
-        d_left_variable_resistor_on = true; 
-        d_right_variable_resistor_on = true; 
+
+        // set systole and distole start 
+        bool systole_set = false; 
+        bool diastole_set = false; 
+
+        double dt = d_fourier_right_ventricle->dt; 
+
+        double t_reduced; 
+        double t_scaled; 
+        double t_scaled_offset;
+        unsigned int k_temp; 
+        unsigned int current_idx_series; 
+        double pressure_diff_left = 0.0; 
+        double pressure_diff_right = 0.0; 
+        double pressure_diff_left_prev = 0.0; 
+        double pressure_diff_right_prev = 0.0; 
+        
+        for(double time_temp = 0.0; time_temp < d_cycle_duration; time_temp += dt){
+
+            t_reduced = time_temp - d_cycle_duration * floor(time_temp/d_cycle_duration); 
+
+            // fourier series has its own period, scale to that 
+            t_scaled = t_reduced * (d_fourier_right_ventricle->L  / d_cycle_duration); 
+
+            // start offset some arbitrary time in the cardiac cycle, but this is relative to the series length 
+            t_scaled_offset = t_scaled + d_t_offset_bcs_unscaled; 
+
+            // Fourier data here
+            // index without periodicity 
+            k_temp = (unsigned int) floor(t_scaled_offset / (d_fourier_right_ventricle->dt));
+            
+            // // take periodic reduction
+            current_idx_series = k_temp % (d_fourier_right_ventricle->N_times);
+
+            pressure_diff_left =  d_fourier_right_ventricle->values[current_idx_series] - 
+                                          d_fourier_left_pa->values[current_idx_series]; 
+
+            pressure_diff_right = d_fourier_right_ventricle->values[current_idx_series] - 
+                                         d_fourier_right_pa->values[current_idx_series]; 
+
+
+            // negative to positive change 
+            if (!systole_set){
+                if (((pressure_diff_left_prev < 0.0) && (0.0 <= pressure_diff_left)) || 
+                    ((pressure_diff_right_prev < 0.0) && (0.0 <= pressure_diff_right))){
+                    d_systole_start = t_reduced; 
+                    pout << "found d_systole_start = " << d_systole_start << "\n"; 
+                    systole_set = true; 
+                }
+            }
+
+            if (systole_set && (!diastole_set)){
+                if (((pressure_diff_left_prev > 0.0) && (0.0 >= pressure_diff_left)) || 
+                    ((pressure_diff_right_prev > 0.0) && (0.0 >= pressure_diff_right))){
+                    d_diastole_start = t_reduced; 
+                    pout << "found d_diastole_start = " << d_diastole_start << "\n"; 
+                    diastole_set = true; 
+                }
+            }
+
+            pressure_diff_left_prev = pressure_diff_left; 
+            pressure_diff_right_prev = pressure_diff_right_prev; 
+
+        }
+
+        if ((!systole_set) || (!diastole_set)){
+            TBOX_ERROR("must set systole diastole time"); 
+        }
+
+        pout << "Constructor found d_systole_start = " << d_systole_start << ", d_diastole_start = " << d_diastole_start << "\n"; 
+
+
+    }
+    else{
+        // not used 
+        d_systole_start = 0.0; 
+        d_diastole_start = 0.0; 
     }
 
     if ((d_rcr_bcs_on && d_resistance_bcs_on) || 
@@ -499,43 +572,29 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
     }
     else if (d_resistance_bcs_on){
 
+        double variable_resistance_coeff = 1.0; 
+
         if (d_variable_resistance){
 
-            // resistor turns on when flow goes negative 
-            if (!d_left_variable_resistor_on){
+            // time to turn resistor on 
+            double on_duration = 0.01; 
 
-                if ((d_Q_left_pa_previous > 0.0) && (d_Q_left_pa <= 0.0)){
-                    d_left_variable_resistor_on = true; 
-                }
+            if (t_reduced < d_systole_start){
+                variable_resistance_coeff = 1.0; 
             }
-            // resistor turns on when flow goes negative 
-            if (!d_right_variable_resistor_on){
-
-                if ((d_Q_right_pa_previous > 0.0) && (d_Q_right_pa <= 0.0)){
-                    d_right_variable_resistor_on = true; 
-                }
+            else if ((d_systole_start <= t_reduced) && (t_reduced < (d_systole_start + on_duration))){
+                variable_resistance_coeff = 0.5 * (cos( (M_PI/on_duration) * (t_reduced - d_systole_start)  ) + 1); 
             }
-
-            // resistor turns off when pressure difference goes positive 
-            // and flow turns positive 
-            if (d_left_variable_resistor_on){
-                double pressure_diff_left =  d_fourier_right_ventricle->values[d_current_idx_series] - 
-                                             d_fourier_left_pa->values[d_current_idx_series]; 
-
-                if ((pressure_diff_left > 0.0) && (d_Q_left_pa >= 0.0)){
-                    d_left_variable_resistor_on = false; 
-                }
+            else if (((d_systole_start + on_duration) <= t_reduced) && (t_reduced < d_diastole_start)){
+                variable_resistance_coeff = 0.0; 
             }
-
-            if (d_right_variable_resistor_on){
-                double pressure_diff_right = d_fourier_right_ventricle->values[d_current_idx_series] - 
-                                             d_fourier_right_pa->values[d_current_idx_series]; 
-
-                if ((pressure_diff_right > 0.0) && (d_Q_right_pa >= 0.0)){
-                    d_right_variable_resistor_on = false; 
-                }
+            else if ((d_diastole_start <= t_reduced) && (t_reduced < (d_diastole_start + on_duration))){
+                variable_resistance_coeff = 0.5 * (-cos( (M_PI/on_duration) * (t_reduced - d_diastole_start)  ) + 1); 
             }
-
+            else {
+                variable_resistance_coeff = 1.0; 
+            }
+        
         }
 
 
@@ -544,8 +603,9 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
         d_left_pa_P_Wk  = MMHG_TO_CGS * d_fourier_left_pa->values[d_current_idx_series]; 
 
         // resistance bcs determine outlet pressure 
-        d_right_pa_P = d_right_pa_P_Wk + d_right_pa_resistance * d_right_variable_resistor_on * d_Q_right_pa;
-        d_left_pa_P  = d_left_pa_P_Wk  + d_left_pa_resistance  * d_left_variable_resistor_on  * d_Q_left_pa;
+        d_right_pa_P = d_right_pa_P_Wk + d_right_pa_resistance * variable_resistance_coeff * d_Q_right_pa;
+        d_left_pa_P  = d_left_pa_P_Wk  + d_left_pa_resistance  * variable_resistance_coeff * d_Q_left_pa;
+
     }
 
     else if (d_inductor_bcs_on){
@@ -606,8 +666,6 @@ CirculationModel_RV_PA::putToDatabase(Pointer<Database> db)
     db->putBool("d_resistance_bcs_on", d_resistance_bcs_on); 
     db->putBool("d_inductor_bcs_on", d_inductor_bcs_on); 
     db->putBool("d_variable_resistance", d_variable_resistance); 
-    db->putBool("d_left_variable_resistor_on", d_left_variable_resistor_on); 
-    db->putBool("d_right_variable_resistor_on", d_right_variable_resistor_on); 
     return; 
 } // putToDatabase
 
@@ -808,8 +866,6 @@ CirculationModel_RV_PA::getFromRestart()
     d_resistance_bcs_on          = db->getBool("d_resistance_bcs_on"); 
     d_inductor_bcs_on            = db->getBool("d_inductor_bcs_on"); 
     d_variable_resistance        = db->getBool("d_variable_resistance"); 
-    d_left_variable_resistor_on  = db->getBool("d_left_variable_resistor_on");
-    d_right_variable_resistor_on = db->getBool("d_right_variable_resistor_on"); 
     return;
 } // getFromRestart
 
