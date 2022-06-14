@@ -581,7 +581,7 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
             // fast off during systole 
             double off_duration_systole  = 0.01;
             // slower on in diastole 
-            double on_duration_diastole = 0.05; 
+            double on_duration_diastole = 0.075; 
 
             if (t_reduced < d_systole_start){
                 // starts in diastole with closed valve 
