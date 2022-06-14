@@ -576,22 +576,31 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
 
         if (d_variable_resistance){
 
-            // time to turn resistor on 
-            double on_duration = 0.01; 
+            // time to turn resistor on and off 
+
+            // fast off during systole 
+            double off_duration_systole  = 0.01;
+            // slower on in diastole 
+            double on_duration_diastole = 0.025; 
 
             if (t_reduced < d_systole_start){
+                // starts in diastole with closed valve 
                 variable_resistance_coeff = 1.0; 
             }
-            else if ((d_systole_start <= t_reduced) && (t_reduced < (d_systole_start + on_duration))){
+            else if ((d_systole_start <= t_reduced) && (t_reduced < (d_systole_start + off_duration_systole))){
+                // ramps up into systole 
                 variable_resistance_coeff = 0.5 * (cos( (M_PI/on_duration) * (t_reduced - d_systole_start)  ) + 1); 
             }
-            else if (((d_systole_start + on_duration) <= t_reduced) && (t_reduced < d_diastole_start)){
+            else if (((d_systole_start + off_duration_systole) <= t_reduced) && (t_reduced < d_diastole_start)){
+                // off during systole 
                 variable_resistance_coeff = 0.0; 
             }
-            else if ((d_diastole_start <= t_reduced) && (t_reduced < (d_diastole_start + on_duration))){
+            else if ((d_diastole_start <= t_reduced) && (t_reduced < (d_diastole_start + on_duration_diastole))){
+                // ramps on in diastole 
                 variable_resistance_coeff = 0.5 * (-cos( (M_PI/on_duration) * (t_reduced - d_diastole_start)  ) + 1); 
             }
             else {
+                // then on for remainder of cycle 
                 variable_resistance_coeff = 1.0; 
             }
         
