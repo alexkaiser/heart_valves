@@ -32,7 +32,7 @@ pa_pressure = [pa_pressure(end); pa_pressure];
 cycle_length = max(times); 
 base_name = 'fourier_coeffs';
 bump_radius_rv = .01; 
-bump_radius_pa = .05; 
+bump_radius_pa = .01;
 n_fourier_coeffs = 600; 
 
 % for outputting resistance/flow adjusted series 
