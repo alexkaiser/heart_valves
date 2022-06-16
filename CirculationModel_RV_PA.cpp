@@ -779,9 +779,11 @@ void CirculationModel_RV_PA::write_plot_code()
         fout << "hold on\n";
         fout << "plot(times, q_rpa, '--k')\n";
         fout << "plot(times, q_lpa, '-.k')\n";
+        fout << "plot(times_two_cycles, q_rpa_exp)\n";
+        fout << "plot(times_two_cycles, q_lpa_exp)\n";
         fout << "plot(times_two_cycles, q_rv_exp)\n";
         fout << "plot(bc_vals(:,1), zeros(size(q_rv)), ':k')\n";
-        fout << "legend('Q RV', 'Q RPA', 'Q LPA', 'Q EXP RV', 'Location', 'NorthEastOutside')\n";
+        fout << "legend('Q RV', 'Q RPA', 'Q LPA', 'Q EXP RV', 'Q EXP RPA', 'Q EXP LPA', 'Location', 'NorthEastOutside')\n";
         fout << "xlabel('t (s)')\n";
         fout << "ylabel('Flow (ml/s)')\n";
         fout << "set(fig, 'Position', [100, 100, 1000, 750])\n";
