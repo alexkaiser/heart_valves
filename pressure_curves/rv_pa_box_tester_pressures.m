@@ -79,6 +79,8 @@ output_series_coeffs_to_txt(a_0_right_ventricle_plus_diff_positive, a_n_right_ve
 
 
 
+
+
 flows_rv_exp = [-4.679 3.558 34.035 101.834 180.228 226.853 230.468 192.169 123.601 48.604 4.302 -2.023 -0.795 0.197 0.101 -0.209 -1.054 -2.747 -2.837 -3.134]'; 
 flows_lpa_exp = [-1.623108 1.62083 13.35831 39.69248 73.04993 94.478 97.37274 82.16487 55.11997 23.08761 1.514264 -2.709484 -2.605704 -3.754506 -4.046469 -4.016213 -4.166175 -4.095049 -3.645273 -2.907113]'; 
 flows_rpa_exp = [5.198252 6.404848 18.99174 48.68156 84.09315 106.0516 106.0705 87.31557 55.59498 20.70115 1.003064 0.279315 4.22013 5.346351 6.04164 6.95495 7.087463 6.348237 5.817579 5.577208]'; 
@@ -144,8 +146,8 @@ end
 
 
 % poiseuille flow estimates 
-poiseuille_flow_est = true; 
-poiseuille_adjusted_pressures = true; 
+poiseuille_flow_est = false; 
+poiseuille_adjusted_pressures = false; 
 if poiseuille_flow_est
 
     mu = 0.039; 
@@ -190,6 +192,70 @@ if poiseuille_flow_est
         output_series_coeffs_to_txt(a_0_lpa, a_n_lpa, b_n_lpa, n_fourier_coeffs, cycle_length, file_name); 
     end 
     
+end 
+
+
+% IB estimates at changes of linear resistance 
+ib_linear_resistance_estimates = true; 
+if ib_linear_resistance_estimates  
+    
+    mu = 0.039; 
+    
+    radius_poiseuille = @(L, resistance) (8*mu*L/(pi*resistance))^(1/4); 
+    
+    delta_pressure_poiseuille = @(L,q,radius) 8 * mu * L * q / (pi * raduis^4);
+    
+    % basic resistances from SV 
+    L_rv = 14.759353372237321; 
+    resistance_rv = 0.09405289588937868; 
+    r_rv = radius_poiseuille(L_rv, resistance_rv) 
+    
+    L_rpa = 4.519774393313929; 
+    resistance_rpa = 1.6645415607251934; 
+    r_rpa = radius_poiseuille(L_rpa, resistance_rpa) 
+    
+    L_lpa = 8.139681927111639; 
+    resistance_lpa = 3.877335669649555; 
+    r_lpa = radius_poiseuille(L_lpa, resistance_lpa) 
+        
+    % resistances from SV on reduced model radius of 0.09 cm 
+    L_rv_reduced_pt09cm = 12.795778735700885; 
+    resistance_rv_reduced_pt09cm = 0.13410025248596413; 
+    r_rv_reduced_pt09cm = radius_poiseuille(L_rv_reduced_pt09cm , resistance_rv_reduced_pt09cm ) 
+    
+    L_rpa_reduced_pt09cm = 4.526318740007514; 
+    resistance_rpa_reduced_pt09cm = 2.9466135041324772; 
+    r_rpa_reduced_pt09cm  = radius_poiseuille(L_rpa_reduced_pt09cm , resistance_rpa_reduced_pt09cm ) 
+    
+    L_lpa_reduced_pt09cm = 8.130325343022083; 
+    resistance_lpa_reduced_pt09cm = 7.1320202349241235; 
+    r_lpa_reduced_pt09cm = radius_poiseuille(L_lpa_reduced_pt09cm , resistance_lpa_reduced_pt09cm ) 
+    
+    r_rv_diff = r_rv - r_rpa_reduced_pt09cm 
+    r_lpa_diff = r_lpa - r_lpa_reduced_pt09cm 
+    r_rpa_diff = r_rpa - r_rpa_reduced_pt09cm
+    
+    resistance_ratio_rv = resistance_rv_reduced_pt09cm / resistance_rv 
+    resistance_ratio_lpa = resistance_lpa_reduced_pt09cm / resistance_lpa
+    resistance_ratio_rpa = resistance_rpa_reduced_pt09cm / resistance_rpa 
+    
+    q_max_rv  = max(flows_rv_exp); 
+    q_max_lpa = max(flows_lpa_exp); 
+    q_max_rpa = max(flows_rpa_exp); 
+   
+    deltap_rv_sv_resistance = resistance_rv * q_max_rv;
+    deltap_lpa_sv_resistance = resistance_lpa * q_max_lpa;
+    deltap_rpa_sv_resistance = resistance_rpa * q_max_rpa;
+    deltap_rv_sv_resistance_mmHg = deltap_rv_sv_resistance / MMHG_TO_CGS
+    deltap_lpa_sv_resistance_mmHg = deltap_lpa_sv_resistance / MMHG_TO_CGS
+    deltap_rpa_sv_resistance_mmHg = deltap_rpa_sv_resistance / MMHG_TO_CGS
+    
+    deltap_IB_rv_sv_resistance = resistance_ratio_lpa * deltap_rv_sv_resistance;
+    deltap_IB_lpa_sv_resistance = resistance_ratio_lpa * deltap_lpa_sv_resistance;
+    deltap_IB_rpa_sv_resistance = resistance_ratio_rpa * deltap_rpa_sv_resistance;
+    deltap_IB_rv_sv_resistance_mmHg = deltap_IB_rv_sv_resistance / MMHG_TO_CGS 
+    deltap_IB_lpa_sv_resistance_mmHg = deltap_IB_lpa_sv_resistance / MMHG_TO_CGS 
+    deltap_IB_rpa_sv_resistance_mmHg = deltap_IB_rpa_sv_resistance / MMHG_TO_CGS 
 end 
 
 
