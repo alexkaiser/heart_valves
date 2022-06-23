@@ -42,9 +42,9 @@ r_suffix = "_r_250";
 
 % IB flow lost 
 radius_valve = 1; 
-dx_fluid = 0.045 * 4; 
+dx_fluid = 0.045; 
 frac_flow_expected = (radius_valve - dx_fluid)^4; 
-coeff_pressure_diff_adjust = 1/frac_flow_expected - 1; 
+coeff_pressure_diff_adjust = radius_valve^4 / frac_flow_expected - 1; 
 
 points_one_cycle_right_ventricle = [times, rv_pressure]; 
 points_one_cycle_pa              = [times, pa_pressure]; 
@@ -66,6 +66,11 @@ output_series_coeffs_to_txt(a_0_pa, a_n_pa, b_n_pa, n_fourier_coeffs, cycle_leng
 pressure_diff_positive = max(rv_pressure - pa_pressure, 0); 
 points_one_cycle_difference_positive = [times, pressure_diff_positive]; 
 [a_0_difference_positive a_n_difference_positive b_n_difference_positive Series_difference_positive times_difference_positive linear_interp_vals_differenc_positivee] = series_and_smooth(points_one_cycle_difference_positive, dt, bump_radius_pa, n_fourier_coeffs, plots); 
+
+pressure_diff = rv_pressure - pa_pressure; 
+points_one_cycle_difference = [times, pressure_diff]; 
+[a_0_difference a_n_difference b_n_difference Series_difference times_difference linear_interp_vals_differenc] = series_and_smooth(points_one_cycle_difference, dt, bump_radius_pa, n_fourier_coeffs, plots); 
+
 
 % rv adjusted 
 pressure_rv_plus_diff_positive = rv_pressure + coeff_pressure_diff_adjust * pressure_diff_positive; 
@@ -145,70 +150,84 @@ if resistance_adjusted_pressures
 end 
 
 
-% poiseuille flow estimates 
+% poiseuille flow estimates with paraview hack radii 
+% do not use these 
 poiseuille_flow_est = false; 
-poiseuille_adjusted_pressures = false; 
-if poiseuille_flow_est
-
-    mu = 0.039; 
-    
-    q_max_rpa = max(flows_rpa_exp); 
-    q_max_lpa = max(flows_lpa_exp); 
-    
-    len_lpa = 7.71; 
-    rad_lpa = 1.35/2; 
-    
-    len_rpa = 3.08; 
-    rad_rpa = 1.47/2; 
-    
-    deltap_at_qmax_dynes_rpa = 8 * mu * len_rpa * q_max_rpa / (pi * rad_rpa^4); 
-    deltap_at_qmax_rpa = deltap_at_qmax_dynes_rpa / MMHG_TO_CGS 
-    
-    deltap_at_qmax_dynes_lpa = 8 * mu * len_lpa * q_max_lpa / (pi * rad_lpa^4);     
-    deltap_at_qmax_lpa = deltap_at_qmax_dynes_lpa / MMHG_TO_CGS
-    
-    rad_lpa_effective_ib_adjust = rad_lpa - dx_fluid; 
-    
-    deltap_at_qmax_dynes_ib_adjust_lpa = 8 * mu * len_lpa * q_max_lpa / (pi * rad_lpa_effective_ib_adjust^4);     
-    deltap_at_qmax_ib_adjust_lpa = deltap_at_qmax_dynes_ib_adjust_lpa / MMHG_TO_CGS
-
-       
-    if poiseuille_adjusted_pressures
-        
-        rpa_pressure_adjusted_rq = pa_pressure - deltap_at_qmax_rpa; 
-        lpa_pressure_adjusted_rq = pa_pressure - deltap_at_qmax_lpa; 
-
-        points_one_cycle_rpa              = [times, rpa_pressure_adjusted_rq]; 
-        points_one_cycle_lpa              = [times, lpa_pressure_adjusted_rq]; 
-        
-        suffix_rpa = "_rpa"; 
-        file_name = strcat(base_name, suffix_rpa, '.txt'); 
-        [a_0_rpa a_n_rpa b_n_rpa Series_rpa times_rpa linear_interp_vals_rpa] = series_and_smooth(points_one_cycle_rpa, dt, bump_radius_pa, n_fourier_coeffs, plots); 
-        output_series_coeffs_to_txt(a_0_rpa, a_n_rpa, b_n_rpa, n_fourier_coeffs, cycle_length, file_name); 
-
-        suffix_lpa = "_lpa"; 
-        file_name = strcat(base_name, suffix_lpa, '.txt'); 
-        [a_0_lpa a_n_lpa b_n_lpa Series_lpa times_lpa linear_interp_vals_lpa] = series_and_smooth(points_one_cycle_lpa, dt, bump_radius_pa, n_fourier_coeffs, plots); 
-        output_series_coeffs_to_txt(a_0_lpa, a_n_lpa, b_n_lpa, n_fourier_coeffs, cycle_length, file_name); 
-    end 
-    
-end 
+% poiseuille_adjusted_pressures = false; 
+% if poiseuille_flow_est
+% 
+%     mu = 0.039; 
+%     
+%     q_max_rpa = max(flows_rpa_exp); 
+%     q_max_lpa = max(flows_lpa_exp); 
+%     
+%     len_lpa = 7.71; 
+%     rad_lpa = 1.35/2; 
+%     
+%     len_rpa = 3.08; 
+%     rad_rpa = 1.47/2; 
+%     
+%     deltap_at_qmax_dynes_rpa = 8 * mu * len_rpa * q_max_rpa / (pi * rad_rpa^4); 
+%     deltap_at_qmax_rpa = deltap_at_qmax_dynes_rpa / MMHG_TO_CGS 
+%     
+%     deltap_at_qmax_dynes_lpa = 8 * mu * len_lpa * q_max_lpa / (pi * rad_lpa^4);     
+%     deltap_at_qmax_lpa = deltap_at_qmax_dynes_lpa / MMHG_TO_CGS
+%     
+%     rad_lpa_effective_ib_adjust = rad_lpa - dx_fluid; 
+%     
+%     deltap_at_qmax_dynes_ib_adjust_lpa = 8 * mu * len_lpa * q_max_lpa / (pi * rad_lpa_effective_ib_adjust^4);     
+%     deltap_at_qmax_ib_adjust_lpa = deltap_at_qmax_dynes_ib_adjust_lpa / MMHG_TO_CGS
+% 
+%        
+%     if poiseuille_adjusted_pressures
+%         
+%         rpa_pressure_adjusted_rq = pa_pressure - deltap_at_qmax_rpa; 
+%         lpa_pressure_adjusted_rq = pa_pressure - deltap_at_qmax_lpa; 
+% 
+%         points_one_cycle_rpa              = [times, rpa_pressure_adjusted_rq]; 
+%         points_one_cycle_lpa              = [times, lpa_pressure_adjusted_rq]; 
+%         
+%         suffix_rpa = "_rpa"; 
+%         file_name = strcat(base_name, suffix_rpa, '.txt'); 
+%         [a_0_rpa a_n_rpa b_n_rpa Series_rpa times_rpa linear_interp_vals_rpa] = series_and_smooth(points_one_cycle_rpa, dt, bump_radius_pa, n_fourier_coeffs, plots); 
+%         output_series_coeffs_to_txt(a_0_rpa, a_n_rpa, b_n_rpa, n_fourier_coeffs, cycle_length, file_name); 
+% 
+%         suffix_lpa = "_lpa"; 
+%         file_name = strcat(base_name, suffix_lpa, '.txt'); 
+%         [a_0_lpa a_n_lpa b_n_lpa Series_lpa times_lpa linear_interp_vals_lpa] = series_and_smooth(points_one_cycle_lpa, dt, bump_radius_pa, n_fourier_coeffs, plots); 
+%         output_series_coeffs_to_txt(a_0_lpa, a_n_lpa, b_n_lpa, n_fourier_coeffs, cycle_length, file_name); 
+%     end 
+%     
+% end 
 
 
 % IB estimates at changes of linear resistance 
 ib_linear_resistance_estimates = true; 
+poiseuille_adjusted_pressures = true; 
 if ib_linear_resistance_estimates  
     
     mu = 0.039; 
     
+    % compute radius from known resistance and length 
     radius_poiseuille = @(L, resistance) (8*mu*L/(pi*resistance))^(1/4); 
     
-    delta_pressure_poiseuille = @(L,q,radius) 8 * mu * L * q / (pi * raduis^4);
+    delta_pressure_poiseuille = @(L,q,radius) 8 * mu * L * q / (pi * radius^4);
+    
+    resistance_poiseuille = @(L,radius) 8 * mu * L / (pi * radius^4);
+    
     
     % basic resistances from SV 
-    L_rv = 14.759353372237321; 
-    resistance_rv = 0.09405289588937868; 
+%     L_rv = 14.759353372237321; 
+%     resistance_rv = 0.09405289588937868; 
+
+    % redone RV resistances with valve area cropped out 
+    L_rv = 10.158089589432105; 
+    resistance_rv = 0.05603465074128439; 
     r_rv = radius_poiseuille(L_rv, resistance_rv) 
+    
+    L_valve = 1.5; % total scaffold height 
+    r_valve = 1.0; 
+    resistance_valve = resistance_poiseuille(L_valve,r_valve); 
     
     L_rpa = 4.519774393313929; 
     resistance_rpa = 1.6645415607251934; 
@@ -217,45 +236,111 @@ if ib_linear_resistance_estimates
     L_lpa = 8.139681927111639; 
     resistance_lpa = 3.877335669649555; 
     r_lpa = radius_poiseuille(L_lpa, resistance_lpa) 
+
+    % pressure diffs at nominal flow rates 
+    q_mean_nominal_l_per_min = 3.5; 
+    q_mean_nominal = q_mean_nominal_l_per_min * 1000 / 60; 
+    
+    deltap_at_q_nominal_dynes_rpa = delta_pressure_poiseuille(L_rpa, q_mean_nominal, r_rpa);
+    deltap_at_q_nominal_rpa = deltap_at_q_nominal_dynes_rpa / MMHG_TO_CGS 
+    
+    deltap_at_q_nominal_dynes_lpa = delta_pressure_poiseuille(L_lpa, q_mean_nominal, r_lpa);
+    deltap_at_q_nominal_lpa = deltap_at_q_nominal_dynes_lpa / MMHG_TO_CGS
+    
+
+    % compute systole/diastole times 
+    systole_start = fzero(Series_difference, 0.1);
+    systole_end = fzero(Series_difference, 0.4);
+    systole_duration = systole_end - systole_start
+    
+    systole_time_fraction = systole_duration / cycle_length 
+    
+    % expected pressure differences with Poiseuille flow in systole only 
+    deltap_at_q_nominal_systole_rpa = deltap_at_q_nominal_rpa / systole_time_fraction
+    deltap_at_q_nominal_systole_lpa = deltap_at_q_nominal_lpa / systole_time_fraction
+    
+    % check answers 
+%     resistance_rpa_formula = resistance_poiseuille(L_rpa, r_rpa)
+%     resistance_lpa_formula = resistance_poiseuille(L_lpa, r_lpa)
+    
+    
+    % increase estimates by IB resistance ratios 
+    resistance_IB_adjust_rv    = resistance_poiseuille(L_rv, r_rv - dx_fluid)
+    resistance_IB_adjust_valve = resistance_poiseuille(L_valve, r_valve - dx_fluid)
+    resistance_IB_adjust_rpa   = resistance_poiseuille(L_rpa, r_rpa - dx_fluid)
+    resistance_IB_adjust_lpa   = resistance_poiseuille(L_lpa, r_lpa - dx_fluid)
+    
+    % pressure differences with resistance increases 
+    delta_p_q_nominal_systole_IB_adjust_rpa = (resistance_IB_adjust_rpa/resistance_rpa) * deltap_at_q_nominal_systole_rpa 
+    delta_p_q_nominal_systole_IB_adjust_lpa = (resistance_IB_adjust_lpa/resistance_lpa) * deltap_at_q_nominal_systole_lpa 
+    
+    reistance_ratio_rv_valve = (resistance_IB_adjust_rv + resistance_IB_adjust_valve) / (resistance_rv + resistance_valve)
+    
+    
+    if poiseuille_adjusted_pressures
         
-    % resistances from SV on reduced model radius of 0.09 cm 
-    L_rv_reduced_pt09cm = 12.795778735700885; 
-    resistance_rv_reduced_pt09cm = 0.13410025248596413; 
-    r_rv_reduced_pt09cm = radius_poiseuille(L_rv_reduced_pt09cm , resistance_rv_reduced_pt09cm ) 
+        pressure_diff_positive_normalized = pressure_diff_positive / max(pressure_diff_positive); 
+        
+        rpa_pressure_adjusted_q_nomincal_systole = pa_pressure - deltap_at_q_nominal_systole_rpa * pressure_diff_positive_normalized; 
+        lpa_pressure_adjusted_r_nomincal_systole = pa_pressure - deltap_at_q_nominal_systole_lpa * pressure_diff_positive_normalized; 
+
+        points_one_cycle_rpa              = [times, rpa_pressure_adjusted_q_nomincal_systole]; 
+        points_one_cycle_lpa              = [times, lpa_pressure_adjusted_r_nomincal_systole]; 
+
+        suffix_rpa = "_rpa"; 
+        file_name = strcat(base_name, suffix_rpa, '.txt'); 
+        [a_0_rpa a_n_rpa b_n_rpa Series_rpa times_rpa linear_interp_vals_rpa] = series_and_smooth(points_one_cycle_rpa, dt, bump_radius_pa, n_fourier_coeffs, plots); 
+        output_series_coeffs_to_txt(a_0_rpa, a_n_rpa, b_n_rpa, n_fourier_coeffs, cycle_length, file_name); 
+
+        suffix_lpa = "_lpa"; 
+        file_name = strcat(base_name, suffix_lpa, '.txt'); 
+        [a_0_lpa a_n_lpa b_n_lpa Series_lpa times_lpa linear_interp_vals_lpa] = series_and_smooth(points_one_cycle_lpa, dt, bump_radius_pa, n_fourier_coeffs, plots); 
+        output_series_coeffs_to_txt(a_0_lpa, a_n_lpa, b_n_lpa, n_fourier_coeffs, cycle_length, file_name);         
+    end 
     
-    L_rpa_reduced_pt09cm = 4.526318740007514; 
-    resistance_rpa_reduced_pt09cm = 2.9466135041324772; 
-    r_rpa_reduced_pt09cm  = radius_poiseuille(L_rpa_reduced_pt09cm , resistance_rpa_reduced_pt09cm ) 
     
-    L_lpa_reduced_pt09cm = 8.130325343022083; 
-    resistance_lpa_reduced_pt09cm = 7.1320202349241235; 
-    r_lpa_reduced_pt09cm = radius_poiseuille(L_lpa_reduced_pt09cm , resistance_lpa_reduced_pt09cm ) 
     
-    r_rv_diff = r_rv - r_rpa_reduced_pt09cm 
-    r_lpa_diff = r_lpa - r_lpa_reduced_pt09cm 
-    r_rpa_diff = r_rpa - r_rpa_reduced_pt09cm
-    
-    resistance_ratio_rv = resistance_rv_reduced_pt09cm / resistance_rv 
-    resistance_ratio_lpa = resistance_lpa_reduced_pt09cm / resistance_lpa
-    resistance_ratio_rpa = resistance_rpa_reduced_pt09cm / resistance_rpa 
-    
-    q_max_rv  = max(flows_rv_exp); 
-    q_max_lpa = max(flows_lpa_exp); 
-    q_max_rpa = max(flows_rpa_exp); 
-   
-    deltap_rv_sv_resistance = resistance_rv * q_max_rv;
-    deltap_lpa_sv_resistance = resistance_lpa * q_max_lpa;
-    deltap_rpa_sv_resistance = resistance_rpa * q_max_rpa;
-    deltap_rv_sv_resistance_mmHg = deltap_rv_sv_resistance / MMHG_TO_CGS
-    deltap_lpa_sv_resistance_mmHg = deltap_lpa_sv_resistance / MMHG_TO_CGS
-    deltap_rpa_sv_resistance_mmHg = deltap_rpa_sv_resistance / MMHG_TO_CGS
-    
-    deltap_IB_rv_sv_resistance = resistance_ratio_lpa * deltap_rv_sv_resistance;
-    deltap_IB_lpa_sv_resistance = resistance_ratio_lpa * deltap_lpa_sv_resistance;
-    deltap_IB_rpa_sv_resistance = resistance_ratio_rpa * deltap_rpa_sv_resistance;
-    deltap_IB_rv_sv_resistance_mmHg = deltap_IB_rv_sv_resistance / MMHG_TO_CGS 
-    deltap_IB_lpa_sv_resistance_mmHg = deltap_IB_lpa_sv_resistance / MMHG_TO_CGS 
-    deltap_IB_rpa_sv_resistance_mmHg = deltap_IB_rpa_sv_resistance / MMHG_TO_CGS 
+    reduced_radius_model_estimates = false; 
+    if reduced_radius_model_estimates
+        % resistances from SV on reduced model radius of 0.09 cm 
+        L_rv_reduced_pt09cm = 12.795778735700885; 
+        resistance_rv_reduced_pt09cm = 0.13410025248596413; 
+        r_rv_reduced_pt09cm = radius_poiseuille(L_rv_reduced_pt09cm , resistance_rv_reduced_pt09cm ) 
+
+        L_rpa_reduced_pt09cm = 4.526318740007514; 
+        resistance_rpa_reduced_pt09cm = 2.9466135041324772; 
+        r_rpa_reduced_pt09cm  = radius_poiseuille(L_rpa_reduced_pt09cm , resistance_rpa_reduced_pt09cm ) 
+
+        L_lpa_reduced_pt09cm = 8.130325343022083; 
+        resistance_lpa_reduced_pt09cm = 7.1320202349241235; 
+        r_lpa_reduced_pt09cm = radius_poiseuille(L_lpa_reduced_pt09cm , resistance_lpa_reduced_pt09cm ) 
+
+        r_rv_diff = r_rv - r_rpa_reduced_pt09cm 
+        r_lpa_diff = r_lpa - r_lpa_reduced_pt09cm 
+        r_rpa_diff = r_rpa - r_rpa_reduced_pt09cm
+
+        resistance_ratio_rv = resistance_rv_reduced_pt09cm / resistance_rv 
+        resistance_ratio_lpa = resistance_lpa_reduced_pt09cm / resistance_lpa
+        resistance_ratio_rpa = resistance_rpa_reduced_pt09cm / resistance_rpa 
+
+        q_max_rv  = max(flows_rv_exp); 
+        q_max_lpa = max(flows_lpa_exp); 
+        q_max_rpa = max(flows_rpa_exp); 
+
+        deltap_rv_sv_resistance = resistance_rv * q_max_rv;
+        deltap_lpa_sv_resistance = resistance_lpa * q_max_lpa;
+        deltap_rpa_sv_resistance = resistance_rpa * q_max_rpa;
+        deltap_rv_sv_resistance_mmHg = deltap_rv_sv_resistance / MMHG_TO_CGS
+        deltap_lpa_sv_resistance_mmHg = deltap_lpa_sv_resistance / MMHG_TO_CGS
+        deltap_rpa_sv_resistance_mmHg = deltap_rpa_sv_resistance / MMHG_TO_CGS
+
+        deltap_IB_rv_sv_resistance = resistance_ratio_lpa * deltap_rv_sv_resistance;
+        deltap_IB_lpa_sv_resistance = resistance_ratio_lpa * deltap_lpa_sv_resistance;
+        deltap_IB_rpa_sv_resistance = resistance_ratio_rpa * deltap_rpa_sv_resistance;
+        deltap_IB_rv_sv_resistance_mmHg = deltap_IB_rv_sv_resistance / MMHG_TO_CGS 
+        deltap_IB_lpa_sv_resistance_mmHg = deltap_IB_lpa_sv_resistance / MMHG_TO_CGS 
+        deltap_IB_rpa_sv_resistance_mmHg = deltap_IB_rpa_sv_resistance / MMHG_TO_CGS 
+    end 
 end 
 
 
