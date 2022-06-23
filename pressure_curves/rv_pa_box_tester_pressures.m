@@ -42,7 +42,7 @@ r_suffix = "_r_250";
 
 % IB flow lost 
 radius_valve = 1; 
-dx_fluid = 0.045 * 2; 
+dx_fluid = 0.045; 
 frac_flow_expected = (radius_valve - dx_fluid)^4; 
 coeff_pressure_diff_adjust = radius_valve^4 / frac_flow_expected - 1; 
 
@@ -204,7 +204,7 @@ poiseuille_flow_est = false;
 % IB estimates at changes of linear resistance 
 ib_linear_resistance_estimates = true; 
 poiseuille_adjusted_pressures = true;
-rv_adjusted = true; 
+rv_adjusted = false; 
 if ib_linear_resistance_estimates  
     
     mu = 0.039; 
@@ -280,7 +280,9 @@ if ib_linear_resistance_estimates
     
     if poiseuille_adjusted_pressures
         
-        pressure_diff_positive_normalized = pressure_diff_positive / max(pressure_diff_positive); 
+        mean_pressure_diff = mean(pressure_diff_positive(pressure_diff_positive > 0)); 
+        
+        pressure_diff_positive_normalized = pressure_diff_positive / mean_pressure_diff; 
         
         rpa_pressure_adjusted_q_nomincal_systole = pa_pressure - deltap_at_q_nominal_systole_rpa * pressure_diff_positive_normalized; 
         lpa_pressure_adjusted_r_nomincal_systole = pa_pressure - deltap_at_q_nominal_systole_lpa * pressure_diff_positive_normalized; 
