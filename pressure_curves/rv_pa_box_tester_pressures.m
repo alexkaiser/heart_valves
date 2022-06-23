@@ -42,7 +42,7 @@ r_suffix = "_r_250";
 
 % IB flow lost 
 radius_valve = 1; 
-dx_fluid = 0.045 * 2; 
+dx_fluid = 0.045; 
 frac_flow_expected = (radius_valve - dx_fluid)^4; 
 coeff_pressure_diff_adjust = radius_valve^4 / frac_flow_expected - 1; 
 
@@ -203,7 +203,8 @@ poiseuille_flow_est = false;
 
 % IB estimates at changes of linear resistance 
 ib_linear_resistance_estimates = true; 
-poiseuille_adjusted_pressures = true; 
+poiseuille_adjusted_pressures = true;
+rv_adjusted = true; 
 if ib_linear_resistance_estimates  
     
     mu = 0.039; 
@@ -298,6 +299,18 @@ if ib_linear_resistance_estimates
         output_series_coeffs_to_txt(a_0_lpa, a_n_lpa, b_n_lpa, n_fourier_coeffs, cycle_length, file_name);         
     end 
     
+    
+    if rv_adjusted
+        coeff_pressure_diff_adjust = reistance_ratio_rv_valve - 1; 
+        pressure_rv_plus_diff_positive = rv_pressure + coeff_pressure_diff_adjust * pressure_diff_positive; 
+        points_one_cycle_right_ventricle_plus_diff_positive = [times, pressure_rv_plus_diff_positive]; 
+        suffix_right_ventricle__plus_diff_positive = "_right_ventricle_rv_valve_ib_adjust"; 
+        file_name = strcat(base_name, suffix_right_ventricle__plus_diff_positive, '.txt'); 
+        [a_0_right_ventricle_plus_diff_positive a_n_right_ventricle_plus_diff_positive  b_n_right_ventricle_plus_diff_positive  ...
+            Series_right_ventricle_plus_diff_positive  times_rv_plus_diff_positive  linear_interp_vals_rv_plus_diff_positive] = ...
+            series_and_smooth(points_one_cycle_right_ventricle_plus_diff_positive, dt, bump_radius_rv, n_fourier_coeffs, plots); 
+        output_series_coeffs_to_txt(a_0_right_ventricle_plus_diff_positive, a_n_right_ventricle_plus_diff_positive, b_n_right_ventricle_plus_diff_positive, n_fourier_coeffs, cycle_length, file_name); 
+    end 
     
     
     reduced_radius_model_estimates = false; 
