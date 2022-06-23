@@ -42,7 +42,7 @@ r_suffix = "_r_250";
 
 % IB flow lost 
 radius_valve = 1; 
-dx_fluid = 0.045; 
+dx_fluid = 0.045 * 2; 
 frac_flow_expected = (radius_valve - dx_fluid)^4; 
 coeff_pressure_diff_adjust = radius_valve^4 / frac_flow_expected - 1; 
 
