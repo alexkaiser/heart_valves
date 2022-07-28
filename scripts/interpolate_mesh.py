@@ -96,7 +96,7 @@ def interpolate_eulerian_to_mri_mesh(frame_number,
 
 if __name__ == '__main__':
 
-    run_all = True 
+    run_all = False 
 
     if run_all:
 
@@ -158,7 +158,7 @@ if __name__ == '__main__':
 
 
 
-    tests = False
+    tests = True
     if tests:
 
         eulerian_basename_orig = "eulerian_vars_averaged" 
@@ -171,23 +171,70 @@ if __name__ == '__main__':
         frame_number = 6 
 
         eulerian_name = eulerian_basename_orig + str(frame_number).zfill(digits_output_eulerian) + eulerian_extension
-
         eulerian_mesh_orig = pyvista.read(eulerian_name)
+        eulerian_mesh_unstructured = pyvista.UnstructuredGrid(eulerian_mesh_orig)
+        eulerian_mesh_unstructured_points = eulerian_mesh_unstructured.cell_data_to_point_data()
 
         mri_name = mri_basename + str(frame_number).zfill(digits_output_mri) + mri_extension
-
         mri_mesh = pyvista.read(mri_name)
+        mri_mesh_unstructured = pyvista.UnstructuredGrid(mri_mesh)
+        # mri_mesh_unstructured_cells = mri_mesh_unstructured.point_data_to_cell_data()
 
-        eulerian_resampled = mri_mesh.sample(eulerian_mesh_orig)
+        # not of these working well 
+        # eulerian_resampled = mri_mesh_unstructured.sample(eulerian_mesh_unstructured)
+        # eulerian_resampled_cells = eulerian_resampled.point_data_to_cell_data()
+        # eulerian_resampled_from_mri_cells = mri_mesh_unstructured_cells.sample(eulerian_mesh_unstructured)        
+        # eulerian_resampled_from_mri_cells_to_points = eulerian_resampled_from_mri_cells.cell_data_to_point_data()
+        
+        # onto entire unstructured mesh 
+        # eulerian_points_resampled = mri_mesh_unstructured.sample(eulerian_mesh_unstructured_points)
 
-        eulerian_resampled = eulerian_resampled.point_data_to_cell_data()
+        boundary_mesh_name = '2_1_HealthyGeometry_PlanarInletOutlet_smoothed_capped.stl'
+        boundary_mesh = pyvista.read(boundary_mesh_name)
+        
+        # casting not allowed, need a surfbace mesh 
+        # boundary_mesh = pyvista.UnstructuredGrid(boundary_mesh)
 
-        suffix_eulerian = '_resampled'
-        eulerian_name_out_extension = '.vtk'
+        selected = mri_mesh_unstructured.select_enclosed_points(boundary_mesh, tolerance=0.0, inside_out=False, check_surface=True)
+
+        # all_scalars = True means all points must be within for a cell to stay 
+        # all_scalars = False means any point must be within for a cell to stay 
+        mri_mesh_restricted = selected.threshold(0.5, scalars="SelectedPoints", all_scalars=True) 
+
+        eulerian_points_resampled = mri_mesh_restricted.sample(eulerian_mesh_unstructured_points)
+
+
+
+        # suffix_eulerian = '_resampled'
+        # eulerian_name_out_extension = '.vtu'
+        # eulerian_name_out = eulerian_basename_orig + suffix_eulerian
+        # eulerian_name_out += str(frame_number).zfill(digits_output_eulerian) + eulerian_name_out_extension
+        # eulerian_resampled.save(eulerian_name_out)
+
+        # suffix_eulerian = '_resampled_cells'
+        # eulerian_name_out_extension = '.vtu'
+        # eulerian_name_out = eulerian_basename_orig + suffix_eulerian
+        # eulerian_name_out += str(frame_number).zfill(digits_output_eulerian) + eulerian_name_out_extension
+        # eulerian_resampled_cells.save(eulerian_name_out)
+
+        # suffix_eulerian = '_resampled_from_mri_cells'
+        # eulerian_name_out_extension = '.vtu'
+        # eulerian_name_out = eulerian_basename_orig + suffix_eulerian
+        # eulerian_name_out += str(frame_number).zfill(digits_output_eulerian) + eulerian_name_out_extension
+        # eulerian_resampled_from_mri_cells.save(eulerian_name_out)
+
+        # suffix_eulerian = '_resampled_from_mri_cells_to_points'
+        # eulerian_name_out_extension = '.vtu'
+        # eulerian_name_out = eulerian_basename_orig + suffix_eulerian
+        # eulerian_name_out += str(frame_number).zfill(digits_output_eulerian) + eulerian_name_out_extension
+        # eulerian_resampled_from_mri_cells_to_points.save(eulerian_name_out)
+
+        suffix_eulerian = '_points_resampled'
+        eulerian_name_out_extension = '.vtu'
         eulerian_name_out = eulerian_basename_orig + suffix_eulerian
         eulerian_name_out += str(frame_number).zfill(digits_output_eulerian) + eulerian_name_out_extension
+        eulerian_points_resampled.save(eulerian_name_out)
 
-        eulerian_resampled.save(eulerian_name_out)
 
         # gaussian at scan radius 
         # does not work written like this, unclear why 
