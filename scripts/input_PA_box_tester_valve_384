@@ -14,9 +14,9 @@ MAX_RESTART_TO_WRITE = 20
 // FOURIER_COEFFS_FILENAME_RPA = "fourier_coeffs_rpa_r_250.txt"
 // FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_lpa_r_250.txt"
 
-FOURIER_COEFFS_FILENAME_RV = "fourier_coeffs_right_ventricle_plus_diff_positive.txt"
-FOURIER_COEFFS_FILENAME_RPA = "fourier_coeffs_rpa.txt"
-FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_lpa.txt"
+FOURIER_COEFFS_FILENAME_RV = "fourier_coeffs_right_ventricle.txt"
+FOURIER_COEFFS_FILENAME_RPA = "fourier_coeffs_pa.txt"
+FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_pa.txt"
 
 BOUNDARY_FILENAME_RV = "right_ventricle_bdry.vertex"
 BOUNDARY_FILENAME_RPA = "right_pa_bdry.vertex"
@@ -26,19 +26,19 @@ CYCLE_DURATION = 8.3250000000000002e-01
 VESSEL_FILENAME = "vessel_384.vertex"
 
 // physical ratio 
-RATIO_TO_SCAN = 2.0 * 4/3
+RATIO_TO_SCAN = 2.0
 
 DX_FLUID = (0.09 / RATIO_TO_SCAN) * (REF_RATIO^(MAX_LEVELS - 1))
 
-NX = int(192 * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1))) // 178 original 
-NY = int(128 * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1)))
-NZ = int(96  * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1)))
+NX = int(104 * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1))) 
+NY = int(72 * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1)))
+NZ = int(64  * RATIO_TO_SCAN / (REF_RATIO^(MAX_LEVELS - 1)))
 
-X_LOW  = -9.4772
+X_LOW  = -3.002
 X_HIGH = X_LOW + NX * DX_FLUID
-Y_LOW  = -8.1817
+Y_LOW  = -4.502
 Y_HIGH = Y_LOW + NY * DX_FLUID
-Z_LOW  = -4.6859
+Z_LOW  = -4.002
 Z_HIGH = Z_LOW + NZ * DX_FLUID
 
 //right_pa_R_proximal = 4.89   // g / (cm^4 s)
@@ -73,7 +73,7 @@ CONVECTIVE_OP_TYPE  = "PPM"               // convective differencing discretizat
 CONVECTIVE_FORM     = "ADVECTIVE"         // how to compute the convective terms
 NORMALIZE_PRESSURE  = FALSE               // whether to explicitly force the pressure to have mean zero
 CFL_MAX             = 0.3                 // maximum CFL number
-DT                  = 5.0e-06             // maximum timestep size
+DT                  = 7.5e-06             // maximum timestep size
 ERROR_ON_DT_CHANGE  = TRUE                // whether to emit an error message if the time step size changes
 VORTICITY_TAGGING   = TRUE                // whether to tag cells for refinement based on vorticity thresholds
 TAG_BUFFER          = 2                   // size of tag buffer used by grid generation algorithm
