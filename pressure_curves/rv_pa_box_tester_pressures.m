@@ -73,15 +73,17 @@ points_one_cycle_difference = [times, pressure_diff];
 
 
 % rv adjusted 
-pressure_rv_plus_diff_positive = rv_pressure + coeff_pressure_diff_adjust * pressure_diff_positive; 
-points_one_cycle_right_ventricle_plus_diff_positive = [times, pressure_rv_plus_diff_positive]; 
-suffix_right_ventricle__plus_diff_positive = "_right_ventricle_plus_diff_positive"; 
-file_name = strcat(base_name, suffix_right_ventricle__plus_diff_positive, '.txt'); 
-[a_0_right_ventricle_plus_diff_positive a_n_right_ventricle_plus_diff_positive  b_n_right_ventricle_plus_diff_positive  ...
-    Series_right_ventricle_plus_diff_positive  times_rv_plus_diff_positive  linear_interp_vals_rv_plus_diff_positive] = ...
-    series_and_smooth(points_one_cycle_right_ventricle_plus_diff_positive, dt, bump_radius_rv, n_fourier_coeffs, plots); 
-output_series_coeffs_to_txt(a_0_right_ventricle_plus_diff_positive, a_n_right_ventricle_plus_diff_positive, b_n_right_ventricle_plus_diff_positive, n_fourier_coeffs, cycle_length, file_name); 
-
+rv_plus_diff_positive = false; 
+if rv_plus_diff_positive
+    pressure_rv_plus_diff_positive = rv_pressure + coeff_pressure_diff_adjust * pressure_diff_positive; 
+    points_one_cycle_right_ventricle_plus_diff_positive = [times, pressure_rv_plus_diff_positive]; 
+    suffix_right_ventricle__plus_diff_positive = "_right_ventricle_plus_diff_positive"; 
+    file_name = strcat(base_name, suffix_right_ventricle__plus_diff_positive, '.txt'); 
+    [a_0_right_ventricle_plus_diff_positive a_n_right_ventricle_plus_diff_positive  b_n_right_ventricle_plus_diff_positive  ...
+        Series_right_ventricle_plus_diff_positive  times_rv_plus_diff_positive  linear_interp_vals_rv_plus_diff_positive] = ...
+        series_and_smooth(points_one_cycle_right_ventricle_plus_diff_positive, dt, bump_radius_rv, n_fourier_coeffs, plots); 
+    output_series_coeffs_to_txt(a_0_right_ventricle_plus_diff_positive, a_n_right_ventricle_plus_diff_positive, b_n_right_ventricle_plus_diff_positive, n_fourier_coeffs, cycle_length, file_name); 
+end 
 
 
 
@@ -202,8 +204,8 @@ poiseuille_flow_est = false;
 
 
 % IB estimates at changes of linear resistance 
-ib_linear_resistance_estimates = true; 
-poiseuille_adjusted_pressures = true;
+ib_linear_resistance_estimates = false; 
+poiseuille_adjusted_pressures = false;
 rv_adjusted = false; 
 if ib_linear_resistance_estimates  
     
@@ -449,9 +451,11 @@ if basic_series_plots
 %     vals_rv_plus_diff_series = Series_right_ventricle(t) + coeff_pressure_diff_adjust * Series_difference(t); 
 %     plot(t, vals_rv_plus_diff_series); 
 %     
-    t = 0:dt:cycle_length; 
-    vals_rv_plus_diff_positive_series = Series_right_ventricle_plus_diff_positive(t); 
-    plot(t, vals_rv_plus_diff_positive_series); 
+    if rv_plus_diff_positive
+        t = 0:dt:cycle_length; 
+        vals_rv_plus_diff_positive_series = Series_right_ventricle_plus_diff_positive(t); 
+        plot(t, vals_rv_plus_diff_positive_series); 
+    end 
     
     times_exp = [table.Time]; 
     p_rv_exp = [table.RightVentriclePressure_Inlet_]; 
@@ -462,7 +466,11 @@ if basic_series_plots
     if resistance_adjusted_pressures || poiseuille_adjusted_pressures
         legend('RV', 'PA', 'RPA adjusted', 'LPA adjusted', 'RV plus diff postive', 'P RV EXP', 'P PA EXP')
     else 
-        legend('RV', 'PA', 'RV plus diff postive', 'P RV EXP', 'P PA EXP')
+        if rv_plus_diff_positive
+            legend('RV', 'PA', 'RV plus diff postive', 'P RV EXP', 'P PA EXP')
+        else 
+            legend('RV', 'PA', 'P RV EXP', 'P PA EXP')
+        end 
     end 
     
     title('RV PA pressure')
