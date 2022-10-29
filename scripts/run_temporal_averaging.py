@@ -129,8 +129,8 @@ if __name__ == '__main__':
     eulerian = True
     lagrangian = True 
 
-    first_cycle = False
-    second_cycle = True
+    first_cycle = True
+    second_cycle = False
     third_cycle = False
     second_third_cycle = False
 
@@ -170,6 +170,7 @@ if __name__ == '__main__':
     if eulerian:
 
         eulerian_var_names = ['P','Omega', 'U']
+        # eulerian_var_names = ['U']
 
         # output file extension 
         extension = 'vtu'
@@ -178,18 +179,26 @@ if __name__ == '__main__':
 
         base_name_out = "eulerian_vars_mri_freq"
 
+
+
         # average all the Eulerian files here 
         # for idx_mri_read in range(mri_read_times_per_cycle):
         #     average_eulerian_mesh_one_step(idx_mri_read, eulerian_var_names, times, cycle_duration, cycles_to_output, dt_mri_read, base_dir, base_name_out, extension)
 
-        jobs = []
-        for idx_mri_read in range(mri_read_times_per_cycle):
-            p = multiprocessing.Process(target=average_eulerian_mesh_one_step, args=(idx_mri_read, eulerian_var_names, times, cycle_duration, cycles_to_output, dt_mri_read, base_dir, base_name_out, extension))
-            jobs.append(p)
-            p.start()
+        use_multiprocessing = True
+        if use_multiprocessing: 
+            jobs = []
+            for idx_mri_read in range(mri_read_times_per_cycle):
+                p = multiprocessing.Process(target=average_eulerian_mesh_one_step, args=(idx_mri_read, eulerian_var_names, times, cycle_duration, cycles_to_output, dt_mri_read, base_dir, base_name_out, extension))
+                jobs.append(p)
+                p.start()
 
-        for p in jobs:
-            p.join()
+            for p in jobs:
+                p.join()
+
+        else: 
+            for idx_mri_read in range(mri_read_times_per_cycle):
+                average_eulerian_mesh_one_step(idx_mri_read, eulerian_var_names, times, cycle_duration, cycles_to_output, dt_mri_read, base_dir, base_name_out, extension)
 
 
         # for idx_output in range(output_times_per_cycle):
