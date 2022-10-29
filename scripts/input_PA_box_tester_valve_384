@@ -18,7 +18,7 @@ FOURIER_COEFFS_FILENAME_RV = "fourier_coeffs_right_ventricle.txt"
 FOURIER_COEFFS_FILENAME_RPA = "fourier_coeffs_pa.txt"
 FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_pa.txt"
 
-BOUNDARY_FILENAME_RV = "right_ventricle_pt025cm_inwards_bdry.vertex"
+BOUNDARY_FILENAME_RV = "right_ventricle_pt025cm_out_bdry.vertex"
 BOUNDARY_FILENAME_RPA = "right_pa_bdry.vertex"
 BOUNDARY_FILENAME_LPA = "left_pa_bdry.vertex"
 CYCLE_DURATION = 8.3250000000000002e-01
