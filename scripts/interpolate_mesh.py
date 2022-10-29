@@ -102,128 +102,48 @@ def interpolate_eulerian_to_mri_mesh(frame_number,
 
 
 
-def voxel_average_eulerian_to_mri_mesh(frame_number,
-                                       eulerian_basename_orig="eulerian_vars_averaged",
-                                       digits_output_eulerian = 4,
-                                       eulerian_extension = ".vtu",
-                                       suffix_eulerian = '_resampled',
-                                       mri_basename = "HealthyNative_",
-                                       digits_output_mri = 2,
-                                       mri_extension = ".vtk",
-                                       output_extension = ".vtu",
-                                       boundary_mesh_name = None, 
-                                       suffix_restricted = None):
-
-    print("processing frame_number, ", frame_number)
-
-    eulerian_name = eulerian_basename_orig + str(frame_number).zfill(digits_output_eulerian) + eulerian_extension
-    print("trying to read: ", eulerian_name)
-    eulerian_mesh_unstructured = pyvista.UnstructuredGrid(pyvista.read(eulerian_name))
-    eulerian_mesh_centers = eulerian_mesh_unstructured.cell_centers()
-
-    mri_name = mri_basename + str(frame_number).zfill(digits_output_mri) + mri_extension
-    mri_mesh_unstructured = pyvista.UnstructuredGrid(pyvista.read(mri_name))
-
-    # extract surface and restrict Eulerian mesh to whatever lies within it 
-    mri_mesh_surface = mri_mesh_unstructured.extract_surface()
-    selected = eulerian_mesh_centers.select_enclosed_points(mri_mesh_surface, tolerance=0.0, inside_out=False, check_surface=True)
-
-    # all_scalars = True means all points must be within for a cell to stay 
-    # all_scalars = False means any point must be within for a cell to stay 
-    eulerian_mesh_centers_restricted = selected.threshold(0.5, scalars="SelectedPoints", all_scalars=False) 
-
-    # copy MRI data structure 
-    eulerian_resampled = mri_mesh_unstructured.copy(deep=True)
-    # add fields 
-    eulerian_resampled.point_data['U'] = eulerian_resampled.point_data['velocity'] * 0.0
-    eulerian_resampled.point_data['n_to_average'] = eulerian_resampled.point_data['image'] * 0    
-
-    # use KD tree following example 
-    # https://github.com/pyvista/pyvista-support/issues/107
-    kdtree_mri_mesh = KDTree(mri_mesh_unstructured.points.astype(np.double))
-    dist, mri_idx = kdtree_mri_mesh.query(eulerian_mesh_centers_restricted.points)
-
-    for sim_idx in range(eulerian_mesh_centers_restricted.n_points):
-        eulerian_resampled.point_data['U'][mri_idx[sim_idx]] += eulerian_mesh_centers_restricted.point_data['U'][sim_idx]
-        eulerian_resampled.point_data['n_to_average'][mri_idx[sim_idx]] += 1 
-
-    # compute the means 
-    for i in range(eulerian_resampled.n_points):
-        if eulerian_resampled.point_data['n_to_average'][i] != 0:
-            eulerian_resampled.point_data['U'][i] /= eulerian_resampled.point_data['n_to_average'][i]
-
-
-    eulerian_name_out = eulerian_basename_orig + suffix_eulerian
-    eulerian_name_out += str(frame_number).zfill(digits_output_eulerian) + output_extension
-
-    print("writing file ", eulerian_name_out)
-    eulerian_resampled.save(eulerian_name_out)
-
-
-    if boundary_mesh_name is not None: 
-
-        if suffix_restricted is None:
-            raise ValueError('Must provide suffix_restricted when providing boundary mesh ')
-
-        eulerian_resampled_read = pyvista.read(eulerian_name_out)
-        boundary_mesh = pyvista.read(boundary_mesh_name)
-        
-        selected = eulerian_resampled_read.select_enclosed_points(boundary_mesh, tolerance=0.0, inside_out=False, check_surface=True)
-
-        eulerian_resampled_restricted = selected.threshold(0.5, scalars="SelectedPoints", all_scalars=True) 
-
-        eulerian_name_out_restricted = eulerian_basename_orig + suffix_eulerian + suffix_restricted
-        eulerian_name_out_restricted += str(frame_number).zfill(digits_output_eulerian) + output_extension
-
-        eulerian_resampled_restricted.save(eulerian_name_out_restricted)
-
-        if np.isnan(eulerian_resampled_restricted.point_data['U']).any():
-            print('NaN found in eulerian_resampled_restricted')
-
-
 
 def run_main():
 
-    run_all = False
+    run_all = True 
 
     if run_all:
 
-        boundary_mesh_name = '3_1_three_end_crop_capped.stl'
+        # run restricted and not restricted 
+        boundary_mesh_names = [None, '3_1_three_end_crop_capped.stl']
 
-        nframes = 20
+        for boundary_mesh_name in boundary_mesh_names:
 
-        eulerian_basename_orig="eulerian_vars_averaged"
-        digits_output_eulerian = 4
-        eulerian_extension = ".vtu"
-        suffix_eulerian = '_voxel_points'
-        suffix_restricted = '_restricted'
+            nframes = 20
 
-        if boundary_mesh_name is not None: 
-            print("boundary_mesh_name is not None passed")
+            eulerian_basename_orig="eulerian_vars_averaged"
+            digits_output_eulerian = 4
+            eulerian_extension = ".vtu"
+            suffix_eulerian = '_resampled_points'
 
-            # grab this file if it's not here... 
-            if not os.path.isfile(boundary_mesh_name):
-                if os.path.isfile(os.path.expanduser('~') + '/mitral_fully_discrete/' + boundary_mesh_name):
-                    shutil.copy(os.path.expanduser('~') + '/mitral_fully_discrete/' + boundary_mesh_name, '.') 
-                else: 
-                    raise FileNotFoundError("cannot find boundary_mesh_name file = ", boundary_mesh_name)
+            if boundary_mesh_name is not None: 
+                suffix_eulerian += '_restricted'
+                print("boundary_mesh_name is not None passed")
+
+                # grab this file if it's not here... 
+                if not os.path.isfile(boundary_mesh_name):
+                    if os.path.isfile(os.path.expanduser('~') + '/mitral_fully_discrete/' + boundary_mesh_name):
+                        shutil.copy(os.path.expanduser('~') + '/mitral_fully_discrete/' + boundary_mesh_name, '.') 
+                    else: 
+                        raise FileNotFoundError("cannot find boundary_mesh_name file = ", boundary_mesh_name)
 
 
-        print("boundary_mesh_name = ", boundary_mesh_name)
-        print("suffix_eulerian = ", suffix_eulerian)
+            print("boundary_mesh_name = ", boundary_mesh_name)
+            print("suffix_eulerian = ", suffix_eulerian)
 
-        mri_basename = "HealthyNative_ForSim_"
-        digits_output_mri = 2
-        mri_extension = ".vtk"
-        output_extension = ".vtu"
-
-        run_parallel = True 
-        if run_parallel:
-        
-            # pool = multiprocessing.Pool(int(nframes/2)) #use all available cores, otherwise specify the number you want as an argument
-            pool = multiprocessing.Pool() #use all available cores, otherwise specify the number you want as an argument
+            mri_basename = "HealthyNative_ForSim_"
+            digits_output_mri = 2
+            mri_extension = ".vtk"
+            output_extension = ".vtu"
+            
+            pool = multiprocessing.Pool(int(nframes/2)) #use all available cores, otherwise specify the number you want as an argument
             for i in range(nframes):
-                pool.apply_async(voxel_average_eulerian_to_mri_mesh, args=(i,    
+                pool.apply_async(interpolate_eulerian_to_mri_mesh, args=(i,    
                                                                          eulerian_basename_orig,
                                                                          digits_output_eulerian,
                                                                          eulerian_extension,
@@ -232,36 +152,21 @@ def run_main():
                                                                          digits_output_mri,
                                                                          mri_extension,
                                                                          output_extension,
-                                                                         boundary_mesh_name, 
-                                                                         suffix_restricted))
+                                                                         boundary_mesh_name))
             pool.close()
             pool.join()
-        else:
-            for i in range(nframes):
-                voxel_average_eulerian_to_mri_mesh(                      i,    
-                                                                         eulerian_basename_orig,
-                                                                         digits_output_eulerian,
-                                                                         eulerian_extension,
-                                                                         suffix_eulerian,
-                                                                         mri_basename,
-                                                                         digits_output_mri,
-                                                                         mri_extension,
-                                                                         output_extension,
-                                                                         boundary_mesh_name, 
-                                                                         suffix_restricted)
 
 
-        cycle_duration = 8.3250000000000002e-01
-        mri_read_times_per_cycle = 10 
-        dt_mri_read = cycle_duration / mri_read_times_per_cycle
-        output_times_per_cycle   = 20 
-        dt_output = cycle_duration / output_times_per_cycle
+            cycle_duration = 8.3250000000000002e-01
+            mri_read_times_per_cycle = 10 
+            dt_mri_read = cycle_duration / mri_read_times_per_cycle
+            output_times_per_cycle   = 20 
+            dt_output = cycle_duration / output_times_per_cycle
 
-        time_start_1 = True 
+            time_start_1 = True 
 
-        output_extension = "vtu"
-        write_pvd(eulerian_basename_orig + suffix_eulerian, dt_output, output_times_per_cycle, output_extension, time_start_1=time_start_1)
-        write_pvd(eulerian_basename_orig + suffix_eulerian + suffix_restricted, dt_output, output_times_per_cycle, output_extension, time_start_1=time_start_1)
+            output_extension = "vtu"
+            write_pvd(eulerian_basename_orig + suffix_eulerian, dt_output, output_times_per_cycle, output_extension, time_start_1=time_start_1)
 
 
 
@@ -352,7 +257,7 @@ def run_main():
         # eulerian_name_out += str(frame_number).zfill(digits_output_eulerian) + eulerian_name_out_extension
         # eulerian_mesh_guass_interp.save(eulerian_name_out)
 
-    tests_spatial_averaging = True
+    tests_spatial_averaging = False 
     if tests_spatial_averaging:
 
         eulerian_basename_orig = "eulerian_vars_averaged" 
@@ -368,9 +273,6 @@ def run_main():
         eulerian_mesh_orig = pyvista.read(eulerian_name)
         eulerian_mesh_unstructured = pyvista.UnstructuredGrid(eulerian_mesh_orig)
         eulerian_mesh_centers = eulerian_mesh_unstructured.cell_centers()
-
-        # add a constant field as a test 
-        eulerian_mesh_centers.point_data['five'] = 7.0
 
         mri_name = mri_basename + str(frame_number).zfill(digits_output_mri) + mri_extension
         mri_mesh = pyvista.read(mri_name)
@@ -393,8 +295,6 @@ def run_main():
         eulerian_resampled.point_data['U'] = eulerian_resampled.point_data['velocity'] * 0.0
         eulerian_resampled.point_data['n_to_average'] = eulerian_resampled.point_data['image'] * 0    
 
-        eulerian_resampled.point_data['five'] = 0.0
-
 
         # use KD tree following example 
         # https://github.com/pyvista/pyvista-support/issues/107
@@ -415,28 +315,12 @@ def run_main():
 
             # mri_idx_temp = mri_idx[sim_idx]
             eulerian_resampled.point_data['U'][mri_idx[sim_idx]] += eulerian_mesh_centers_restricted.point_data['U'][sim_idx]
-            eulerian_resampled.point_data['five'][mri_idx[sim_idx]] += eulerian_mesh_centers_restricted.point_data['five'][sim_idx]
-
             eulerian_resampled.point_data['n_to_average'][mri_idx[sim_idx]] += 1 
-
-            if (mri_idx[sim_idx] == math.floor(len(mri_idx)/2)) or (mri_idx[sim_idx] == 18655):
-                print("sim_idx = , ", sim_idx, "mri_idx[sim_idx] = ", mri_idx[sim_idx])
-                print("eulerian_resampled.point_data['five'][mri_idx[sim_idx]] = ", eulerian_resampled.point_data['five'][mri_idx[sim_idx]])
-                print("eulerian_mesh_centers_restricted.point_data['five'][sim_idx] = ", eulerian_mesh_centers_restricted.point_data['five'][sim_idx])
-                print("eulerian_resampled.point_data['n_to_average'][mri_idx[sim_idx]] = ", eulerian_resampled.point_data['n_to_average'][mri_idx[sim_idx]])
-                print("\n")
 
         # compute the means 
         for i in range(eulerian_resampled.n_points):
             if eulerian_resampled.point_data['n_to_average'][i] != 0:
                 eulerian_resampled.point_data['U'][i] /= eulerian_resampled.point_data['n_to_average'][i]
-                eulerian_resampled.point_data['five'][i] /= eulerian_resampled.point_data['n_to_average'][i]
-
-                if (i == math.floor(len(mri_idx)/2)) or (i == 18655):
-                    print("i = ", i)
-                    print("eulerian_resampled.point_data['n_to_average'][i] = ", eulerian_resampled.point_data['n_to_average'][i])
-                    print("eulerian_resampled.point_data['five'][i] = ", eulerian_resampled.point_data['five'][i])
-
 
 
         t1 = time.time()
