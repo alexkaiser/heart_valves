@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH --nodes=4
+#SBATCH --nodes=2
 #SBATCH --ntasks-per-node=24
 #SBATCH --time=167:00:00
 #SBATCH --mem=185GB
 #SBATCH --job-name=aortic_1
 #SBATCH --mail-user=adkaiser@gmail.com
 #SBATCH --mail-type=ALL
-#SBATCH --partition=amarsden,willhies
+#SBATCH --partition=amarsden
 #SBATCH --exclude=sh03-16n02
 # #SBATCH --exclude=sh-107-[59-64]
 
@@ -18,7 +18,7 @@ module load openmpi/2.0.2
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_384_951ccf7_plus_8_circ_plus_half_rad_1_over_4_pinch_outer3_off_pressure_bc
+RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_384_992ceb8_cropped_geometry_exp_pressures
 mkdir $RUNDIR
 
 # set up run info 
