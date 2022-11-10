@@ -238,6 +238,14 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
         if (d_P_initial_pa_equal_to_ventricle){
             d_right_pa_P = MMHG_TO_CGS * d_fourier_right_ventricle->values[0];
             d_left_pa_P = MMHG_TO_CGS * d_fourier_right_ventricle->values[0];
+
+            // over write general initialization for this option  
+            d_right_pa_P_distal_previous = d_right_pa_P; 
+            d_right_pa_P_distal = d_right_pa_P; 
+            d_left_pa_P_distal_previous = d_left_pa_P; 
+            d_left_pa_P_distal = d_left_pa_P; 
+            d_right_pa_P_Wk = d_right_pa_P; 
+            d_left_pa_P_Wk = d_left_pa_P; 
         }
         else{
             d_right_pa_P = P_initial_pa;
@@ -566,6 +574,15 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
             // equal to ventricular pressure until turns on 
             d_right_pa_P = MMHG_TO_CGS * d_fourier_right_ventricle->values[d_current_idx_series]; 
             d_left_pa_P = MMHG_TO_CGS * d_fourier_right_ventricle->values[d_current_idx_series]; 
+
+            // other values are copies 
+            d_right_pa_P_distal_previous = d_right_pa_P; 
+            d_right_pa_P_distal = d_right_pa_P; 
+            d_left_pa_P_distal_previous = d_left_pa_P; 
+            d_left_pa_P_distal = d_left_pa_P; 
+            d_right_pa_P_Wk = d_right_pa_P; 
+            d_left_pa_P_Wk = d_left_pa_P; 
+
         }
 
         else{
