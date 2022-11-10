@@ -23,7 +23,7 @@ BOUNDARY_FILENAME_RPA = "right_pa_bdry.vertex"
 BOUNDARY_FILENAME_LPA = "left_pa_bdry.vertex"
 CYCLE_DURATION = 8.3250000000000002e-01
 
-VESSEL_FILENAME = "vessel_192.vertex"
+VESSEL_FILENAME = "vessel_384.vertex"
 
 // physical ratio 
 RATIO_TO_SCAN = 1.0
@@ -49,7 +49,7 @@ right_pa_C = 0.00041576668749
 right_pa_R_distal = 1627.05437620987050
 left_pa_R_proximal = 82.26765145037621
 left_pa_C = 0.00041114277389
-left_pa_R_distal = 1645.35302900752367/
+left_pa_R_distal = 1645.35302900752367
 
 // solver parameters
 DELTA_FUNCTION      = "IB_5"
@@ -241,14 +241,14 @@ IBMethod {
 
 IBStandardInitializer {
    max_levels      = MAX_LEVELS
-   structure_names = "aortic_no_partition_192","aortic_no_partition_192_cylinder","vessel_192"
+   structure_names = "aortic_no_partition_192","aortic_no_partition_192_cylinder","vessel_384"
    aortic_no_partition_192 {
       level_number = MAX_LEVELS - 1
    }
    aortic_no_partition_192_cylinder {
       level_number = MAX_LEVELS - 1
    }
-   vessel_192 {
+   vessel_384 {
       level_number = MAX_LEVELS - 1
    }
 }
