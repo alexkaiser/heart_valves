@@ -88,9 +88,9 @@ if __name__== "__main__":
                              # in the experimental trace of PA pressure 
     P_min = 31.25 * MMHG_TO_CGS 
 
-    ratio_prox_to_distal_resistors = 0.05
+    ratio_prox_to_distal_resistors = 0.1
 
-    C_prefactor = 0.5 
+    C_prefactor = 1.0
 
     R_p_rpa, C_rpa, R_d_rpa = compute_rcr_parameters(R_outlet_rpa, P_min, P_max, ratio_prox_to_distal_resistors, decay_time, C_prefactor)
 
