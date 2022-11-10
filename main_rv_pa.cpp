@@ -528,7 +528,7 @@ int main(int argc, char* argv[])
             bool inductance_bcs_on = false; 
             bool variable_resistor_on = false; 
 
-            bool P_initial_aorta_equal_to_ventricle = rcr_bcs_on;
+            bool P_initial_pa_equal_to_ventricle = rcr_bcs_on;
             double rcr_on_time = 0.079613479258557;
 
             CirculationModel_RV_PA *circ_model_rv_pa = new CirculationModel_RV_PA(input_db,
