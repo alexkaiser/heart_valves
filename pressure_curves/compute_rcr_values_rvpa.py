@@ -51,9 +51,9 @@ if __name__== "__main__":
 
     deltap_steady_mmHg = 1.0
     deltap_steady = deltap_steady_mmHg * MMHG_TO_CGS
-    q_lpa_steady_flow_final = 42.217768145999997
-    q_rpa_steady_flow_final = 23.162740865000000
-    q_total_steady_flow = 65.382843421999993
+    q_lpa_steady_flow_final = 35.475201349000002
+    q_rpa_steady_flow_final = 23.474931795000000
+    q_total_steady_flow = 58.944214744000000
 
     ratio_R_rpa_over_R_lpa = q_lpa_steady_flow_final / q_rpa_steady_flow_final
 

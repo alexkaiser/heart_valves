@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=2
+#SBATCH --nodes=4
 #SBATCH --ntasks-per-node=24
 #SBATCH --time=167:00:00
 #SBATCH --mem=185GB
@@ -18,7 +18,7 @@ module load openmpi/2.0.2
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_384_992ceb8_cropped_geometry_exp_pressures
+RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_384_acf56a0_rcr_outflow_c_prefactor_1
 mkdir $RUNDIR
 
 # set up run info 
@@ -36,7 +36,7 @@ pwd
 cd $SRCDIR
 cp left_pa_bdry.vertex                $RUNDIR
 cp right_pa_bdry.vertex               $RUNDIR 
-cp right_ventricle_bdry.vertex        $RUNDIR
+cp right_ventricle_*vertex            $RUNDIR
 cp fourier_coeffs*pa*                 $RUNDIR
 cp fourier_coeffs_right_ventricle*    $RUNDIR
 cp fourier_coeffs_zero*               $RUNDIR

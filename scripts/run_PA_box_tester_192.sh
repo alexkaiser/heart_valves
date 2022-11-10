@@ -18,7 +18,7 @@ module load openmpi/2.0.2
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_192_a9aa59d_r_250_to_exp_pressure_adjusted_half_rv_rho_mu_updated_g_on
+RUNDIR=$SCRATCH/pa_${SLURM_JOBID/.*}_192_acf56a0_rcr_outflow_c_prefactor_1
 mkdir $RUNDIR
 
 # set up run info 
@@ -36,9 +36,10 @@ pwd
 cd $SRCDIR
 cp left_pa_bdry.vertex                $RUNDIR
 cp right_pa_bdry.vertex               $RUNDIR 
-cp right_ventricle_bdry.vertex        $RUNDIR
+cp right_ventricle_*vertex            $RUNDIR
 cp fourier_coeffs*pa*                 $RUNDIR
-cp fourier_coeffs_right_ventricle.txt $RUNDIR
+cp fourier_coeffs_right_ventricle*    $RUNDIR
+cp fourier_coeffs_zero*               $RUNDIR
 cp $BASE_NAME*                        $RUNDIR
 cp $BASE_NAME_VESSEL*                 $RUNDIR
 cp $INPUT_NAME                        $RUNDIR
