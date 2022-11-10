@@ -77,7 +77,13 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
       d_Q_right_ventricle_previous(0.0),
       d_Q_right_pa_previous(0.0),
       d_Q_left_pa_previous(0.0),
-      d_time(initial_time), 
+      d_time(initial_time),
+      d_right_pa_P_Wk(P_initial_pa),
+      d_right_pa_P_distal(P_initial_pa),
+      d_right_pa_P_distal_previous(P_initial_pa),
+      d_left_pa_P_Wk(P_initial_pa),
+      d_left_pa_P_distal(P_initial_pa),
+      d_left_pa_P_distal_previous(P_initial_pa), 
       d_area_right_ventricle(0.0),
       d_area_right_pa(0.0),
       d_area_left_pa (0.0),
@@ -203,7 +209,7 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
             }
 
             pressure_diff_left_prev = pressure_diff_left; 
-            pressure_diff_right_prev = pressure_diff_right_prev; 
+            pressure_diff_right_prev = pressure_diff_right; 
 
         }
 
@@ -229,23 +235,14 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
 
     if (!from_restart){
 
-        double P_0_pa_temp;
-
         if (d_P_initial_pa_equal_to_ventricle){
-            P_0_pa_temp = MMHG_TO_CGS * d_fourier_right_ventricle->values[0];
+            d_right_pa_P = MMHG_TO_CGS * d_fourier_right_ventricle->values[0];
+            d_left_pa_P = MMHG_TO_CGS * d_fourier_right_ventricle->values[0];
         }
         else{
-            P_0_pa_temp = P_initial_pa;
+            d_right_pa_P = P_initial_pa;
+            d_left_pa_P = P_initial_pa;
         }
-
-        d_right_pa_P                 = P_0_pa_temp;
-        d_right_pa_P_Wk              = P_0_pa_temp;
-        d_right_pa_P_distal          = P_0_pa_temp;
-        d_right_pa_P_distal_previous = P_0_pa_temp;
-        d_left_pa_P                  = P_0_pa_temp;
-        d_left_pa_P_Wk               = P_0_pa_temp;
-        d_left_pa_P_distal           = P_0_pa_temp;
-        d_left_pa_P_distal_previous  = P_0_pa_temp;
 
     }
 
@@ -575,8 +572,8 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
         }
 
         else{
-            double coeff_left = (d_left_pa_C / dt + 1.0 / d_left_pa_R_distal);
-            double coeff_right = (d_right_pa_C / dt + 1.0 / d_right_pa_R_distal);
+            // double coeff_left = (d_left_pa_C / dt + 1.0 / d_left_pa_R_distal);
+            // double coeff_right = (d_right_pa_C / dt + 1.0 / d_right_pa_R_distal);
 
             // grab the downstream pressures
             d_right_pa_P_distal_previous = d_right_pa_P_distal;
