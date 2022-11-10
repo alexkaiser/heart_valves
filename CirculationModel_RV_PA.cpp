@@ -59,7 +59,9 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
                                                bool rcr_bcs_on,
                                                bool resistance_bcs_on,
                                                bool inductor_bcs_on, 
-                                               bool variable_resistance)
+                                               bool variable_resistance,
+                                               bool P_initial_pa_equal_to_ventricle=false,
+                                               double rcr_on_time=0.0)
     : 
       d_object_name("circ_model_rv_pa"),  // constant name here  
       d_registered_for_restart(true),      // always true
@@ -76,14 +78,6 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
       d_Q_right_pa_previous(0.0),
       d_Q_left_pa_previous(0.0),
       d_time(initial_time), 
-      d_right_pa_P(P_initial_pa), 
-      d_right_pa_P_Wk(P_initial_pa),
-      d_right_pa_P_distal(P_initial_pa),
-      d_right_pa_P_distal_previous(P_initial_pa),
-      d_left_pa_P(P_initial_pa),
-      d_left_pa_P_Wk(P_initial_pa),
-      d_left_pa_P_distal(P_initial_pa),
-      d_left_pa_P_distal_previous(P_initial_pa),
       d_area_right_ventricle(0.0),
       d_area_right_pa(0.0),
       d_area_left_pa (0.0),
@@ -91,7 +85,9 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
       d_rcr_bcs_on(rcr_bcs_on),
       d_resistance_bcs_on(resistance_bcs_on),
       d_inductor_bcs_on(inductor_bcs_on),
-      d_variable_resistance(variable_resistance)
+      d_variable_resistance(variable_resistance),
+      d_P_initial_pa_equal_to_ventricle(P_initial_pa_equal_to_ventricle),
+      d_rcr_on_time(rcr_on_time)
 {
     
     if (d_registered_for_restart)
@@ -230,6 +226,29 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
         (d_inductor_bcs_on && d_resistance_bcs_on)) {
         TBOX_ERROR("Cannot us two types of bc simulataneously"); 
     }
+
+    if (!from_restart){
+
+        double P_0_pa_temp;
+
+        if (d_P_initial_pa_equal_to_ventricle){
+            P_0_pa_temp = MMHG_TO_CGS * d_fourier_right_ventricle->values[0];
+        }
+        else{
+            P_0_pa_temp = P_initial_pa;
+        }
+
+        d_right_pa_P                 = P_0_pa_temp;
+        d_right_pa_P_Wk              = P_0_pa_temp;
+        d_right_pa_P_distal          = P_0_pa_temp;
+        d_right_pa_P_distal_previous = P_0_pa_temp;
+        d_left_pa_P                  = P_0_pa_temp;
+        d_left_pa_P_Wk               = P_0_pa_temp;
+        d_left_pa_P_distal           = P_0_pa_temp;
+        d_left_pa_P_distal_previous  = P_0_pa_temp;
+
+    }
+
 
     double x,x_prev,y,y_prev,z,z_prev; 
     double tol = 1.0e-2; 
@@ -546,28 +565,39 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
     if (d_rcr_bcs_on){
         // The downstream pressure is determined by a three-element Windkessel model.
 
-        double coeff_left = (d_left_pa_C / dt + 1.0 / d_left_pa_R_distal); 
-        double coeff_right = (d_right_pa_C / dt + 1.0 / d_right_pa_R_distal);
+        if ((d_P_initial_pa_equal_to_ventricle) && (d_time < d_rcr_on_time)){
+            // linear interpolation
+            d_right_pa_P = (1 - d_time/d_rcr_on_time) * MMHG_TO_CGS * d_fourier_right_ventricle->values[0] +
+                           (    d_time/d_rcr_on_time) * d_right_pa_P_Wk; // wk pressure is the end pressure for the interpolation
 
-        // grab the downstream pressures 
-        d_right_pa_P_distal_previous = d_right_pa_P_distal; 
-        d_right_pa_P_distal = MMHG_TO_CGS * d_fourier_right_pa->values[d_current_idx_series]; 
+            d_left_pa_P  = (1 - d_time/d_rcr_on_time) * MMHG_TO_CGS * d_fourier_right_ventricle->values[0] +
+                           (    d_time/d_rcr_on_time) * d_left_pa_P_Wk; // wk pressure is the end pressure for the interpolation
+        }
 
-        d_left_pa_P_distal_previous = d_left_pa_P_distal; 
-        d_left_pa_P_distal = MMHG_TO_CGS * d_fourier_left_pa->values[d_current_idx_series]; 
+        else{
+            double coeff_left = (d_left_pa_C / dt + 1.0 / d_left_pa_R_distal);
+            double coeff_right = (d_right_pa_C / dt + 1.0 / d_right_pa_R_distal);
 
-        // hooked to ground version 
-        // d_right_pa_P_Wk = ((d_right_pa_C / dt) * d_right_pa_P_Wk + d_Q_right_pa) / (d_right_pa_C / dt + 1.0 / d_right_pa_R_distal);        
-        // d_right_pa_P = d_right_pa_P_Wk + d_right_pa_R_proximal * d_Q_right_pa;
+            // grab the downstream pressures
+            d_right_pa_P_distal_previous = d_right_pa_P_distal;
+            d_right_pa_P_distal = MMHG_TO_CGS * d_fourier_right_pa->values[d_current_idx_series];
 
-        // d_left_pa_P_Wk = ((d_left_pa_C / dt) * d_left_pa_P_Wk + d_Q_left_pa) / (d_left_pa_C / dt + 1.0 / d_left_pa_R_distal);        
-        // d_left_pa_P = d_left_pa_P_Wk + d_left_pa_R_proximal * d_Q_left_pa;
+            d_left_pa_P_distal_previous = d_left_pa_P_distal;
+            d_left_pa_P_distal = MMHG_TO_CGS * d_fourier_left_pa->values[d_current_idx_series];
 
-        d_right_pa_P_Wk = ((d_right_pa_C / dt) * (d_right_pa_P_Wk - d_right_pa_P_distal_previous) + coeff_right*d_right_pa_P_distal + d_Q_right_pa) / coeff_right;        
-        d_right_pa_P = d_right_pa_P_Wk + d_right_pa_R_proximal * d_Q_right_pa;
+            // hooked to ground version
+            d_right_pa_P_Wk = ((d_right_pa_C / dt) * d_right_pa_P_Wk + d_Q_right_pa) / (d_right_pa_C / dt + 1.0 / d_right_pa_R_distal);
+            d_right_pa_P = d_right_pa_P_Wk + d_right_pa_R_proximal * d_Q_right_pa;
 
-        d_left_pa_P_Wk = ((d_left_pa_C / dt) * (d_left_pa_P_Wk - d_left_pa_P_distal_previous) + coeff_right*d_left_pa_P_distal + d_Q_left_pa) / coeff_left;        
-        d_left_pa_P = d_left_pa_P_Wk + d_left_pa_R_proximal * d_Q_left_pa;
+            d_left_pa_P_Wk = ((d_left_pa_C / dt) * d_left_pa_P_Wk + d_Q_left_pa) / (d_left_pa_C / dt + 1.0 / d_left_pa_R_distal);
+            d_left_pa_P = d_left_pa_P_Wk + d_left_pa_R_proximal * d_Q_left_pa;
+
+            // d_right_pa_P_Wk = ((d_right_pa_C / dt) * (d_right_pa_P_Wk - d_right_pa_P_distal_previous) + coeff_right*d_right_pa_P_distal + d_Q_right_pa) / coeff_right;
+            // d_right_pa_P = d_right_pa_P_Wk + d_right_pa_R_proximal * d_Q_right_pa;
+
+            // d_left_pa_P_Wk = ((d_left_pa_C / dt) * (d_left_pa_P_Wk - d_left_pa_P_distal_previous) + coeff_right*d_left_pa_P_distal + d_Q_left_pa) / coeff_left;
+            // d_left_pa_P = d_left_pa_P_Wk + d_left_pa_R_proximal * d_Q_left_pa;
+        }
 
     }
     else if (d_resistance_bcs_on){

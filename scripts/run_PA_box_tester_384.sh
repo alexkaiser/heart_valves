@@ -39,6 +39,7 @@ cp right_pa_bdry.vertex               $RUNDIR
 cp right_ventricle_bdry.vertex        $RUNDIR
 cp fourier_coeffs*pa*                 $RUNDIR
 cp fourier_coeffs_right_ventricle*    $RUNDIR
+cp fourier_coeffs_zero*               $RUNDIR
 cp $BASE_NAME*                        $RUNDIR
 cp $BASE_NAME_VESSEL*                 $RUNDIR
 cp $INPUT_NAME                        $RUNDIR

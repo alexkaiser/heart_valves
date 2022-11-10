@@ -1,6 +1,6 @@
 
 % quadrature spacing 
-debug = false; 
+debug = true; 
 if debug 
     dt = 5e-5; 
 else 
@@ -23,6 +23,8 @@ rv_pressure = table.RightVentriclePressure_Inlet_;
 pa_pressure = table.MainPulmonaryArteryPressure_Outlets_; 
 
 % rv_pressure = rv_pressure + 20; 
+
+pa_pressure_mean = mean(pa_pressure)
 
 % periodic wrap 
 times = [0; times]; 
@@ -424,6 +426,17 @@ if output_experimental_flows
     save 'bc_variables_experimental.mat' times_two_cycles q_rv_exp q_rpa_exp q_lpa_exp times_exp p_rv_exp p_pa_exp
 end 
 
+find_pressure_cross = true; 
+if find_pressure_cross
+    
+    series_pressure_diff = @(t) Series_right_ventricle(t) - Series_pa(t); 
+    
+    t_crossing = fzero(series_pressure_diff, 0.078) 
+    
+    P_rv_crossing = Series_right_ventricle(t_crossing)
+    P_pa_crossing = Series_pa(t_crossing)
+end 
+
 
 basic_series_plots = true; 
 if basic_series_plots
@@ -501,7 +514,7 @@ if interp_flow_plot
 end 
 
 
-rcr_estimates = false; 
+rcr_estimates = true; 
 if rcr_estimates
 
     dt_flows = cycle_length / length(flows_rv_exp)

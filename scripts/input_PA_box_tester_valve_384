@@ -15,8 +15,8 @@ MAX_RESTART_TO_WRITE = 20
 // FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_lpa_r_250.txt"
 
 FOURIER_COEFFS_FILENAME_RV = "fourier_coeffs_right_ventricle.txt"
-FOURIER_COEFFS_FILENAME_RPA = "fourier_coeffs_pa.txt"
-FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_pa.txt"
+FOURIER_COEFFS_FILENAME_RPA = "fourier_coeffs_zero.txt"
+FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_zero.txt"
 
 BOUNDARY_FILENAME_RV = "right_ventricle_pt05cm_out_bdry.vertex"
 BOUNDARY_FILENAME_RPA = "right_pa_bdry.vertex"
@@ -41,25 +41,15 @@ Y_HIGH = Y_LOW + NY * DX_FLUID
 Z_LOW  = -4.002
 Z_HIGH = Z_LOW + NZ * DX_FLUID
 
-//right_pa_R_proximal = 4.89   // g / (cm^4 s)
-//right_pa_R_distal   = 46.15  // g / (cm^4 s)
-//right_pa_C          = 0.0154 // cm^3 / (g/ (cm s^2)) = 20.5925 mL/mmHg 
-//left_pa_R_proximal  = 4.89   // g / (cm^4 s)
-//left_pa_R_distal    = 46.15  // g / (cm^4 s)
-//left_pa_C           = 0.0154 // cm^3 / (g/ (cm s^2)) = 20.5925 mL/mmHg 
+// pressure crossing value 
+P_PA_INITIAL = 32.505874417493857
 
-right_pa_R_proximal = 0.0
-right_pa_C = 0.0001
-right_pa_R_distal = 250.0
-left_pa_R_proximal = 0.0
-left_pa_C = 0.0001
-left_pa_R_distal = 250.0
-
-right_pa_R = 1000.0 
-left_pa_R = 1000.0
-
-left_pa_L = 1.0
-right_pa_L = 1.0
+right_pa_R_proximal = 81.74528060472426
+right_pa_C = 0.00082754013855
+right_pa_R_distal = 1634.90561209448447
+left_pa_R_proximal = 82.47487614100851
+left_pa_C = 0.00082021948989
+left_pa_R_distal = 1649.49752282016971
 
 // solver parameters
 DELTA_FUNCTION      = "IB_5"

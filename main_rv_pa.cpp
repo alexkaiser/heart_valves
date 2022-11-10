@@ -513,13 +513,23 @@ int main(int argc, char* argv[])
             fourier_series_data *fourier_series_lpa = new fourier_series_data(fourier_coeffs_name_lpa.c_str(), dt);
 
             // 
-            double P_initial_pa = fourier_series_lpa->values[0]; //32.0 * MMHG_TO_CGS; 
+            double P_initial_pa; 
+
+            if (input_db->keyExists("P_PA_INITIAL")){
+                P_initial_pa = input_db->getDouble("P_PA_INITIAL");
+            }
+            else{
+                P_initial_pa = fourier_series_lpa->values[0]; //32.0 * MMHG_TO_CGS;
+            }
             pout << "P_initial_pa = " << P_initial_pa << "\n"; 
 
-            bool rcr_bcs_on = false;
+            bool rcr_bcs_on = true;
             bool resistance_bcs_on = false; 
             bool inductance_bcs_on = false; 
             bool variable_resistor_on = false; 
+
+            bool P_initial_aorta_equal_to_ventricle = rcr_bcs_on;
+            double rcr_on_time = 0.079613479258557;
 
             CirculationModel_RV_PA *circ_model_rv_pa = new CirculationModel_RV_PA(input_db,
                                                                                   fourier_series_rv, 
@@ -535,7 +545,9 @@ int main(int argc, char* argv[])
                                                                                   rcr_bcs_on,
                                                                                   resistance_bcs_on,
                                                                                   inductance_bcs_on,
-                                                                                  variable_resistor_on); 
+                                                                                  variable_resistor_on,
+                                                                                  P_initial_pa_equal_to_ventricle,
+                                                                                  rcr_on_time);
 
             // Create Eulerian boundary condition specification objects.
             vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM);
