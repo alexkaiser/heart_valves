@@ -44,18 +44,18 @@ Z_HIGH = Z_LOW + NZ * DX_FLUID
 // pressure crossing value 
 P_PA_INITIAL = 32.505874417493857
 
-right_pa_R_proximal = 854.20354751018203
-right_pa_C = 0.00158387309522
-right_pa_R_distal = 854.20354751018203
-left_pa_R_proximal = 863.81034022894994
-left_pa_C = 0.00156625818624
-left_pa_R_distal = 863.81034022894994
+right_pa_R_proximal = 81.35271881049357
+right_pa_C = 0.00041576668749
+right_pa_R_distal = 1627.05437620987050
+left_pa_R_proximal = 82.26765145037621
+left_pa_C = 0.00041114277389
+left_pa_R_distal = 1645.35302900752367/
 
 // solver parameters
 DELTA_FUNCTION      = "IB_5"
 SOLVER_TYPE         = "STAGGERED"         // the fluid solver to use (STAGGERED or COLLOCATED)
 START_TIME          = 0.0e0               // initial simulation time
-END_TIME            = 4.0*CYCLE_DURATION    // final simulation time
+END_TIME            = 1.0*CYCLE_DURATION    // final simulation time
 GROW_DT             = 2.0e0               // growth factor for timesteps
 NUM_CYCLES          = 1                   // number of cycles of fixed-point iteration
 CONVECTIVE_TS_TYPE = "ADAMS_BASHFORTH"    // convective time stepping type
