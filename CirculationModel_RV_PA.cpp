@@ -563,12 +563,9 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
         // The downstream pressure is determined by a three-element Windkessel model.
 
         if ((d_P_initial_pa_equal_to_ventricle) && (d_time < d_rcr_on_time)){
-            // linear interpolation
-            d_right_pa_P = (1 - d_time/d_rcr_on_time) * MMHG_TO_CGS * d_fourier_right_ventricle->values[0] +
-                           (    d_time/d_rcr_on_time) * d_right_pa_P_Wk; // wk pressure is the end pressure for the interpolation
-
-            d_left_pa_P  = (1 - d_time/d_rcr_on_time) * MMHG_TO_CGS * d_fourier_right_ventricle->values[0] +
-                           (    d_time/d_rcr_on_time) * d_left_pa_P_Wk; // wk pressure is the end pressure for the interpolation
+            // equal to ventricular pressure until turns on 
+            d_right_pa_P = MMHG_TO_CGS * d_fourier_right_ventricle->values[d_current_idx_series]; 
+            d_left_pa_P = MMHG_TO_CGS * d_fourier_right_ventricle->values[d_current_idx_series]; 
         }
 
         else{
