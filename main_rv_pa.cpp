@@ -516,7 +516,7 @@ int main(int argc, char* argv[])
             double P_initial_pa; 
 
             if (input_db->keyExists("P_PA_INITIAL")){
-                P_initial_pa = input_db->getDouble("P_PA_INITIAL");
+                P_initial_pa = MMHG_TO_CGS * input_db->getDouble("P_PA_INITIAL");
             }
             else{
                 P_initial_pa = fourier_series_lpa->values[0]; //32.0 * MMHG_TO_CGS;
