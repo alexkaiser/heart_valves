@@ -88,7 +88,7 @@ if __name__== "__main__":
                              # in the experimental trace of PA pressure 
     P_min = 31.25 * MMHG_TO_CGS 
 
-    ratio_prox_to_distal_resistors = 0.2
+    ratio_prox_to_distal_resistors = 0.5
 
     C_prefactor = 1.0
 
