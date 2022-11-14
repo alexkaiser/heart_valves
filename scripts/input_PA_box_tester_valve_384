@@ -44,12 +44,12 @@ Z_HIGH = Z_LOW + NZ * DX_FLUID
 // pressure crossing value 
 P_PA_INITIAL = 32.505874417493857
 
-right_pa_R_proximal = 284.73451583672727
-right_pa_C = 0.00095032385713
-right_pa_R_distal = 1423.67257918363680
-left_pa_R_proximal = 287.93678007631661
-left_pa_C = 0.00093975491174
-left_pa_R_distal = 1439.68390038158327
+right_pa_R_proximal = 155.30973591094221
+right_pa_C = 0.00087113020237
+right_pa_R_distal = 1553.09735910942186
+left_pa_R_proximal = 157.05642549617278
+left_pa_C = 0.00086144200243
+left_pa_R_distal = 1570.56425496172710
 
 // solver parameters
 DELTA_FUNCTION      = "IB_5"
