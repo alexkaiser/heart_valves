@@ -418,9 +418,9 @@ void VelocityBcCoefs_RV_PA::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_
 
             if (in_right_ventricle){
                 // sign for negative in stress tensor
-                a = 0.0; 
-                b = 1.0; 
-                g = -MMHG_TO_CGS * d_circ_model_rv_pa->d_fourier_right_ventricle->values[idx];
+                a = 1.0; 
+                b = 0.0; 
+                g = 58.333333333333336;  // -MMHG_TO_CGS * d_circ_model_rv_pa->d_fourier_right_ventricle->values[idx];
                 // pout << "Applying pressure of " << d_circ_model_rv_pa->d_fourier_right_ventricle->values[idx] 
                 //      << "mmHg to right ventricle at position (" << X[0] << ", " << X[1] << ", " << X[2] << ")\n"; 
             }

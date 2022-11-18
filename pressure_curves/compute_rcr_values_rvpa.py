@@ -38,6 +38,12 @@ if __name__== "__main__":
     # total flow mean 
     Q_mean = Q_mean_total_l_per_min * 1000.0 / 60 
 
+    area_rv_face = 5.4594
+
+    u_mean_plug_flow = Q_mean / area_rv_face
+
+    print("u_mean_plug_flow = ", u_mean_plug_flow)
+
     # total downstream resistance 
     R_total_mmHg = p_patrunk_mean_mmHg / Q_mean
     R_total = p_patrunk_mean / Q_mean

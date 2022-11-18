@@ -14,9 +14,9 @@ MAX_RESTART_TO_WRITE = 20
 // FOURIER_COEFFS_FILENAME_RPA = "fourier_coeffs_rpa_r_250.txt"
 // FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_lpa_r_250.txt"
 
-FOURIER_COEFFS_FILENAME_RV = "fourier_coeffs_right_ventricle.txt"
-FOURIER_COEFFS_FILENAME_RPA = "fourier_coeffs_pa.txt"
-FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_pa.txt"
+FOURIER_COEFFS_FILENAME_RV = "fourier_coeffs_zero.txt"
+FOURIER_COEFFS_FILENAME_RPA = "fourier_coeffs_zero.txt"
+FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_zero.txt"
 
 BOUNDARY_FILENAME_RV = "right_ventricle_pt05cm_out_bdry.vertex"
 BOUNDARY_FILENAME_RPA = "right_pa_bdry.vertex"
