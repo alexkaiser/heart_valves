@@ -49,7 +49,15 @@ if __name__== "__main__":
     # NOT CONVERGED! TEMP VALUES!! 
     warnings.warn("temporary values of steady sim being used")
 
-    deltap_steady_mmHg = 1.0
+    whole_domain_deltap = False
+    if whole_domain_deltap:
+        deltap_steady_mmHg = 1.0
+    else:
+        # average on downstream slice
+        integral_deltap_mmHg = 0.596987
+        area_slice = 5.38043 
+        deltap_steady_mmHg = integral_deltap_mmHg / area_slice
+
     deltap_steady = deltap_steady_mmHg * MMHG_TO_CGS
     q_lpa_steady_flow_final = 35.475201349000002
     q_rpa_steady_flow_final = 23.474931795000000
@@ -69,6 +77,11 @@ if __name__== "__main__":
 
     print("R_lpa = ", R_lpa, "R_lpa_mmHg = ", R_lpa_mmHg)
     print("R_rpa = ", R_rpa, "R_rpa_mmHg = ", R_rpa_mmHg)
+
+    R_diff = R_rpa - R_lpa
+    R_diff_mmHg = R_rpa_mmHg - R_lpa_mmHg
+
+    print("R_diff = ", R_diff, "R_diff_mmHg = ", R_diff_mmHg)
 
     # from the total resistance formula 
     R_outlet_lpa      = 2.0 * R_total - R_lpa
