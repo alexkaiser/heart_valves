@@ -49,7 +49,7 @@ if __name__== "__main__":
     # NOT CONVERGED! TEMP VALUES!! 
     warnings.warn("temporary values of steady sim being used")
 
-    whole_domain_deltap = False
+    whole_domain_deltap = True
     if whole_domain_deltap:
         deltap_steady_mmHg = 1.0
     else:
