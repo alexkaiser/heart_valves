@@ -15,8 +15,8 @@ MAX_RESTART_TO_WRITE = 20
 // FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_lpa_r_250.txt"
 
 FOURIER_COEFFS_FILENAME_RV = "fourier_coeffs_right_ventricle.txt"
-FOURIER_COEFFS_FILENAME_RPA = "fourier_coeffs_zero.txt"
-FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_zero.txt"
+FOURIER_COEFFS_FILENAME_RPA = "fourier_coeffs_pa.txt"
+FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_pa.txt"
 
 BOUNDARY_FILENAME_RV = "right_ventricle_pt05cm_out_bdry.vertex"
 BOUNDARY_FILENAME_RPA = "right_pa_bdry.vertex"
@@ -43,6 +43,9 @@ Z_HIGH = Z_LOW + NZ * DX_FLUID
 
 // pressure crossing value 
 P_PA_INITIAL = 32.505874417493857
+
+right_pa_R = 0.0 
+left_pa_R = 2.131848333608687
 
 right_pa_R_proximal = 155.30973591094221
 right_pa_C = 0.00087113020237
