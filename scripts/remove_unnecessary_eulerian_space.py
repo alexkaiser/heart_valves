@@ -176,87 +176,91 @@ def remove_eulerian_space(basename,
 
 if __name__ == '__main__':
 
-    if len(sys.argv) >= 2:
-        nprocs = int(sys.argv[1]) # number of threads to launch  
-    else: 
-        print("using default nprocs = 1")
-        nprocs = 1 
+    basic = False 
 
-    # first make sure there is a times file 
-    if not os.path.isfile('times.txt'):
-        subprocess.call('visit -cli -nowin -s ~/copies_scripts/write_times_file_visit.py', shell=True)
-
-    times = []
-    times_file = open('times.txt', 'r')
-    for line in times_file:
-        times.append(float(line)) 
-
-    if times[0] == 0:
-        dt = times[1]
-    else: 
-        dt = times[1] - times[0]
-
-    # crop times for debug 
-    # times = times[:5]
-
-    point_data = True 
-    NX=144
-    NY=96
-    NZ=224
-
-    basename = "eulerian_vars"
-    nsteps = len(times)
-
-    if point_data:
-        label = '_restricted_points'
-    else: 
-        label = '_restricted_cells'
-
-    extension = 'vtu'
-
-
-    # compute masks for all 
-    boundary_mesh_name = '2_aorta_remeshed_pt5mm_capped.vtp'
-
-    # grab this file if it's not here... 
-    if not os.path.isfile(boundary_mesh_name):
-        if os.path.isfile('~/mitral_fully_discrete/' + boundary_mesh_name):
-            shutil.copy('~/mitral_fully_discrete/' + boundary_mesh_name, '.') 
+    if basic:
+    
+        if len(sys.argv) >= 2:
+            nprocs = int(sys.argv[1]) # number of threads to launch  
         else: 
-            raise FileNotFoundError("cannot find boundary_mesh_name file = ", boundary_mesh_name)
+            print("using default nprocs = 1")
+            nprocs = 1 
+
+        # first make sure there is a times file 
+        if not os.path.isfile('times.txt'):
+            subprocess.call('visit -cli -nowin -s ~/copies_scripts/write_times_file_visit.py', shell=True)
+
+        times = []
+        times_file = open('times.txt', 'r')
+        for line in times_file:
+            times.append(float(line)) 
+
+        if times[0] == 0:
+            dt = times[1]
+        else: 
+            dt = times[1] - times[0]
+
+        # crop times for debug 
+        # times = times[:5]
+
+        point_data = True 
+        NX=144
+        NY=96
+        NZ=224
+
+        basename = "eulerian_vars"
+        nsteps = len(times)
+
+        if point_data:
+            label = '_restricted_points'
+        else: 
+            label = '_restricted_cells'
+
+        extension = 'vtu'
 
 
-    boundary_mesh = pyvista.read(boundary_mesh_name)
+        # compute masks for all 
+        boundary_mesh_name = '2_aorta_remeshed_pt5mm_capped.vtp'
 
-    # selected = mesh.select_enclosed_points(boundary_mesh, tolerance=1.0e-10, inside_out=False, check_surface=True)
-    # selected.clear_cell_arrays()
+        # grab this file if it's not here... 
+        if not os.path.isfile(boundary_mesh_name):
+            if os.path.isfile('~/mitral_fully_discrete/' + boundary_mesh_name):
+                shutil.copy('~/mitral_fully_discrete/' + boundary_mesh_name, '.') 
+            else: 
+                raise FileNotFoundError("cannot find boundary_mesh_name file = ", boundary_mesh_name)
 
-    run_all = True 
 
-    if run_all:
+        boundary_mesh = pyvista.read(boundary_mesh_name)
 
-        jobs = []
-        for proc_num in range(nprocs):
-            p = multiprocessing.Process(target=remove_eulerian_space, args=(basename, 
-                                                                            boundary_mesh, 
-                                                                            nsteps, 
-                                                                            label, 
-                                                                            extension,
-                                                                            point_data, 
-                                                                            NX,
-                                                                            NY, 
-                                                                            NZ, 
-                                                                            proc_num, 
-                                                                            nprocs))
-            jobs.append(p)
-            p.start()
+        # selected = mesh.select_enclosed_points(boundary_mesh, tolerance=1.0e-10, inside_out=False, check_surface=True)
+        # selected.clear_cell_arrays()
 
-        for p in jobs:
-            p.join()
+        run_all = True 
 
-        basename_out = basename + label
+        if run_all:
 
-        write_pvd(basename_out, dt, nsteps, extension, nprocs_sim=1)
+            jobs = []
+            for proc_num in range(nprocs):
+                p = multiprocessing.Process(target=remove_eulerian_space, args=(basename, 
+                                                                                boundary_mesh, 
+                                                                                nsteps, 
+                                                                                label, 
+                                                                                extension,
+                                                                                point_data, 
+                                                                                NX,
+                                                                                NY, 
+                                                                                NZ, 
+                                                                                proc_num, 
+                                                                                nprocs))
+                jobs.append(p)
+                p.start()
+
+            for p in jobs:
+                p.join()
+
+            basename_out = basename + label
+
+            write_pvd(basename_out, dt, nsteps, extension, nprocs_sim=1)
 
 
 
@@ -297,5 +301,31 @@ if __name__ == '__main__':
         p.add_mesh(boundary_mesh, color="mintcream", opacity=1, **dargs) 
         p.show()
 
+
+    pa_single_frame = True 
+    if pa_single_frame:
+
+        basename = "eulerian_vars"
+        step = 1501
+ 
+        label = '_restricted_cells'
+
+        extension = 'vtu'
+
+        dir_name = 'eulerian_vars1501'    
+        fname = 'eulerian_vars_combined_cells_1501.vtu'
+        mesh = read_distributed_vtr(dir_name)    
+
+        boundary_mesh_name = '3_1_three_end_crop_capped.stl'
+
+        boundary_mesh = pyvista.read(boundary_mesh_name)
+
+        selected = mesh.select_enclosed_points(boundary_mesh, tolerance=1.0e-10, inside_out=False, check_surface=True)
+
+        mesh_inside = selected.threshold(0.5, scalars="SelectedPoints", all_scalars=False) 
+
+        mesh_inside.save(fname)
+
+        
 
 
