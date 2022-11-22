@@ -14,11 +14,11 @@ MAX_RESTART_TO_WRITE = 20
 // FOURIER_COEFFS_FILENAME_RPA = "fourier_coeffs_rpa_r_250.txt"
 // FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_lpa_r_250.txt"
 
-FOURIER_COEFFS_FILENAME_RV = "fourier_coeffs_zero.txt"
-FOURIER_COEFFS_FILENAME_RPA = "fourier_coeffs_zero.txt"
-FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_zero.txt"
+FOURIER_COEFFS_FILENAME_RV = "fourier_coeffs_right_ventricle.txt"
+FOURIER_COEFFS_FILENAME_RPA = "fourier_coeffs_pa.txt"
+FOURIER_COEFFS_FILENAME_LPA = "fourier_coeffs_pa.txt"
 
-BOUNDARY_FILENAME_RV = "right_ventricle_pt025cm_inwards_bdry.vertex"
+BOUNDARY_FILENAME_RV = "right_ventricle_pt05cm_out_bdry.vertex"
 BOUNDARY_FILENAME_RPA = "right_pa_bdry.vertex"
 BOUNDARY_FILENAME_LPA = "left_pa_bdry.vertex"
 CYCLE_DURATION = 8.3250000000000002e-01
@@ -45,7 +45,7 @@ Z_HIGH = Z_LOW + NZ * DX_FLUID
 P_PA_INITIAL = 32.505874417493857
 
 right_pa_R_systole = 0.0 
-left_pa_R_systole = 20.35579856309137
+left_pa_R_systole = 90.29509050633409
 
 right_pa_R = 1000.0
 left_pa_R = 1000.0
