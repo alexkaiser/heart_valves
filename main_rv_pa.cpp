@@ -528,8 +528,8 @@ int main(int argc, char* argv[])
             bool inductance_bcs_on = false; 
             bool variable_resistor_on = true; 
 
-            bool P_initial_pa_equal_to_ventricle = rcr_bcs_on;
-            double rcr_on_time = 0.079613479258557;
+            bool P_initial_pa_equal_to_ventricle = true;
+            double lpn_on_time = 0.079613479258557;
 
             CirculationModel_RV_PA *circ_model_rv_pa = new CirculationModel_RV_PA(input_db,
                                                                                   fourier_series_rv, 
@@ -547,7 +547,7 @@ int main(int argc, char* argv[])
                                                                                   inductance_bcs_on,
                                                                                   variable_resistor_on,
                                                                                   P_initial_pa_equal_to_ventricle,
-                                                                                  rcr_on_time);
+                                                                                  lpn_on_time);
 
             // Create Eulerian boundary condition specification objects.
             vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM);

@@ -61,7 +61,7 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
                                                bool inductor_bcs_on, 
                                                bool variable_resistance,
                                                bool P_initial_pa_equal_to_ventricle=false,
-                                               double rcr_on_time=0.0)
+                                               double lpn_on_time=0.0)
     : 
       d_object_name("circ_model_rv_pa"),  // constant name here  
       d_registered_for_restart(true),      // always true
@@ -93,7 +93,7 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
       d_inductor_bcs_on(inductor_bcs_on),
       d_variable_resistance(variable_resistance),
       d_P_initial_pa_equal_to_ventricle(P_initial_pa_equal_to_ventricle),
-      d_rcr_on_time(rcr_on_time)
+      d_lpn_on_time(lpn_on_time)
 {
     
     if (d_registered_for_restart)
@@ -576,7 +576,7 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
     if (d_rcr_bcs_on){
         // The downstream pressure is determined by a three-element Windkessel model.
 
-        if ((d_P_initial_pa_equal_to_ventricle) && (d_time < d_rcr_on_time)){
+        if ((d_P_initial_pa_equal_to_ventricle) && (d_time < d_lpn_on_time)){
             // equal to ventricular pressure until turns on 
             d_right_pa_P = MMHG_TO_CGS * d_fourier_right_ventricle->values[d_current_idx_series]; 
             d_left_pa_P = MMHG_TO_CGS * d_fourier_right_ventricle->values[d_current_idx_series]; 
@@ -619,48 +619,57 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
     }
     else if (d_resistance_bcs_on){
 
-        double variable_resistance_coeff = 1.0; 
+        if ((d_P_initial_pa_equal_to_ventricle) && (d_time < d_lpn_on_time)){
+            // equal to ventricular pressure until turns on 
+            d_right_pa_P = MMHG_TO_CGS * d_fourier_right_ventricle->values[d_current_idx_series]; 
+            d_left_pa_P = MMHG_TO_CGS * d_fourier_right_ventricle->values[d_current_idx_series]; 
 
-        if (d_variable_resistance){
-
-            // time to turn resistor on and off 
-
-            // fast off during systole 
-            double off_duration_systole  = 0.01;
-            // slower on in diastole 
-            double on_duration_diastole = 0.1; 
-
-            if (t_reduced < d_systole_start){
-                // starts in diastole with closed valve 
-                variable_resistance_coeff = 1.0; 
-            }
-            else if ((d_systole_start <= t_reduced) && (t_reduced < (d_systole_start + off_duration_systole))){
-                // ramps up into systole 
-                variable_resistance_coeff = 0.5 * (cos( (M_PI/off_duration_systole) * (t_reduced - d_systole_start)  ) + 1); 
-            }
-            else if (((d_systole_start + off_duration_systole) <= t_reduced) && (t_reduced < d_diastole_start)){
-                // off during systole 
-                variable_resistance_coeff = 0.0; 
-            }
-            else if ((d_diastole_start <= t_reduced) && (t_reduced < (d_diastole_start + on_duration_diastole))){
-                // ramps on in diastole 
-                variable_resistance_coeff = 0.5 * (-cos( (M_PI/on_duration_diastole) * (t_reduced - d_diastole_start)  ) + 1); 
-            }
-            else {
-                // then on for remainder of cycle 
-                variable_resistance_coeff = 1.0; 
-            }
-        
         }
+        else{
+
+            double variable_resistance_coeff = 1.0; 
+
+            if (d_variable_resistance){
+
+                // time to turn resistor on and off 
+
+                // fast off during systole 
+                double off_duration_systole  = 0.01;
+                // slower on in diastole 
+                double on_duration_diastole = 0.1; 
+
+                if (t_reduced < d_systole_start){
+                    // starts in diastole with closed valve 
+                    variable_resistance_coeff = 1.0; 
+                }
+                else if ((d_systole_start <= t_reduced) && (t_reduced < (d_systole_start + off_duration_systole))){
+                    // ramps up into systole 
+                    variable_resistance_coeff = 0.5 * (cos( (M_PI/off_duration_systole) * (t_reduced - d_systole_start)  ) + 1); 
+                }
+                else if (((d_systole_start + off_duration_systole) <= t_reduced) && (t_reduced < d_diastole_start)){
+                    // off during systole 
+                    variable_resistance_coeff = 0.0; 
+                }
+                else if ((d_diastole_start <= t_reduced) && (t_reduced < (d_diastole_start + on_duration_diastole))){
+                    // ramps on in diastole 
+                    variable_resistance_coeff = 0.5 * (-cos( (M_PI/on_duration_diastole) * (t_reduced - d_diastole_start)  ) + 1); 
+                }
+                else {
+                    // then on for remainder of cycle 
+                    variable_resistance_coeff = 1.0; 
+                }
+            
+            }
 
 
-        // pressure upstream of resistance determined by series 
-        d_right_pa_P_Wk = MMHG_TO_CGS * d_fourier_right_pa->values[d_current_idx_series]; 
-        d_left_pa_P_Wk  = MMHG_TO_CGS * d_fourier_left_pa->values[d_current_idx_series]; 
+            // pressure upstream of resistance determined by series 
+            d_right_pa_P_Wk = MMHG_TO_CGS * d_fourier_right_pa->values[d_current_idx_series]; 
+            d_left_pa_P_Wk  = MMHG_TO_CGS * d_fourier_left_pa->values[d_current_idx_series]; 
 
-        // resistance bcs determine outlet pressure 
-        d_right_pa_P = d_right_pa_P_Wk + (d_right_pa_resistance * variable_resistance_coeff + d_right_pa_resistance_systole * (1.0 - variable_resistance_coeff)) * d_Q_right_pa;
-        d_left_pa_P  = d_left_pa_P_Wk  + (d_left_pa_resistance  * variable_resistance_coeff + d_left_pa_resistance_systole  * (1.0 - variable_resistance_coeff)) * d_Q_left_pa;
+            // resistance bcs determine outlet pressure 
+            d_right_pa_P = d_right_pa_P_Wk + (d_right_pa_resistance * variable_resistance_coeff + d_right_pa_resistance_systole * (1.0 - variable_resistance_coeff)) * d_Q_right_pa;
+            d_left_pa_P  = d_left_pa_P_Wk  + (d_left_pa_resistance  * variable_resistance_coeff + d_left_pa_resistance_systole  * (1.0 - variable_resistance_coeff)) * d_Q_left_pa;
+        }
 
     }
 

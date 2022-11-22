@@ -60,7 +60,7 @@ public:
     bool d_inductor_bcs_on; 
     bool d_variable_resistance; 
     bool d_P_initial_pa_equal_to_ventricle;
-    double d_rcr_on_time;
+    double d_lpn_on_time;
 
     double d_systole_start;
     double d_diastole_start;
@@ -140,7 +140,7 @@ public:
                                                bool inductor_bcs_on,
                                                bool variable_resistance,
                                                bool P_initial_pa_equal_to_ventricle,
-                                               double rcr_on_time);
+                                               double lpn_on_time);
 
     /*!
      * \brief Destructor.
