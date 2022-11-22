@@ -52,73 +52,94 @@ if __name__== "__main__":
     print("R_total_mmHg = ", R_total_mmHg)
 
     # steady flow sim numbers 
-    # NOT CONVERGED! TEMP VALUES!! 
-    warnings.warn("temporary values of steady sim being used")
 
-    whole_domain_deltap = True
-    if whole_domain_deltap:
-        deltap_steady_mmHg = 1.0
-    else:
-        # average on downstream slice
-        integral_deltap_mmHg = 0.596987
-        area_slice = 5.38043 
-        deltap_steady_mmHg = integral_deltap_mmHg / area_slice
+    # 1 mmHg version 
+    # whole_domain_deltap = True
+    # if whole_domain_deltap:
+    #     deltap_steady_mmHg = 1.0
+    # else:
+    #     # average on downstream slice
+    #     integral_deltap_mmHg = 0.596987
+    #     area_slice = 5.38043 
+    #     deltap_steady_mmHg = integral_deltap_mmHg / area_slice
+    # 
+    # deltap_steady = deltap_steady_mmHg * MMHG_TO_CGS
+    # q_lpa_steady_flow_final = 35.475201349000002
+    # q_rpa_steady_flow_final = 23.474931795000000
+    # q_total_steady_flow = 58.944214744000000
 
-    deltap_steady = deltap_steady_mmHg * MMHG_TO_CGS
-    q_lpa_steady_flow_final = 35.475201349000002
-    q_rpa_steady_flow_final = 23.474931795000000
-    q_total_steady_flow = 58.944214744000000
 
-    ratio_R_rpa_over_R_lpa = q_lpa_steady_flow_final / q_rpa_steady_flow_final
+    for whole_domain_deltap in [True, False]:
 
-    print("ratio_R_rpa_over_R_lpa = ", ratio_R_rpa_over_R_lpa)
+        print('whole_domain_deltap = ', whole_domain_deltap)
+        if whole_domain_deltap:
+            deltap_steady_mmHg = 15.662538461538496
+        else:
+            # average on downstream slice
+            integral_deltap_mmHg = 16.8885
+            area_slice = 4.78305
+            deltap_steady_mmHg = integral_deltap_mmHg / area_slice
 
-    # resistance of the lpa segment via steady sim 
-    R_lpa = (1.0/ratio_R_rpa_over_R_lpa + 1.0) * deltap_steady / q_total_steady_flow
-    R_lpa_mmHg = (1.0/ratio_R_rpa_over_R_lpa + 1.0) * deltap_steady_mmHg / q_total_steady_flow
+        deltap_steady = deltap_steady_mmHg * MMHG_TO_CGS
+        q_lpa_steady_flow_final = 1.711796800500000e+02
+        q_rpa_steady_flow_final = 98.362423711999995
+        q_total_steady_flow = 2.695755653800000e+02
 
-    # right comes from the ratio 
-    R_rpa = R_lpa * ratio_R_rpa_over_R_lpa
-    R_rpa_mmHg = R_lpa_mmHg * ratio_R_rpa_over_R_lpa
+        print("deltap_steady = ", deltap_steady, "deltap_steady_mmHg = ", deltap_steady_mmHg)
 
-    print("R_lpa = ", R_lpa, "R_lpa_mmHg = ", R_lpa_mmHg)
-    print("R_rpa = ", R_rpa, "R_rpa_mmHg = ", R_rpa_mmHg)
+        ratio_R_rpa_over_R_lpa = q_lpa_steady_flow_final / q_rpa_steady_flow_final
 
-    R_diff = R_rpa - R_lpa
-    R_diff_mmHg = R_rpa_mmHg - R_lpa_mmHg
+        print("ratio_R_rpa_over_R_lpa = ", ratio_R_rpa_over_R_lpa)
 
-    print("R_diff = ", R_diff, "R_diff_mmHg = ", R_diff_mmHg)
+        # resistance of the lpa segment via steady sim 
+        R_lpa = (1.0/ratio_R_rpa_over_R_lpa + 1.0) * deltap_steady / q_total_steady_flow
+        R_lpa_mmHg = (1.0/ratio_R_rpa_over_R_lpa + 1.0) * deltap_steady_mmHg / q_total_steady_flow
 
-    # from the total resistance formula 
-    R_outlet_lpa      = 2.0 * R_total - R_lpa
-    R_outlet_lpa_mmHg = 2.0 * R_total_mmHg - R_lpa_mmHg
+        # right comes from the ratio 
+        R_rpa = R_lpa * ratio_R_rpa_over_R_lpa
+        R_rpa_mmHg = R_lpa_mmHg * ratio_R_rpa_over_R_lpa
 
-    # from requirement that total resitance on each side is equal 
-    R_outlet_rpa = R_lpa - R_rpa + R_outlet_lpa
-    R_outlet_rpa_mmHg = R_lpa_mmHg - R_rpa_mmHg + R_outlet_lpa_mmHg
+        print("R_lpa = ", R_lpa, "R_lpa_mmHg = ", R_lpa_mmHg)
+        print("R_rpa = ", R_rpa, "R_rpa_mmHg = ", R_rpa_mmHg)
 
-    print("R_outlet_lpa = ", R_outlet_lpa, "R_outlet_lpa_mmHg = ", R_outlet_lpa_mmHg)
-    print("R_outlet_rpa = ", R_outlet_rpa, "R_outlet_rpa_mmHg = ", R_outlet_rpa_mmHg)
+        R_diff = R_rpa - R_lpa
+        R_diff_mmHg = R_rpa_mmHg - R_lpa_mmHg
 
-    decay_time = .4 
+        print("R_diff = ", R_diff, "R_diff_mmHg = ", R_diff_mmHg)
+        print("\n")
 
-    # values from the experimental trace 
-    P_max = 42 * MMHG_TO_CGS # interpolating the decay by eye to the middle of the oscillation 
-                             # in the experimental trace of PA pressure 
-    P_min = 31.25 * MMHG_TO_CGS 
+        compute_rcr_est = False 
+        if compute_rcr_est:
+            # from the total resistance formula 
+            R_outlet_lpa      = 2.0 * R_total - R_lpa
+            R_outlet_lpa_mmHg = 2.0 * R_total_mmHg - R_lpa_mmHg
 
-    ratio_prox_to_distal_resistors = 0.1
+            # from requirement that total resitance on each side is equal 
+            R_outlet_rpa = R_lpa - R_rpa + R_outlet_lpa
+            R_outlet_rpa_mmHg = R_lpa_mmHg - R_rpa_mmHg + R_outlet_lpa_mmHg
 
-    C_prefactor = 1.0
+            print("R_outlet_lpa = ", R_outlet_lpa, "R_outlet_lpa_mmHg = ", R_outlet_lpa_mmHg)
+            print("R_outlet_rpa = ", R_outlet_rpa, "R_outlet_rpa_mmHg = ", R_outlet_rpa_mmHg)
 
-    R_p_rpa, C_rpa, R_d_rpa = compute_rcr_parameters(R_outlet_rpa, P_min, P_max, ratio_prox_to_distal_resistors, decay_time, C_prefactor)
+            decay_time = .4 
 
-    R_p_lpa, C_lpa, R_d_lpa = compute_rcr_parameters(R_outlet_lpa, P_min, P_max, ratio_prox_to_distal_resistors, decay_time, C_prefactor)
+            # values from the experimental trace 
+            P_max = 42 * MMHG_TO_CGS # interpolating the decay by eye to the middle of the oscillation 
+                                     # in the experimental trace of PA pressure 
+            P_min = 31.25 * MMHG_TO_CGS 
 
-    print("right_pa_R_proximal = %.14f" % R_p_rpa)
-    print("right_pa_C = %.14f" % C_rpa)
-    print("right_pa_R_distal = %.14f" % R_d_rpa)
-    print("left_pa_R_proximal = %.14f" % R_p_lpa)
-    print("left_pa_C = %.14f" % C_lpa)
-    print("left_pa_R_distal = %.14f" % R_d_lpa)
+            ratio_prox_to_distal_resistors = 0.1
+
+            C_prefactor = 1.0
+
+            R_p_rpa, C_rpa, R_d_rpa = compute_rcr_parameters(R_outlet_rpa, P_min, P_max, ratio_prox_to_distal_resistors, decay_time, C_prefactor)
+
+            R_p_lpa, C_lpa, R_d_lpa = compute_rcr_parameters(R_outlet_lpa, P_min, P_max, ratio_prox_to_distal_resistors, decay_time, C_prefactor)
+
+            print("right_pa_R_proximal = %.14f" % R_p_rpa)
+            print("right_pa_C = %.14f" % C_rpa)
+            print("right_pa_R_distal = %.14f" % R_d_rpa)
+            print("left_pa_R_proximal = %.14f" % R_p_lpa)
+            print("left_pa_C = %.14f" % C_lpa)
+            print("left_pa_R_distal = %.14f" % R_d_lpa)
 

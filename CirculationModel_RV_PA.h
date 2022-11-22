@@ -79,6 +79,7 @@ public:
     double  d_right_pa_R_distal; 
     double  d_right_pa_C;
     double  d_right_pa_resistance; 
+    double  d_right_pa_resistance_systole; 
     double  d_right_pa_inductance; 
 
     const fourier_series_data *d_fourier_left_pa; 
@@ -95,6 +96,7 @@ public:
     double  d_left_pa_R_distal; 
     double  d_left_pa_C;
     double  d_left_pa_resistance;
+    double  d_left_pa_resistance_systole;
     double  d_left_pa_inductance;
 
     double  d_cycle_duration;

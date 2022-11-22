@@ -306,15 +306,17 @@ if __name__ == '__main__':
     if pa_single_frame:
 
         basename = "eulerian_vars"
-        step = 1501
+        step = 459
  
         label = '_restricted_cells'
 
         extension = 'vtu'
 
-        dir_name = 'eulerian_vars1501'    
-        fname = 'eulerian_vars_combined_cells_1501.vtu'
+        dir_name = 'eulerian_vars0459'    
+        fname = 'eulerian_vars_combined_cells_0459.vtu'
         mesh = read_distributed_vtr(dir_name)    
+
+        mesh.save('eulerian_vars_combined_no_restrict_cells_0459.vtu')
 
         boundary_mesh_name = '3_1_three_end_crop_capped.stl'
 
@@ -322,7 +324,7 @@ if __name__ == '__main__':
 
         selected = mesh.select_enclosed_points(boundary_mesh, tolerance=1.0e-10, inside_out=False, check_surface=True)
 
-        mesh_inside = selected.threshold(0.5, scalars="SelectedPoints", all_scalars=False) 
+        mesh_inside = selected.threshold(0.5, scalars="SelectedPoints", all_scalars=True) 
 
         mesh_inside.save(fname)
 

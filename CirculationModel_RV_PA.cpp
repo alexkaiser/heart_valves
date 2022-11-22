@@ -136,6 +136,12 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
         std::cout << "left : R_proximal = " << d_left_pa_resistance << "\n";
     }
 
+    d_right_pa_resistance_systole = input_db->getDoubleWithDefault("right_pa_R_systole", 0.0); 
+    d_left_pa_resistance_systole = input_db->getDoubleWithDefault("left_pa_R_systole", 0.0); 
+    std::cout << "input db got values:\n";
+    std::cout << "right systole:  = " << d_right_pa_resistance_systole << "\n";
+    std::cout << "left systole = " << d_left_pa_resistance_systole << "\n";
+
     if (d_inductor_bcs_on){
         d_right_pa_inductance = input_db->getDouble("right_pa_L");
         d_left_pa_inductance  = input_db->getDouble("left_pa_L");
@@ -653,8 +659,8 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
         d_left_pa_P_Wk  = MMHG_TO_CGS * d_fourier_left_pa->values[d_current_idx_series]; 
 
         // resistance bcs determine outlet pressure 
-        d_right_pa_P = d_right_pa_P_Wk + d_right_pa_resistance * variable_resistance_coeff * d_Q_right_pa;
-        d_left_pa_P  = d_left_pa_P_Wk  + d_left_pa_resistance  * variable_resistance_coeff * d_Q_left_pa;
+        d_right_pa_P = d_right_pa_P_Wk + (d_right_pa_resistance * variable_resistance_coeff + d_right_pa_resistance_systole * (1.0 - variable_resistance_coeff)) * d_Q_right_pa;
+        d_left_pa_P  = d_left_pa_P_Wk  + (d_left_pa_resistance  * variable_resistance_coeff + d_left_pa_resistance_systole  * (1.0 - variable_resistance_coeff)) * d_Q_left_pa;
 
     }
 
