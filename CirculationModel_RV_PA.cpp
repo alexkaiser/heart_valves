@@ -119,9 +119,9 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
             d_left_pa_R_distal    = input_db->getDouble("left_pa_R_distal");
             d_left_pa_C           = input_db->getDouble("left_pa_C");
 
-            std::cout << "input db got values:\n";
-            std::cout << "right: R_proximal = " << d_right_pa_R_proximal << "\tR_distal = " << d_right_pa_R_distal << "\tC = " << d_right_pa_C << "\n";
-            std::cout << "left : R_proximal = " << d_left_pa_R_proximal << "\tR_distal = " << d_left_pa_R_distal << "\tC = " << d_left_pa_C << "\n";
+            pout << "input db got values:\n";
+            pout << "right: R_proximal = " << d_right_pa_R_proximal << "\tR_distal = " << d_right_pa_R_distal << "\tC = " << d_right_pa_C << "\n";
+            pout << "left : R_proximal = " << d_left_pa_R_proximal << "\tR_distal = " << d_left_pa_R_distal << "\tC = " << d_left_pa_C << "\n";
         }
         else {
             TBOX_ERROR("Must provide valid input_db");
@@ -131,23 +131,23 @@ CirculationModel_RV_PA::CirculationModel_RV_PA(Pointer<Database> input_db,
     if (d_resistance_bcs_on){
         d_right_pa_resistance = input_db->getDouble("right_pa_R");
         d_left_pa_resistance  = input_db->getDouble("left_pa_R");
-        std::cout << "input db got values:\n";
-        std::cout << "right: resistance = " << d_right_pa_resistance << "\n";
-        std::cout << "left : R_proximal = " << d_left_pa_resistance << "\n";
+        pout << "input db got values:\n";
+        pout << "right: resistance = " << d_right_pa_resistance << "\n";
+        pout << "left : R_proximal = " << d_left_pa_resistance << "\n";
     }
 
     d_right_pa_resistance_systole = input_db->getDoubleWithDefault("right_pa_R_systole", 0.0); 
     d_left_pa_resistance_systole = input_db->getDoubleWithDefault("left_pa_R_systole", 0.0); 
-    std::cout << "input db got values:\n";
-    std::cout << "right systole:  = " << d_right_pa_resistance_systole << "\n";
-    std::cout << "left systole = " << d_left_pa_resistance_systole << "\n";
+    pout << "input db got values:\n";
+    pout << "right systole:  = " << d_right_pa_resistance_systole << "\n";
+    pout << "left systole = " << d_left_pa_resistance_systole << "\n";
 
     if (d_inductor_bcs_on){
         d_right_pa_inductance = input_db->getDouble("right_pa_L");
         d_left_pa_inductance  = input_db->getDouble("left_pa_L");
-        std::cout << "input db got values:\n";
-        std::cout << "right: inductance = " << d_right_pa_inductance << "\n";
-        std::cout << "left : inductance = " << d_left_pa_inductance << "\n";
+        pout << "input db got values:\n";
+        pout << "right: inductance = " << d_right_pa_inductance << "\n";
+        pout << "left : inductance = " << d_left_pa_inductance << "\n";
     }
 
     if (d_variable_resistance){
