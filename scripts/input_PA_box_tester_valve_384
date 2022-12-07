@@ -26,7 +26,7 @@ CYCLE_DURATION = 8.3250000000000002e-01
 VESSEL_FILENAME = "vessel_384.vertex"
 
 // physical ratio 
-RATIO_TO_SCAN = 2.0 * 4.0/3.0
+RATIO_TO_SCAN = 2.0
 
 DX_FLUID = (0.09 / RATIO_TO_SCAN) * (REF_RATIO^(MAX_LEVELS - 1))
 
@@ -62,7 +62,7 @@ left_pa_R_distal = 1570.56425496172710
 DELTA_FUNCTION      = "IB_5"
 SOLVER_TYPE         = "STAGGERED"         // the fluid solver to use (STAGGERED or COLLOCATED)
 START_TIME          = 0.0e0               // initial simulation time
-END_TIME            = 1.0*CYCLE_DURATION    // final simulation time
+END_TIME            = 1.5*CYCLE_DURATION    // final simulation time
 GROW_DT             = 2.0e0               // growth factor for timesteps
 NUM_CYCLES          = 1                   // number of cycles of fixed-point iteration
 CONVECTIVE_TS_TYPE = "ADAMS_BASHFORTH"    // convective time stepping type
