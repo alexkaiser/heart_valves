@@ -114,7 +114,7 @@ def run_main():
 
         for boundary_mesh_name in boundary_mesh_names:
 
-            nframes = 20
+            nframes = 10
 
             eulerian_basename_orig="eulerian_vars_averaged"
             digits_output_eulerian = 4
@@ -136,12 +136,13 @@ def run_main():
             print("boundary_mesh_name = ", boundary_mesh_name)
             print("suffix_eulerian = ", suffix_eulerian)
 
-            mri_basename = "HealthyNative_ForSim_"
+            # mri_basename = "HealthyNative_ForSim_"
+            mri_basename = "HealthyNative_ForSim_even_"
             digits_output_mri = 2
             mri_extension = ".vtk"
             output_extension = ".vtu"
             
-            pool = multiprocessing.Pool(int(nframes/2)) #use all available cores, otherwise specify the number you want as an argument
+            pool = multiprocessing.Pool() #use all available cores, otherwise specify the number you want as an argument
             for i in range(nframes):
                 pool.apply_async(interpolate_eulerian_to_mri_mesh, args=(i,    
                                                                          eulerian_basename_orig,
@@ -160,13 +161,11 @@ def run_main():
             cycle_duration = 8.3250000000000002e-01
             mri_read_times_per_cycle = 10 
             dt_mri_read = cycle_duration / mri_read_times_per_cycle
-            output_times_per_cycle   = 20 
-            dt_output = cycle_duration / output_times_per_cycle
 
-            time_start_1 = True 
+            time_start_1 = False
 
             output_extension = "vtu"
-            write_pvd(eulerian_basename_orig + suffix_eulerian, dt_output, output_times_per_cycle, output_extension, time_start_1=time_start_1)
+            write_pvd(eulerian_basename_orig + suffix_eulerian, dt_mri_read, mri_read_times_per_cycle, output_extension, time_start_1=time_start_1)
 
 
 
