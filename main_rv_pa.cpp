@@ -650,6 +650,11 @@ int main(int argc, char* argv[])
             
         }
  
+        if (!from_restart){
+                pout << "\nWriting initial restart files...\n\n";
+                RestartManager::getManager()->writeRestartFile(restart_dump_dirname, 0);                
+                
+        }
         
         double dt_original = time_integrator->getMaximumTimeStepSize();
 
