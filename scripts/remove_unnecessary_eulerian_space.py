@@ -306,17 +306,17 @@ if __name__ == '__main__':
     if pa_single_frame:
 
         basename = "eulerian_vars"
-        step = 459
+        step = 3325
  
         label = '_restricted_cells'
 
         extension = 'vtu'
 
         dir_name = 'eulerian_vars0459'    
-        fname = 'eulerian_vars_combined_cells_0459.vtu'
+        fname = 'eulerian_vars_combined_cells_3325.vtu'
         mesh = read_distributed_vtr(dir_name)    
 
-        mesh.save('eulerian_vars_combined_no_restrict_cells_0459.vtu')
+        mesh.save('eulerian_vars_combined_no_restrict_cells_3325.vtu')
 
         boundary_mesh_name = '3_1_three_end_crop_capped.stl'
 

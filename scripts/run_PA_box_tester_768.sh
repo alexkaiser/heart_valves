@@ -47,7 +47,7 @@ cp *.cpp                              $RUNDIR
 cp main_rv_pa                         $RUNDIR
 cp watchdog_job_restart.py            $RUNDIR
 cp kill_all_mpi.sh                    $RUNDIR
-cp run_PA_box_tester_384.sh           $RUNDIR
+cp run_PA_box_tester_768.sh           $RUNDIR
 cp run_parallel_movie.py              $RUNDIR
 
 # go to the run directory before running anything 
