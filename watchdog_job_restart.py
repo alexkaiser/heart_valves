@@ -29,11 +29,11 @@
 
 # watches and restarts MPI jobs without terminating current job
 
+from __future__ import print_function
 import subprocess  
 import time 
 import sys 
 import os
-from __future__ import print_function
 
 
 def full_run_line(run_line, input_name, options, restart_number=None, restart_dir=None): 
