@@ -47,7 +47,7 @@ def full_run_line(run_line, input_name, options, restart_number=None, restart_di
     
     line = run_line + ' ' + input_name
     
-    if (restart_number > 0) and (restart_number is not None):
+    if (restart_number is not None) and (restart_number > 0):
         if restart_dir is None: 
             dir_name = 'restart_IB3d_tree_cycle'
         else: 
@@ -189,13 +189,17 @@ if __name__ == '__main__':
     
     script_prelims = '''
     #!/bin/bash
-    
-    env_log=env.log
-    while read -r line; do
-        export "$line"
-    done < $env_log
-        
     '''
+
+    read_env_vars = False 
+    if read_env_vars:
+        script_prelims +='''
+        env_log=env.log
+        while read -r line; do
+            export "$line"
+        done < $env_log
+            
+        '''
     
 #    script_prelims_restart = '''
 #    unset PBS_JOBID
