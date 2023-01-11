@@ -33,6 +33,8 @@ import subprocess
 import time 
 import sys 
 import os
+from __future__ import print_function
+
 
 def full_run_line(run_line, input_name, options, restart_number=None, restart_dir=None): 
     ''' 
@@ -61,12 +63,12 @@ def log_file_exists(process=None):
     
     for i in range(10):
         if os.path.isfile('IB3d.log'):
-            print 'log file found, script moving forward'
+            print('log file found, script moving forward')
             return True
         
         if process is not None:
             if process.poll() is not None:
-                print 'process reported stopped, returning from log_file_exists'
+                print( 'process reported stopped, returning from log_file_exists')
                 return False
         
         
@@ -92,7 +94,7 @@ def get_restart_number(restart_dir):
                 largest_restart_num = val
 
     if largest_restart_num is None:
-        print 'No restart files found, restart at beginning'
+        print('No restart files found, restart at beginning')
 
     return largest_restart_num
 
@@ -152,9 +154,9 @@ if __name__ == '__main__':
     input_name  = sys.argv[2]
     options     = sys.argv[3]    
     
-    print 'run line = ', run_line 
-    print 'input_name =', input_name
-    print 'options = ', options  
+    print('run line = ', run_line )
+    print('input_name =', input_name)
+    print('options = ', options  )
     
     # if len(sys.argv) >= 5:
     #     restart_dir = sys.argv[4]
@@ -171,7 +173,7 @@ if __name__ == '__main__':
     if os.path.isfile('done.txt'):
         code = subprocess.call('rm done.txt', shell=True)
         if code is None:
-            print 'removal of done.txt failed\n'
+            print('removal of done.txt failed\n')
 
     # check if we have restart available,
     # returns None if not
@@ -179,7 +181,7 @@ if __name__ == '__main__':
     
     to_run = full_run_line(run_line, input_name, options, restart_number, restart_dir)
     
-    print 'full run line = ', to_run
+    print('full run line = ', to_run)
     
     script_name = 'run_script_first.sh'
     script = open(script_name, 'w')
@@ -205,20 +207,20 @@ if __name__ == '__main__':
     script.write(to_run + '\n\n')
     script.close()
     
-    print 'python thinks current working dir is ', os.getcwd()
+    print('python thinks current working dir is ', os.getcwd())
     
     script_call_line = 'sh ' + script_name
-    print 'Popen will be called with ', script_call_line
+    print('Popen will be called with ', script_call_line)
     
     # start the orig process
-    print 'to process...'
+    print('to process...')
     current_sh_calls_mpi = subprocess.Popen(script_call_line, shell=True)
-    print 'should be running, control back to python'
+    print('should be running, control back to python')
 
     # check for file
     log_found = log_file_exists()
     if not log_found:
-        print 'No log file found after 10 checks, killing python script'
+        print('No log file found after 10 checks, killing python script')
         sys.exit()
 
     wait_time_s = 5*60              # check every ten minutes, max 20 minutes lost
@@ -240,7 +242,7 @@ if __name__ == '__main__':
     # wait, check if stopped, restart if needed
     while True:
         
-        print 'On loop check number ', check_number
+        print('On loop check number ', check_number)
         
         # just hang out
         time.sleep(wait_time_s)
@@ -252,58 +254,58 @@ if __name__ == '__main__':
         # no restart should occur if so
         # poll returns none if still running
         if current_sh_calls_mpi.poll() is not None:
-            print 'MPI run has stopped.'
+            print('MPI run has stopped.')
             
             if os.path.isfile('controlled_stop.txt'):
-                print 'Found controlled_stop.txt. Restarting.'
+                print('Found controlled_stop.txt. Restarting.')
                 run_restart = True
                 os.remove('controlled_stop.txt')
             else:
                 if not os.path.isfile('done.txt'):
-                    print 'Did not find controlled_stop.txt, did not find done.txt'
+                    print('Did not find controlled_stop.txt, did not find done.txt')
                     if time_step_error_string not in open('IB3d.log').read():
-                        print 'Time step error string not found but run has stopped'
+                        print('Time step error string not found but run has stopped')
 
                         if number_crash_restarts < max_crash_restarts:
-                            print 'Running crash restart'
+                            print('Running crash restart')
                             run_restart = True
                             number_crash_restarts += 1 
 
                         else:
-                            print 'Detected crash but out of crash restarts, exiting'
+                            print('Detected crash but out of crash restarts, exiting')
 
                     else:
-                        print 'Time step error detected in logs, no restart'
+                        print('Time step error detected in logs, no restart')
 
                 if not run_restart:
-                    print 'Exit python watchdog loop.'
+                    print('Exit python watchdog loop.')
                     break
 
         # this was only catching slow initializations, remove for now 
         if False: #mod_time == prev_time:
-            print 'On check number ', check_number, ', modification time unchanged'
+            print('On check number ', check_number, ', modification time unchanged')
             
             try:
                 # kill the sh script
                 current_sh_calls_mpi.kill()
                 current_sh_calls_mpi.wait()
                 if current_sh_calls_mpi.poll() is None:
-                    print 'Shell script ', script_name, ' is still running (even though it should have completed).'
-                    print 'Beware of strange behavior'
+                    print('Shell script ', script_name, ' is still running (even though it should have completed).')
+                    print('Beware of strange behavior')
 
                 # kill the MPI jobs with a shell script, wait for this to finish
                 code = subprocess.call('sh kill_all_mpi.sh', shell=True)
                 if code is None:
-                    print 'kill_all_mpi is still running (even though it should have completed).'
-                    print 'Beware of strange behavior'
+                    print('kill_all_mpi is still running (even though it should have completed).')
+                    print('Beware of strange behavior')
             except:
-                print 'Try block failed in kill during stuck job. Moving on, but watch strange behavior.'
+                print('Try block failed in kill during stuck job. Moving on, but watch strange behavior.')
             
             
             run_restart = True
         
         if run_restart:
-            print 'Initiating restart.'
+            print('Initiating restart.')
             
             run_restart = False
         
@@ -319,7 +321,7 @@ if __name__ == '__main__':
             script.write(script_prelims)
             
             restart_number = get_restart_number(restart_dir)
-            print 'restart_number = ', restart_number
+            print('restart_number = ', restart_number)
 
             to_run = full_run_line(run_line, input_name, options, restart_number, restart_dir)
             script.write(to_run + '\n\n')
@@ -327,20 +329,20 @@ if __name__ == '__main__':
 
             # time.sleep(wait_time_before_restart)
             
-            print 'restart number ', number_restarts, 'at step ', number_restarts
+            print('restart number ', number_restarts, 'at step ', number_restarts)
             
             current_sh_calls_mpi = subprocess.Popen('sh ' + script_name, shell=True)
 
             # make sure we have the log file again
             log_found = log_file_exists()
             if not log_found:
-                print 'No log file found after 10 checks, try to submit again'
+                print('No log file found after 10 checks, try to submit again')
                     
                 current_sh_calls_mpi.kill()
                 current_sh_calls_mpi.wait()
                 if current_sh_calls_mpi.poll() is None:
-                    print 'Shell script ', script_name, ' is still running (even though it should have completed).'
-                    print 'Beware of strange behavior'
+                    print('Shell script ', script_name, ' is still running (even though it should have completed).')
+                    print('Beware of strange behavior')
                 
                 time.sleep(wait_time_before_restart)
                 
@@ -349,7 +351,7 @@ if __name__ == '__main__':
                 
                 log_found_again = log_file_exists()
                 if not log_found_again:
-                    print 'No log file found after 10 checks, cancel job.'
+                    print('No log file found after 10 checks, cancel job.')
                     sys.exit()
 
             # extra wait to allow for initialization
@@ -362,19 +364,19 @@ if __name__ == '__main__':
         check_number += 1
 
     # wait 30 s for good measure
-    print 'Through main loop, check for post processing'
+    print('Through main loop, check for post processing')
     time.sleep(30)
 
     # submit movie script for post processing 
     # if os.path.isfile('done.txt') and (session_file_name is not None):
     if False: 
         
-        print 'done.txt found'
+        print('done.txt found')
     
         for f in os.listdir('.'):
             if f.startswith('viz'): 
                 
-                print 'Found viz directory'
+                print('Found viz directory')
                 
                 os.chdir(f)
                 
@@ -408,7 +410,7 @@ visit -cli -nowin -s ~/scratch/make_movie_generic.py ~/scratch/'''
                 
                 code = subprocess.call('sbatch make_movie.sbatch', shell=True)
                 if code is None:
-                    print 'submit of movie script failed, check for problems.\n'
+                    print('submit of movie script failed, check for problems.\n')
 
                 # code = subprocess.call('sbatch ~/mitral_fully_discrete/post_process.sbatch', shell=True)
                 # if code is None:
@@ -417,9 +419,9 @@ visit -cli -nowin -s ~/scratch/make_movie_generic.py ~/scratch/'''
                 break
 
     else:
-        print 'Could not find done.txt\n'
+        print('Could not find done.txt\n')
     
-    print 'Done with main, exiting.\n'
+    print('Done with main, exiting.\n')
     
     # again for good measure 
     sys.exit()
