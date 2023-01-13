@@ -33,18 +33,31 @@ if __name__ == '__main__':
 
     mesh_with_faces = pyvista.read(mesh_with_faces_name)
 
-    pool = multiprocessing.Pool() #use all available cores, otherwise specify the number you want as an argument
 
-    for f in os.listdir('.'):
-        if f.startswith('vessel') and f.endswith('.vtu'):
-            if not "_orig_copy" in f:
-                print("procssing file ", f)
-                
-                pool.apply_async(add_faces, args=(mesh_with_faces, f))
-                # add_faces(mesh_with_faces, f)
 
-    pool.close()
-    pool.join()
+    use_multiprocessing = False
+    if use_multiprocessing: 
+        jobs = []
+
+        for f in os.listdir('.'):
+            if f.startswith('vessel') and f.endswith('.vtu'):
+                if not "_orig_copy" in f:
+                    print("procssing file ", f)
+                    
+                    p = multiprocessing.Process(target=add_faces, args=(mesh_with_faces, f))
+                    jobs.append(p)
+                    p.start()
+                    # add_faces(mesh_with_faces, f)
+
+        for p in jobs:
+            p.join()
+    
+    else:
+        for f in os.listdir('.'):
+            if f.startswith('vessel') and f.endswith('.vtu'):
+                if not "_orig_copy" in f:
+                    print("procssing file ", f)
+                    add_faces(mesh_with_faces, f)
 
     # pool = multiprocessing.Pool() #use all available cores, otherwise specify the number you want as an argument
     # for i in range(nframes-1):add
