@@ -58,7 +58,7 @@ def read_distributed_vtr(dir_name):
     files = natsorted(glob.glob(dir_name + "/*.vtr"))
     #print("files = ", files)
     blocks = pyvista.MultiBlock([pyvista.read(f) for f in files])
-    return blocks.combine()
+    return blocks.combine(merge_points=True, tolerance=1.0e-3)
 
 
 def average_eulerian_mesh_one_step(idx_mri_read, eulerian_var_names, times, cycle_duration, cycles_to_output, dt_mri_read, base_dir, base_name_out, extension):
