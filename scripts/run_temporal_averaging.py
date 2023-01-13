@@ -173,10 +173,10 @@ if __name__ == '__main__':
     lagrangian = True
 
     first_cycle = False
-    second_cycle = False
+    second_cycle = True
     third_cycle = False
     second_third_cycle = False
-    two_three_four = True
+    two_three_four = False
 
     linear_interpolation = False 
 
