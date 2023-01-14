@@ -59,7 +59,7 @@ left_pa_C = 0.00086144200243
 left_pa_R_distal = 1570.56425496172710
 
 // solver parameters
-DELTA_FUNCTION      = "BSPLINE_3"
+DELTA_FUNCTION      = "IB_5"
 SOLVER_TYPE         = "STAGGERED"         // the fluid solver to use (STAGGERED or COLLOCATED)
 START_TIME          = 0.0e0               // initial simulation time
 END_TIME            = 2.0*CYCLE_DURATION    // final simulation time
