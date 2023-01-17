@@ -26,7 +26,7 @@ CYCLE_DURATION = 8.3250000000000002e-01
 VESSEL_FILENAME = "vessel_768.vertex"
 
 // physical ratio 
-RATIO_TO_SCAN = 4.0
+RATIO_TO_SCAN = 16.0/5.0
 
 DX_FLUID = (0.09 / RATIO_TO_SCAN) * (REF_RATIO^(MAX_LEVELS - 1))
 
@@ -62,7 +62,7 @@ left_pa_R_distal = 1570.56425496172710
 DELTA_FUNCTION      = "IB_5"
 SOLVER_TYPE         = "STAGGERED"         // the fluid solver to use (STAGGERED or COLLOCATED)
 START_TIME          = 0.0e0               // initial simulation time
-END_TIME            = 1.0*CYCLE_DURATION    // final simulation time
+END_TIME            = 0.5*CYCLE_DURATION    // final simulation time
 GROW_DT             = 2.0e0               // growth factor for timesteps
 NUM_CYCLES          = 1                   // number of cycles of fixed-point iteration
 CONVECTIVE_TS_TYPE = "ADAMS_BASHFORTH"    // convective time stepping type
@@ -70,7 +70,7 @@ CONVECTIVE_OP_TYPE  = "PPM"               // convective differencing discretizat
 CONVECTIVE_FORM     = "ADVECTIVE"         // how to compute the convective terms
 NORMALIZE_PRESSURE  = FALSE               // whether to explicitly force the pressure to have mean zero
 CFL_MAX             = 0.3                 // maximum CFL number
-DT                  = 2.0e-06             // maximum timestep size
+DT                  = 1.5e-06             // maximum timestep size
 ERROR_ON_DT_CHANGE  = TRUE                // whether to emit an error message if the time step size changes
 VORTICITY_TAGGING   = TRUE                // whether to tag cells for refinement based on vorticity thresholds
 TAG_BUFFER          = 2                   // size of tag buffer used by grid generation algorithm
