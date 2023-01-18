@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os, sys, subprocess, time
 
 
@@ -50,19 +51,19 @@ def fix_visit_files(viz_directory):
 
 if __name__ == '__main__':
 
-    print "call arguments: "
+    print( "call arguments: ")
     for arg in sys.argv:
-        print arg, " "
+        print(arg, " ")
 
 
     if os.path.isfile('done.txt'):
         
-        print 'done.txt found'
+        print( 'done.txt found')
     
         for f in os.listdir('.'):
             if f.startswith('viz'): 
                 
-                print 'Found viz directory'
+                print('Found viz directory')
                 
                 os.chdir(f)
                 
@@ -84,7 +85,7 @@ if __name__ == '__main__':
                     try:
                         view_clipping = float(sys.argv[3])
                     except ValueError:
-                        print "Not a float"
+                        print("Not a float")
                         view_clipping = None 
                 else:
                     view_clipping = None
@@ -100,27 +101,27 @@ if __name__ == '__main__':
                     if view_clipping is not None: 
                         call_str += " " + str(view_clipping)
 
-                    print "call str with n_procs = ", n_procs, " proc_num = ", i, "call_str = ", call_str
+                    print("call str with n_procs = ", n_procs, " proc_num = ", i, "call_str = ", call_str)
 
                     p = subprocess.Popen(call_str, shell=True)
-                    print "started process, p = ", p
+                    print("started process, p = ", p)
 
                     processes.append(p)
 
-                print "out of call loop in orig python script "
+                print( "out of call loop in orig python script ")
                 time.sleep(30)
 
                 while True: 
 
-                    print "new check"
+                    print("new check")
 
                     all_done = True 
                     for p in processes:
                         if p.poll() is None:
-                            print "process p = ", p, "returned None, still running"
+                            print("process p = ", p, "returned None, still running")
                             all_done = False
                         else:
-                            print "process p = ", p, "returned not None, is complete"
+                            print("process p = ", p, "returned not None, is complete")
 
                     if all_done:
                         break
@@ -133,7 +134,9 @@ if __name__ == '__main__':
 
     # name files after the job if easy
     # path is always /home/adk354/scratch/JOB_NAME
-    if (len(cwd_split) >= 5):
+    if (len(cwd_split) >= 7) and (cwd_split[1] == "expanse"):
+        base_name = cwd_split[6]
+    elif (len(cwd_split) >= 5):
         base_name = cwd_split[4]
     else:
         base_name = 'frames'
@@ -146,7 +149,7 @@ if __name__ == '__main__':
 
     code = subprocess.call(movie_string, shell=True)
     if code is None:
-        print 'something wrong in movie make, call returned prematurely'
+        print('something wrong in movie make, call returned prematurely')
 
 
     # # reduce by 10x
@@ -160,7 +163,7 @@ if __name__ == '__main__':
 
     code = subprocess.call(movie_string, shell=True)
     if code is None:
-        print 'something wrong in movie make, call returned prematurely'
+        print('something wrong in movie make, call returned prematurely')
 
 
 

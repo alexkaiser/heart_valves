@@ -1,4 +1,4 @@
-
+from __future__ import print_function
 import subprocess
 import os
 import sys 
@@ -19,7 +19,7 @@ if len(sys.argv) >= 5:
     try:
         view_clipping = float(sys.argv[4])
     except ValueError:
-        print "Not a float"
+        print ("Not a float")
         view_clipping = None 
 else:
     view_clipping = None
@@ -33,8 +33,8 @@ session_file = session_name
 lagrangian_visit_file = cwd + '/lag_data.visit'
 eulerian_visit_file   = cwd + '/dumps.visit'
 
-print 'trying to open ', lagrangian_visit_file
-print 'trying to open ', eulerian_visit_file
+print ('trying to open ', lagrangian_visit_file)
+print ('trying to open ', eulerian_visit_file)
 
 # data = (lagrangian_visit_file, eulerian_visit_file)
 data = (eulerian_visit_file, lagrangian_visit_file)
@@ -42,14 +42,16 @@ data = (eulerian_visit_file, lagrangian_visit_file)
 RestoreSessionWithDifferentSources(session_file, 0, data)
 # RestoreSession(session_file, 0)
 
-print 'restore passed'
+print ('restore passed')
 
 # get some output names
 cwd_split = cwd.split('/')
 
 # name files after the job if easy
 # path is always /home/adk354/scratch/JOB_NAME
-if (len(cwd_split) >= 5):
+if (len(cwd_split) >= 7) and (cwd_split[1] == "expanse"):
+    base_name = cwd_split[6]
+elif (len(cwd_split) >= 5):
     base_name = cwd_split[4]
 else:
     base_name = 'frames'
@@ -69,7 +71,7 @@ for state in range(TimeSliderGetNStates()):
     if (state % n_procs) == proc_num:
         try:
             if state % (TimeSliderGetNStates()/20) == 0:
-                print 'On state ', state, 'of ', TimeSliderGetNStates()
+                print ('On state ', state, 'of ', TimeSliderGetNStates())
         except: 
             # ignore message if it gives a divide by zero 
             # since there are not enough states 
