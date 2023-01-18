@@ -128,42 +128,44 @@ if __name__ == '__main__':
 
                     time.sleep(30)
 
-    # get some output names
-    cwd = os.getcwd()
-    cwd_split = cwd.split('/')
+        # get some output names
+        cwd = os.getcwd()
+        cwd_split = cwd.split('/')
 
-    # name files after the job if easy
-    # path is always /home/adk354/scratch/JOB_NAME
-    if (len(cwd_split) >= 7) and (cwd_split[1] == "expanse"):
-        base_name = cwd_split[6]
-    elif (len(cwd_split) >= 5):
-        base_name = cwd_split[4]
-    else:
-        base_name = 'frames'
+        # name files after the job if easy
+        # path is always /home/adk354/scratch/JOB_NAME
+        if (len(cwd_split) >= 7) and (cwd_split[1] == "expanse"):
+            base_name = cwd_split[6]
+        elif (len(cwd_split) >= 5):
+            base_name = cwd_split[4]
+        else:
+            base_name = 'frames'
 
-    # ffmpeg from here so variables are all in place
-    movie_string = 'ffmpeg -framerate 60 -i '
-    movie_string += base_name
-    movie_string += '%4d.jpeg -vf scale=1920:-2 -r 60 -c:v libx264 -preset veryslow -crf 18 '
-    movie_string += base_name + '.mp4'
+        # ffmpeg from here so variables are all in place
+        movie_string = 'ffmpeg -framerate 60 -i '
+        movie_string += base_name
+        movie_string += '%4d.jpeg -vf scale=1920:-2 -r 60 -c:v libx264 -preset veryslow -crf 18 '
+        movie_string += base_name + '.mp4'
 
-    code = subprocess.call(movie_string, shell=True)
-    if code is None:
-        print('something wrong in movie make, call returned prematurely')
+        code = subprocess.call(movie_string, shell=True)
+        if code is None:
+            print('something wrong in movie make, call returned prematurely')
 
 
-    # # reduce by 10x
-    # # 60 input, 60 output is 10x slow motion
-    # # 600 input, 60 output is real time 
+        # # reduce by 10x
+        # # 60 input, 60 output is 10x slow motion
+        # # 600 input, 60 output is real time 
 
-    movie_string = 'ffmpeg -framerate 600 -i '
-    movie_string += base_name
-    movie_string += '%4d.jpeg -vf scale=1920:-2 -r 60 -c:v libx264 -preset veryslow -crf 18 '
-    movie_string += base_name + '_real_time.mp4'
+        movie_string = 'ffmpeg -framerate 600 -i '
+        movie_string += base_name
+        movie_string += '%4d.jpeg -vf scale=1920:-2 -r 60 -c:v libx264 -preset veryslow -crf 18 '
+        movie_string += base_name + '_real_time.mp4'
 
-    code = subprocess.call(movie_string, shell=True)
-    if code is None:
-        print('something wrong in movie make, call returned prematurely')
+        code = subprocess.call(movie_string, shell=True)
+        if code is None:
+            print('something wrong in movie make, call returned prematurely')
 
+    else: 
+        print('Could not find done.txt')
 
 

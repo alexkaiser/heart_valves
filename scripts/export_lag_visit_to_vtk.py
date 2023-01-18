@@ -35,15 +35,15 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
+from __future__ import print_function
 import sys 
 
 
-print 'we out here'
+print('we out here')
 
 OpenDatabase("lag_data.visit")
  
-print 'data base open line passed'
+print('data base open line passed')
 
 if len(sys.argv) <= 1:
     raise TypeError('required agrs: base_name')
@@ -53,14 +53,14 @@ else:
 if len(sys.argv) >= 3:
     extension = sys.argv[2]
 else:
-    print "using default extension vtu"
+    print("using default extension vtu")
     extension = 'vtu'
 
 if len(sys.argv) >= 5:
     nprocs = int(sys.argv[3])
     proc_num = int(sys.argv[4])
 else: 
-    print "using default proc_num 0, nprocs = 1"
+    print("using default proc_num 0, nprocs = 1")
     proc_num = 0
     nprocs = 1
 
@@ -77,10 +77,13 @@ exp_db.db_type = 'VTK'
 exp_db.variables = (base_name)
 
 export_opts = GetExportOptions("VTK")
-print "export_opts = ", export_opts
+print("export_opts = ", export_opts)
 
-export_opts['Binary format'] = 1
-export_opts['XML format'] = 1
+# export_opts['Binary format'] = 1
+# export_opts['XML format'] = 1
+
+export_opts['FileFormat'] = 'XML Binary'
+print("export_opts = ", export_opts)
 
 nsteps = TimeSliderGetNStates()
 
@@ -89,7 +92,7 @@ for state in range(nsteps):
     if (state % nprocs) == proc_num:
 
         SetTimeSliderState(state)
-        print 'state = ', state
+        print('state = ', state)
 
         exp_db.filename = base_name + str(state).zfill(4)
         ExportDatabase(exp_db, export_opts)  
@@ -134,7 +137,7 @@ if proc_num == 0:
             if not initialized:
 
                 filename_out = base_name + '.pvd'
-                print "filename_out = ", filename_out
+                print("filename_out = ", filename_out)
 
                 f_write = open(filename_out, 'w')
                 f_write.write(prefix)
@@ -164,6 +167,6 @@ if proc_num == 0:
 
 
 
-print 'lag script cleared without crash'
+print('lag script cleared without crash')
  
 quit() 
