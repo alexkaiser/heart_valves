@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os, sys, subprocess, time
 
 
@@ -54,27 +55,27 @@ def run_command_parallel(call_str_base, n_procs):
     for i in range(n_procs):
         call_str = call_str_base + ' ' + str(n_procs) + ' ' + str(i)
 
-        print "call str with n_procs = ", n_procs, " proc_num = ", i, "call_str = ", call_str
+        print("call str with n_procs = ", n_procs, " proc_num = ", i, "call_str = ", call_str)
 
         p = subprocess.Popen(call_str, shell=True)
-        print "started process, p = ", p
+        print("started process, p = ", p)
 
         processes.append(p)
 
-    print "out of call loop in orig python script "
+    print("out of call loop in orig python script ")
     time.sleep(30)
 
     while True: 
 
-        print "new check"
+        print("new check")
 
         all_done = True 
         for p in processes:
             if p.poll() is None:
-                print "process p = ", p, "returned None, still running"
+                print("process p = ", p, "returned None, still running")
                 all_done = False
             else:
-                print "process p = ", p, "returned not None, is complete"
+                print("process p = ", p, "returned not None, is complete")
 
         if all_done:
             break
@@ -84,21 +85,21 @@ def run_command_parallel(call_str_base, n_procs):
 
 if __name__ == '__main__':
 
-    print "call arguments: "
+    print("call arguments: ")
     for arg in sys.argv:
-        print arg, " "
+        print(arg, " ")
 
     script_dir = "~/copies_scripts/"
     # script_dir = "~/mitral_fully_discrete/scripts/"
 
     if os.path.isfile('done.txt'):
         
-        print 'done.txt found'
+        print('done.txt found')
     
         for f in os.listdir('.'):
             if f.startswith('viz'): 
                 
-                print 'Found viz directory'
+                print('Found viz directory')
                 
                 os.chdir(f)
                 
@@ -124,10 +125,10 @@ if __name__ == '__main__':
                 for lag_file in os.listdir('..'):
                     if lag_file.endswith('.vertex'):
                         if lag_file.startswith('aortic') or lag_file.startswith('vessel'): 
-                            print "found lag file ", lag_file, ", processing parallel"
+                            print("found lag file ", lag_file, ", processing parallel")
                             base_name_lag = lag_file.rsplit('.', 1)[0]
 
-                            print "base_name_lag = ", base_name_lag
+                            print("base_name_lag = ", base_name_lag)
 
                             call_string_lag = 'visit -cli -nowin -s ' + script_dir + 'export_lag_visit_to_vtk.py '
                             call_string_lag += base_name_lag 
