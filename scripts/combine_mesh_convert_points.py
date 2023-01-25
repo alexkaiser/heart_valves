@@ -182,17 +182,18 @@ if __name__ == '__main__':
     point_data = True 
 
 
-    fine = False 
-    xfine = True 
+    fine = False
+    xxfine = True 
     if fine: 
-        NX=384
-        NY=256
-        NZ=192
-    elif xfine:
-        NX=512
-        NY=341
-        NZ=256
-
+        NX=208
+        NY=144
+        NZ=128
+    elif xxfine:
+        NX=332
+        NY=230
+        NZ=204
+    else:
+        raise ValueError('must provide values')
 
     basename = "eulerian_vars"
     
