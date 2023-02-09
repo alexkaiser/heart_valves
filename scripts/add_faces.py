@@ -23,6 +23,8 @@ if __name__ == '__main__':
 
     if "_192_" in os.getcwd():
         mesh_with_faces_name = '12_three_layer_192.vtu'
+    elif "_768_" in os.getcwd():
+        mesh_with_faces_name = '12_three_layer_fix_extender_mesh_pt02_ext_pt014.vtu'
 
 
     if not os.path.isfile(mesh_with_faces_name):
