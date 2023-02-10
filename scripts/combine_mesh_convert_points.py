@@ -167,6 +167,31 @@ def combine_mesh(basename,
             mesh.save(fname_out)
 
 
+def read_and_convert_points(basename,
+                            frame_number, 
+                            NX, 
+                            NY,
+                            NZ,
+                            label='_points', 
+                            extension='vtu'):
+
+    if point_data:
+        if (NX is None) or (NY is None) or (NZ is None):
+            raise ValueError("Must provide values for NX,NY,NZ when calling points")
+
+    fname_in = basename + str(frame_number).zfill(4) + '.' + extension
+
+    fname_out = basename + label + str(frame_number).zfill(4) + '.' + extension
+
+    mesh = pyvista.read(fname_in)
+
+    if point_data:
+        mesh = convert_mesh_to_center_points(mesh, NX, NY, NZ)
+        
+    mesh.save(fname_out)
+
+
+
 
 if __name__ == '__main__':
 
@@ -182,8 +207,8 @@ if __name__ == '__main__':
     point_data = True 
 
 
-    fine = False
-    xxfine = True 
+    fine = True
+    xxfine = False
     if fine: 
         NX=208
         NY=144
@@ -245,11 +270,58 @@ if __name__ == '__main__':
 
         write_pvd(basename_out, dt, nsteps, extension, nprocs_sim=1)
 
+
+    run_convert_only = False
+    if run_convert_only:
+
+        cycle_duration = 8.3250000000000002e-01
+        mri_read_times_per_cycle = 10 
+        dt_mri_read = cycle_duration / mri_read_times_per_cycle
+
+        nsteps = 10
+
+        basename += '_averaged'
+
+        use_multi = True 
+        if use_multi: 
+            jobs = []
+            for frame_number in range(nsteps):
+
+                p = multiprocessing.Process(target=read_and_convert_points, args=(basename,
+                                                                                  frame_number, 
+                                                                                  NX,
+                                                                                  NY,
+                                                                                  NZ,
+                                                                                  label,
+                                                                                  extension))
+                jobs.append(p)
+                p.start()
+
+            for p in jobs:
+                p.join()
+        else: 
+            for frame_number in range(nsteps):
+            # for frame_number in [0]:
+                read_and_convert_points(basename,
+                                        frame_number, 
+                                        NX, 
+                                        NY,
+                                        NZ,
+                                        label, 
+                                        extension)
+
+        basename_out = basename + label
+
+        write_pvd(basename_out, dt_mri_read, nsteps, extension, nprocs_sim=1)
+
+
+
     local = True 
     if local:
 
         # range_to_output = [0]
-        range_to_output = [1350]
+        # range_to_output = [1350]
+        range_to_output = [1322]
         combine_mesh(basename, 
                      range_to_output, 
                      label, 
