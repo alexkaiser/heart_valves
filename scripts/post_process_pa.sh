@@ -6,8 +6,8 @@
 #SBATCH --job-name=post_process
 #SBATCH --mail-user=adkaiser@gmail.com
 #SBATCH --mail-type=ALL
-#SBATCH --partition=willhies
-# #SBATCH --partition=willhies,amarsden
+# #SBATCH --partition=willhies
+#SBATCH --partition=willhies,amarsden
 
 
 
@@ -41,7 +41,7 @@ pvbatch ~/copies_scripts/differences_multiview_points.py &
 pvbatch ~/copies_scripts/sagittal_fine_cropped_points.py &
 
 # and integral metrics 
-pvbatch ~/copies_scripts/convergence_study_integrals.py &
+# pvbatch ~/copies_scripts/convergence_study_integrals.py &
 # pvbatch ~/copies_scripts/integral_metrics.py 0 &
 # pvbatch ~/copies_scripts/integral_metrics.py 1 &
 # pvbatch ~/copies_scripts/integral_metrics.py 2 &
