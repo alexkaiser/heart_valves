@@ -1,9 +1,8 @@
 ######################################################################
 ## Here specify the location of the IBAMR source and the location
 ## where IBAMR has been built.
-IBAMR_SRC_DIR   = $(HOME)/sfw/ibamr/IBAMR
-# IBAMR_BUILD_DIR = $(HOME)/sfw/ibamr/ibamr-objs-dbg
-IBAMR_BUILD_DIR = $(HOME)/sfw/ibamr/ibamr-objs-dbg_prescribed_motion
+IBAMR_SRC_DIR   = $(HOME)/software/ibamr/IBAMR
+IBAMR_BUILD_DIR = $(HOME)/software/ibamr/ibamr-debug
 
 ######################################################################
 ## Include variables specific to the particular IBAMR build.
