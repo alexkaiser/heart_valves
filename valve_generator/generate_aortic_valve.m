@@ -31,7 +31,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N_each_range = 2^8; %2.^(6:7); 
+N_each_range = 2^6; %2.^(6:7); 
 
 for N_each = N_each_range
 
@@ -46,7 +46,7 @@ for N_each = N_each_range
     % Initialize structures 
     % Many parameters are in this script 
 
-    pulm = true; 
+    pulm = false; 
     true_bicuspid = false; 
     
     if pulm
@@ -67,7 +67,7 @@ for N_each = N_each_range
     end 
 
 
-    interactive = false; 
+    interactive = true; 
 
     from_history = false; 
     if from_history 
