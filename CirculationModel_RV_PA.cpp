@@ -437,7 +437,7 @@ void CirculationModel_RV_PA::advanceTimeDependentData(const double dt,
                             }
                             for (Box<NDIM>::Iterator b(side_box); b; b++)
                             {
-                                const Index<NDIM>& i = b();
+                                const SAMRAI::hier::Index<NDIM>& i = b();
 
                                 double X[NDIM];
                                 for (int d = 0; d < NDIM; ++d)

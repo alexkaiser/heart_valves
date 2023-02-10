@@ -75,7 +75,7 @@ VelocityBcCoefs::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_data,
 
     for (Box<NDIM>::Iterator bc(bc_coef_box); bc; bc++)
     {
-        const Index<NDIM>& i = bc();
+        const SAMRAI::hier::Index<NDIM>& i = bc();
         
         double dummy;
         double& a = (!acoef_data.isNull() ? (*acoef_data)(i, 0) : dummy);
@@ -187,13 +187,13 @@ void VelocityBcCoefs_lv_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& aco
     #endif
 
     const Box<NDIM>& patch_box = patch.getBox();
-    const Index<NDIM>& patch_lower = patch_box.lower();
+    const SAMRAI::hier::Index<NDIM>& patch_lower = patch_box.lower();
     Pointer<CartesianPatchGeometry<NDIM> > pgeom = patch.getPatchGeometry();
     const double* const dx = pgeom->getDx();
     const double* const x_lower = pgeom->getXLower();
     for (Box<NDIM>::Iterator bc(bc_coef_box); bc; bc++)
     {
-        const Index<NDIM>& i = bc();
+        const SAMRAI::hier::Index<NDIM>& i = bc();
         
         double dummy;
         double& a = (!acoef_data.isNull() ? (*acoef_data)(i, 0) : dummy);
@@ -355,13 +355,13 @@ void VelocityBcCoefs_RV_PA::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_
     #endif
 
     const Box<NDIM>& patch_box = patch.getBox();
-    const Index<NDIM>& patch_lower = patch_box.lower();
+    const SAMRAI::hier::Index<NDIM>& patch_lower = patch_box.lower();
     Pointer<CartesianPatchGeometry<NDIM> > pgeom = patch.getPatchGeometry();
     const double* const dx = pgeom->getDx();
     const double* const x_lower = pgeom->getXLower();
     for (Box<NDIM>::Iterator bc(bc_coef_box); bc; bc++)
     {
-        const Index<NDIM>& i = bc();
+        const SAMRAI::hier::Index<NDIM>& i = bc();
         
         double dummy;
         double& a = (!acoef_data.isNull() ? (*acoef_data)(i, 0) : dummy);
@@ -530,13 +530,13 @@ void VelocityBcCoefs_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_
     #endif
 
     const Box<NDIM>& patch_box = patch.getBox();
-    const Index<NDIM>& patch_lower = patch_box.lower();
+    const SAMRAI::hier::Index<NDIM>& patch_lower = patch_box.lower();
     Pointer<CartesianPatchGeometry<NDIM> > pgeom = patch.getPatchGeometry();
     const double* const dx = pgeom->getDx();
     const double* const x_lower = pgeom->getXLower();
     for (Box<NDIM>::Iterator bc(bc_coef_box); bc; bc++)
     {
-        const Index<NDIM>& i = bc();
+        const SAMRAI::hier::Index<NDIM>& i = bc();
         
         double dummy;
         double& a = (!acoef_data.isNull() ? (*acoef_data)(i, 0) : dummy);

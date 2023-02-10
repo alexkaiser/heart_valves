@@ -150,7 +150,7 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
     //for (int component = 0; component < NDIM; ++component)
     
     for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
-        const Index<NDIM>& i = b();
+        const SAMRAI::hier::Index<NDIM>& i = b();
         const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
 
         (*F_data)(i_s) = force; // FORCE GOES HERE
@@ -223,7 +223,7 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
                     for (int component = 0; component < NDIM; ++component){
                         for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
 
-                            const Index<NDIM>& i = b();
+                            const SAMRAI::hier::Index<NDIM>& i = b();
                             const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
 
                             const double U_current = U_current_data ? (*U_current_data)(i_s) : 0.0;
@@ -256,7 +256,7 @@ FourierBodyForce::setDataOnPatch(const int data_idx,
                 for (int component = 0; component < NDIM; ++component){
                     for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
                     
-                        const Index<NDIM>& i = b();
+                        const SAMRAI::hier::Index<NDIM>& i = b();
                         const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
 
                         // get the height, which determines whether there is force

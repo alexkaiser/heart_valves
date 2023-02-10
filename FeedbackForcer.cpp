@@ -228,7 +228,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                 
                 for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(bdry_box, component)); b; b++){
 
-                    const Index<NDIM>& i = b();
+                    const SAMRAI::hier::Index<NDIM>& i = b();
                     const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
                     const double U_current = U_current_data ? (*U_current_data)(i_s) : 0.0;
                     const double U_new = U_new_data ? (*U_new_data)(i_s) : 0.0;
@@ -327,7 +327,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                         
                             for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(bdry_box, component)); b; b++){
 
-                                const Index<NDIM>& i = b();
+                                const SAMRAI::hier::Index<NDIM>& i = b();
                                 const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
                                 const double U_current = U_current_data ? (*U_current_data)(i_s) : 0.0;
                                 const double U_new = U_new_data ? (*U_new_data)(i_s) : 0.0;
@@ -507,7 +507,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                         
                             for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(bdry_box, component)); b; b++){
 
-                                const Index<NDIM>& i = b();
+                                const SAMRAI::hier::Index<NDIM>& i = b();
                                 const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
                                 const double U_current = U_current_data ? (*U_current_data)(i_s) : 0.0;
                                 const double U_new = U_new_data ? (*U_new_data)(i_s) : 0.0;
@@ -647,7 +647,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
             for (int component = 0; component < NDIM; ++component){
                 for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
 
-                    const Index<NDIM>& i = b();
+                    const SAMRAI::hier::Index<NDIM>& i = b();
                     const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
 
                     const double U_current = U_current_data ? (*U_current_data)(i_s) : 0.0;
@@ -682,7 +682,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
         // Clamp the velocity in the interior of the rigid solid.
         for (int component = 0; component < NDIM; ++component){
             for (Box<NDIM>::Iterator b(SideGeometry<NDIM>::toSideBox(patch_box, component)); b; b++){
-                const Index<NDIM>& i = b();
+                const SAMRAI::hier::Index<NDIM>& i = b();
                 const SideIndex<NDIM> i_s(i, component, SideIndex<NDIM>::Lower);
                 const double U_current = U_current_data ? (*U_current_data)(i_s) : 0.0;
                 const double U_new = U_new_data ? (*U_new_data)(i_s) : 0.0;
