@@ -18,14 +18,23 @@ def add_faces(mesh_with_faces, file_name):
 
 if __name__ == '__main__':
 
+    process_pa = False 
+    if process_pa:
 
-    mesh_with_faces_name = '13_3_layer_dspt025_five_layer_inlet.vtu'
+        mesh_with_faces_name = '13_3_layer_dspt025_five_layer_inlet.vtu'
 
-    if "_192_" in os.getcwd():
-        mesh_with_faces_name = '12_three_layer_192.vtu'
-    elif "_768_" in os.getcwd():
-        mesh_with_faces_name = '12_three_layer_fix_extender_mesh_pt02_ext_pt014.vtu'
+        if "_192_" in os.getcwd():
+            mesh_with_faces_name = '12_three_layer_192.vtu'
+        elif "_768_" in os.getcwd():
+            mesh_with_faces_name = '12_three_layer_fix_extender_mesh_pt02_ext_pt014.vtu'
 
+        base_name = 'vessel'
+
+    # aorta default 
+    else: 
+
+        mesh_with_faces_name = "aorta_384_clean_to_grid_ascii.vtu"
+        base_name = 'aorta_384'
 
     if not os.path.isfile(mesh_with_faces_name):
         if os.path.isfile(os.path.expanduser('~') + '/mitral_fully_discrete/' + mesh_with_faces_name):
@@ -42,8 +51,8 @@ if __name__ == '__main__':
         jobs = []
 
         for f in os.listdir('.'):
-            if f.startswith('vessel') and f.endswith('.vtu'):
-                if not "_orig_copy" in f:
+            if f.startswith(base_name) and f.endswith('.vtu'):
+                if (not "_orig_copy" in f) and (mesh_with_faces_name not in f):
                     print("procssing file ", f)
                     
                     p = multiprocessing.Process(target=add_faces, args=(mesh_with_faces, f))
@@ -56,7 +65,7 @@ if __name__ == '__main__':
     
     else:
         for f in os.listdir('.'):
-            if f.startswith('vessel') and f.endswith('.vtu'):
+            if f.startswith(base_name) and f.endswith('.vtu'):
                 if not "_orig_copy" in f:
                     print("procssing file ", f)
                     add_faces(mesh_with_faces, f)

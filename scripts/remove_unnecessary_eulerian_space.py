@@ -60,7 +60,7 @@ def read_distributed_vtr(dir_name):
 
     files = natsorted(glob.glob(dir_name + "/*.vtr"))
     blocks = pyvista.MultiBlock([pyvista.RectilinearGrid(f) for f in files])
-    return blocks.combine()
+    return blocks.combine(merge_points=True, tolerance=0.001)
 
 
 def sort_points_and_point_data(points, point_data=None):
@@ -176,7 +176,7 @@ def remove_eulerian_space(basename,
 
 if __name__ == '__main__':
 
-    basic = False 
+    basic = True 
 
     if basic:
     
@@ -302,7 +302,7 @@ if __name__ == '__main__':
         p.show()
 
 
-    pa_single_frame = True 
+    pa_single_frame = False 
     if pa_single_frame:
 
         basename = "eulerian_vars"

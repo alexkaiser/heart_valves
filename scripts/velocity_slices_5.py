@@ -81,7 +81,7 @@ if '_192_' in os.getcwd():
     resolution_string = '192'
 if '_384_' in os.getcwd(): 
     resolution_string = '384'
-if '_384_' in os.getcwd(): 
+if '_768_' in os.getcwd(): 
     resolution_string = '768'
 
 # create a new 'PVD Reader'
