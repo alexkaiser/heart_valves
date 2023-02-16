@@ -178,6 +178,16 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
         }
     }
 
+    // get fourier series value for pressure interpolation 
+    double t_reduced = d_rcr_on_time / 2.0;
+    double t_scaled = t_reduced * (d_fourier_ventricle->L  / d_cycle_duration);
+    double t_scaled_offset = t_scaled + d_t_offset_bcs_unscaled;
+    unsigned int k = (unsigned int) floor(t_scaled_offset / (d_fourier_ventricle->dt));
+    unsigned int idx = k % (d_fourier_ventricle->N_times);
+
+    // pressure value half way through initialization period 
+    d_P_min_linear_interp = MMHG_TO_CGS * d_fourier_ventricle->values[idx]; 
+
     pout << "passed contstructor\n"; 
 
     pout << "initial aorta pressure = " << P_initial_aorta << ", P_wk = " << d_aorta_P << "\n"; 
@@ -339,10 +349,15 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
     if (d_rcr_bcs_on){
         // The downstream pressure is determined by a three-element Windkessel model.
 
-        if ((d_P_initial_aorta_equal_to_ventricle) && (d_time < d_rcr_on_time)){
-            // linear interpolation 
-            d_aorta_P = (1 - d_time/d_rcr_on_time) * MMHG_TO_CGS * this->d_fourier_ventricle->values[0] + 
-                        (    d_time/d_rcr_on_time) * d_aorta_P_Wk; // wk pressure is the end pressure for the interpolation
+
+        if ((d_P_initial_aorta_equal_to_ventricle) && (d_time < (0.5*d_rcr_on_time))){
+            // equal to ventricle for half the time 
+            d_aorta_P =  MMHG_TO_CGS * d_fourier_ventricle->values[d_current_idx_series];
+        }
+        else if ((d_P_initial_aorta_equal_to_ventricle) && (d_time < d_rcr_on_time)){
+            // linear interpolation to pressurize 
+            d_aorta_P = ((d_time  -     d_rcr_on_time)/(0.5*d_rcr_on_time - d_rcr_on_time)) * MMHG_TO_CGS * d_P_min_linear_interp + 
+                        ((d_time  - 0.5*d_rcr_on_time)/(d_rcr_on_time - 0.5*d_rcr_on_time)) * d_aorta_P_Wk; // wk pressure is the end pressure for the interpolation
         }
         else{
             d_aorta_P_Wk = ((d_aorta_C / dt) * d_aorta_P_Wk + d_Q_aorta) / (d_aorta_C / dt + 1.0 / d_aorta_R_distal);        
