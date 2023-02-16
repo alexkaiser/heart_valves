@@ -356,7 +356,7 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
         }
         else if ((d_P_initial_aorta_equal_to_ventricle) && (d_time < d_rcr_on_time)){
             // linear interpolation to pressurize 
-            d_aorta_P = ((d_time  -     d_rcr_on_time)/(0.5*d_rcr_on_time - d_rcr_on_time)) * MMHG_TO_CGS * d_P_min_linear_interp + 
+            d_aorta_P = ((d_time  -     d_rcr_on_time)/(0.5*d_rcr_on_time - d_rcr_on_time)) * d_P_min_linear_interp + 
                         ((d_time  - 0.5*d_rcr_on_time)/(d_rcr_on_time - 0.5*d_rcr_on_time)) * d_aorta_P_Wk; // wk pressure is the end pressure for the interpolation
         }
         else{
