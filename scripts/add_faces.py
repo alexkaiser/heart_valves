@@ -33,7 +33,7 @@ if __name__ == '__main__':
     # aorta default 
     else: 
 
-        mesh_with_faces_name = "aorta_384_clean_to_grid_ascii.vtu"
+        mesh_with_faces_name = "16_meshed_pt25mm_3_layer_5_layer_inlet_outlet.vtu"
         base_name = 'aorta_384'
 
     if not os.path.isfile(mesh_with_faces_name):
