@@ -35,11 +35,11 @@ if __name__== "__main__":
     R_proximal =  77.0
     C = 0.001154
     R_distal =  1185.0
-    print "lit values:", 
-    print "R_proximal = ", R_proximal
-    print "C = ", C
-    print "R_distal = ", R_distal
-    print "R_total = ", R_proximal + R_distal, "\n\n"
+    print ("lit values:", )
+    print ("R_proximal = ", R_proximal)
+    print ("C = ", C)
+    print ("R_distal = ", R_distal)
+    print ("R_total = ", R_proximal + R_distal, "\n\n")
 
 
     beat_time = 0.8
@@ -49,19 +49,19 @@ if __name__== "__main__":
     diastolic_time_fraction = diastolic_time / beat_time
     systolic_time_fraction = systolic_time / beat_time
 
-    print "diastolic_time_fraction = ", diastolic_time_fraction
-    print "systolic_time_fraction = ", systolic_time_fraction
+    print ("diastolic_time_fraction = ", diastolic_time_fraction)
+    print ("systolic_time_fraction = ", systolic_time_fraction)
 
     P_systolic = 120.0
     P_max = 100.0
     P_min = 80.0
 
     P_diastolic_mean = P_min # 0.5 * (P_systolic + P_min)
-    print "P_diastolic_mean = ", P_diastolic_mean
+    print ("P_diastolic_mean = ", P_diastolic_mean)
 
     P_mean = systolic_time_fraction*P_systolic + diastolic_time_fraction*(P_diastolic_mean)
 
-    print "P_mean = ", P_mean
+    print ("P_mean = ", P_mean)
 
     if high_pressure: 
         P_mean *= 2 
@@ -80,6 +80,8 @@ if __name__== "__main__":
 
     ratio_prox_to_distal_resistors = 77.0 / 1185.0 
 
+    print("ratio_prox_to_distal_resistors = ", ratio_prox_to_distal_resistors)
+
     decay_time = diastolic_time
 
     C_prefactor = 1.0
@@ -88,9 +90,9 @@ if __name__== "__main__":
 
     name = 'aorta'
 
-    print "Values mmHg"
-    print name, ",\t", R_p_mmHg, ",\t", C_mmHg, ",\t", R_d_mmHg, ",\t", R_total_mmHg
-    print "\n\n\n"
+    print ("Values mmHg")
+    print (name, ",\t", R_p_mmHg, ",\t", C_mmHg, ",\t", R_d_mmHg, ",\t", R_total_mmHg)
+    print ("\n\n\n")
 
     P_min *= MMHG_TO_CGS
     P_max *= MMHG_TO_CGS
@@ -98,9 +100,10 @@ if __name__== "__main__":
 
     R_p, C, R_d, R_total = compute_rcr_parameters(P_min, P_max, P_mean, Q_mean, ratio_prox_to_distal_resistors, decay_time, C_prefactor)
 
-    print "Values CGS"
-    print name, ",\t", R_p, ",\t", C, ",\t", R_d, ",\t", R_total
+    print ("Values CGS")
+    print (name, ",\t", R_p, ",\t", C, ",\t", R_d, ",\t", R_total)
 
-    print "R_proximal = ", R_p
-    print "C = ", C
-    print "R_distal = ", R_d
+    print ("R_proximal = ", R_p)
+    print ("C = ", C)
+    print ("R_distal = ", R_d)
+
