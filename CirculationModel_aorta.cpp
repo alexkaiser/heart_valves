@@ -66,6 +66,7 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
       d_Q_ventricle(0.0), 
       d_Q_aorta(0.0),
       d_time(initial_time), 
+      d_P_initial_aorta(P_initial_aorta), 
       d_aorta_P_Wk(P_initial_aorta),
       d_p_extender_mean(0.0),
       d_p_extender_point(0.0),
@@ -360,11 +361,11 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
             // linear interpolation to pressurize 
             // resistance hooked to linearly interpolated pressures 
             // distal pressure is linearly interpolated 
-            double P_distal_temp = ((d_time  -     d_rcr_on_time) / (p_equal_fraction * d_rcr_on_time - d_rcr_on_time)) * d_P_min_linear_interp + 
-                                   ((d_time  - p_equal_fraction * d_rcr_on_time) / (d_rcr_on_time - p_equal_fraction * d_rcr_on_time)) * d_aorta_P_Wk; // wk pressure is the end pressure for the interpolation
+            d_aorta_P_Wk = ((d_time  -     d_rcr_on_time) / (p_equal_fraction * d_rcr_on_time - d_rcr_on_time)) * d_P_min_linear_interp + 
+                           ((d_time  - p_equal_fraction * d_rcr_on_time) / (d_rcr_on_time - p_equal_fraction * d_rcr_on_time)) * d_P_initial_aorta; // wk pressure is the end pressure for the interpolation
 
             // then gets the total resistance, no capacitor 
-            d_aorta_P = P_distal_temp + (d_aorta_R_distal + d_aorta_R_proximal) * d_Q_aorta; 
+            d_aorta_P = d_aorta_P_Wk + d_aorta_R_proximal * d_Q_aorta;
 
         }
         else{
