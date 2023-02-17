@@ -365,7 +365,7 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
                            ((d_time  - p_equal_fraction * d_rcr_on_time) / (d_rcr_on_time - p_equal_fraction * d_rcr_on_time)) * d_P_initial_aorta; // wk pressure is the end pressure for the interpolation
 
             // then gets the total resistance, no capacitor 
-            d_aorta_P = d_aorta_P_Wk + d_aorta_R_proximal * d_Q_aorta;
+            d_aorta_P = d_aorta_P_Wk + (d_aorta_R_proximal + d_aorta_R_distal) * d_Q_aorta;
 
         }
         else{
