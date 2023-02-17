@@ -348,16 +348,16 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
 
     if (d_rcr_bcs_on){
         // The downstream pressure is determined by a three-element Windkessel model.
+        const double p_equal_fraction = 0.1; 
 
-
-        if ((d_P_initial_aorta_equal_to_ventricle) && (d_time < (0.1*d_rcr_on_time))){
+        if ((d_P_initial_aorta_equal_to_ventricle) && (d_time < (p_equal_fraction*d_rcr_on_time))){
             // equal to ventricle for half the time 
             d_aorta_P =  MMHG_TO_CGS * d_fourier_ventricle->values[d_current_idx_series];
         }
         else if ((d_P_initial_aorta_equal_to_ventricle) && (d_time < d_rcr_on_time)){
             // linear interpolation to pressurize 
-            d_aorta_P = ((d_time  -     d_rcr_on_time)/(0.5*d_rcr_on_time - d_rcr_on_time)) * d_P_min_linear_interp + 
-                        ((d_time  - 0.5*d_rcr_on_time)/(d_rcr_on_time - 0.5*d_rcr_on_time)) * d_aorta_P_Wk; // wk pressure is the end pressure for the interpolation
+            d_aorta_P = ((d_time  -     d_rcr_on_time) / (p_equal_fraction * d_rcr_on_time - d_rcr_on_time)) * d_P_min_linear_interp + 
+                        ((d_time  - p_equal_fraction * d_rcr_on_time) / (d_rcr_on_time - p_equal_fraction * d_rcr_on_time)) * d_aorta_P_Wk; // wk pressure is the end pressure for the interpolation
         }
         else{
             d_aorta_P_Wk = ((d_aorta_C / dt) * d_aorta_P_Wk + d_Q_aorta) / (d_aorta_C / dt + 1.0 / d_aorta_R_distal);        
