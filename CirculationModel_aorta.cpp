@@ -350,7 +350,7 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
         // The downstream pressure is determined by a three-element Windkessel model.
 
 
-        if ((d_P_initial_aorta_equal_to_ventricle) && (d_time < (0.5*d_rcr_on_time))){
+        if ((d_P_initial_aorta_equal_to_ventricle) && (d_time < (0.1*d_rcr_on_time))){
             // equal to ventricle for half the time 
             d_aorta_P =  MMHG_TO_CGS * d_fourier_ventricle->values[d_current_idx_series];
         }
