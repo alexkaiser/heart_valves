@@ -85,7 +85,6 @@ public:
     double d_p_extender_point; 
 
     bool d_P_initial_aorta_equal_to_ventricle; 
-    double  d_P_initial_aorta;
     double d_P_min_linear_interp; 
     double d_rcr_on_time; 
 
