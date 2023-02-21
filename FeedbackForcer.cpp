@@ -576,9 +576,9 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                     // }
                                     // // #endif
 
-                                    // if ((axis != component) && (tangential_damp_to_zero)){
-                                    //     mask = 1.0;
-                                    // }
+                                    if ((axis != component) && (tangential_damp_to_zero)){
+                                        mask = 1.0;
+                                    }
 
                                 }
                                 else if (in_aorta){
