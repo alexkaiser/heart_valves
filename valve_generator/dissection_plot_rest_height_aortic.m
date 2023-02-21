@@ -180,20 +180,32 @@ coaptation_zone_start_fraction = coaptation_zone_start_index/k_max
 stretch_circ = valve.strain_circ + 1; 
 stretch_rad = valve.strain_rad + 1; 
 
-fprintf('Rest length height summary:\n'); 
-fprintf("And targets based on Swanson and Clark 1973\n")
-fprintf("Radius                       = %f\n", radius); 
-fprintf("Coaptation height            = %f\n", 0.17*2*radius); 
-fprintf("One third circumference      = %f\n", 2*pi*radius/3); 
-fprintf("Free edge target             = %f\t", 2*1.24*radius); 
-fprintf("Free edge rest target        = %f\n", 2*1.24*radius / stretch_circ); 
-fprintf("Circ free edge loaded length = %f\t", free_edge_length_single_loaded); 
-fprintf("Circ free edge rest length   = %f\n", length_one_leaflet_free_edge(k_max));
-fprintf("Leaflet height target        = %f\t", 1.4*radius); 
-fprintf("Leaflet height rest target   = %f\n", 1.4*radius / stretch_rad); 
-fprintf("Radial height loaded length  = %f\t", radial_leaflet_height_loaded); 
-fprintf("Radial height rest length    = %f\n", radial_leaflet_height); 
-
+if isfield(leaflet, 'variety') && strcmp(leaflet.variety, 'bicuspid') 
+    fprintf('Rest length height summary, true bicuspid:\n'); 
+    fprintf("Radius                             = %f\n", radius); 
+    fprintf("One half circumference             = %f\n", pi*radius); 
+    fprintf("Geometric height goal (1.3 r)      = %f\n", 1.3*radius);
+    fprintf("Circ free edge loaded length       = %f\t", free_edge_length_single_loaded); 
+    fprintf("Circ free edge rest length         = %f\n", length_one_leaflet_free_edge(k_max));
+    fprintf("Ratio loaded free edge to diameter = %f\t", free_edge_length_single_loaded/(2*radius));     
+    fprintf("Ratio rest   free edge to diameter = %f\n", length_one_leaflet_free_edge(k_max)/(2*radius));    
+    fprintf("Radial height loaded length        = %f\t", radial_leaflet_height_loaded); 
+    fprintf("Radial height rest length          = %f\n", radial_leaflet_height); 
+else 
+    fprintf('Rest length height summary:\n'); 
+    fprintf("And targets based on Swanson and Clark 1973\n")
+    fprintf("Radius                       = %f\n", radius); 
+    fprintf("Coaptation height            = %f\n", 0.17*2*radius); 
+    fprintf("One third circumference      = %f\n", 2*pi*radius/3); 
+    fprintf("Free edge target             = %f\t", 2*1.24*radius); 
+    fprintf("Free edge rest target        = %f\n", 2*1.24*radius / stretch_circ); 
+    fprintf("Circ free edge loaded length = %f\t", free_edge_length_single_loaded); 
+    fprintf("Circ free edge rest length   = %f\n", length_one_leaflet_free_edge(k_max));
+    fprintf("Leaflet height target        = %f\t", 1.4*radius); 
+    fprintf("Leaflet height rest target   = %f\n", 1.4*radius / stretch_rad); 
+    fprintf("Radial height loaded length  = %f\t", radial_leaflet_height_loaded); 
+    fprintf("Radial height rest length    = %f\n", radial_leaflet_height); 
+end 
 
 % 
 % j_center_anterior  = leaflet.j_range_anterior(floor(end/2)); 

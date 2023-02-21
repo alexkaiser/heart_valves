@@ -258,18 +258,31 @@ if interactive && pass_all
                         end 
                         % update aortic tension plots 
                         if isfield(valve, 'name') && strcmp(valve.name, 'aortic') 
+                            
+                            if ~exist('fig_ratio', 'var')
+                                fig_ratio = figure; 
+                            end
+                            fiber_output    = true; 
+                            fiber_stride    = 8; 
+                            stride_offset_j = 4; 
+                            circ = false; 
+                            rad = false; 
+                            ratio = true; 
+                            height_plot = false; 
                             set(0, 'CurrentFigure', fig_ratio)
                             [az el] = view;
                             clf(fig_ratio); 
-                            total_tension_surf_plot_aortic(valve.leaflets(1), fiber_output, fiber_stride, stride_offset_j, circ, rad, ratio, height_plot, fig_ratio)
-                            title('ratio circ/radial tension') 
+                            total_tension_surf_plot_aortic(valve.leaflets(1), fiber_output, fiber_stride, stride_offset_j, circ, rad, ratio, height_plot, fig_ratio);
+                            title('ratio circ/radial tension'); 
                             view(az,el);
                         end 
                         
                     else 
                         fprintf('New parameters failed. Keeping old tension structure. No pass flag.\n'); 
                     end
-                catch 
+                catch e %e is an MException struct                    
+                    fprintf(1,'The identifier was: %s\n',e.identifier);
+                    fprintf(1,'There was an error! The message was: %s\n',e.message);
                     fprintf('New parameters failed. Keeping old tension structure. Catch block, error called in Newton solve.\n'); 
                 end 
 

@@ -65,9 +65,17 @@ for comm_idx = 1:N_leaflets
                 
                 strained_len_total = extra_stretch_radial * sum(R_v(j + min_idx, :)); 
                 
-                y_free_edge_end = (r/4) * sign(sin(th)) * sin(th)^4; 
-                               
+                % cm apart at middle 
+                y_max_from_center = 0.2; 
+                y_free_edge_end = y_max_from_center * sign(sin(th)) * sin(th)^2; 
+                % y_free_edge_end = 0; 
+                
                 % this would put the two free edges exactly coinciding 
+                
+                
+                % if using exact x 
+                % then (y_diff^2 + height^2) = strained_len_total^2 
+                % so height is given as 
                 interp_height = sqrt(strained_len_total^2 - (ring_point(2) - y_free_edge_end)^2) ; 
                 
                 % comm_interp_point = [ring_point(1) ; (r/2) * sin(th); comm_prev(3)];                 

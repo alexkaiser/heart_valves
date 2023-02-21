@@ -74,7 +74,7 @@ variety= 'bicuspid';
 valve.variety = variety; 
 
 % does not place partition
-valve.in_heart = false; 
+valve.in_heart = true; 
 
 mri_box = false;
 
@@ -133,7 +133,7 @@ valve.output.stride_mesh    = N/32;
 
 valve.dirichlet_free_edge = false; 
 
-valve.dirichlet_free_edge_with_ref_only = false; 
+valve.dirichlet_free_edge_with_ref_only = true; 
 
 
 % provides a bending resistance for the final solve 
@@ -209,8 +209,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 2.0;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.0;  % radial
+tension_coeffs.c_circ_dec       = 2.9;  % circumferential 
+tension_coeffs.c_rad_dec        = 1.3;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.8;        
 
@@ -236,7 +236,7 @@ valve.eta_papillary_unscaled = 0.0; valve.target_papillary_unscaled/500;
 % if nonzero, linear springs of rest length with spacing between the layers 
 % are placed with this value 
 % final formula is multiplied by valve.tension_base  
-valve.kappa_cross_layer_multipler = 1e4 / 256^2; 
+valve.kappa_cross_layer_multipler = (384/N)^2 * 1e4 / 256^2;
 
 % valve.k_bend_radial = [0 0 1e5 1e5] * 192/N;
 valve.k_bend_radial = 0; 1e2 * 192/N;
@@ -248,6 +248,56 @@ valve.k_bend_circ_free_edge = 0;
 valve.k_bend_circ_free_edge_percentage = 0;
 
 valve.k_bend_cross_layer = 0;
+
+if valve.in_heart
+    dx = 5 /(N/4); 
+    valve.ds = dx/2; %2*pi*valve.skeleton.r / N; 
+
+    thickness_cylinder = 0.15; 
+    valve.n_layers_cylinder = ceil(thickness_cylinder/valve.ds) + 1; 
+        
+    h_top_scaffold_min = 0.2; 
+    
+    h_top_scaffold_max = valve.skeleton.normal_height; 
+    
+    h_top_scaffold_amplitude = h_top_scaffold_max - h_top_scaffold_min; 
+    
+    % value from least squares on pulm 
+    % p = 3.095653361985474; 
+    p = 3; 
+    
+    % function with unspecified power 
+    valve.z_max_cylinder = @(theta) h_top_scaffold_min * ones(size(theta))  +  h_top_scaffold_amplitude * abs(cos(theta)).^(p); 
+        
+    % bottom flat at zero 
+    valve.z_min_cylinder = @(theta) zeros(size(theta)); 
+    
+    debug_plot = true; 
+    if debug_plot
+        th = linspace(0,2*pi,1000);
+        plot(th,valve.z_min_cylinder(th))
+        hold on 
+        plot(th,valve.z_max_cylinder(th))
+
+%         f = @(theta)  0.28*ones(size(theta))  + (1.095 - 0.28)*0.5 * (cos(3*theta)+1);
+%         plot(th, f(th)); 
+        
+        legend('bottom', 'top')
+        
+%         plot(th, h_min_scaffold * ones(size(th))); 
+%         plot(th, (h_min_scaffold + h_min_amplitude)*ones(size(th))); 
+%         plot(th,  h_top_scaffold_min * ones(size(th))); 
+%         plot(th,  h_top_scaffold_max * ones(size(th)));
+        
+        % heights from top of scaffold to minimum 
+%        plot(angles, heights_theta,'k*')
+        
+        axis equal
+        
+    end 
+end 
+
+
 
 % coaptation height for Swanson and Clark 
 % width is the same 
