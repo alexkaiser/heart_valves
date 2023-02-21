@@ -533,7 +533,7 @@ if build_reference
             fprintf('Global solve passed, err = %e\n\n', err); 
         else 
             if any_passed
-                fprintf('Global solve passed but with pressure, err = %e\n\n', valve_with_reference.leaflets(i).p_0); 
+                fprintf('Global solve passed but with pressure %e, err = %e\n\n', valve_with_reference.leaflets(i).p_0, err); 
             else 
                 fprintf('Global solve failed, err = %e\n\n', err); 
             end 

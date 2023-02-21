@@ -120,12 +120,13 @@ while true
                 pause(.1); 
             end
 
+            % update pressure before break 
+            p_last_passed = p_current; 
+            
             if p_current == p_goal
                 leaflet_okay = leaflet_current; 
                 break
             end 
-
-            p_last_passed = p_current; 
 
             % increment, but do not pass goal 
 
@@ -148,8 +149,8 @@ while true
         
     catch 
         fprintf('\n\n'); 
-        err = lasterror; 
-        disp(err.message); 
+        error_obj = lasterror; 
+        disp(error_obj.message); 
         fprintf('Solve failed due to line search errors.\n')
         p_increment = p_increment / 4;  
         p_current   = p_last_passed + p_increment; 
@@ -164,7 +165,13 @@ while true
 end 
     
 leaflet = leaflet_okay; 
-leaflet.p_0 = p_current; 
+leaflet.p_0 = p_last_passed; 
+
+if pass 
+    if p_last_passed ~= p_current 
+        error("solve passed but current pressure not equal to last passed pressure, control flow bug"); 
+    end 
+end 
 
 if ~pass 
     warning(sprintf('Leaving with pressure not equal to desired goal.\nFinal pressure = %f\n', leaflet_okay.p_0)); 
