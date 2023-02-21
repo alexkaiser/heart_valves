@@ -235,6 +235,7 @@ if __name__ == '__main__':
     check_number = 0
 
     time_step_error_string = 'Time step size change encountered'
+    abort_error_string = 'ABORT'
     number_crash_restarts = 0
     max_crash_restarts = 2
 
@@ -270,16 +271,19 @@ if __name__ == '__main__':
                     if time_step_error_string not in open('IB3d.log').read():
                         print('Time step error string not found but run has stopped')
 
-                        if number_crash_restarts < max_crash_restarts:
-                            print('Running crash restart')
-                            run_restart = True
-                            number_crash_restarts += 1 
+                        if abort_error_string not in open('output.txt').read(): 
+                            print('ABORT not found in output file')
 
-                        else:
-                            print('Detected crash but out of crash restarts, exiting')
+                            if number_crash_restarts < max_crash_restarts:
+                                print('Running crash restart')
+                                run_restart = True
+                                number_crash_restarts += 1 
 
-                    else:
-                        print('Time step error detected in logs, no restart')
+                            else:
+                                print('Detected crash but out of crash restarts, exiting')
+
+                        else: 
+                            print('Found ABORT in output.txt, no restart')
 
                 if not run_restart:
                     print('Exit python watchdog loop.')
