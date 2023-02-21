@@ -18,7 +18,7 @@ module load openmpi/2.0.2
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_8f290e8_convergence_check_layers_up
+RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_6dd3756_new_ibamr_check
 mkdir $RUNDIR
 
 # set up run info 
