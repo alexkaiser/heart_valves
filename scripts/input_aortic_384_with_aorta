@@ -62,7 +62,7 @@ ENABLE_LOGGING      = TRUE
 N=384 
 
 // cm 
-DX = 0.048 // 0.1 * (192.0/N)
+DX = 0.1 * (192.0/N)
 
 // computed from scans 
 X_HIGH =   4.61544 + 0.001
