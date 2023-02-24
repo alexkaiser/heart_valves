@@ -20,6 +20,7 @@ def morph_extender(mesh,
                    fname_out, 
                    mesh_boundary, 
                    normal_direction, 
+                   extension_value,
                    masking_width, 
                    enforce_flat_bdry = True, 
                    flat_bdry_tolerance = 1.0e-3):
@@ -38,9 +39,6 @@ def morph_extender(mesh,
     print("centroid = ", centroid)
 
     mesh_adjusted = mesh 
-
-    # 1 mm out at the ends 
-    extension_value = 1.0
 
     for idx, pt in enumerate(mesh.points):
 
@@ -83,10 +81,14 @@ if __name__== "__main__":
     enforce_flat_bdry = True
     flat_bdry_tolerance = 1.0e-3
 
+    # 1 mm out at the ends 
+    extension_value = 2.0
+
     mesh_adjusted = morph_extender(mesh, 
                                    fname_out, 
                                    mesh_boundary, 
                                    normal_direction, 
+                                   extension_value,
                                    masking_width, 
                                    enforce_flat_bdry, 
                                    flat_bdry_tolerance)
@@ -99,6 +101,7 @@ if __name__== "__main__":
                                             bdry_filename_out, 
                                             mesh_boundary, 
                                             normal_direction, 
+                                            extension_value,
                                             masking_width, 
                                             enforce_flat_bdry, 
                                             flat_bdry_tolerance)
