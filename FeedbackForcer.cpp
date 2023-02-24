@@ -28,7 +28,7 @@
 // #define FLOW_STRAIGHTENER
 #define OPEN_BOUNDARY_STABILIZATION
 
-#define FLOW_AVERAGER
+// #define FLOW_AVERAGER
 
 #define FULL_FLOW_CLAMP 
 #define FULL_FLOW_CLAMP_TIME 0.2
@@ -551,7 +551,7 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                 double mask = 0.0;
                                 double U_goal = 0.0; 
 
-                                bool tangential_damp_to_zero = true;
+                                bool tangential_damp_to_zero = false;
 
                                 if (in_ventricle){
 
@@ -566,19 +566,19 @@ FeedbackForcer::setDataOnPatch(const int data_idx,
                                     }
 
 
-                                    #ifdef FLOW_AVERAGER
-                                        // set goal to be equal to average flow 
-                                        if (d_circ_model_aorta->d_area_initialized){
-                                            if (axis == component){
-                                                U_goal = d_circ_model_aorta->d_Q_ventricle / d_circ_model_aorta->d_area_ventricle;
-                                                mask = 1.0;
-                                            }
-                                        }
-                                    #endif
+                                    // #ifdef FLOW_AVERAGER
+                                    //     // set goal to be equal to average flow 
+                                    //     if (d_circ_model_aorta->d_area_initialized){
+                                    //         if (axis == component){
+                                    //             U_goal = d_circ_model_aorta->d_Q_ventricle / d_circ_model_aorta->d_area_ventricle;
+                                    //             mask = 1.0;
+                                    //         }
+                                    //     }
+                                    // #endif
 
-                                    if ((axis != component) && (tangential_damp_to_zero)){
-                                        mask = 1.0;
-                                    }
+                                    // if ((axis != component) && (tangential_damp_to_zero)){
+                                    //     mask = 1.0;
+                                    // }
 
                                 }
                                 else if (in_aorta){
