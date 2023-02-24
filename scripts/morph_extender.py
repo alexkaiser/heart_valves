@@ -82,7 +82,7 @@ if __name__== "__main__":
     flat_bdry_tolerance = 1.0e-3
 
     # 1 mm out at the ends 
-    extension_value = 2.0
+    extension_value = 5.0
 
     mesh_adjusted = morph_extender(mesh, 
                                    fname_out, 
