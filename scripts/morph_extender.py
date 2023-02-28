@@ -22,6 +22,7 @@ def morph_extender(mesh,
                    normal_direction, 
                    extension_value,
                    masking_width, 
+                   z_translation_max = 0.0,
                    enforce_flat_bdry = True, 
                    flat_bdry_tolerance = 1.0e-3):
 
@@ -48,7 +49,10 @@ def morph_extender(mesh,
 
         extra_r = extra_radius(pt[0], x_min, x_max, extension_value)
 
-        increment = [0, extra_r * normal[1], extra_r * normal[2]]
+        z_inc = extra_radius(pt[0], x_min, x_max, z_translation_max)
+
+
+        increment = [0, extra_r * normal[1], extra_r * normal[2] - z_inc]
 
         if enforce_flat_bdry:
             if abs(pt[0] - x_max) < flat_bdry_tolerance:
@@ -62,27 +66,42 @@ def morph_extender(mesh,
 
 if __name__== "__main__":
 
-    fname = "16_meshed_pt25mm_3_layer_5_layer_inlet_outlet.stl"
-    fname_out = "17_meshed_pt25mm_3_layer_5_layer_inlet_outlet_constriction.stl"
+    res_192 = True 
+    if res_192:
+        fname = "21_meshed_pt5mm_3_layer_5_layer_inlet.stl"
+        fname_out = "22_meshed_pt5mm_3_layer_5_layer_inlet_constriction.stl"
 
+        bdry_filename = 'lvot_bdry_192.vtu'
+        bdry_filename_out = 'lvot_bdry_192_constriction.vtu'
+
+    else:
+        # basic 
+        fname = "16_meshed_pt25mm_3_layer_5_layer_inlet_outlet.stl"
+        fname_out = "17_meshed_pt25mm_3_layer_5_layer_inlet_outlet_constriction.stl"
+
+        bdry_filename = 'lvot_bdry_384_layer_3_pt5mm.vtu'
+        bdry_filename_out = 'lvot_bdry_384_layer_3_pt5mm_constriction.vtu'
+
+
+
+    
     mesh = pyvista.read(fname)
-
-    bdry_filename = 'lvot_bdry_384_layer_3_pt5mm.vtu'
-    bdry_filename_out = 'lvot_bdry_384_layer_3_pt5mm_constriction.vtu'
     mesh_boundary = pyvista.read(bdry_filename)
 
     # x direction 
     normal_direction = 0
 
     # mesh in mm, mask 1 cm worth 
-    masking_width = 8.0
+    masking_width = 10.0
 
     # if true, adjusts x component to be exactly equal to this value 
     enforce_flat_bdry = True
     flat_bdry_tolerance = 1.0e-3
 
     # 1 mm out at the ends 
-    extension_value = 5.0
+    extension_value = 0.0
+
+    z_translation_max = 5.0
 
     mesh_adjusted = morph_extender(mesh, 
                                    fname_out, 
@@ -90,6 +109,7 @@ if __name__== "__main__":
                                    normal_direction, 
                                    extension_value,
                                    masking_width, 
+                                   z_translation_max,
                                    enforce_flat_bdry, 
                                    flat_bdry_tolerance)
 
@@ -102,7 +122,8 @@ if __name__== "__main__":
                                             mesh_boundary, 
                                             normal_direction, 
                                             extension_value,
-                                            masking_width, 
+                                            masking_width,
+                                            z_translation_max, 
                                             enforce_flat_bdry, 
                                             flat_bdry_tolerance)
 
