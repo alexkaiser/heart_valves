@@ -18,7 +18,7 @@ R_proximal =  83.6698220729
 C =  0.00167055364456
 R_distal =  1287.64596307
 
-P_aorta_0_MMHG = 100.0
+P_aorta_0_MMHG = 94.0
 
 FOURIER_COEFFS_FILENAME_VENTRICLE = "fourier_coeffs_ventricle.txt"
 

@@ -173,10 +173,51 @@ def remove_eulerian_space(basename,
             mesh_inside.save(fname_out)
 
 
+def remove_eulerian_space_single_frame(basename, 
+                          boundary_mesh, 
+                          frame_number, 
+                          label='_restricted_cells', 
+                          extension='vtu', 
+                          point_data=False, 
+                          NX=None, 
+                          NY=None, 
+                          NZ=None):
+
+    i = frame_number
+
+    dir_name = basename + str(i).zfill(4)
+
+    fname_out = basename + label + str(i).zfill(4) + '.' + extension
+
+    # read distributed vtr 
+    mesh = read_distributed_vtr(dir_name)
+
+    fname_out_cells = basename + "no_restrict_cells" + str(i).zfill(4) + '.' + extension
+    mesh.save(fname_out_cells)
+
+    if point_data:
+
+        if (NX is None) or (NY is None) or (NZ is None):
+            raise ValueError("Must provide values for NX,NY,NZ when calling points")
+
+        mesh_point_data = convert_mesh_to_center_points(mesh, NX, NY, NZ)
+        selected = mesh_point_data.select_enclosed_points(boundary_mesh, tolerance=1.0e-10, inside_out=False, check_surface=True)
+
+    else:
+        selected = mesh.select_enclosed_points(boundary_mesh, tolerance=1.0e-10, inside_out=False, check_surface=True)
+
+    # remove the exterior 
+    # all_scalars=True keeps cells that intersect boundary 
+    # all_scalars=False keeps cells that have at least one interior point 
+    mesh_inside = selected.threshold(0.5, scalars="SelectedPoints", all_scalars=False) 
+    #mesh_inside = selected.threshold(0.5, scalars="SelectedPoints", all_scalars=True) 
+
+    mesh_inside.save(fname_out)
+
 
 if __name__ == '__main__':
 
-    basic = True 
+    basic = False 
 
     if basic:
     
@@ -300,6 +341,53 @@ if __name__ == '__main__':
         p.add_mesh(mesh_inside, color="Crimson", opacity=0.05, **dargs) 
         p.add_mesh(boundary_mesh, color="mintcream", opacity=1, **dargs) 
         p.show()
+
+
+    aorta_single_frame = True 
+    if aorta_single_frame:
+
+        frame_number = 399 
+
+        point_data = True 
+        NX=144
+        NY=96
+        NZ=224
+
+        basename = "eulerian_vars"
+
+        if point_data:
+            label = '_restricted_points'
+        else: 
+            label = '_restricted_cells'
+
+        extension = 'vtu'
+
+        # compute masks for all 
+        boundary_mesh_name = '2_aorta_remeshed_pt5mm_capped.vtp'
+
+        # grab this file if it's not here... 
+        if not os.path.isfile(boundary_mesh_name):
+            if os.path.isfile('~/mitral_fully_discrete/' + boundary_mesh_name):
+                shutil.copy('~/mitral_fully_discrete/' + boundary_mesh_name, '.') 
+            else: 
+                raise FileNotFoundError("cannot find boundary_mesh_name file = ", boundary_mesh_name)
+
+
+        boundary_mesh = pyvista.read(boundary_mesh_name)
+
+        # selected = mesh.select_enclosed_points(boundary_mesh, tolerance=1.0e-10, inside_out=False, check_surface=True)
+        # selected.clear_cell_arrays()
+        remove_eulerian_space_single_frame(basename, 
+                                            boundary_mesh, 
+                                            frame_number, 
+                                            label, 
+                                            extension,
+                                            point_data, 
+                                            NX,
+                                            NY, 
+                                            NZ)
+
+
 
 
     pa_single_frame = False 
