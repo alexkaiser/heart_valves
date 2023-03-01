@@ -36,6 +36,11 @@ if __name__ == '__main__':
         mesh_with_faces_name = "16_meshed_pt25mm_3_layer_5_layer_inlet_outlet.vtu"
         base_name = 'aorta_384'
 
+        if "_192_" in os.getcwd():
+            mesh_with_faces_name = '21_meshed_pt5mm_3_layer_5_layer_inlet.vtu'
+            base_name = 'aorta_192'
+
+
     if not os.path.isfile(mesh_with_faces_name):
         if os.path.isfile(os.path.expanduser('~') + '/mitral_fully_discrete/' + mesh_with_faces_name):
             shutil.copy(os.path.expanduser('~') + '/mitral_fully_discrete/' + mesh_with_faces_name, '.') 

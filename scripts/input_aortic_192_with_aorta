@@ -63,15 +63,15 @@ ENABLE_LOGGING      = TRUE
 DX = 0.1
 
 // computed from scans 
-X_HIGH =   4.6155 
-Z_HIGH = -17.0697 + 0.0003
+X_HIGH =   4.61574 + 0.0001 
+Z_HIGH = -17.0695 + 0.0001
 Y_MID = -18.4862
 Y_HIGH = Y_MID + 4.8/2.0 // put 48 points centered 
 
 // number points 
 NX = 64 + 8
 NY = 48
-NZ = 128 - 16
+NZ = 128 //- 16
 
 X_LOW = X_HIGH - DX*NX
 Y_LOW = Y_HIGH - DX*NY

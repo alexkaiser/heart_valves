@@ -217,7 +217,7 @@ def remove_eulerian_space_single_frame(basename,
 
 if __name__ == '__main__':
 
-    basic = False 
+    basic = False  
 
     if basic:
     
@@ -248,6 +248,11 @@ if __name__ == '__main__':
         NX=144
         NY=96
         NZ=224
+
+        if "_192_" in os.getcwd():
+            NX=72
+            NY=48
+            NZ=112
 
         basename = "eulerian_vars"
         nsteps = len(times)
@@ -352,6 +357,11 @@ if __name__ == '__main__':
         NX=144
         NY=96
         NZ=224
+
+        if "_192_" in os.getcwd():
+            NX=72
+            NY=48
+            NZ=112
 
         basename = "eulerian_vars"
 
