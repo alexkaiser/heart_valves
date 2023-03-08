@@ -629,6 +629,12 @@ void VelocityBcCoefs_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_
                 g = 0.0;
 
             }
+            else if (in_aorta){
+                // no tangential traction 
+                a = 0.0; 
+                b = 1.0; 
+                g = 0.0; 
+            }
             else{
                 // no tangential slip outside inlets and outlets 
                 a = 1.0;
