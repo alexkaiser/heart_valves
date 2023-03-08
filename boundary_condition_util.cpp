@@ -543,46 +543,47 @@ void VelocityBcCoefs_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_
         double& b = (!bcoef_data.isNull() ? (*bcoef_data)(i, 0) : dummy);
         double& g = (!gcoef_data.isNull() ? (*gcoef_data)(i, 0) : dummy);
         
+
+        // take periodic reduction
+        unsigned int idx = d_circ_model_aorta->d_current_idx_series; 
+
+        double X[NDIM];
+        for (int d = 0; d < NDIM; ++d)
+        {
+            X[d] = x_lower[d] + dx[d] * (double(i(d) - patch_lower(d)) + (d == axis ? 0.0 : 0.5));
+        }
+
+        double X_in_plane_1 = 0.0; 
+        double X_in_plane_2 = 0.0; 
+        if (axis == 0)
+        {
+            X_in_plane_1 = X[1]; 
+            X_in_plane_2 = X[2]; 
+        }
+        else if (axis == 1)
+        {
+            X_in_plane_1 = X[0]; 
+            X_in_plane_2 = X[2]; 
+        }
+        else if (axis == 2)
+        {
+            X_in_plane_1 = X[0]; 
+            X_in_plane_2 = X[1]; 
+        }
+        else
+        {
+            TBOX_ERROR("Axis has value that is not 0 1 2\n"); 
+        }
+
+        const int in_ventricle  = d_circ_model_aorta->point_in_ventricle(X_in_plane_1, X_in_plane_2, axis, side);
+        const int in_aorta      = d_circ_model_aorta->point_in_aorta    (X_in_plane_1, X_in_plane_2, axis, side);
+
+        if (in_ventricle && in_aorta){
+            TBOX_ERROR("Position is within two inlets and outlets, should be impossible\n"); 
+        }
+
         if (axis == d_comp_idx){
             // normal component has axis equal to comp_idx 
-
-            // take periodic reduction
-            unsigned int idx = d_circ_model_aorta->d_current_idx_series; 
-
-            double X[NDIM];
-            for (int d = 0; d < NDIM; ++d)
-            {
-                X[d] = x_lower[d] + dx[d] * (double(i(d) - patch_lower(d)) + (d == axis ? 0.0 : 0.5));
-            }
-
-            double X_in_plane_1 = 0.0; 
-            double X_in_plane_2 = 0.0; 
-            if (axis == 0)
-            {
-                X_in_plane_1 = X[1]; 
-                X_in_plane_2 = X[2]; 
-            }
-            else if (axis == 1)
-            {
-                X_in_plane_1 = X[0]; 
-                X_in_plane_2 = X[2]; 
-            }
-            else if (axis == 2)
-            {
-                X_in_plane_1 = X[0]; 
-                X_in_plane_2 = X[1]; 
-            }
-            else
-            {
-                TBOX_ERROR("Axis has value that is not 0 1 2\n"); 
-            }
-
-            const int in_ventricle  = d_circ_model_aorta->point_in_ventricle(X_in_plane_1, X_in_plane_2, axis, side);
-            const int in_aorta      = d_circ_model_aorta->point_in_aorta    (X_in_plane_1, X_in_plane_2, axis, side);
-
-            if (in_ventricle && in_aorta){
-                TBOX_ERROR("Position is within two inlets and outlets, should be impossible\n"); 
-            }
 
             if (in_ventricle){
                 // sign for negative in stress tensor
@@ -620,10 +621,26 @@ void VelocityBcCoefs_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_
         
         }
         else {
-            // no tangential slip everywhere on domain 
-            a = 1.0;
-            b = 0.0;
-            g = 0.0;
+            // tangential components 
+            if (in_ventricle){
+                // no tangential traction 
+                a = 0.0; 
+                b = 1.0; 
+                g = 0.0;
+
+            }
+            else if (in_aorta){
+                // no tangential traction 
+                a = 0.0; 
+                b = 1.0; 
+                g = 0.0; 
+            }
+            else{
+                // no tangential slip outside inlets and outlets 
+                a = 1.0;
+                b = 0.0;
+                g = 0.0;
+            }
         }
 
     }
