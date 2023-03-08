@@ -63,7 +63,7 @@ def read_distributed_vtr(dir_name):
     return blocks.combine(merge_points=True, tolerance=0.001)
 
 
-def sort_points_and_point_data(points, point_data=None):
+def sort_points_and_point_data(points, point_data_U=None, point_data_P=None):
     '''
     Sorts points by x,y,z
     Applies permutation to point and point_data
@@ -73,12 +73,17 @@ def sort_points_and_point_data(points, point_data=None):
 
     points_sorted = points[indices]
 
-    if point_data is not None:
-        point_data_sorted = point_data[indices]
+    if point_data_U is not None:
+        point_data_sorted_U = point_data_U[indices]
     else:
-        point_data_sorted = None
+        point_data_sorted_U = None
 
-    return points_sorted, point_data_sorted
+    if point_data_P is not None:
+        point_data_sorted_P = point_data_P[indices]
+    else:
+        point_data_sorted_P = None
+
+    return points_sorted, point_data_sorted_U, point_data_sorted_P
 
 
 def generate_cells(NX,NY,NZ):
@@ -120,12 +125,12 @@ def convert_mesh_to_center_points(mesh, NX, NY, NZ):
     '''
 
     mesh_cell_centers = mesh.cell_centers()
-    points_sorted, point_data_sorted_U = sort_points_and_point_data(mesh_cell_centers.points, mesh_cell_centers.point_arrays['U'])
+    points_sorted, point_data_sorted_U, point_data_sorted_P = sort_points_and_point_data(mesh_cell_centers.points, mesh_cell_centers.point_arrays['U'], mesh_cell_centers.point_arrays['P'])
     cells_sorted = generate_cells(NX,NY,NZ)
 
     mesh_points_meshio_format = meshio.Mesh(points_sorted, 
                                         cells={"hexahedron": cells_sorted}, 
-                                        point_data={'U': point_data_sorted_U})
+                                        point_data={'U': point_data_sorted_U, 'P': point_data_sorted_P})
 
     return pyvista.wrap(mesh_points_meshio_format)
 
@@ -217,7 +222,7 @@ def remove_eulerian_space_single_frame(basename,
 
 if __name__ == '__main__':
 
-    basic = False  
+    basic = True  
 
     if basic:
     
@@ -348,10 +353,10 @@ if __name__ == '__main__':
         p.show()
 
 
-    aorta_single_frame = True 
+    aorta_single_frame = False 
     if aorta_single_frame:
 
-        frame_number = 399 
+        frame_number = 421 
 
         point_data = True 
         NX=144
