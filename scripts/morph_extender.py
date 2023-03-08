@@ -92,16 +92,16 @@ if __name__== "__main__":
     normal_direction = 0
 
     # mesh in mm, mask 1 cm worth 
-    masking_width = 10.0
+    masking_width = 8.0
 
     # if true, adjusts x component to be exactly equal to this value 
     enforce_flat_bdry = True
     flat_bdry_tolerance = 1.0e-3
 
     # 1 mm out at the ends 
-    extension_value = 6.0
+    extension_value = 5.0
 
-    z_translation_max = 5.0
+    z_translation_max = 0.0
 
     mesh_adjusted = morph_extender(mesh, 
                                    fname_out, 
