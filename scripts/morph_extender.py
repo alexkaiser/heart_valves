@@ -1,17 +1,21 @@
 import os 
 import pyvista 
 import numpy as np 
+import math 
 
 
-
-def extra_radius(x, x_min, x_max, extension_value):
+def extra_radius(x, x_min, x_max, extension_value, cos_interpolation=False):
 
     if x < x_min:
         return 0.0
     elif x < x_max:
         # 0*(x - x_max)/(x_min - x_max) + extension_value*(x - x_min)/(x_max - x_min)
         # linearly interpolate from 0 to extension_value
-        return extension_value*(x - x_min)/(x_max - x_min)
+        if cos_interpolation:
+            arg = (x - x_min)/(x_max - x_min)
+            return extension_value * 0.5*(-math.cos(math.pi * arg) + 1.0)
+        else:   
+            return extension_value*(x - x_min)/(x_max - x_min)
     else:
         return extension_value
     
@@ -24,7 +28,8 @@ def morph_extender(mesh,
                    masking_width, 
                    z_translation_max = 0.0,
                    enforce_flat_bdry = True, 
-                   flat_bdry_tolerance = 1.0e-3):
+                   flat_bdry_tolerance = 1.0e-3,
+                   cos_interpolation = False):
 
 
     if normal_direction != 0:
@@ -47,7 +52,7 @@ def morph_extender(mesh,
         normal[0] = 0.0
         normal /= np.linalg.norm(normal) 
 
-        extra_r = extra_radius(pt[0], x_min, x_max, extension_value)
+        extra_r = extra_radius(pt[0], x_min, x_max, extension_value, cos_interpolation)
 
         z_inc = extra_radius(pt[0], x_min, x_max, z_translation_max)
 
@@ -74,6 +79,9 @@ if __name__== "__main__":
         bdry_filename = 'lvot_bdry_192.vtu'
         bdry_filename_out = 'lvot_bdry_192_constriction.vtu'
 
+        # bdry_filename = "lvot_bdry_192_layer_1.vtu"
+        # bdry_filename_out = 'lvot_bdry_384_layer_1_pt5mm_constriction.vtu'
+
     else:
         # basic 
         fname = "16_meshed_pt25mm_3_layer_5_layer_inlet_outlet.stl"
@@ -92,7 +100,7 @@ if __name__== "__main__":
     normal_direction = 0
 
     # mesh in mm, mask 1 cm worth 
-    masking_width = 8.0
+    masking_width = 10.0
 
     # if true, adjusts x component to be exactly equal to this value 
     enforce_flat_bdry = True
@@ -103,6 +111,8 @@ if __name__== "__main__":
 
     z_translation_max = 0.0
 
+    cos_interpolation = True
+
     mesh_adjusted = morph_extender(mesh, 
                                    fname_out, 
                                    mesh_boundary, 
@@ -111,7 +121,8 @@ if __name__== "__main__":
                                    masking_width, 
                                    z_translation_max,
                                    enforce_flat_bdry, 
-                                   flat_bdry_tolerance)
+                                   flat_bdry_tolerance, 
+                                   cos_interpolation = True)
 
     # pyvista.plot(mesh_adjusted)
 
@@ -125,7 +136,8 @@ if __name__== "__main__":
                                             masking_width,
                                             z_translation_max, 
                                             enforce_flat_bdry, 
-                                            flat_bdry_tolerance)
+                                            flat_bdry_tolerance,
+                                            cos_interpolation = True)
 
     # pyvista.plot(mesh_boundary_adjusted)
 

@@ -356,7 +356,7 @@ if __name__ == '__main__':
     aorta_single_frame = False 
     if aorta_single_frame:
 
-        frame_number = 421 
+        frame_number = 399 
 
         point_data = True 
         NX=144
