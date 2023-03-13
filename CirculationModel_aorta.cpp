@@ -120,23 +120,23 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
     d_ventricle_points_idx2 = new double[d_n_pts_ventricle]; 
 
     for (int i=0; i<d_n_pts_ventricle; i++){
+        ventricle_file >> x; 
         ventricle_file >> d_ventricle_points_idx1[i]; 
         ventricle_file >> d_ventricle_points_idx2[i];
-        ventricle_file >> z; 
-
+        
         if (i>0){
-            if (fabs(z_prev - z) > tol){
-                TBOX_ERROR("z coordinates must be consistent\n"); 
+            if (fabs(x_prev - x) > tol){
+                TBOX_ERROR("x coordinates must be consistent\n"); 
             }
         }
-        z_prev = z; 
+        x_prev = x; 
 
     }
     pout << "to ventricle file close\n"; 
     ventricle_file.close(); 
-    // hardcode to z bottom 
-    d_ventricle_axis = 2; 
-    d_ventricle_side = 0; 
+    // hardcode to top 
+    d_ventricle_axis = 0; 
+    d_ventricle_side = 1; 
 
     // read vertices from file 
     ifstream aorta_file(aorta_vertices_file_name.c_str(), ios::in);

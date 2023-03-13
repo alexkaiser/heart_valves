@@ -60,29 +60,25 @@ OUTPUT_DIV_U        = FALSE
 ENABLE_LOGGING      = TRUE
 
 // cm 
-DX = 0.1 + 0.00000001
+DX = 0.1
 
 // computed from scans 
-X_MID = 2.28187
-Y_MID = -18.48570
-
-// 0.000001 is smallest order that bottom in domain 
-Z_LOW = -28.3 - 0.000001
-// Z_HIGH = -17.10 
+X_HIGH =   3.9 + 0.0001 
+Z_HIGH = -17.0695 + 0.0001 
+Y_MID = -18.4862
 
 // number points 
-NX = 96 
-NY = 48 
-NZ = 112
+NX = 64
+NY = 48 + 16
+NZ = 128 + 16 //- 16
 
-X_HIGH = X_MID + (NX*DX)/2.0 // put points centered 
+
 Y_HIGH = Y_MID + (NY*DX)/2.0 // put points centered 
 
 X_LOW = X_HIGH - DX*NX
 Y_LOW = Y_HIGH - DX*NY
-// Z_LOW = Z_HIGH - DX*NZ
+Z_LOW = Z_HIGH - DX*NZ
 
-Z_HIGH = Z_LOW + DX*NZ
 
 VelocityInitialConditions {
    function_0 = "0.0"
@@ -249,7 +245,7 @@ IBMethod {
 
 IBStandardInitializer {
    max_levels      = MAX_LEVELS
-   structure_names = "aortic_no_partition_192", "aortic_no_partition_192_cylinder", "aorta_192" , "aorta_192_flow_extender_inside"
+   structure_names = "aortic_no_partition_192", "aortic_no_partition_192_cylinder", "aorta_192", "aorta_192_flow_extender_inside"
    aortic_no_partition_192 {
       level_number = MAX_LEVELS - 1
    }
