@@ -255,9 +255,9 @@ if __name__ == '__main__':
         NZ=224
 
         if "_192_" in os.getcwd():
-            NX=72
+            NX=96
             NY=48
-            NZ=112
+            NZ=128
 
         basename = "eulerian_vars"
         nsteps = len(times)
@@ -364,9 +364,9 @@ if __name__ == '__main__':
         NZ=224
 
         if "_192_" in os.getcwd():
-            NX=72
+            NX=96
             NY=48
-            NZ=112
+            NZ=128
 
         basename = "eulerian_vars"
 
