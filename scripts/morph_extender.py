@@ -73,10 +73,10 @@ if __name__== "__main__":
 
     res_192 = True 
     if res_192:
-        fname = "9_aorta_remeshed_pt5mm_2_cm_extender_5_layer.stl"
-        fname_out = "9_aorta_remeshed_pt5mm_2_cm_extender_5_layer_constriction.stl"
+        fname = "21_meshed_pt5mm_3_layer_5_layer_inlet.stl"
+        fname_out = "22_meshed_pt5mm_3_layer_5_layer_inlet_constriction.stl"
 
-        bdry_filename = 'lvot_bdry_192_layer_3.vtu'
+        bdry_filename = 'lvot_bdry_192.vtu'
         bdry_filename_out = 'lvot_bdry_192_layer_3_constriction.vtu'
 
         # bdry_filename = "lvot_bdry_192_layer_1.vtu"
@@ -100,14 +100,14 @@ if __name__== "__main__":
     normal_direction = 0
 
     # mesh in mm
-    masking_width = 15.0
+    masking_width = 10.0
 
     # if true, adjusts x component to be exactly equal to this value 
     enforce_flat_bdry = True
     flat_bdry_tolerance = 1.0e-3
 
     # 1 mm out at the ends 
-    extension_value = 2.5
+    extension_value = 1.0
 
     z_translation_max = 0.0
 
