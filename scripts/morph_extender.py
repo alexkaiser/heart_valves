@@ -107,7 +107,7 @@ if __name__== "__main__":
     flat_bdry_tolerance = 1.0e-3
 
     # 1 mm out at the ends 
-    extension_value = 1.0
+    extension_value = 5.0
 
     z_translation_max = 0.0
 
