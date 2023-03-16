@@ -73,10 +73,10 @@ if __name__== "__main__":
 
     res_192 = True 
     if res_192:
-        fname = "21_meshed_pt5mm_3_layer_5_layer_inlet.stl"
-        fname_out = "22_meshed_pt5mm_3_layer_5_layer_inlet_constriction.stl"
+        fname = "5_aorta_remeshed_pt5mm_2cm_extender_layers.stl"
+        fname_out = "6_aorta_remeshed_pt5mm_2cm_extender_layers_constriction.stl"
 
-        bdry_filename = 'lvot_bdry_192.vtu'
+        bdry_filename = 'lvot_bdry.vtu'
         bdry_filename_out = 'lvot_bdry_192_layer_3_constriction.vtu'
 
         # bdry_filename = "lvot_bdry_192_layer_1.vtu"

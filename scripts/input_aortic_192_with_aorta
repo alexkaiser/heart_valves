@@ -62,9 +62,11 @@ ENABLE_LOGGING      = TRUE
 // cm 
 DX = 0.1
 
+EXTRA_BDRY = 1.0e-7
+
 // computed from scans 
-X_HIGH =  6.61544 + 0.00001 
-Z_HIGH = -17.0697 + 0.0001 
+X_HIGH =   5.61551322937011719 + EXTRA_BDRY
+Z_HIGH = -17.06931304931640625 + EXTRA_BDRY
 Y_MID = -18.4862
 
 // number points 
