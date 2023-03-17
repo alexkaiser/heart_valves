@@ -72,10 +72,10 @@ def expand_mesh(mesh,
 
 
 if __name__== "__main__":
+                
+    fname_in = "4_aorta_remeshed_pt5mm_2_cm_extender.stl"
 
-    fname_in = "4_aorta_remeshed_pt5mm_2cm_extender.stl"
-
-    fname_out = "5_aorta_remeshed_pt5mm_2cm_extender_layers.stl"
+    fname_out = "5_aorta_remeshed_pt5mm_2_cm_extender_layers.stl"
 
     mesh = pyvista.read(fname_in)
 
@@ -87,7 +87,7 @@ if __name__== "__main__":
     n_layers_extenders = 2
     extender_direction_idx = [0,2]
     extender_top = True
-    extender_width = [20.0, 10.0]
+    extender_width = [30.0, 10.0]
     extract_edge_layer = 2
 
     mesh_combined, edges = expand_mesh(mesh,
