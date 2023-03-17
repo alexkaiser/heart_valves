@@ -107,11 +107,11 @@ if __name__== "__main__":
     flat_bdry_tolerance = 1.0e-3
 
     # 1 mm out at the ends 
-    extension_value = 0.0
+    extension_value = 5.0
 
     z_translation_max = 0.0
 
-    cos_interpolation = True
+    cos_interpolation = False
 
     mesh_adjusted = morph_extender(mesh, 
                                    fname_out, 
@@ -122,7 +122,7 @@ if __name__== "__main__":
                                    z_translation_max,
                                    enforce_flat_bdry, 
                                    flat_bdry_tolerance, 
-                                   cos_interpolation = True)
+                                   cos_interpolation)
 
     # pyvista.plot(mesh_adjusted)
 
@@ -137,7 +137,7 @@ if __name__== "__main__":
                                             z_translation_max, 
                                             enforce_flat_bdry, 
                                             flat_bdry_tolerance,
-                                            cos_interpolation = True)
+                                            cos_interpolation)
 
     # pyvista.plot(mesh_boundary_adjusted)
 
