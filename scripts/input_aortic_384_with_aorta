@@ -64,16 +64,20 @@ N=384
 // cm 
 DX = 0.1 * (192.0/N)
 
+EXTRA_BDRY = 1.0e-7
+
 // computed from scans 
-X_HIGH =   4.61544 + 0.001
-Z_HIGH = -17.0695 + 0.001
+X_HIGH =   6.61601104736328125 + EXTRA_BDRY
+Z_HIGH = -17.06925506591796875 + EXTRA_BDRY
+
 Y_MID = -18.4862
-Y_HIGH = Y_MID + 4.8/2.0 // put 48 points centered 
 
 // number points 
-NX = int((64 + 8)   * N/192)
+NX = int(96         * N/192)
 NY = int(48         * N/192)
-NZ = int((128 - 16) * N/192)
+NZ = int(128        * N/192)
+
+Y_HIGH = Y_MID + (NY*DX)/2.0 // put points centered 
 
 X_LOW = X_HIGH - DX*NX
 Y_LOW = Y_HIGH - DX*NY

@@ -71,7 +71,7 @@ def morph_extender(mesh,
 
 if __name__== "__main__":
 
-    res_192 = True 
+    res_192 = False
     if res_192:
         fname = "5_aorta_remeshed_pt5mm_2_cm_extender_layers.stl"
         fname_out = "6_aorta_remeshed_pt5mm_2cm_extender_layers_constriction.stl"
@@ -84,11 +84,11 @@ if __name__== "__main__":
 
     else:
         # basic 
-        fname = "16_meshed_pt25mm_3_layer_5_layer_inlet_outlet.stl"
-        fname_out = "17_meshed_pt25mm_3_layer_5_layer_inlet_outlet_constriction.stl"
+        fname = "3_aorta_remeshed_pt25mm_3cm_extender_layers.stl"
+        fname_out = "4_aorta_remeshed_pt25mm_3cm_extender_layers_constriction.stl"
 
-        bdry_filename = 'lvot_bdry_384_layer_3_pt5mm.vtu'
-        bdry_filename_out = 'lvot_bdry_384_layer_3_pt5mm_constriction.vtu'
+        bdry_filename = 'lvot_bdry.vtu'
+        bdry_filename_out = 'lvot_bdry_384_layer_3_constriction.vtu'
 
 
 
@@ -111,7 +111,7 @@ if __name__== "__main__":
 
     z_translation_max = 0.0
 
-    cos_interpolation = False
+    cos_interpolation = True
 
     mesh_adjusted = morph_extender(mesh, 
                                    fname_out, 

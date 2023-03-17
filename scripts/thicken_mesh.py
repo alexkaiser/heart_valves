@@ -73,9 +73,14 @@ def expand_mesh(mesh,
 
 if __name__== "__main__":
                 
-    fname_in = "4_aorta_remeshed_pt5mm_2_cm_extender.stl"
+    run_192 = False
+    if run_192:
+        fname_in = "4_aorta_remeshed_pt5mm_2_cm_extender.stl"
+        fname_out = "5_aorta_remeshed_pt5mm_2_cm_extender_layers.stl"
+    else:
+        fname_in = "2_aorta_remeshed_pt25mm_3cm_extender.stl"
+        fname_out = "3_aorta_remeshed_pt25mm_3cm_extender_layers.stl"
 
-    fname_out = "5_aorta_remeshed_pt5mm_2_cm_extender_layers.stl"
 
     mesh = pyvista.read(fname_in)
 
