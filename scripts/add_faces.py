@@ -33,11 +33,11 @@ if __name__ == '__main__':
     # aorta default 
     else: 
 
-        mesh_with_faces_name = "16_meshed_pt25mm_3_layer_5_layer_inlet_outlet.vtu"
+        mesh_with_faces_name = "4_aorta_remeshed_pt25mm_3cm_extender_layers_constriction.vtu"
         base_name = 'aorta_384'
 
         if "_192_" in os.getcwd():
-            mesh_with_faces_name = '21_meshed_pt5mm_3_layer_5_layer_inlet.vtu'
+            mesh_with_faces_name = '6_meshed_pt5mm_5_layer_cropped.vtu'
             base_name = 'aorta_192'
 
 
