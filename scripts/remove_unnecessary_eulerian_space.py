@@ -7,6 +7,7 @@ from natsort import natsorted
 import multiprocessing 
 import pdb
 import numpy as np 
+import re
 
 
 def write_pvd(basename, dt, nsteps, extension, nprocs_sim=1):
@@ -220,6 +221,48 @@ def remove_eulerian_space_single_frame(basename,
     mesh_inside.save(fname_out)
 
 
+def find_box_size():
+
+    box_size_found = False 
+    NX = None 
+    NY = None 
+    NZ = None
+
+    log_file = None
+    if os.path.isfile('IB3d.log'):
+        print("log file found, trying to open")
+        log_file = open('IB3d.log', 'r')
+    elif os.path.isfile('../IB3d.log'):
+        log_file = open('../IB3d.log', 'r')
+
+    if not log_file:
+        print("Log file not found")
+        return box_size_found, NX, NY, NZ
+
+    log_file_string = log_file.read()
+
+    match_x = re.search(r"(NX\s+= )(\d+)", log_file_string)
+    match_y = re.search(r"(NY\s+= )(\d+)", log_file_string)
+    match_z = re.search(r"(NZ\s+= )(\d+)", log_file_string)
+
+    if match_x and match_y and match_z:
+
+        # print("match_x = ", match_x, match_x.group(), match_x.group(2))
+        # print("match_y = ", match_y, match_y.group())
+        # print("match_z = ", match_z, match_z.group())
+
+        NX = int(match_x.group(2))
+        NY = int(match_y.group(2))
+        NZ = int(match_z.group(2))
+        box_size_found = True 
+        print("Box size found, NX, NY, NZ = ", NX, NY, NZ)
+
+    else: 
+        print("All matches not found")
+
+    return box_size_found, NX, NY, NZ
+
+
 if __name__ == '__main__':
 
     basic = True  
@@ -250,14 +293,22 @@ if __name__ == '__main__':
         # times = times[:5]
 
         point_data = True 
-        NX=144
-        NY=96
-        NZ=224
+        
+        box_size_found, NX, NY, NZ  = find_box_size()
 
-        if "_192_" in os.getcwd():
-            NX=96
-            NY=48
-            NZ=128
+        if not box_size_found:
+            print("Log file not found. Using default box sizes.")
+
+            NX=144
+            NY=96
+            NZ=224
+
+            if "_192_" in os.getcwd():
+                NX=96
+                NY=48
+                NZ=128
+
+        print("NX, NY, NZ = ", NX, NY, NZ)
 
         basename = "eulerian_vars"
         nsteps = len(times)
@@ -353,15 +404,15 @@ if __name__ == '__main__':
         p.show()
 
 
-    aorta_single_frame = False 
+    aorta_single_frame = False
     if aorta_single_frame:
 
-        frame_number = 399 
+        frame_number = 421 
 
         point_data = True 
-        NX=144
+        NX=192
         NY=96
-        NZ=224
+        NZ=256
 
         if "_192_" in os.getcwd():
             NX=96
