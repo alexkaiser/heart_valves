@@ -25,8 +25,7 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
 
     X = leaflet.X; 
 
-    % this is the parameter to search over 
-    y_max_from_center = 0.45; 
+
 
     % tol change 
     tol_rms_err_strain = 1e-10; 
@@ -43,6 +42,17 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
     % for debug info 
     'before any processing'
     [free_edge_length_single_loaded, free_edge_length_single_rest] = get_free_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths)
+    
+    
+    % find desired coefficient for initial curve before iteration 
+    % this is the parameter to search over 
+    % y_max_from_center = 0.9; 
+    
+    free_edge_len_minus_rest = @(y_max) run_temp_free_edge_interp(leaflet, extra_stretch_radial, y_max) - free_edge_length_single_rest; 
+    
+    y_max_from_center_initial_guess = 1.0; 
+    options = optimset('Display','off','TolFun',1e-16);
+    y_max_from_center = fsolve(free_edge_len_minus_rest,y_max_from_center_initial_guess,options)
     
     
     
