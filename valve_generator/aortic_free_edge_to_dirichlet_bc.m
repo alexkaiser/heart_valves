@@ -4,6 +4,7 @@ j_max  = leaflet.j_max;
 k_max  = leaflet.k_max; 
 N_each = leaflet.N_each; 
 
+R_u    = leaflet.R_u; 
 R_v    = leaflet.R_v; 
 
 if isfield(leaflet, 'N_leaflets')
@@ -33,6 +34,13 @@ is_bc = leaflet.is_bc;
 linear_idx_offset         = zeros(j_max, k_max); 
 point_idx_with_bc         = zeros(j_max, k_max); 
 
+
+if N_leaflets == 2 
+    free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(leaflet, extra_stretch_radial); 
+end 
+
+
+
 for comm_idx = 1:N_leaflets
 
     % point one internal of commissure to point that m
@@ -58,29 +66,7 @@ for comm_idx = 1:N_leaflets
             total_rest_length = sum(R_v(j + min_idx, 1:(k-1))); 
             
             if N_leaflets == 2 
-                th = atan2(ring_point(2), ring_point(1)); 
-                r = leaflet.r; 
-                
-                % make a litle 
-                
-                strained_len_total = extra_stretch_radial * sum(R_v(j + min_idx, :)); 
-                
-                % cm apart at middle 
-                y_max_from_center = 0.2; 
-                y_free_edge_end = y_max_from_center * sign(sin(th)) * sin(th)^2; 
-                % y_free_edge_end = 0; 
-                
-                % this would put the two free edges exactly coinciding 
-                
-                
-                % if using exact x 
-                % then (y_diff^2 + height^2) = strained_len_total^2 
-                % so height is given as 
-                interp_height = sqrt(strained_len_total^2 - (ring_point(2) - y_free_edge_end)^2) ; 
-                
-                % comm_interp_point = [ring_point(1) ; (r/2) * sin(th); comm_prev(3)];                 
-                comm_interp_point = [ring_point(1) ; y_free_edge_end; interp_height + ring_point(3)]; 
-                
+                comm_interp_point = free_edge_interp_points(:,j + min_idx); 
             else 
                 comm_interp_point = (1 - j*dj_interp) * comm_prev ...
                                        + j*dj_interp  * comm_next; 
@@ -110,7 +96,8 @@ for comm_idx = 1:N_leaflets
 
 end 
 
-% allows a bit of equalizing at the free edge 
+% % allows a bit of equalizing at the free edge by comms 
+% % looks terrible 
 % if (N_leaflets == 2)
 %     for comm_idx = 1:N_leaflets
 %         % point one internal of commissure to point that m
@@ -124,6 +111,56 @@ end
 %         end 
 %     end 
 % end 
+
+% 
+% if (N_leaflets == 2)
+%     for comm_idx = 1:N_leaflets
+%         % point one internal of commissure to point that m
+%         % N_each is a power of two 
+%         neumann_fraction_center = 1/4;                 
+%         min_idx = (comm_idx-1)*N_each;         
+%         for j=1:(N_each-1)
+%             if abs(j - (N_each/2)) < (N_each * neumann_fraction_center)
+%                 is_bc(j + min_idx ,k_max) = false;  
+%             end 
+%         end 
+%     end 
+% end 
+
+debug_lengths = true; 
+if debug_lengths
+
+%     free_edge_length_single_loaded = 0; 
+%     free_edge_length_single_rest = 0; 
+%     for j=1:N_each
+%         k=k_max; 
+% 
+%         j_nbr_tmp = j-1; 
+%         k_nbr_tmp = k; 
+%         [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+%         if ~valid 
+%             error('trying to compute lengths with an invalid rest length')
+%         end
+% 
+%         X_temp = X(:,j,k);
+%         X_nbr = X(:,j_nbr,k_nbr); 
+% 
+%         j
+%         loaded_len = norm(X_temp - X_nbr)
+%         rest_len = R_u(j_spr,k_spr)
+%         
+%         free_edge_length_single_loaded = free_edge_length_single_loaded + norm(X_temp - X_nbr);
+%         
+%         free_edge_length_single_rest = free_edge_length_single_rest + R_u(j_spr,k_spr); 
+%     end     
+%     
+%     free_edge_length_single_loaded
+%     free_edge_length_single_rest
+    
+    'after reinterpolating free edge'
+    [free_edge_length_single_loaded, free_edge_length_single_rest, portion_of_free_edge] = get_free_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths)
+end 
+
 
 
 
