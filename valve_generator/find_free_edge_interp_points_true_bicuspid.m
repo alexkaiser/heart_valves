@@ -29,12 +29,14 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
     y_max_from_center = 0.45; 
 
     % tol change 
+    tol_rms_err_strain = 1e-10; 
     
     % start with initial free edge 
     % commissure points stay fixed 
     free_edge_interp_points = X(:,:,k_max); 
     
-    n_iterations = 50; 
+    % give it plenty 
+    n_iterations = 1000; 
     
     debug_lengths = true; 
     
@@ -77,7 +79,13 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
         end 
     end 
 
+    
+    pass = false; 
+    
     for it = 1:n_iterations
+        
+        it 
+        
         % sets the new leaflet position 
         % with free edge at given functional form (sin^2) 
         for comm_idx = 1:N_leaflets
@@ -126,10 +134,25 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
         X(:,:,k_max) = free_edge_interp_points; 
 
         'after respacing free edge interp points'
-        [free_edge_length_single_loaded, free_edge_length_single_rest] = get_free_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
+        [free_edge_length_single_loaded, free_edge_length_single_rest, ~, ~, strains] = get_free_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
         free_edge_length_single_loaded, free_edge_length_single_rest
         
+        
+        mean_strain = mean(strains); 
+        rms_err_strain = sqrt(sum((strains - mean_strain).^2))
+        
+        if rms_err_strain < tol_rms_err_strain
+            fprintf('Exiting on it %d with mean strain %f and rms error on strain %e\n', it, mean_strain, rms_err_strain); 
+            pass = true 
+            break
+        end 
+        
     end 
+    
+    if ~pass 
+        warning('Exiting on max it %d with mean strain %f and rms error on strain %e, not fully converged.\n', it, mean_strain, rms_err_strain')
+    end 
+    
     
 end 
 
