@@ -1,4 +1,9 @@
-function [free_edge_length_single_loaded, free_edge_length_single_rest, portion_of_current_edge, portion_of_free_edge] = get_free_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths)
+function [free_edge_length_single_loaded, ...
+          free_edge_length_single_rest, ...
+          portion_of_current_edge, ...
+          portion_of_free_edge, ...
+          strains] ... 
+           = get_free_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths)
 
     free_edge_length_single_loaded = 0; 
     free_edge_length_single_rest = 0; 
@@ -10,12 +15,8 @@ function [free_edge_length_single_loaded, free_edge_length_single_rest, portion_
         debug_lengths = false; 
     end 
     
-    if debug_lengths 
-        loaded_lens = zeros(N_each,1); 
-        rest_lens = zeros(N_each,1); 
-        strains = zeros(N_each,1); 
-    end 
-    
+    loaded_lens = zeros(N_each,1); 
+    rest_lens = zeros(N_each,1); 
     
     for j=1:N_each
         k=k_max; 
@@ -30,11 +31,9 @@ function [free_edge_length_single_loaded, free_edge_length_single_rest, portion_
         X_temp = X(:,j,k);
         X_nbr = X(:,j_nbr,k_nbr); 
 
-        if debug_lengths
-            loaded_lens(j) = norm(X_temp - X_nbr); 
-            rest_lens(j) = R_u(j_spr,k_spr); 
-        end 
-        
+        loaded_lens(j) = norm(X_temp - X_nbr); 
+        rest_lens(j) = R_u(j_spr,k_spr); 
+
         free_edge_length_single_loaded = free_edge_length_single_loaded + norm(X_temp - X_nbr);        
         free_edge_length_single_rest = free_edge_length_single_rest + R_u(j_spr,k_spr); 
         
@@ -42,10 +41,11 @@ function [free_edge_length_single_loaded, free_edge_length_single_rest, portion_
         portion_of_free_edge(j) = free_edge_length_single_rest; 
     end
     
+    strains = (loaded_lens ./ rest_lens) - 1; 
     if debug_lengths 
 %         loaded_lens 
 %         rest_lens 
-        strains = (loaded_lens ./ rest_lens) - 1  
+        strains 
     end 
     
     portion_of_current_edge = portion_of_current_edge / free_edge_length_single_loaded;

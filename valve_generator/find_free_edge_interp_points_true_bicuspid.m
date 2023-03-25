@@ -37,11 +37,10 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
     % give it plenty 
     n_iterations = 1000; 
     
-    debug_lengths = true; 
+    debug_lengths = false; 
     
     % for debug info 
-    'before any processing'
-    [free_edge_length_single_loaded, free_edge_length_single_rest] = get_free_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths)
+    [free_edge_length_single_loaded, free_edge_length_single_rest] = get_free_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths); 
     
     
     % find desired coefficient for initial curve before iteration 
@@ -52,7 +51,7 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
     
     y_max_from_center_initial_guess = 1.0; 
     options = optimset('Display','off','TolFun',1e-16);
-    y_max_from_center = fsolve(free_edge_len_minus_rest,y_max_from_center_initial_guess,options)
+    y_max_from_center = fsolve(free_edge_len_minus_rest,y_max_from_center_initial_guess,options); 
     
     
     
@@ -93,9 +92,7 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
     pass = false; 
     
     for it = 1:n_iterations
-        
-        it 
-        
+                
         % sets the new leaflet position 
         % with free edge at given functional form (sin^2) 
         for comm_idx = 1:N_leaflets
@@ -124,14 +121,14 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
         end 
         
         % get free edge lengths 
-        'after sin^2 interpolation'
+        % 'after sin^2 interpolation'
         [free_edge_length_single_loaded, free_edge_length_single_rest, portion_of_current_edge, portion_of_free_edge] = get_free_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
-        free_edge_length_single_loaded, free_edge_length_single_rest
+        % free_edge_length_single_loaded, free_edge_length_single_rest; 
 
         X_free_edge_leaflet_1_with_wrap = [X(:,j_max,k_max), X(:, 1:N_each,k_max)]; 
 
         % spacing of points as fraction of arc length 
-        interp_idx_free_edge = [0; portion_of_current_edge] 
+        interp_idx_free_edge = [0; portion_of_current_edge];  
 
         % interpolate as fraction of rest length 
         free_edge_interp_points_respaced = interp1(interp_idx_free_edge, X_free_edge_leaflet_1_with_wrap', portion_of_free_edge(1:N_each-1))'; 
@@ -143,17 +140,17 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
 
         X(:,:,k_max) = free_edge_interp_points; 
 
-        'after respacing free edge interp points'
+        % 'after respacing free edge interp points'
         [free_edge_length_single_loaded, free_edge_length_single_rest, ~, ~, strains] = get_free_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
-        free_edge_length_single_loaded, free_edge_length_single_rest
+        % free_edge_length_single_loaded, free_edge_length_single_rest
         
         
         mean_strain = mean(strains); 
-        rms_err_strain = sqrt(sum((strains - mean_strain).^2))
+        rms_err_strain = sqrt(sum((strains - mean_strain).^2)); 
         
         if rms_err_strain < tol_rms_err_strain
-            fprintf('Exiting on it %d with mean strain %f and rms error on strain %e\n', it, mean_strain, rms_err_strain); 
-            pass = true 
+            % fprintf('Exiting on it %d with mean strain %f and rms error on strain %e\n', it, mean_strain, rms_err_strain); 
+            pass = true; 
             break
         end 
         

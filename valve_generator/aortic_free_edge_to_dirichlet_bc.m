@@ -127,7 +127,7 @@ end
 %     end 
 % end 
 
-debug_lengths = true; 
+debug_lengths = false; 
 if debug_lengths
 
 %     free_edge_length_single_loaded = 0; 
