@@ -37,7 +37,7 @@ if __name__ == '__main__':
         base_name = 'aorta_384'
 
         if "_192_" in os.getcwd():
-            mesh_with_faces_name = '6_meshed_pt5mm_5_layer_cropped.vtu'
+            mesh_with_faces_name = '6_aorta_remeshed_pt5mm_2cm_extender_layers_constriction.vtu'
             base_name = 'aorta_192'
 
 
