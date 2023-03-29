@@ -22,6 +22,7 @@ cd viz_IB3d_tree_cycle_256
 
 cp ~/mitral_fully_discrete/2_aorta_remeshed_pt5mm_capped.vtp . 
 cp ~/mitral_fully_discrete/4_aorta_remeshed_pt25mm_3cm_extender_layers_constriction.vtu . 
+cp ~/mitral_fully_discrete/6_aorta_remeshed_pt5mm_2cm_extender_layers_constriction.vtu . 
 
 # extracts relevant portion of mesh 
 python3 ~/copies_scripts/remove_unnecessary_eulerian_space.py $SLURM_NTASKS
