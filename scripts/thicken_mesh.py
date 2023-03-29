@@ -77,15 +77,19 @@ if __name__== "__main__":
     if run_192:
         fname_in = "4_aorta_remeshed_pt5mm_2_cm_extender.stl"
         fname_out = "5_aorta_remeshed_pt5mm_2_cm_extender_layers.stl"
+
+        # extrude length in mm 
+        ds = 0.5
     else:
         fname_in = "2_aorta_remeshed_pt25mm_3cm_extender.stl"
         fname_out = "3_aorta_remeshed_pt25mm_3cm_extender_layers.stl"
 
+        # extrude length in mm 
+        ds = 0.5/2
 
     mesh = pyvista.read(fname_in)
 
-    # extrude length in mm 
-    ds = 0.5
+
 
     n_layers_full = 3
 
@@ -109,7 +113,7 @@ if __name__== "__main__":
 
     x_max = np.max(mesh_combined.points[:,0])
     z_max = np.max(mesh_combined.points[:,2])
-    tol_edges = 1.0
+    tol_edges = 1.0e-1
 
     print(f"x_max = {x_max:.16f}")
     print(f"z_max = {z_max:.16f}")
@@ -126,6 +130,8 @@ if __name__== "__main__":
 
     n_regions = max(conn.point_data['RegionId'] + 1)
 
+    min_points_valid_bdry = 50
+
     # if n_regions != 2:
     #     print("n_regions =", n_regions)
     #     print("conn.point_data['RegionId'] = ", conn.point_data['RegionId'])
@@ -140,16 +146,22 @@ if __name__== "__main__":
         # print("bdry_mesh = ", bdry_mesh, "bdry_mesh.points = ", bdry_mesh.points)
         print("bdry_mesh = ", bdry_mesh)
 
-        if all(abs(bdry_mesh.points[:,0] - x_max) < tol_edges):
-            bdry_mesh_name = edge_name_const_x
-            name_found = True 
-        elif all(abs(bdry_mesh.points[:,2] - z_max) < tol_edges):
-            bdry_mesh_name = edge_name_const_z
-            name_found = True 
+        if bdry_mesh.n_points > min_points_valid_bdry:
 
-        if name_found:
-            bdry_mesh.save(bdry_mesh_name)
-        else:
-            print("Did not find boundary mesh for RegionId ", region_id, ", skipping.")
+            if all(abs(bdry_mesh.points[:,0] - x_max) < tol_edges):
+                bdry_mesh_name = edge_name_const_x
+                name_found = True 
+            elif all(abs(bdry_mesh.points[:,2] - z_max) < tol_edges):
+                bdry_mesh_name = edge_name_const_z
+                name_found = True 
+
+            if name_found:
+                bdry_mesh.save(bdry_mesh_name)
+            else:
+                print("Did not find boundary mesh for RegionId ", region_id, ", skipping.")
+
+        else: 
+            print("RegionId ", region_id, " is small and probably an artifact with ", bdry_mesh.n_points, " points, skipping.")
+
 
 
