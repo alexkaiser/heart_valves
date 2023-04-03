@@ -377,7 +377,12 @@ if build_reference
                 else
                     extra_stretch_radial = valve.strain_rad + 1.0; 
                 end 
-                valve_with_reference.leaflets(i) = aortic_free_edge_to_dirichlet_bc(valve_with_reference.leaflets(i), extra_stretch_radial); 
+                if isfield(valve, 'extra_stretch_circ_dirichlet_free_edge')
+                    extra_stretch_circ = valve.extra_stretch_circ_dirichlet_free_edge; 
+                else
+                    extra_stretch_circ = 1.0; 
+                end 
+                valve_with_reference.leaflets(i) = aortic_free_edge_to_dirichlet_bc(valve_with_reference.leaflets(i), extra_stretch_radial, extra_stretch_circ); 
 
             end 
             

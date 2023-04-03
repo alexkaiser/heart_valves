@@ -1,4 +1,4 @@
-function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(leaflet, extra_stretch_radial)
+function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(leaflet, extra_stretch_radial, extra_stretch_circ)
 
     j_max  = leaflet.j_max; 
     k_max  = leaflet.k_max; 
@@ -23,6 +23,10 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
         extra_stretch_radial = 1.0; 
     end
 
+    if ~exist('extra_stretch_circ', 'var')
+        extra_stretch_circ = 1.0; 
+    end
+    
     X = leaflet.X; 
 
 
@@ -47,7 +51,7 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
     % this is the parameter to search over 
     % y_max_from_center = 0.9; 
     
-    free_edge_len_minus_rest = @(y_max) run_temp_free_edge_interp(leaflet, extra_stretch_radial, y_max) - free_edge_length_single_rest; 
+    free_edge_len_minus_rest = @(y_max) run_temp_free_edge_interp(leaflet, extra_stretch_radial, y_max) - free_edge_length_single_rest * extra_stretch_circ; 
     
     y_max_from_center_initial_guess = 1.0; 
     options = optimset('Display','off','TolFun',1e-16);

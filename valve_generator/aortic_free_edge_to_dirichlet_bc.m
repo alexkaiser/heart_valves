@@ -1,4 +1,4 @@
-function leaflet = aortic_free_edge_to_dirichlet_bc(leaflet, extra_stretch_radial)
+function leaflet = aortic_free_edge_to_dirichlet_bc(leaflet, extra_stretch_radial, extra_stretch_circ)
 
 j_max  = leaflet.j_max; 
 k_max  = leaflet.k_max; 
@@ -26,6 +26,17 @@ if ~exist('extra_stretch_radial', 'var')
     extra_stretch_radial = 1.0; 
 end
 
+if ~exist('extra_stretch_circ', 'var')
+    extra_stretch_circ = 1.0; 
+end
+
+if N_leaflets ~= 2
+    if extra_stretch_circ ~= 1.0 
+        error('extra circ stretch only implemented for true bicuspid')
+    end 
+end 
+
+
 X = leaflet.X; 
 
 debug = true; 
@@ -36,7 +47,7 @@ point_idx_with_bc         = zeros(j_max, k_max);
 
 
 if N_leaflets == 2 
-    free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(leaflet, extra_stretch_radial); 
+    free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(leaflet, extra_stretch_radial, extra_stretch_circ); 
 end 
 
 

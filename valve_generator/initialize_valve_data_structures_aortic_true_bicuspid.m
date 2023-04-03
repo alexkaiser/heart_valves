@@ -150,6 +150,7 @@ valve.collagen_constitutive_rad  = 'aortic_rad';
 valve.strain_circ = .15; 
 valve.strain_rad  = .54; 
 
+valve.extra_stretch_circ_dirichlet_free_edge = 0.5 * valve.strain_circ + 1.0; 
 valve.extra_stretch_radial_dirichlet_free_edge = 1.0 * valve.strain_rad + 1.0; 
 
 % physical units create a scalar multiple of the old 
@@ -209,8 +210,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 2.05;  % circumferential 
-tension_coeffs.c_rad_dec        = 0.92;  % radial
+tension_coeffs.c_circ_dec       = 2.9;  % circumferential 
+tension_coeffs.c_rad_dec        = 1.3;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.8;        
 
