@@ -39,7 +39,7 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
     free_edge_interp_points = X(:,:,k_max); 
     
     % give it plenty 
-    n_iterations = 1000; 
+    n_iterations = 2000; 
     
     debug_lengths = false; 
     
