@@ -104,14 +104,14 @@ for N_each = N_each_range
         fprintf('Final solve failed.\n'); 
     end 
 
+    % Write to simulation files 
+    if ~isempty(valve_with_reference)
+        params = output_to_ibamr_format(valve_with_reference); 
+    end 
 
     % Save current data 
     save(strcat(valve.base_name, '_final_data')); 
 
-    % Write to simulation files 
-    if ~isempty(valve_with_reference)
-        output_to_ibamr_format(valve_with_reference); 
-    end 
-
+    
 end 
 

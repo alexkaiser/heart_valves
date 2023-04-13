@@ -1,4 +1,4 @@
-function [] = output_to_ibamr_format(valve)
+function params = output_to_ibamr_format(valve)
     % 
     % Outputs the current configuration of the leaflets to IBAMR format
     % Spring constants are computed in dimensional form 
@@ -754,7 +754,6 @@ function [] = output_to_ibamr_format(valve)
         end 
         
     end
-    
 
 end 
 
