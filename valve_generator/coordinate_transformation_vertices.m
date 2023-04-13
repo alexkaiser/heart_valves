@@ -1,4 +1,4 @@
-function [vertices normal centroid R] = coordinate_transformation_vertices(vertices, ring_boundary_file, R_0, T_0)
+function [vertices normal centroid R] = coordinate_transformation_vertices(vertices, ring_boundary_file, R_0, T_0, apply_inverse)
 % 
 % takes file containing ring points 
 % applies rigid translations and rotations that takes the unit circle to 
@@ -8,6 +8,9 @@ tol = 1e-14;
 
 [~, n_vertices] = size(vertices); 
 
+if ~exist('apply_inverse', 'var')
+    apply_inverse = false; 
+end 
 
 f = fopen(ring_boundary_file, 'r'); 
 vertices_ring_bdry = fscanf(f, '%f'); 
@@ -38,16 +41,6 @@ if normal(3) < 0
 end 
 normal = normal / norm(normal); 
 
-
-% initial rotation if requested 
-if exist('T_0', 'var')
-    vertices = T_0 + vertices; 
-end 
-
-% initial rotation if requested 
-if exist('R_0', 'var')
-    vertices = R_0 * vertices; 
-end 
 
 % check inverse rotation first 
 % rotate normal so it has zero y component 
@@ -85,10 +78,47 @@ if norm(R*R' - eye(3)) > tol
     error('rotation matrix is not orthogonal'); 
 end 
 
-% apply rotation matrix to each vertex 
-vertices = R * vertices; 
+if apply_inverse 
+    
+    % place origin back to origin  
+    for j=1:n_vertices
+        vertices(:,j) = vertices(:,j) - centroid; 
+    end     
+        
+    % apply inverse rotation matrix to each vertex 
+    vertices = R' * vertices; 
+    
+    % inverse initial rotation if requested 
+    if exist('R_0', 'var')
+        vertices = R_0' * vertices; 
+    end 
+    
+    % inverse initial translation if requested 
+    if exist('T_0', 'var')
+        vertices = -T_0 + vertices; 
+    end 
 
-% place origin where desired 
-for j=1:n_vertices
-    vertices(:,j) = vertices(:,j) + centroid; 
+    
+else 
+    % default fwd transform 
+    
+    % initial translation if requested 
+    if exist('T_0', 'var')
+        vertices = T_0 + vertices; 
+    end 
+
+    % initial rotation if requested 
+    if exist('R_0', 'var')
+        vertices = R_0 * vertices; 
+    end 
+
+    % apply rotation matrix to each vertex 
+    vertices = R * vertices; 
+
+    % place origin where desired 
+    for j=1:n_vertices
+        vertices(:,j) = vertices(:,j) + centroid; 
+    end     
 end 
+
+

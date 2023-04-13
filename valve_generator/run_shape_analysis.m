@@ -8,5 +8,9 @@ load aortic_no_partition_384_final_data.mat
 
 indices_global = params.layer_indices(1).indices_global; 
 
-valve_with_reference.leaflets(1) = import_valve_from_csv(valve_with_reference.leaflets(1), file_name, indices_global, data_dir)
+run_inv_transform = true; 
+
+valve_with_reference.leaflets(1) = import_valve_from_csv(valve_with_reference, file_name, indices_global, data_dir, run_inv_transform); 
+
+valve_plot(valve_with_reference)
 
