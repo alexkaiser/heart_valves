@@ -80,48 +80,6 @@ end
 
 orifice_area = polyarea(X(1,:,k_max), X(2,:,k_max)); 
 
-% orifice area from conv hull 
-% multiply all vectors by one over their norm 
-% take convex hull then reinvert 
-% for interior area 
-vector_norms_xy = zeros(j_max,k_max); 
-
-x_component_norm_inverted = zeros(j_max,k_max); 
-y_component_norm_inverted = zeros(j_max,k_max); 
-
-for j=1:j_max
-    for k=1:k_max 
-        vector_norms_xy(j,k) = norm(X(1:2,j,k)); 
-        x_component_norm_inverted(j,k) = X(1,j,k) / vector_norms_xy(j,k)^2; 
-        y_component_norm_inverted(j,k) = X(2,j,k) / vector_norms_xy(j,k)^2; 
-    end 
-end 
-
-x_component = X(1,:,:); 
-y_component = X(2,:,:); 
-x_component_vector = x_component(:); 
-y_component_vector = y_component(:); 
-
-x_component_norm_inverted_vector = x_component_norm_inverted(:); 
-y_component_norm_inverted_vector = y_component_norm_inverted(:); 
-
-conv_hull_idx = convhull(x_component_norm_inverted_vector, y_component_norm_inverted_vector); 
-
-figure; 
-plot(x_component_norm_inverted_vector, y_component_norm_inverted_vector, 'b*')
-hold on 
-plot(x_component_norm_inverted_vector(conv_hull_idx), y_component_norm_inverted_vector(conv_hull_idx), 'r-')
-
-x_component_interior_polygon = x_component_vector(conv_hull_idx); 
-y_component_interior_polygon = y_component_vector(conv_hull_idx); 
-
-figure; 
-plot(x_component_vector, y_component_vector, 'b*')
-hold on 
-plot(x_component_interior_polygon, y_component_interior_polygon, 'r-')
-
-'pause'
-
 
 
 
