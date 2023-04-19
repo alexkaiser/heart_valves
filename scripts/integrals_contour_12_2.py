@@ -13,11 +13,11 @@ if __name__ == '__main__':
     if len(sys.argv) >= 2:
         contour_name = sys.argv[1]
 
-        valid_names = ['annulus_normal_projected', 'contour_3', 'contour_6', 'contour_9', 'contour_12'] 
+        valid_names = ['annulus_normal_projected', 'contour_3', 'contour_6', 'contour_9', 'contour_12', 'contour_21'] 
 
         # valid contour names 
         if contour_name not in valid_names:
-            raise ValueError('must provide countour_name, valid names: annulus_normal_projected, contour_3, contour_6, contour_9, contour_12')
+            raise ValueError('must provide countour_name, valid names: annulus_normal_projected, contour_3, contour_6, contour_9, contour_12, contour_21')
 
         if contour_name == 'annulus_normal_projected':
             origin = [2.447601610336508, -18.376013668463226, -25.219513937752243]
@@ -34,6 +34,10 @@ if __name__ == '__main__':
         elif contour_name == 'contour_12':
             origin = [1.1135387247389723, -18.4115922051707, -23.8033429814558]
             normal = [-0.546829510850715, 0.0721783996060898, 0.834126947588358]
+        elif contour_name == 'contour_21':
+            # LVOT, sub annular 
+            origin = [3.044823118615524, -18.4669463809972, -25.4758572325839]
+            normal = [-0.871486988343708, -0.0231008494055719, 0.489874249072508]
 
     else: 
         raise ValueError('must provide countour_name, valid names: annulus_normal_projected, contour_3, contour_6, contour_9, contour_12')
@@ -369,63 +373,63 @@ if __name__ == '__main__':
     f.flush()
     os.fsync(f)
 
-    # normal component, two norm squared 
-    print("int_u_dot_n_squared = [", file=f, end='')
-    for frame in range(len(timesteps)-1):
-        animationScene1.AnimationTime = timesteps[frame]
-        Show(integrateVariables2)
-        integrated_filter_2 = paraview.servermanager.Fetch(integrateVariables2)
+    # # normal component, two norm squared 
+    # print("int_u_dot_n_squared = [", file=f, end='')
+    # for frame in range(len(timesteps)-1):
+    #     animationScene1.AnimationTime = timesteps[frame]
+    #     Show(integrateVariables2)
+    #     integrated_filter_2 = paraview.servermanager.Fetch(integrateVariables2)
 
-        int_u_dot_n_squared = integrated_filter_2.GetPointData().GetArray('u_dot_n_sq').GetValue(0)
+    #     int_u_dot_n_squared = integrated_filter_2.GetPointData().GetArray('u_dot_n_sq').GetValue(0)
 
-        print(int_u_dot_n_squared, ", ", file=f, end='')
+    #     print(int_u_dot_n_squared, ", ", file=f, end='')
 
-        if (frame % math.floor(len(timesteps)/10)) == 0:
-            print("frame ", frame, "compute u_dot_n_squared")
+    #     if (frame % math.floor(len(timesteps)/10)) == 0:
+    #         print("frame ", frame, "compute u_dot_n_squared")
 
-    print('];\n', file=f, end='')
-    f.flush()
-    os.fsync(f)
-
-
-    # norm_sq_u_tangential
-    print("int_norm_sq_u_tangential = [", file=f, end='')
-    for frame in range(len(timesteps)-1):
-        animationScene1.AnimationTime = timesteps[frame]
-        Show(integrateVariables3)
-        integrated_filter_3 = paraview.servermanager.Fetch(integrateVariables3)
-
-        int_norm_sq_u_tangential = integrated_filter_3.GetPointData().GetArray('norm_sq_u_tangential').GetValue(0)
-
-        print(int_norm_sq_u_tangential, ", ", file=f, end='')
-
-        if (frame % math.floor(len(timesteps)/10)) == 0:
-            print("frame ", frame, "compute int_norm_sq_u_tangential")
+    # print('];\n', file=f, end='')
+    # f.flush()
+    # os.fsync(f)
 
 
-    print('];\n', file=f, end='')
-    f.flush()
-    os.fsync(f)
+    # # norm_sq_u_tangential
+    # print("int_norm_sq_u_tangential = [", file=f, end='')
+    # for frame in range(len(timesteps)-1):
+    #     animationScene1.AnimationTime = timesteps[frame]
+    #     Show(integrateVariables3)
+    #     integrated_filter_3 = paraview.servermanager.Fetch(integrateVariables3)
+
+    #     int_norm_sq_u_tangential = integrated_filter_3.GetPointData().GetArray('norm_sq_u_tangential').GetValue(0)
+
+    #     print(int_norm_sq_u_tangential, ", ", file=f, end='')
+
+    #     if (frame % math.floor(len(timesteps)/10)) == 0:
+    #         print("frame ", frame, "compute int_norm_sq_u_tangential")
+
+
+    # print('];\n', file=f, end='')
+    # f.flush()
+    # os.fsync(f)
 
 
 
-    # indicator_u_dot_n_positive
-    print("int_indicator_u_dot_n_positive = [", file=f, end='')
-    for frame in range(len(timesteps)-1):
-        animationScene1.AnimationTime = timesteps[frame]
-        Show(integrateVariables4)
-        integrated_filter_4 = paraview.servermanager.Fetch(integrateVariables4)
+    # # indicator_u_dot_n_positive
+    # print("int_indicator_u_dot_n_positive = [", file=f, end='')
+    # for frame in range(len(timesteps)-1):
+    #     animationScene1.AnimationTime = timesteps[frame]
+    #     Show(integrateVariables4)
+    #     integrated_filter_4 = paraview.servermanager.Fetch(integrateVariables4)
 
-        int_indicator_u_dot_n_positive = integrated_filter_4.GetPointData().GetArray('indicator_u_dot_n_positive').GetValue(0)
+    #     int_indicator_u_dot_n_positive = integrated_filter_4.GetPointData().GetArray('indicator_u_dot_n_positive').GetValue(0)
 
-        print(int_indicator_u_dot_n_positive, ", ", file=f, end='')
+    #     print(int_indicator_u_dot_n_positive, ", ", file=f, end='')
 
-        if (frame % math.floor(len(timesteps)/10)) == 0:
-            print("frame ", frame, "compute int_indicator_u_dot_n_positive")
+    #     if (frame % math.floor(len(timesteps)/10)) == 0:
+    #         print("frame ", frame, "compute int_indicator_u_dot_n_positive")
 
-    print('];\n', file=f, end='')
-    f.flush()
-    os.fsync(f)
+    # print('];\n', file=f, end='')
+    # f.flush()
+    # os.fsync(f)
 
     # # flux 
     print("P = [", file=f, end='')
