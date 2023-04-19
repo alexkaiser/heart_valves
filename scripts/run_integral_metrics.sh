@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=24
+#SBATCH --ntasks-per-node=6
 #SBATCH --time=23:59:00
-#SBATCH --mem=185GB
+#SBATCH --mem=60GB
 #SBATCH --job-name=integral_metrics
 #SBATCH --mail-user=adkaiser@gmail.com
 #SBATCH --mail-type=ALL
@@ -23,6 +23,7 @@ cd viz_IB3d_tree_cycle_256
 /home/groups/amarsden/ParaView-5.9.0-osmesa-MPI-Linux-Python3.8-64bit/bin/pvbatch ~/copies_scripts/integrals_contour_12_2.py contour_6 & 
 /home/groups/amarsden/ParaView-5.9.0-osmesa-MPI-Linux-Python3.8-64bit/bin/pvbatch ~/copies_scripts/integrals_contour_12_2.py contour_9 & 
 /home/groups/amarsden/ParaView-5.9.0-osmesa-MPI-Linux-Python3.8-64bit/bin/pvbatch ~/copies_scripts/integrals_contour_12_2.py contour_12 & 
+/home/groups/amarsden/ParaView-5.9.0-osmesa-MPI-Linux-Python3.8-64bit/bin/pvbatch ~/copies_scripts/integrals_contour_12_2.py contour_21 & 
 
 
 # cd aortic_9952752_384_7da89c7_final_setup_r_5pt6_p0_94_plus_15_sys/viz_IB3d_tree_cycle_256

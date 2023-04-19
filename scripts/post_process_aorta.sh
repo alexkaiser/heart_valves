@@ -30,6 +30,8 @@ python3 ~/copies_scripts/remove_unnecessary_eulerian_space.py $SLURM_NTASKS
 # adds face data 
 python3 ~/copies_scripts/add_faces.py
 
+python3 ~/copies_scripts/fix_pvd_files.py
+
 SESSION_NAME_PARAVIEW="~/copies_scripts/bicuspid_slices_paraview.py"
 # SESSION_NAME_PARAVIEW="~/copies_scripts/bicuspid_slices_paraview_paper.py"
 
