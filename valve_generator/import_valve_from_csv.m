@@ -11,7 +11,7 @@ if ~exist('run_inv_transform', 'var')
 end 
 
 leaflet = valve.leaflets(1); 
-
+ 
 vertices = csvread(file_with_path)'; 
 
 if run_inv_transform
@@ -28,10 +28,7 @@ k_max  = leaflet.k_max;
 for j = 1:j_max
     for k = 1:k_max
         vertex_idx = indices_global(j,k) + 1; 
-        leaflet.X(:,j,k) = vertices(:,vertex_idx) ; 
+        leaflet.X(:,j,k) = vertices(:,vertex_idx);
     end 
 end 
-
-
-
 
