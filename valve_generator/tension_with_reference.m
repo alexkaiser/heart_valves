@@ -1,4 +1,4 @@
-function T = tension_with_reference(X, X_nbr, R, k_spr, leaflet, collagen_constitutive)
+function [T, E] = tension_with_reference(X, X_nbr, R, k_spr, leaflet, collagen_constitutive)
 % 
 % Returns the tension in the linear constitutive law 
 % 
