@@ -510,7 +510,7 @@ int CirculationModel_aorta::point_in_aorta(double testx, double testy, int axis,
         fout << "%plot(times, p_extender_mean)\n"; 
         fout << "plot(times, p_extender_point)\n";                         
         fout << "%legend('P_{Ao}', 'P_{Wk}', 'P_{LV}', 'P extender mean', 'P extender point', 'Location','NorthEastOutside');\n"; 
-        fout << "%legend('P_{Ao}', 'P_{Wk}', 'P_{LV}', 'P extender point', 'Location','NorthEastOutside');\n"; 
+        fout << "legend('P_{Ao}', 'P_{Wk}', 'P_{LV}', 'P extender point', 'Location','NorthEastOutside');\n"; 
         fout << "xlabel('t (s)');\n"; 
         fout << "ylabel('P (mmHg)');\n"; 
         fout << "subplot(2,1,2)\n"; 
@@ -540,6 +540,7 @@ int CirculationModel_aorta::point_in_aorta(double testx, double testy, int axis,
         fout << "end_flux    = net_flux(end)\n"; 
         fout << "max_flux    = max(net_flux)\n"; 
         fout << "diary off\n"; 
+        fout << "save bc_data.mat\n";
 
     }
     return;
@@ -572,10 +573,11 @@ void
 
         ofstream fout(DATA_FILE_NAME.c_str(), ios::app);
 
-        fout << d_time;
         fout.setf(ios_base::scientific);
         fout.setf(ios_base::showpos);
         fout.precision(10);
+
+        fout << d_time;
 
         double P_ventricle = d_fourier_ventricle->values[d_current_idx_series]; 
 
