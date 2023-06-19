@@ -58,10 +58,10 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
     y_max_from_center = fsolve(free_edge_len_minus_rest,y_max_from_center_initial_guess,options); 
         
     % do not go lower than threshold 
-    y_max_from_center_min = 0.2;
+    y_max_from_center_min = 0.1;
     
     y_max_from_center = max(y_max_from_center, y_max_from_center_min); 
-        
+
     
     % set initial version of the new leaflet position 
     % with free edge at given functional form (sin^2) 
