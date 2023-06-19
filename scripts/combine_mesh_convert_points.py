@@ -207,16 +207,37 @@ if __name__ == '__main__':
     point_data = True 
 
 
-    fine = True
+    coarse = True
+    med_coarse = False
+    fine = False
+    xfine = False
     xxfine = False
-    if fine: 
+
+    if coarse: 
+        NX = 104
+        NY = 72
+        NZ = 64
+        frame_number_temp = 1393
+    elif med_coarse:
+        NX = 138
+        NY = 96
+        NZ = 85
+        frame_number_temp = 1370
+    elif fine: 
         NX=208
         NY=144
         NZ=128
+        frame_number_temp = 1350
+    elif xfine: 
+        NX = 277
+        NY = 192
+        NZ = 170
+        frame_number_temp = 1350 # or 1351 
     elif xxfine:
         NX=332
         NY=230
         NZ=204
+        frame_number_temp = 1350 # or 1351 
     else:
         raise ValueError('must provide values')
 
@@ -321,7 +342,7 @@ if __name__ == '__main__':
 
         # range_to_output = [0]
         # range_to_output = [1350]
-        range_to_output = [1322]
+        range_to_output = [0, frame_number_temp]
         combine_mesh(basename, 
                      range_to_output, 
                      label, 

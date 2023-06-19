@@ -17,6 +17,9 @@ source ~/.bash_profile
 
 module load python/3.9.0
 
+module load matlab/R2017b
+matlab -nodisplay -r bc_data.m & 
+
 # change dir even if not needed 
 cd viz_IB3d_tree_cycle_256 
 
@@ -32,6 +35,9 @@ python3 ~/copies_scripts/add_faces.py
 
 python3 ~/copies_scripts/fix_pvd_files.py
 
+python3 ~/copies_scripts/convert_vtu_vertices_to_csv.py
+
+
 SESSION_NAME_PARAVIEW="~/copies_scripts/bicuspid_slices_paraview.py"
 # SESSION_NAME_PARAVIEW="~/copies_scripts/bicuspid_slices_paraview_paper.py"
 
@@ -39,3 +45,7 @@ SESSION_NAME_PARAVIEW="~/copies_scripts/bicuspid_slices_paraview.py"
 # assumes located in main sim directory 
 cd .. 
 python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $SLURM_NTASKS
+
+
+
+
