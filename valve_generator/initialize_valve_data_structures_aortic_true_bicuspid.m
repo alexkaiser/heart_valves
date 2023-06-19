@@ -209,13 +209,13 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 2.98;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.12;  % radial
+tension_coeffs.c_circ_dec       = 2.0;  % circumferential 
+tension_coeffs.c_rad_dec        = 1.15;  % radial
 
-tension_coeffs.c_circ_dec_annulus = 2.5;        
+tension_coeffs.c_circ_dec_annulus = 1.8;        
 
 % tension_coeffs.c_circ_dec_free_edge = 5.0;
-% tension_coeffs.c_circ_dec_free_edge_percentage = 0.0;
+tension_coeffs.c_circ_dec_free_edge_percentage = 0.0;
 
 % scaling for target points 
 % note that this does not include copies 
