@@ -60,17 +60,25 @@ if __name__ == '__main__':
         base_name = 'frames'
 
     if len(sys.argv) < 2:
-        raise InputError("Must specify session_file_name")
+        raise ValueError("Must specify session_file_name")
     session_file_name = sys.argv[1]
 
     if len(sys.argv) < 3:
-        raise InputError("Must specify n_procs")
+        raise ValueError("Must specify n_procs")
     n_procs = int(sys.argv[2])
 
     if ('particle' in session_file_name) or ('pathline' in session_file_name):
         base_name += "_particles"
     else:
         base_name += "_paraview"
+
+    if 'paper' in session_file_name:
+        base_name += '_points'
+        base_name += '_paper'
+
+    if 'top_view' in session_file_name:
+        base_name += '_top_view'
+
 
     if os.path.isfile('done.txt'):
         
