@@ -386,6 +386,7 @@ aortic_no_partition_384_facespvdDisplay = Show(aortic_no_partition_384_facespvd,
 # trace defaults for the display properties.
 aortic_no_partition_384_facespvdDisplay.Representation = 'Surface'
 aortic_no_partition_384_facespvdDisplay.ColorArrayName = [None, '']
+aortic_no_partition_384_facespvdDisplay.Opacity = 0.2
 # aortic_no_partition_384_facespvdDisplay.SelectTCoordArray = 'None'
 # aortic_no_partition_384_facespvdDisplay.SelectNormalArray = 'None'
 # aortic_no_partition_384_facespvdDisplay.SelectTangentArray = 'None'
@@ -505,6 +506,7 @@ aortic_no_partition_384_facespvdDisplay_1 = Show(aortic_no_partition_384_facespv
 # trace defaults for the display properties.
 aortic_no_partition_384_facespvdDisplay_1.Representation = 'Surface'
 aortic_no_partition_384_facespvdDisplay_1.ColorArrayName = [None, '']
+aortic_no_partition_384_facespvdDisplay_1.Opacity = 0.2
 # aortic_no_partition_384_facespvdDisplay_1.SelectTCoordArray = 'None'
 # aortic_no_partition_384_facespvdDisplay_1.SelectNormalArray = 'None'
 # aortic_no_partition_384_facespvdDisplay_1.SelectTangentArray = 'None'
