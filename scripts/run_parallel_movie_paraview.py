@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
                 movie_string = 'ffmpeg -y -framerate 600 -i '
                 movie_string += base_name
-                movie_string += '%4d.jpeg -vf scale=1920:-2 -r 60 -c:v libx264 -preset veryslow -crf 18 '
+                movie_string += '%4d.jpeg -vf scale=1920:-2 -r 60 -c:v libx264 -preset veryslow -g 3 -crf 18 '
                 movie_string += base_name + '_real_time.mp4'
 
                 code = subprocess.call(movie_string, shell=True)

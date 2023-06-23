@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=24
-#SBATCH --time=8:00:00
+#SBATCH --time=16:00:00
 #SBATCH --mem=185GB
 #SBATCH --job-name=slices_paper
 #SBATCH --mail-user=adkaiser@gmail.com
@@ -17,9 +17,6 @@ source ~/.bash_profile
 
 module load python/3.9.0
 
-module load matlab/R2017b
-matlab -nodisplay -r bc_data.m & 
-
 # change dir even if not needed 
 cd viz_IB3d_tree_cycle_256 
 
@@ -30,12 +27,21 @@ cp ~/mitral_fully_discrete/6_aorta_remeshed_pt5mm_2cm_extender_layers_constricti
 # extracts relevant portion of mesh 
 python3 ~/copies_scripts/remove_unnecessary_eulerian_space.py $SLURM_NTASKS
 
+# run integral metrics 
+sbatch ~/copies_scripts/run_integral_metrics.sh
+
 # adds face data 
 python3 ~/copies_scripts/add_faces.py
 
 python3 ~/copies_scripts/fix_pvd_files.py
 
 python3 ~/copies_scripts/convert_vtu_vertices_to_csv.py
+
+module load matlab/R2017b
+cp ../aortic_no_partition*final_data.mat . 
+matlab -nodesktop -nodisplay -r 'addpath ~/valve_generator; generate_cells_file; "matlab generate cells complete"; exit;'
+
+python3 ~/copies_scripts/convert_csv_with_cells.py
 
 
 SESSION_NAME_PARAVIEW="~/copies_scripts/bicuspid_slices_paraview.py"
@@ -46,6 +52,8 @@ SESSION_NAME_PARAVIEW="~/copies_scripts/bicuspid_slices_paraview.py"
 cd .. 
 python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $SLURM_NTASKS
 
+SESSION_NAME_PARAVIEW_PAPER="~/copies_scripts/bicuspid_slices_paraview_paper.py"
+python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_PAPER $SLURM_NTASKS
 
-
-
+SESSION_NAME_PARAVIEW_TOP="~/copies_scripts/top_view_valve_0_paper.py"
+python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_TOP $SLURM_NTASKS
