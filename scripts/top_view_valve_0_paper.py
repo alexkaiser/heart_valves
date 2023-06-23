@@ -68,7 +68,7 @@ aorta_384pvd = PVDReader(registrationName='aorta_384.pvd', FileName='aorta_384.p
 # extractSelection1 = ExtractSelection(registrationName='ExtractSelection1', Input=aorta_384_volumetricmeshvtu)
 
 # create a new 'PVD Reader'
-aortic_no_partition_384pvd = PVDReader(registrationName='aortic_no_partition_384.pvd', FileName='aortic_no_partition_384.pvd')
+aortic_no_partition_384_facespvd = PVDReader(registrationName='aortic_no_partition_384_faces.pvd', FileName='aortic_no_partition_384_faces.pvd')
 
 # create a new 'Clip'
 clip1 = Clip(registrationName='Clip1', Input=aorta_384pvd)
@@ -156,39 +156,41 @@ slice2.HyperTreeGridSlicer.Origin = [1.565198004245758, -18.485950469970703, -22
 # setup the visualization in view 'renderView2'
 # ----------------------------------------------------------------
 
-# show data from aortic_no_partition_384pvd
-aortic_no_partition_384pvdDisplay = Show(aortic_no_partition_384pvd, renderView2, 'UnstructuredGridRepresentation')
+# show data from aortic_no_partition_384_facespvd
+aortic_no_partition_384_facespvdDisplay = Show(aortic_no_partition_384_facespvd, renderView2, 'UnstructuredGridRepresentation')
 
 # trace defaults for the display properties.
-aortic_no_partition_384pvdDisplay.Representation = 'Surface'
-aortic_no_partition_384pvdDisplay.AmbientColor = [0.0, 0.0, 0.0]
-aortic_no_partition_384pvdDisplay.ColorArrayName = [None, '']
-aortic_no_partition_384pvdDisplay.DiffuseColor = [0.0, 0.0, 0.0]
-aortic_no_partition_384pvdDisplay.Opacity = 0.5
-aortic_no_partition_384pvdDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
-aortic_no_partition_384pvdDisplay.SelectOrientationVectors = 'None'
-aortic_no_partition_384pvdDisplay.ScaleFactor = 0.2987378090620041
-aortic_no_partition_384pvdDisplay.SelectScaleArray = 'None'
-aortic_no_partition_384pvdDisplay.GlyphType = 'Arrow'
-aortic_no_partition_384pvdDisplay.GlyphTableIndexArray = 'None'
-aortic_no_partition_384pvdDisplay.GaussianRadius = 0.014936890453100204
-aortic_no_partition_384pvdDisplay.SetScaleArray = [None, '']
-aortic_no_partition_384pvdDisplay.ScaleTransferFunction = 'PiecewiseFunction'
-aortic_no_partition_384pvdDisplay.OpacityArray = [None, '']
-aortic_no_partition_384pvdDisplay.OpacityTransferFunction = 'PiecewiseFunction'
-aortic_no_partition_384pvdDisplay.DataAxesGrid = 'GridAxesRepresentation'
-aortic_no_partition_384pvdDisplay.PolarAxes = 'PolarAxesRepresentation'
-aortic_no_partition_384pvdDisplay.ScalarOpacityUnitDistance = 0.08104984870550394
-# aortic_no_partition_384pvdDisplay.OpacityArrayName = [None, '']
+aortic_no_partition_384_facespvdDisplay.Representation = 'Surface'
+aortic_no_partition_384_facespvdDisplay.ColorArrayName = [None, '']
+# aortic_no_partition_384_facespvdDisplay.SelectTCoordArray = 'None'
+# aortic_no_partition_384_facespvdDisplay.SelectNormalArray = 'None'
+# aortic_no_partition_384_facespvdDisplay.SelectTangentArray = 'None'
+aortic_no_partition_384_facespvdDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
+aortic_no_partition_384_facespvdDisplay.SelectOrientationVectors = 'None'
+aortic_no_partition_384_facespvdDisplay.ScaleFactor = 0.30792751312255007
+aortic_no_partition_384_facespvdDisplay.SelectScaleArray = 'None'
+aortic_no_partition_384_facespvdDisplay.GlyphType = 'Arrow'
+aortic_no_partition_384_facespvdDisplay.GlyphTableIndexArray = 'None'
+aortic_no_partition_384_facespvdDisplay.GaussianRadius = 0.015396375656127503
+aortic_no_partition_384_facespvdDisplay.SetScaleArray = [None, '']
+aortic_no_partition_384_facespvdDisplay.ScaleTransferFunction = 'PiecewiseFunction'
+aortic_no_partition_384_facespvdDisplay.OpacityArray = [None, '']
+aortic_no_partition_384_facespvdDisplay.OpacityTransferFunction = 'PiecewiseFunction'
+aortic_no_partition_384_facespvdDisplay.DataAxesGrid = 'GridAxesRepresentation'
+aortic_no_partition_384_facespvdDisplay.PolarAxes = 'PolarAxesRepresentation'
+aortic_no_partition_384_facespvdDisplay.ScalarOpacityUnitDistance = 0.136635908798675
+# aortic_no_partition_384_facespvdDisplay.OpacityArrayName = [None, '']
+# aortic_no_partition_384_facespvdDisplay.SelectInputVectors = [None, '']
+# aortic_no_partition_384_facespvdDisplay.WriteLog = ''
 
 # init the 'PiecewiseFunction' selected for 'OSPRayScaleFunction'
-aortic_no_partition_384pvdDisplay.OSPRayScaleFunction.Points = [-256.96728515625, 0.2589285671710968, 0.5, 0.0, 102.52591705322266, 1.0, 0.5, 0.0]
+aortic_no_partition_384_facespvdDisplay.OSPRayScaleFunction.Points = [-256.96728515625, 0.2589285671710968, 0.5, 0.0, 102.52591705322266, 1.0, 0.5, 0.0]
 
 # init the 'PiecewiseFunction' selected for 'ScaleTransferFunction'
-aortic_no_partition_384pvdDisplay.ScaleTransferFunction.Points = [0.0, 0.2589285671710968, 0.5, 0.0, 1.0, 1.0, 0.5, 0.0]
+aortic_no_partition_384_facespvdDisplay.ScaleTransferFunction.Points = [0.0, 0.2589285671710968, 0.5, 0.0, 1.0, 1.0, 0.5, 0.0]
 
 # init the 'PiecewiseFunction' selected for 'OpacityTransferFunction'
-aortic_no_partition_384pvdDisplay.OpacityTransferFunction.Points = [0.0, 0.2589285671710968, 0.5, 0.0, 1.0, 1.0, 0.5, 0.0]
+aortic_no_partition_384_facespvdDisplay.OpacityTransferFunction.Points = [0.0, 0.2589285671710968, 0.5, 0.0, 1.0, 1.0, 0.5, 0.0]
 
 # show data from slice3
 slice3Display = Show(slice3, renderView2, 'GeometryRepresentation')
