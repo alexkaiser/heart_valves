@@ -126,7 +126,7 @@ def convert_mesh_to_center_points(mesh, NX, NY, NZ):
     '''
 
     mesh_cell_centers = mesh.cell_centers()
-    points_sorted, point_data_sorted_U, point_data_sorted_P = sort_points_and_point_data(mesh_cell_centers.points, mesh_cell_centers.point_arrays['U'], mesh_cell_centers.point_arrays['P'])
+    points_sorted, point_data_sorted_U, point_data_sorted_P = sort_points_and_point_data(mesh_cell_centers.points, mesh_cell_centers.point_data['U'], mesh_cell_centers.point_data['P'])
     cells_sorted = generate_cells(NX,NY,NZ)
 
     mesh_points_meshio_format = meshio.Mesh(points_sorted, 
