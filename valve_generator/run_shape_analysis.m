@@ -49,30 +49,65 @@ if two_frame_summary
     names_struct(1).circ_over_d =  "1.1d"; 
     names_struct(1).rad =  "1.4"; 
     names_struct(1).comment = ""; 
+    names_struct(1).frame_sys = 893; 
+    names_struct(1).frame_dia = 775; 
 
     names_struct(2).dir =  "aortic_22389012_384_38d07aa_true_bicuspid_circ_3pt0_1pt2d_rad_1pt7_semifinal_1"; 
     names_struct(2).circ =  "3.0"; 
     names_struct(2).circ_over_d =  "1.2d"; 
     names_struct(2).rad =  "1.7"; 
     names_struct(2).comment = "";
+    names_struct(1).frame_sys = 893; 
+    names_struct(1).frame_dia = 775; 
+
     
-    names_struct(3).dir =  "aortic_22388339_384_c68c6b7__true_bicuspid_circ_3pt5_1pt4d_rad_1pt7_semifinal_1"; 
-    names_struct(3).circ =  "3.5"; 
-    names_struct(3).circ_over_d =  "1.4d"; 
+    names_struct(3).dir =  "aortic_22931373_384_12963f1_true_bicuspid_circ_3pt3_1pt3d_rad_1pt7_semifinal_1"; 
+    names_struct(3).circ =  "3.0"; 
+    names_struct(3).circ_over_d =  "1.3d"; 
     names_struct(3).rad =  "1.7"; 
     names_struct(3).comment = "";
+    names_struct(1).frame_sys = 891; 
+    names_struct(1).frame_dia = 774; 
     
-    names_struct(4).dir =  "aortic_22387241_384_8e666fd_true_bicuspid_circ_3pt9_1pt65d_rad_1pt7_semifinal_1"; 
-    names_struct(4).circ =  "3.9"; 
-    names_struct(4).circ_over_d =  "1.6d"; 
+    names_struct(4).dir =  "aortic_22388339_384_c68c6b7__true_bicuspid_circ_3pt5_1pt4d_rad_1pt7_semifinal_1"; 
+    names_struct(4).circ =  "3.5"; 
+    names_struct(4).circ_over_d =  "1.4d"; 
     names_struct(4).rad =  "1.7"; 
-    names_struct(4).comment = "At circ";
+    names_struct(4).comment = "";
+    names_struct(1).frame_sys = 893; 
+    names_struct(1).frame_dia = 775; 
     
-    names_struct(5).dir =  "aortic_22389594_384_8bb4d38_true_bicuspid_circ_4pt5_1pt8d_rad_1pt7_semifinal_1"; 
-    names_struct(5).circ =  "4.5"; 
-    names_struct(5).circ_over_d =  "1.8d"; 
+    names_struct(5).dir =  "aortic_22600258_384_e8bd3fe_true_bicuspid_circ_3pt75_1pt5d_rad_1pt7_semifinal_1"; 
+    names_struct(5).circ =  "3.5"; 
+    names_struct(5).circ_over_d =  "1.5d"; 
     names_struct(5).rad =  "1.7"; 
     names_struct(5).comment = "";
+    names_struct(1).frame_sys = 893; 
+    names_struct(1).frame_dia = 775; 
+    
+    names_struct(6).dir =  "aortic_22387241_384_8e666fd_true_bicuspid_circ_3pt9_1pt65d_rad_1pt7_semifinal_1"; 
+    names_struct(6).circ =  "3.9"; 
+    names_struct(6).circ_over_d =  "1.6d"; 
+    names_struct(6).rad =  "1.7"; 
+    names_struct(6).comment = "At circ";
+    names_struct(1).frame_sys = 893; 
+    names_struct(1).frame_dia = 775; 
+    
+    names_struct(7).dir =  "aortic_22933976_384_12963f1_true_bicuspid_circ_4pt2_1pt7d_rad_1pt7_semifinal_1"; 
+    names_struct(7).circ =  "4.5"; 
+    names_struct(7).circ_over_d =  "1.7d"; 
+    names_struct(7).rad =  "1.7"; 
+    names_struct(7).comment = "";
+    names_struct(1).frame_sys = 893; 
+    names_struct(1).frame_dia = 775; 
+    
+    names_struct(8).dir =  "aortic_22389594_384_8bb4d38_true_bicuspid_circ_4pt5_1pt8d_rad_1pt7_semifinal_1"; 
+    names_struct(8).circ =  "4.5"; 
+    names_struct(8).circ_over_d =  "1.8d"; 
+    names_struct(8).rad =  "1.7"; 
+    names_struct(8).comment = "";
+    names_struct(1).frame_sys = 893; 
+    names_struct(1).frame_dia = 775; 
     
 %     names_struct(6).dir =  "aortic_14728686_384_a75f53c_true_bicuspid_circ_3pt9_1pt57d_rad_1pt7_circ_prestretch_1pt08"; 
 %     names_struct(6).circ =  "3.9"; 
