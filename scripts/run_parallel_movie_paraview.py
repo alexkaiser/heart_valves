@@ -79,6 +79,8 @@ if __name__ == '__main__':
     if 'top_view' in session_file_name:
         base_name += '_top_view'
 
+    if 'vertical' in session_file_name:
+        base_name += '_vertical'
 
     if os.path.isfile('done.txt'):
         
