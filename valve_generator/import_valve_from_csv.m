@@ -11,7 +11,9 @@ if ~exist('run_inv_transform', 'var')
 end 
 
 leaflet = valve.leaflets(1); 
- 
+
+% file_with_path
+
 vertices = csvread(file_with_path)'; 
 
 if run_inv_transform
