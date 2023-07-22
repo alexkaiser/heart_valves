@@ -14,6 +14,8 @@ module purge
 module load gcc/8.1.0
 module load openmpi/2.0.2
 
+TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
+
 # executable is here 
 SRCDIR=$PWD
 
@@ -59,8 +61,8 @@ python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS"
 
 # load stuff for movie making 
 source ~/.bash_profile
-python run_parallel_movie.py $SESSION_NAME $SLURM_NTASKS $VIEW_CLIPPING
+python run_parallel_movie.py $SESSION_NAME $TOTAL_TASKS $VIEW_CLIPPING
 
 SESSION_NAME_PARAVIEW="~/copies_scripts/velocity_slices_5.py"
-visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py 48 $SLURM_NTASKS
-python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $SLURM_NTASKS
+visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py 48 $TOTAL_TASKS
+python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $TOTAL_TASKS

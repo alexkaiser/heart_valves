@@ -13,6 +13,8 @@ module purge
 module load gcc/8.1.0
 module load openmpi/2.0.2
 
+TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
+
 # executable is here 
 SRCDIR=$PWD
 
@@ -61,4 +63,4 @@ python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS"
 
 # load stuff for movie making 
 source ~/.bash_profile
-python run_parallel_movie.py $SESSION_NAME $SLURM_NTASKS $VIEW_CLIPPING
+python run_parallel_movie.py $SESSION_NAME $TOTAL_TASKS $VIEW_CLIPPING

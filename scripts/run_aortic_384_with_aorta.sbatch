@@ -14,6 +14,8 @@ module purge
 module load gcc/8.1.0
 module load openmpi/2.0.2
 
+TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
+
 # executable is here 
 SRCDIR=$PWD
 
@@ -62,6 +64,6 @@ touch done.txt
 
 # load stuff for movie making 
 source ~/.bash_profile
-visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py $SLURM_NTASKS $SLURM_NTASKS
+visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py $TOTAL_TASKS $TOTAL_TASKS
 
 sbatch ~/copies_scripts/post_process_aorta.sh 
