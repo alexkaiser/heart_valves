@@ -107,15 +107,15 @@ if __name__ == '__main__':
     eulerian_varspvd.PointArrays = ['U','P']
 
     # create a new 'PVD Reader'
-    aorta_384pvd = PVDReader(registrationName='aorta_384.pvd', FileName='aorta_384.pvd')
+    # aorta_384pvd = PVDReader(registrationName='aorta_384.pvd', FileName='aorta_384.pvd')
 
 
     # create a new 'Text'
-    text1 = Text(registrationName='Text1')
-    text1.Text = 'vertical component of velocity'
+    # text1 = Text(registrationName='Text1')
+    # text1.Text = 'vertical component of velocity'
 
-    # create a new 'PVD Reader'
-    aortic_no_partition_384pvd = PVDReader(registrationName='aortic_no_partition_384.pvd', FileName='aortic_no_partition_384.pvd')
+    # # create a new 'PVD Reader'
+    # aortic_no_partition_384pvd = PVDReader(registrationName='aortic_no_partition_384.pvd', FileName='aortic_no_partition_384.pvd')
 
 
 
@@ -186,18 +186,18 @@ if __name__ == '__main__':
     integrateVariables3 = IntegrateVariables(registrationName='IntegrateVariables3', Input=calculator1_norm_sq_u_tangential)
 
     # create a new 'Slice'
-    slice2 = Slice(registrationName='Slice2', Input=aorta_384pvd)
-    slice2.SliceType = 'Plane'
-    slice2.Triangulatetheslice = 0
-    slice2.HyperTreeGridSlicer = 'Plane'
-    slice2.SliceOffsetValues = [0.0]
+    # slice2 = Slice(registrationName='Slice2', Input=aorta_384pvd)
+    # slice2.SliceType = 'Plane'
+    # slice2.Triangulatetheslice = 0
+    # slice2.HyperTreeGridSlicer = 'Plane'
+    # slice2.SliceOffsetValues = [0.0]
 
-    # init the 'Plane' selected for 'SliceType'
-    slice2.SliceType.Origin = [1.565198004245758, -18.485950469970703, -22.37162494659424]
-    slice2.SliceType.Normal = [0.0, 1.0, 0.0]
+    # # init the 'Plane' selected for 'SliceType'
+    # slice2.SliceType.Origin = [1.565198004245758, -18.485950469970703, -22.37162494659424]
+    # slice2.SliceType.Normal = [0.0, 1.0, 0.0]
 
     # init the 'Plane' selected for 'HyperTreeGridSlicer'
-    slice2.HyperTreeGridSlicer.Origin = [1.565198004245758, -18.485950469970703, -22.37162494659424]
+    # slice2.HyperTreeGridSlicer.Origin = [1.565198004245758, -18.485950469970703, -22.37162494659424]
 
     # create a new 'Calculator'
     calculator1_u_dot_n_sq = Calculator(registrationName='Calculator1_u_dot_n_sq', Input=slice4)

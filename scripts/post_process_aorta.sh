@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=24
-#SBATCH --time=16:00:00
+#SBATCH --time=12:00:00
 #SBATCH --mem=185GB
 #SBATCH --job-name=slices_paper
 #SBATCH --mail-user=adkaiser@gmail.com
@@ -20,12 +20,14 @@ module load python/3.9.0
 # change dir even if not needed 
 cd viz_IB3d_tree_cycle_256 
 
+TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
+
 cp ~/mitral_fully_discrete/2_aorta_remeshed_pt5mm_capped.vtp . 
 cp ~/mitral_fully_discrete/4_aorta_remeshed_pt25mm_3cm_extender_layers_constriction.vtu . 
 cp ~/mitral_fully_discrete/6_aorta_remeshed_pt5mm_2cm_extender_layers_constriction.vtu . 
 
 # extracts relevant portion of mesh 
-python3 ~/copies_scripts/remove_unnecessary_eulerian_space.py $SLURM_NTASKS
+python3 ~/copies_scripts/remove_unnecessary_eulerian_space.py $TOTAL_TASKS
 
 # run integral metrics 
 sbatch ~/copies_scripts/run_integral_metrics.sh
@@ -50,10 +52,13 @@ SESSION_NAME_PARAVIEW="~/copies_scripts/bicuspid_slices_paraview.py"
 # renders movie 
 # assumes located in main sim directory 
 cd .. 
-python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $SLURM_NTASKS
+python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $TOTAL_TASKS
 
 SESSION_NAME_PARAVIEW_PAPER="~/copies_scripts/bicuspid_slices_paraview_paper.py"
-python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_PAPER $SLURM_NTASKS
+python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_PAPER $TOTAL_TASKS
 
 SESSION_NAME_PARAVIEW_TOP="~/copies_scripts/top_view_valve_0_paper.py"
-python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_TOP $SLURM_NTASKS
+python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_TOP $TOTAL_TASKS
+
+SESSION_NAME_PARAVIEW_VERTICAL="~/copies_scripts/bicuspid_slices_paraview_vertical.py"
+python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_VERTICAL $TOTAL_TASKS
