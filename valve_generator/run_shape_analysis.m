@@ -311,72 +311,100 @@ paper_table = true;
 
 if paper_table
    
-    names_struct(1).dir =  "aortic_22425104_384_40405e1_true_bicuspid_circ_2pt7_1pt1d_rad_1pt6_semifinal_1"; 
-    names_struct(1).circ =  "2.8"; 
-    names_struct(1).circ_over_d =  "1.1d"; 
-    names_struct(1).rad =  "1.4"; 
-    names_struct(1).comment = ""; 
-    names_struct(1).frame_sys = 893; 
-    names_struct(1).frame_dia = 775; 
+    table_1 = false; 
+    table_2 = true; 
+    
+    if table_1
+        names_struct(1).dir =  "aortic_22425104_384_40405e1_true_bicuspid_circ_2pt7_1pt1d_rad_1pt6_semifinal_1"; 
+        names_struct(1).circ =  "2.8"; 
+        names_struct(1).circ_over_d =  "1.1d"; 
+        names_struct(1).rad =  "1.4"; 
+        names_struct(1).comment = ""; 
+        names_struct(1).frame_sys = 893; 
+        names_struct(1).frame_dia = 775; 
 
-    names_struct(2).dir =  "aortic_22389012_384_38d07aa_true_bicuspid_circ_3pt0_1pt2d_rad_1pt7_semifinal_1"; 
-    names_struct(2).circ =  "3.0"; 
-    names_struct(2).circ_over_d =  "1.2d"; 
-    names_struct(2).rad =  "1.7"; 
-    names_struct(2).comment = "";
-    names_struct(2).frame_sys = 893; 
-    names_struct(2).frame_dia = 775; 
+        names_struct(2).dir =  "aortic_22389012_384_38d07aa_true_bicuspid_circ_3pt0_1pt2d_rad_1pt7_semifinal_1"; 
+        names_struct(2).circ =  "3.0"; 
+        names_struct(2).circ_over_d =  "1.2d"; 
+        names_struct(2).rad =  "1.7"; 
+        names_struct(2).comment = "";
+        names_struct(2).frame_sys = 893; 
+        names_struct(2).frame_dia = 775; 
+
+        names_struct(3).dir =  "aortic_22931373_384_12963f1_true_bicuspid_circ_3pt3_1pt3d_rad_1pt7_semifinal_1"; 
+        names_struct(3).circ =  "3.0"; 
+        names_struct(3).circ_over_d =  "1.3d"; 
+        names_struct(3).rad =  "1.7"; 
+        names_struct(3).comment = "";
+        names_struct(3).frame_sys = 891; 
+        names_struct(3).frame_dia = 774; 
+
+        names_struct(4).dir =  "aortic_22388339_384_c68c6b7__true_bicuspid_circ_3pt5_1pt4d_rad_1pt7_semifinal_1"; 
+        names_struct(4).circ =  "3.5"; 
+        names_struct(4).circ_over_d =  "1.4d"; 
+        names_struct(4).rad =  "1.7"; 
+        names_struct(4).comment = "";
+        names_struct(4).frame_sys = 893; 
+        names_struct(4).frame_dia = 775; 
+
+        names_struct(5).dir =  "aortic_22600258_384_e8bd3fe_true_bicuspid_circ_3pt75_1pt5d_rad_1pt7_semifinal_1"; 
+        names_struct(5).circ =  "3.5"; 
+        names_struct(5).circ_over_d =  "1.5d"; 
+        names_struct(5).rad =  "1.7"; 
+        names_struct(5).comment = "";
+        names_struct(5).frame_sys = 893; 
+        names_struct(5).frame_dia = 775; 
+
+        names_struct(6).dir =  "aortic_22387241_384_8e666fd_true_bicuspid_circ_3pt9_1pt65d_rad_1pt7_semifinal_1"; 
+        names_struct(6).circ =  "3.9"; 
+        names_struct(6).circ_over_d =  "1.6d"; 
+        names_struct(6).rad =  "1.7"; 
+        names_struct(6).comment = "At circ";
+        names_struct(6).frame_sys = 893; 
+        names_struct(6).frame_dia = 775; 
+
+        names_struct(7).dir =  "aortic_22933976_384_12963f1_true_bicuspid_circ_4pt2_1pt7d_rad_1pt7_semifinal_1"; 
+        names_struct(7).circ =  "4.5"; 
+        names_struct(7).circ_over_d =  "1.7d"; 
+        names_struct(7).rad =  "1.7"; 
+        names_struct(7).comment = "";
+        names_struct(7).frame_sys = 893; 
+        names_struct(7).frame_dia = 775; 
+
+        names_struct(8).dir =  "aortic_22389594_384_8bb4d38_true_bicuspid_circ_4pt5_1pt8d_rad_1pt7_semifinal_1"; 
+        names_struct(8).circ =  "4.5"; 
+        names_struct(8).circ_over_d =  "1.8d"; 
+        names_struct(8).rad =  "1.7"; 
+        names_struct(8).comment = "";
+        names_struct(8).frame_sys = 893; 
+        names_struct(8).frame_dia = 775; 
+    end 
     
-    names_struct(3).dir =  "aortic_22931373_384_12963f1_true_bicuspid_circ_3pt3_1pt3d_rad_1pt7_semifinal_1"; 
-    names_struct(3).circ =  "3.0"; 
-    names_struct(3).circ_over_d =  "1.3d"; 
-    names_struct(3).rad =  "1.7"; 
-    names_struct(3).comment = "";
-    names_struct(3).frame_sys = 891; 
-    names_struct(3).frame_dia = 774; 
+    if table_2
+        names_struct(1).dir =  "aortic_22387241_384_8e666fd_true_bicuspid_circ_3pt9_1pt65d_rad_1pt7_semifinal_1"; 
+        names_struct(1).comment = "Basic";
+        names_struct(1).frame_sys = 893; 
+        names_struct(1).frame_dia = 775; 
+
+        names_struct(2).dir =  "aortic_22596921_384_f0a4135_true_bicuspid_circ_3pt9_1pt6d_rad_1pt65_less_bowl_semifinal_1"; 
+        names_struct(2).comment = "Less bowl";
+        names_struct(2).frame_sys = 891; 
+        names_struct(2).frame_dia = 774; 
+
+        names_struct(3).dir =  "aortic_23161126_384_69ce172_true_bicuspid_circ_4pt0_1pt6d_rad_1pt4_less_height_semifinal_2"; 
+        names_struct(3).comment = "Less height";
+        names_struct(3).frame_sys = 891; 
+        names_struct(3).frame_dia = 774; 
+
+        names_struct(4).dir =  "aortic_22940401_384_12963f1_true_bicuspid_circ_4pt0_1pt6d_rad_1pt4_less_bowl_semifinal_1"; 
+        names_struct(4).comment = "Less bowl, height";
+        names_struct(4).frame_sys = 893; 
+        names_struct(4).frame_dia = 775; 
+    end         
     
-    names_struct(4).dir =  "aortic_22388339_384_c68c6b7__true_bicuspid_circ_3pt5_1pt4d_rad_1pt7_semifinal_1"; 
-    names_struct(4).circ =  "3.5"; 
-    names_struct(4).circ_over_d =  "1.4d"; 
-    names_struct(4).rad =  "1.7"; 
-    names_struct(4).comment = "";
-    names_struct(4).frame_sys = 893; 
-    names_struct(4).frame_dia = 775; 
-    
-    names_struct(5).dir =  "aortic_22600258_384_e8bd3fe_true_bicuspid_circ_3pt75_1pt5d_rad_1pt7_semifinal_1"; 
-    names_struct(5).circ =  "3.5"; 
-    names_struct(5).circ_over_d =  "1.5d"; 
-    names_struct(5).rad =  "1.7"; 
-    names_struct(5).comment = "";
-    names_struct(5).frame_sys = 893; 
-    names_struct(5).frame_dia = 775; 
-    
-    names_struct(6).dir =  "aortic_22387241_384_8e666fd_true_bicuspid_circ_3pt9_1pt65d_rad_1pt7_semifinal_1"; 
-    names_struct(6).circ =  "3.9"; 
-    names_struct(6).circ_over_d =  "1.6d"; 
-    names_struct(6).rad =  "1.7"; 
-    names_struct(6).comment = "At circ";
-    names_struct(6).frame_sys = 893; 
-    names_struct(6).frame_dia = 775; 
-    
-    names_struct(7).dir =  "aortic_22933976_384_12963f1_true_bicuspid_circ_4pt2_1pt7d_rad_1pt7_semifinal_1"; 
-    names_struct(7).circ =  "4.5"; 
-    names_struct(7).circ_over_d =  "1.7d"; 
-    names_struct(7).rad =  "1.7"; 
-    names_struct(7).comment = "";
-    names_struct(7).frame_sys = 893; 
-    names_struct(7).frame_dia = 775; 
-    
-    names_struct(8).dir =  "aortic_22389594_384_8bb4d38_true_bicuspid_circ_4pt5_1pt8d_rad_1pt7_semifinal_1"; 
-    names_struct(8).circ =  "4.5"; 
-    names_struct(8).circ_over_d =  "1.8d"; 
-    names_struct(8).rad =  "1.7"; 
-    names_struct(8).comment = "";
-    names_struct(8).frame_sys = 893; 
-    names_struct(8).frame_dia = 775; 
     
     % data_idx_to_output = [4,6,7,8]; 
-    data_idx_to_output = 1:8; 
+    % data_idx_to_output = 1:8; 
     
     n_times = 2; 
     idx_frames = [775, 893]; 
@@ -390,7 +418,8 @@ if paper_table
     t_min_flow = 1.25; 
     t_mid_flow = 1.5; 
     
-    for data_idx = data_idx_to_output 
+    % diastolic only 
+    for data_idx = 1:length(names_struct) % data_idx_to_output 
 
         dir = names_struct(data_idx).dir;  
 
@@ -419,6 +448,51 @@ if paper_table
             shape_analysis_aortic(valve_with_reference.leaflets(1), leaflet_layer_2, leaflet_layer_3); 
 
         
+        diameter = valve_with_reference.r * 2; 
+
+        % nondimensional parameters 
+        free_edge_length_over_diameter = free_edge_length / diameter;
+        Gh_over_radius = Gh / valve_with_reference.r;
+        Eh_over_Gh = Eh ./ Gh;
+        Eh_from_min_over_Gh = Eh_from_minimum ./ Gh;
+
+
+
+        % fprintf('%s & %s & %s & ', names_struct(data_idx).circ_over_d, names_struct(data_idx).circ, names_struct(data_idx).rad); 
+        if table_1
+            fprintf('%s & ', names_struct(data_idx).circ_over_d);
+        elseif table_2 
+            fprintf('%s & ', names_struct(data_idx).comment); 
+        else 
+            error('must pick table type')
+        end 
+
+        fprintf('%.2f & %.2f & %.2f & %.2f & %.2f & %.2f & %.2f & %.2f & %.2f ', Gh(1), Gh_over_radius(1), min_height_center(1), Eh(1), Eh_from_minimum(1), ...
+                                        Eh_over_Gh(1), Eh_from_min_over_Gh(1), free_edge_length(1), free_edge_length_over_diameter(1)); 
+
+        fprintf('\\\\ \n'); 
+        fprintf('\\hline \n'); 
+
+
+        cd .. 
+
+    end     
+    
+    % systolic only 
+    for data_idx = 1:length(names_struct) % data_idx_to_output  
+
+        dir = names_struct(data_idx).dir;  
+
+        cd(convertStringsToChars(dir)); 
+
+        data_dir = pwd; 
+
+        load(fullfile(data_dir, 'aortic_no_partition_384_final_data.mat'), 'valve_with_reference', 'params');  
+
+        indices_global_1 = params.layer_indices(1).indices_global; 
+        indices_global_2 = params.layer_indices(2).indices_global; 
+        indices_global_3 = params.layer_indices(3).indices_global; 
+                
         file_name_systole = sprintf('aortic_no_partition_384%04d.csv', names_struct(data_idx).frame_sys); 
 
         valve_with_reference.leaflets(1) = import_valve_from_csv(valve_with_reference, file_name_systole, indices_global_1, data_dir, run_inv_transform); 
@@ -432,8 +506,7 @@ if paper_table
         
        
         % flow related quantities 
-        [delta_p_mean, delta_p_max, q_full_cycle, q_systole, dt] = compute_gradient_stroke_vol(cycle_duration, cycle_number, t_min_pressure, t_max_pressure, t_min_flow, t_mid_flow); 
-        delta_p_mean, delta_p_max, q_full_cycle, q_systole, dt
+        [delta_p_mean, delta_p_max, q_full_cycle, q_systole, q_diff_full_systole, dt] = compute_gradient_stroke_vol(cycle_duration, cycle_number, t_min_pressure, t_max_pressure, t_min_flow, t_mid_flow); 
         
         diameter = valve_with_reference.r * 2; 
 
@@ -445,10 +518,15 @@ if paper_table
 
 
         % fprintf('%s & %s & %s & ', names_struct(data_idx).circ_over_d, names_struct(data_idx).circ, names_struct(data_idx).rad); 
-        fprintf('%s & %s & %s & ', names_struct(data_idx).circ_over_d); 
+        if table_1
+            fprintf('%s & ', names_struct(data_idx).circ_over_d);
+        elseif table_2 
+            fprintf('%s & ', names_struct(data_idx).comment); 
+        else 
+            error('must pick table type')
+        end 
 
-        fprintf('%.2f & %.2f & %.2f & %.2f & %.2f & %.2f & %.2f & %.2f & %.2f & %.2f ', orifice_area_all_points, Gh(1), Gh_over_radius(1), min_height_center(1), Eh(1), Eh_from_minimum(1), ...
-                                        Eh_over_Gh(1), Eh_from_min_over_Gh(1), free_edge_length(1), free_edge_length_over_diameter(1)); 
+        fprintf('%.2f & %.2f & %.2f  ', orifice_area_all_points, delta_p_mean, q_systole); 
 
         fprintf('\\\\ \n'); 
         fprintf('\\hline \n'); 
@@ -456,8 +534,9 @@ if paper_table
 
         cd .. 
 
-    end     
-     
+    end 
+    
+    
 end 
 
 
