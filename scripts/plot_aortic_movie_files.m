@@ -11,12 +11,20 @@ q_aorta = bc_vals(:,3);
 % p_wk = bc_vals(:,4)/MMHG_TO_CGS;
 p_lv = bc_vals(:,5)/MMHG_TO_CGS;
 
-bicuspid_paper = true; 
+bicuspid_paper = false; 
 if bicuspid_paper
     p_aorta          = bc_vals(:,3); 
     q_aorta          = bc_vals(:,5);
     p_extender_point = bc_vals(:,9);
     p_lv             = p_extender_point; 
+end 
+
+bicuspidization_paper = true; 
+if bicuspidization_paper
+    times            =  bc_vals(:,1);
+    p_lv             =  bc_vals(:,2);
+    p_aorta          =  bc_vals(:,3); 
+    q_aorta          =  bc_vals(:,5);
 end 
 
 

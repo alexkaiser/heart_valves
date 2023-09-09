@@ -7,7 +7,7 @@ if __name__ == '__main__':
 
     print "call arguments: "
     for arg in sys.argv:
-        print arg, " "
+        print(arg, " ")
 
     script_dir = "~/copies_scripts/"
     # script_dir = "~/mitral_fully_discrete/scripts/"
@@ -26,12 +26,12 @@ if __name__ == '__main__':
 
     if os.path.isfile('done.txt'):
         
-        print 'done.txt found'
+        print('done.txt found')
     
         for f in os.listdir('.'):
             if f.startswith('viz'): 
                 
-                print 'Found viz directory'
+                print('Found viz directory')
                 
                 os.chdir(f)
                 
@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
                 code = subprocess.call('cp ~/copies_scripts/run_aortic_plots.m .', shell=True)
                 if code is None:
-                    print 'call returned prematurely'
+                    print('call returned prematurely')
                 
                 stride_found = False 
                 if os.path.isfile('dumps.visit'):
@@ -49,7 +49,7 @@ if __name__ == '__main__':
                     visit_str = visit_file.readline()
                     visit_str = visit_str.split('.')[1] # format visit_dump.00000/summary.samrai 
                     stride = visit_str.split('/')[0]                    
-                    print "stride = ", stride
+                    print("stride = ", stride)
                     stride_found = True 
 
                 call_str_matlab = 'matlab -nodisplay -nodesktop -r "run_aortic_plots('
@@ -65,23 +65,23 @@ if __name__ == '__main__':
 
                 call_str_matlab += ')"'
 
-                print "call_str_matlab = ", call_str_matlab
+                print("call_str_matlab = ", call_str_matlab)
 
                 code = subprocess.call(call_str_matlab, shell=True)
                 if code is None:
-                    print 'call returned prematurely'
+                    print('call returned prematurely')
 
                 left = base_name
                 right = 'flow_and_pressure_'
                 base_name_new = base_name + '_flow_trace'
-                nsteps = 1441
+                nsteps = 963
 
                 call_str_concatenate = 'python ~/copies_scripts/concatenate_jpegs.py '
                 call_str_concatenate += left + ' ' + right + ' ' + base_name_new + ' ' + str(nsteps)
 
                 code = subprocess.call(call_str_concatenate, shell=True)
                 if code is None:
-                    print 'call returned prematurely'
+                    print('call returned prematurely')
 
 
     # ffmpeg from here so variables are all in place
@@ -92,7 +92,7 @@ if __name__ == '__main__':
 
     code = subprocess.call(movie_string, shell=True)
     if code is None:
-        print 'something wrong in movie make, call returned prematurely'
+        print('something wrong in movie make, call returned prematurely')
 
 
     # # reduce by 10x
@@ -106,4 +106,4 @@ if __name__ == '__main__':
 
     code = subprocess.call(movie_string, shell=True)
     if code is None:
-        print 'something wrong in movie make, call returned prematurely'
+        print('something wrong in movie make, call returned prematurely')
