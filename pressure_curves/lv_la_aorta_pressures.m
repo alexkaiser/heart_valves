@@ -21,7 +21,7 @@ base_name = 'fourier_coeffs';
 
 
 points_one_cycle_ventricle = [0.0,   0; 
-0.02, -4; 
+0.02, 0; 
 0.06, 2; 
 0.40, 6; 
 0.53, 14; 

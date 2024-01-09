@@ -28,27 +28,35 @@ else
     axis_vec_flow     = [0 2.4 -700 800];
 end
 
-bicuspid_paper = true; 
+bicuspid_paper = false; 
 if bicuspid_paper
     nframes = 1442; 
     axis_vec_pressure = [0 2.4 -5 160]; 
     axis_vec_flow     = [0 2.4 -300 800];
 end 
 
+bicuspidization_paper = true; 
+if bicuspidization_paper
+    nframes = 1446; 
+    axis_vec_pressure = [0.8 2.4 -5 160]; 
+    axis_vec_flow     = [0.8 2.4 -350 600];
+end 
+
 
 addpath('~/mitral_fully_discrete/scripts')
 addpath('~/copies_scripts')
 
-if isfile('bc_data.m')
-    bc_data; 
-elseif isfile('../bc_data.m')
-    run('../bc_data.m')
-else 
-    error('bc_data not found'); 
-end
+if ~isfile('bc_data.mat')
+    if isfile('bc_data.m')
+        bc_data; 
+    elseif isfile('../bc_data.m')
+        run('../bc_data.m')
+    else 
+        error('bc_data not found'); 
+    end
 
-save('bc_data.mat', 'bc_vals')
-
+    save('bc_data.mat', 'bc_vals')
+end 
 data_file = 'bc_data.mat'; 
 
 outdir = ''; % empty for current  
