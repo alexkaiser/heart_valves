@@ -2107,6 +2107,7 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
         z_max_scalar = z_max; 
     end 
     
+
     
     
     N_theta = floor(2*pi*r / ds);  
@@ -2116,6 +2117,14 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
     dtheta = 1/N_theta; 
     dz     = ds; %1/N_z; 
     dr     = ds; 
+    
+    cylinder_bdry_file = true; 
+    if cylinder_bdry_file
+        f_cylinder_min = fopen('cylinder_bdry_min.vertex', 'w'); 
+        f_cylinder_max = fopen('cylinder_bdry_max.vertex', 'w'); 
+        fprintf(f_cylinder_min, '%d\n', N_theta); 
+        fprintf(f_cylinder_max, '%d\n', N_theta); 
+    end 
     
     % bottom leaflet ring
     X = leaflet.X; 
@@ -2148,7 +2157,7 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
                        
                 theta_tmp = 2*pi*dtheta*(theta_idx-1); 
                 
-                z_coord = z_min(theta_tmp) + z_max_scalar * (z_idx - 1) * dz; 
+                z_coord = z_min(theta_tmp) + (z_idx - 1) * dz; 
                 
                 if exist('r_of_z', 'var')
                     r_tmp = r_of_z(z_coord) + (r_idx - 1)*dr; 
@@ -2222,11 +2231,27 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
                 else 
                     indices_global(theta_idx,r_idx,z_idx) = nan; 
                 end 
+                
+                if cylinder_bdry_file
+                    if (z_idx == 1) && (r_idx == N_r) 
+                        fprintf(f_cylinder_min, "%f %f %f\n", x_coord, y_coord, z_coord); 
+                    end 
+                    if (z_idx == N_z) && (r_idx == N_r)  
+                        fprintf(f_cylinder_max, "%f %f %f\n", x_coord, y_coord, z_coord); 
+                    end 
+                end 
+                
             end        
         end 
     end 
 
+    if cylinder_bdry_file
+        fclose(f_cylinder_min); 
+        fclose(f_cylinder_max); 
+    end 
 
+    
+    
 % springs     
     % below the first possible point 
     idx = -1; 
