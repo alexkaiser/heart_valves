@@ -55,7 +55,11 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
                                                double P_initial_aorta,
                                                bool rcr_bcs_on,
                                                bool P_initial_aorta_equal_to_ventricle,
-                                               double rcr_on_time)
+                                               double rcr_on_time,
+                                               int ventricle_axis = 0,
+                                               int ventricle_side = 1,
+                                               int aorta_axis = 2,
+                                               int aorta_side = 1)
     : 
       d_object_name("circ_model_aorta"),  // constant name here  
       d_registered_for_restart(true),      // always true
@@ -74,7 +78,12 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
       d_area_initialized(false), 
       d_rcr_bcs_on(rcr_bcs_on), 
       d_P_initial_aorta_equal_to_ventricle(P_initial_aorta_equal_to_ventricle), 
-      d_rcr_on_time(rcr_on_time)
+      d_rcr_on_time(rcr_on_time),
+      d_ventricle_axis(ventricle_axis), 
+      d_ventricle_side(ventricle_side),
+      d_aorta_axis(aorta_axis), 
+      d_aorta_side(aorta_side) 
+
 {
     
     if (d_registered_for_restart)
@@ -104,7 +113,8 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
         }
     }
 
-    double x,x_prev,y,y_prev,z,z_prev; 
+    // double x,x_prev,y,y_prev,z,z_prev; 
+    double coord_normal, coord_normal_prev; 
     double tol = 1.0e-2; 
 
     // read vertices from file 
@@ -120,23 +130,38 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
     d_ventricle_points_idx2 = new double[d_n_pts_ventricle]; 
 
     for (int i=0; i<d_n_pts_ventricle; i++){
-        ventricle_file >> x; 
-        ventricle_file >> d_ventricle_points_idx1[i]; 
-        ventricle_file >> d_ventricle_points_idx2[i];
-        
+        if (d_ventricle_axis == 0){
+            ventricle_file >> coord_normal; 
+            ventricle_file >> d_ventricle_points_idx1[i]; 
+            ventricle_file >> d_ventricle_points_idx2[i];
+        }
+        else if (d_ventricle_axis == 1){
+            ventricle_file >> d_ventricle_points_idx1[i]; 
+            ventricle_file >> coord_normal; 
+            ventricle_file >> d_ventricle_points_idx2[i];
+        }
+        else if (d_ventricle_axis == 2){
+            ventricle_file >> d_ventricle_points_idx1[i]; 
+            ventricle_file >> d_ventricle_points_idx2[i];
+            ventricle_file >> coord_normal; 
+        }
+        else{
+            TBOX_ERROR("error in axis\n"); 
+        }
+
         if (i>0){
-            if (fabs(x_prev - x) > tol){
+            if (fabs(coord_normal_prev - coord_normal) > tol){
                 TBOX_ERROR("x coordinates must be consistent\n"); 
             }
         }
-        x_prev = x; 
+        coord_normal_prev = coord_normal; 
 
     }
     pout << "to ventricle file close\n"; 
     ventricle_file.close(); 
     // hardcode to top 
-    d_ventricle_axis = 0; 
-    d_ventricle_side = 1; 
+    // d_ventricle_axis = 0; 
+    // d_ventricle_side = 1; 
 
     // read vertices from file 
     ifstream aorta_file(aorta_vertices_file_name.c_str(), ios::in);
@@ -151,23 +176,37 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
     d_aorta_points_idx2 = new double[d_n_pts_aorta]; 
 
     for (int i=0; i<d_n_pts_aorta; i++){
-        aorta_file >> d_aorta_points_idx1[i]; 
-        aorta_file >> d_aorta_points_idx2[i]; 
-        aorta_file >> z;
-        
+        if (d_aorta_axis == 0){
+            aorta_file >> coord_normal; 
+            aorta_file >> d_ventricle_points_idx1[i]; 
+            aorta_file >> d_ventricle_points_idx2[i];
+        }
+        else if (d_aorta_axis == 1){
+            aorta_file >> d_ventricle_points_idx1[i]; 
+            aorta_file >> coord_normal; 
+            aorta_file >> d_ventricle_points_idx2[i];
+        }
+        else if (d_aorta_axis == 2){
+            aorta_file >> d_ventricle_points_idx1[i]; 
+            aorta_file >> d_ventricle_points_idx2[i];
+            aorta_file >> coord_normal; 
+        }
+        else{
+            TBOX_ERROR("error in axis\n"); 
+        }
 
         if (i>0){
-            if (fabs(z_prev - z) > tol){
-                TBOX_ERROR("z coordinates must be consistent\n"); 
+            if (fabs(coord_normal_prev - coord_normal) > tol){
+                TBOX_ERROR("normal coordinates must be consistent\n"); 
             }
         }
-        z_prev = z; 
+        coord_normal_prev = coord_normal; 
 
     }
     pout << "to aorta file close\n"; 
     aorta_file.close(); 
-    d_aorta_axis = 2; 
-    d_aorta_side = 1; 
+    // d_aorta_axis = 2; 
+    // d_aorta_side = 1; 
 
     if (!from_restart){
         if (d_P_initial_aorta_equal_to_ventricle){
