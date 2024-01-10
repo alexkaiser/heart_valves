@@ -102,6 +102,7 @@ inline double deriv_spring_compressive_only_linear_spring(double R, const double
 
 #define DEBUG_OUTPUT 0 
 #define ENABLE_INSTRUMENTS
+// #define EXTENDER_INST_ON
 
 #define USE_CIRC_MODEL_AORTA
 
@@ -292,7 +293,9 @@ int main(int argc, char* argv[])
             int p_data_idx = 0; 
             
             Pointer<IBInstrumentPanel> instruments          = new IBInstrumentPanel("meter_0", input_db);
-            Pointer<IBInstrumentPanel> instruments_extender = new IBInstrumentPanel("aorta_0", input_db);
+            #ifdef EXTENDER_INST_ON
+                Pointer<IBInstrumentPanel> instruments_extender = new IBInstrumentPanel("aorta_0", input_db);
+            #endif 
         #endif
         
 
@@ -443,6 +446,26 @@ int main(int argc, char* argv[])
             bool P_initial_aorta_equal_to_ventricle = true; 
             double rcr_on_time = 0.2; 
 
+            bool graft_version = true; 
+
+            int ventricle_axis; 
+            int ventricle_side; 
+            int aorta_axis; 
+            int aorta_side; 
+
+            if (graft_version){
+                ventricle_axis = 2;
+                ventricle_side = 0;
+                aorta_axis = 2;
+                aorta_side = 1;
+            }
+            else{
+                ventricle_axis = 0;
+                ventricle_side = 1;
+                aorta_axis = 2;
+                aorta_side = 1;
+            }
+
             CirculationModel_aorta *circ_model_aorta = new CirculationModel_aorta(input_db,
                                                                              fourier_series_ventricle, 
                                                                              ventricle_vertices_file_name,
@@ -453,7 +476,11 @@ int main(int argc, char* argv[])
                                                                              P_aorta_0,
                                                                              rcr_bcs_on, 
                                                                              P_initial_aorta_equal_to_ventricle, 
-                                                                             rcr_on_time); 
+                                                                             rcr_on_time, 
+                                                                             ventricle_axis,
+                                                                             ventricle_side, 
+                                                                             aorta_axis,
+                                                                             aorta_side); 
 
             // Create Eulerian boundary condition specification objects.
             vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM);
@@ -492,8 +519,10 @@ int main(int argc, char* argv[])
         #ifdef ENABLE_INSTRUMENTS
             // do this after initialize patch hierarchy
             instruments->initializeHierarchyIndependentData(patch_hierarchy, l_data_manager);
-            
-            instruments_extender->initializeHierarchyIndependentData(patch_hierarchy, l_data_manager);
+
+            #ifdef EXTENDER_INST_ON
+                instruments_extender->initializeHierarchyIndependentData(patch_hierarchy, l_data_manager);
+            #endif
         #endif
 
         // Deallocate initialization objects.
@@ -534,8 +563,10 @@ int main(int argc, char* argv[])
                 instruments->initializeHierarchyDependentData(patch_hierarchy, l_data_manager, iteration_num, loop_time); 
                 instruments->readInstrumentData(u_data_idx, p_data_idx, patch_hierarchy, l_data_manager, iteration_num, loop_time); 
                 
-                instruments_extender->initializeHierarchyDependentData(patch_hierarchy, l_data_manager, iteration_num, loop_time); 
-                instruments_extender->readInstrumentData(u_data_idx, p_data_idx, patch_hierarchy, l_data_manager, iteration_num, loop_time); 
+                #ifdef EXTENDER_INST_ON
+                    instruments_extender->initializeHierarchyDependentData(patch_hierarchy, l_data_manager, iteration_num, loop_time); 
+                    instruments_extender->readInstrumentData(u_data_idx, p_data_idx, patch_hierarchy, l_data_manager, iteration_num, loop_time); 
+                #endif
             #endif
             
         }
@@ -625,16 +656,20 @@ int main(int argc, char* argv[])
                     instruments->readInstrumentData(U_current_idx, P_current_idx, patch_hierarchy, l_data_manager, iteration_num, loop_time); 
                     flux_valve_ring = instruments->getFlowValues(); 
 
-                    instruments_extender->initializeHierarchyDependentData(patch_hierarchy, l_data_manager, iteration_num, loop_time); 
-                    instruments_extender->readInstrumentData(U_current_idx, P_current_idx, patch_hierarchy, l_data_manager, iteration_num, loop_time); 
-                    p_extender_mean = instruments_extender->getMeanPressureValues(); 
-                    p_extender_point = instruments_extender->getPointwisePressureValues(); 
+                    #ifdef EXTENDER_INST_ON
+                        instruments_extender->initializeHierarchyDependentData(patch_hierarchy, l_data_manager, iteration_num, loop_time); 
+                        instruments_extender->readInstrumentData(U_current_idx, P_current_idx, patch_hierarchy, l_data_manager, iteration_num, loop_time); 
+                        p_extender_mean = instruments_extender->getMeanPressureValues(); 
+                        p_extender_point = instruments_extender->getPointwisePressureValues(); 
+                    #endif
 
                     // pout << "flux at t = " << loop_time << ", Q = " << flux_valve_ring[0] << "\n";
                                     
                     #ifdef USE_CIRC_MODEL_AORTA
                         circ_model_aorta->set_Q_valve(flux_valve_ring[0]); 
-                        circ_model_aorta->set_extender_pressures(p_extender_mean[0], p_extender_point[0]); 
+                        #ifdef EXTENDER_INST_ON
+                            circ_model_aorta->set_extender_pressures(p_extender_mean[0], p_extender_point[0]); 
+                        #endif
                     #endif 
                 }
             #endif
