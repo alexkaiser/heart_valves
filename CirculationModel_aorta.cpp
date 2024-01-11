@@ -178,17 +178,17 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
     for (int i=0; i<d_n_pts_aorta; i++){
         if (d_aorta_axis == 0){
             aorta_file >> coord_normal; 
-            aorta_file >> d_ventricle_points_idx1[i]; 
-            aorta_file >> d_ventricle_points_idx2[i];
+            aorta_file >> d_aorta_points_idx1[i]; 
+            aorta_file >> d_aorta_points_idx2[i];
         }
         else if (d_aorta_axis == 1){
-            aorta_file >> d_ventricle_points_idx1[i]; 
+            aorta_file >> d_aorta_points_idx1[i]; 
             aorta_file >> coord_normal; 
-            aorta_file >> d_ventricle_points_idx2[i];
+            aorta_file >> d_aorta_points_idx2[i];
         }
         else if (d_aorta_axis == 2){
-            aorta_file >> d_ventricle_points_idx1[i]; 
-            aorta_file >> d_ventricle_points_idx2[i];
+            aorta_file >> d_aorta_points_idx1[i]; 
+            aorta_file >> d_aorta_points_idx2[i];
             aorta_file >> coord_normal; 
         }
         else{
@@ -380,8 +380,8 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
     d_Q_aorta        = SAMRAI_MPI::sumReduction(Q_aorta_local);
 
     if (!d_area_initialized){
-        d_area_ventricle = SAMRAI_MPI::sumReduction(area_ventricle_local);
-        d_area_aorta        = SAMRAI_MPI::sumReduction(area_aorta_local);  
+        d_area_ventricle   = SAMRAI_MPI::sumReduction(area_ventricle_local);
+        d_area_aorta       = SAMRAI_MPI::sumReduction(area_aorta_local);  
         d_area_initialized = true;       
     }
 
