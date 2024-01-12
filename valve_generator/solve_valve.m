@@ -332,6 +332,17 @@ if build_reference
                 close(fig); 
             end 
             
+            if isfield(valve_with_reference, 'dilate_graft') && valve_with_reference.dilate_graft
+                if isfield(valve_with_reference, 'dilation_dist')
+                    if valve_with_reference.dilation_dist ~= 0
+                        valve_with_reference = aortic_dialate_annulus(valve_with_reference); 
+                    end 
+                else 
+                    error('must provide dilation_dist if valve.dilate_graft is true'); 
+                end 
+            end 
+            
+            
             if isfield(valve, 'dirichlet_free_edge_with_ref_only') && valve.dirichlet_free_edge_with_ref_only && ... 
                isfield(valve, 'dirichlet_free_edge_comm_ref_only') && valve.dirichlet_free_edge_comm_ref_only
                 error('incompatible options')

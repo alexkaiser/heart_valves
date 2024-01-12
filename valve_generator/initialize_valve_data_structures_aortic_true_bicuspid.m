@@ -79,8 +79,8 @@ valve.in_heart = true;
 mri_box = false;
 
 graft_tester_geometry = true; 
-z_max_graft = 6; 
-z_min_graft = -3; 
+dilate_graft = true; 
+dilation_dist = 0.2; 
 
 fused_commissure = false; 
 
@@ -275,7 +275,10 @@ if valve.in_heart
         valve.skeleton.r_of_z = @(z) valve.skeleton.r .* ones(size(z)) + ...
                                      (z <= (valve.z_min_cylinder + extender_length)) .* ... % mask for bottom portion 
                                      extender_extra_rad .* 0.5 .* (cos(pi * (z - valve.z_min_cylinder)/(extender_length)) + 1.0); 
-                                             
+                                    
+        valve.dilate_graft = dilate_graft; 
+        valve.dilation_dist = dilation_dist; 
+                                 
         debug_extender_plot = false; 
         if debug_extender_plot 
             z = valve.z_min_cylinder:0.0001:valve.z_max_cylinder;             
