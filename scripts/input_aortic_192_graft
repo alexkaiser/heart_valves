@@ -65,8 +65,8 @@ DX = 0.1
 EXTRA_BDRY = 1.0e-6
 
 // number points 
-NX = 40
-NY = 40
+NX = 48
+NY = 48
 NZ = 90
 
 X_LOW = -2.0

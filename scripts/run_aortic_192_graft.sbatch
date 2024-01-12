@@ -46,7 +46,7 @@ cp main_aorta                                $RUNDIR
 cp fourier_coeffs_ventricle.txt              $RUNDIR
 cp watchdog_job_restart.py                   $RUNDIR
 cp kill_all_mpi.sh                           $RUNDIR
-cp run_aortic_192_with_aorta.sbatch          $RUNDIR
+cp run_aortic_192_graft.sbatch               $RUNDIR
 cp run_parallel_movie.py                     $RUNDIR
 
 # go to the run directory before running anything 
@@ -63,7 +63,7 @@ python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS"
 # touch done.txt
 
 # load stuff for movie making 
-# source ~/.bash_profile
-# visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py $TOTAL_TASKS $TOTAL_TASKS
+source ~/.bash_profile
+visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py $TOTAL_TASKS $TOTAL_TASKS
 
 # sbatch ~/copies_scripts/post_process_aorta.sh 

@@ -266,6 +266,27 @@ if valve.in_heart
         dx = 0.1 * (192/N);         
         valve.z_min_cylinder = -3; 
         valve.z_max_cylinder = -3 + (90-1)*(N/192)*dx; 
+        
+        % update r_of_z for extender 
+        
+        extender_extra_rad = 0.5; 
+        extender_length = 1.5; 
+        
+        valve.skeleton.r_of_z = @(z) valve.skeleton.r .* ones(size(z)) + ...
+                                     (z <= (valve.z_min_cylinder + extender_length)) .* ... % mask for bottom portion 
+                                     extender_extra_rad .* 0.5 .* (cos(pi * (z - valve.z_min_cylinder)/(extender_length)) + 1.0); 
+                                             
+        debug_extender_plot = false; 
+        if debug_extender_plot 
+            z = valve.z_min_cylinder:0.0001:valve.z_max_cylinder;             
+            figure; 
+            plot(valve.skeleton.r_of_z(z), z)
+            ylabel('z')
+            xlabel('r_of_z')
+            xlim([0 3])
+            axis equal 
+            
+        end 
 
     else 
         
