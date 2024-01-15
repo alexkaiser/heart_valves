@@ -263,9 +263,10 @@ if valve.in_heart
 
     if graft_tester_geometry        
     
-        dx = 0.1 * (192/N);         
+        dx = 0.1 * (192/N);
+        NZ = 90 * (N/192); 
         valve.z_min_cylinder = -3; 
-        valve.z_max_cylinder = -3 + (90-1)*(N/192)*dx; 
+        valve.z_max_cylinder = valve.z_min_cylinder + dx * (NZ - 1); 
         
         % update r_of_z for extender 
         
