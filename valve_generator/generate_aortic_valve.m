@@ -47,12 +47,15 @@ for N_each = N_each_range
     % Many parameters are in this script 
 
     pulm = false; 
-    true_bicuspid = true; 
+    true_bicuspid = true;
+    fish = false; 
     
     if pulm
         valve = initialize_valve_data_structures_pulm_mri_box(N); 
     elseif true_bicuspid
         valve = initialize_valve_data_structures_aortic_true_bicuspid(N); 
+    elseif fish
+        valve = initialize_valve_data_structures_aortic_bicuspid_fish(N); 
     else 
         valve = initialize_valve_data_structures_aortic_generic(N); 
     end 

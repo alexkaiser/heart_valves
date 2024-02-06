@@ -1,4 +1,4 @@
-function [X] = build_initial_fibers_aortic(leaflet, valve)
+function [X, len_annulus_min] = build_initial_fibers_aortic(leaflet, valve, height_min_comm_override)
 %
 % Builds initial fibers for current layout 
 % 
@@ -51,12 +51,10 @@ free_edge_smooth = false;
 
 if isfield(valve.skeleton, 'valve_ring_pts')
     % use whatever points are measured for valve ring 
-%     for j=1:j_max
-%         X(:,j,ring_k_idx(j)) = interpolate_valve_ring_points(valve, mesh(j)); 
-%         % [r*(cos(mesh(j)) + x_coord_extra(mesh(j))); r*sin(mesh(j)); 0.0]; 
-%     end 
-
-    error('arbitrary skeleton not implemented for aortic')
+ 
+    [pts, commissure_points, center] = interpolate_valve_ring_pts_aortic(valve, N_each, N_leaflets); 
+    X(:,:,1) = pts; 
+    % error('arbitrary skeleton not implemented for aortic')
 else
 
     % circular rings plus interpolants 
@@ -79,6 +77,15 @@ else
         height_min_comm = valve.skeleton.height_min_comm; 
     else 
         height_min_comm = free_edge_cusp_radius; 
+    end 
+    
+    if exist('height_min_comm_override', 'var')
+        % override existing height_min_comm
+        
+        height_comm = normal_height - height_min_comm; 
+        
+        height_min_comm = height_min_comm_override; 
+        normal_height = height_min_comm + height_comm; 
     end 
     
     du = leaflet.du; 
@@ -125,7 +132,7 @@ else
     
     if debug 
         annulus_z = X(3,:,1); 
-        max_z_annulus = max(annulus_z) 
+        max_z_annulus = max(annulus_z); 
     end 
     
     % commissure points
@@ -138,64 +145,82 @@ else
      
     % center of commissure points 
     center = [0; 0; free_edge_cusp_radius + 0.5 * (normal_height - free_edge_cusp_radius)]; 
-    
-    k = k_max; 
-    
-    for comm_idx = 1:N_leaflets
-        
-        % point one internal of commissure to point that m
-        % N_each is a power of two 
-        min_idx = (comm_idx-1)*N_each;         
-        
-        dj_interp = 1/(N_each/2); 
-        
-        for j=1:(N_each/2)
-            X(:,j + min_idx           ,k) = (1 - j*dj_interp) * commissure_points(:,comm_idx) + j*dj_interp * center; 
-        end 
-        
-        % center out to commissure point 
-        if comm_idx < 3
-            comm_idx_next = comm_idx+1; 
-        else 
-            comm_idx_next = 1; 
-        end
-        
-        for j=1:(N_each/2)
-            X(:,j + min_idx + N_each/2,k) = (1 - j*dj_interp) * center + j*dj_interp * commissure_points(:,comm_idx_next); 
-        end 
-        
-        if free_edge_smooth && (N_each > 16)
-            
-            smooth_points = N_each/16; 
-            
-            free_edge_copy = X(:,:,k); 
-            
-            smooth_min = (N_each/2) - smooth_points; 
-            smooth_max = (N_each/2) + smooth_points; 
-            
-            for j = smooth_min:smooth_max
-                for component = 1:3
-                    free_edge_copy(component,j + min_idx) = mean(X(component,(j + min_idx - smooth_points):(j + min_idx + smooth_points)  ,k)); 
-                end 
+
+end 
+
+
+% for interpolated or parameteric 
+k = k_max; 
+
+for comm_idx = 1:N_leaflets
+
+    % point one internal of commissure to point that m
+    % N_each is a power of two 
+    min_idx = (comm_idx-1)*N_each;         
+
+    dj_interp = 1/(N_each/2); 
+
+    for j=1:(N_each/2)
+        X(:,j + min_idx           ,k) = (1 - j*dj_interp) * commissure_points(:,comm_idx) + j*dj_interp * center; 
+    end 
+
+    % center out to commissure point 
+    if comm_idx < N_leaflets
+        comm_idx_next = comm_idx+1; 
+    else 
+        comm_idx_next = 1; 
+    end
+
+    for j=1:(N_each/2)
+        X(:,j + min_idx + N_each/2,k) = (1 - j*dj_interp) * center + j*dj_interp * commissure_points(:,comm_idx_next); 
+    end 
+
+    if free_edge_smooth && (N_each > 16)
+
+        smooth_points = N_each/16; 
+
+        free_edge_copy = X(:,:,k); 
+
+        smooth_min = (N_each/2) - smooth_points; 
+        smooth_max = (N_each/2) + smooth_points; 
+
+        for j = smooth_min:smooth_max
+            for component = 1:3
+                free_edge_copy(component,j + min_idx) = mean(X(component,(j + min_idx - smooth_points):(j + min_idx + smooth_points)  ,k)); 
             end 
-            
-            X(:,:,k) = free_edge_copy; 
-            
         end 
 
+        X(:,:,k) = free_edge_copy; 
+
     end 
-        
+
+end 
+
 %     % now, linear interpolation from annulus to free edge 
-    for j=1:j_max 
-        dk_interp = 1/(k_max-1);         
-        for k=2:(k_max-1)
-            X(:,j,k) = (1 - (k-1)*dk_interp) * X(:,j,1) + (k-1)*dk_interp * X(:,j,k_max); 
-        end         
+for j=1:j_max 
+    dk_interp = 1/(k_max-1);         
+    for k=2:(k_max-1)
+        X(:,j,k) = (1 - (k-1)*dk_interp) * X(:,j,1) + (k-1)*dk_interp * X(:,j,k_max); 
+    end         
+end 
+
+
+
+
+% minimum ring 
+len_annulus_min = 0; 
+k = 1; 
+for j = 1:j_max
+
+    [valid, j_nbr, k_nbr] = get_indices(leaflet, j, k, j+1, k); 
+    if ~valid
+        error('failed to find valid index'); 
     end 
 
-end
-
-
+    len_annulus_min = len_annulus_min + norm(X(:,j_nbr,k_nbr) - X(:,j,k));     
+end 
+    
+    
 
 if debug 
     figure; 
@@ -217,22 +242,22 @@ if debug
     ylabel('y'); 
     title('aortic leaflets initial')
     
-    figure; 
-    % six times circle radius
-    z_free_edge = squeeze(X(3,:,1));
-    
-    dx = 6 * free_edge_cusp_radius / length(z_component); 
-    x_circles = dx * (1:length(z_component));     
-    % x_circles = linspace(0,6 * free_edge_cusp_radius, length(z_component)); 
-    plot(x_circles, z_free_edge, 'ko'); 
-    axis equal 
-    title('circles in 2d')
-    hold on 
-    
-    th = 0:.001:2*pi;         
-    x = free_edge_cusp_radius * cos(th) + free_edge_cusp_radius; 
-    y = free_edge_cusp_radius * sin(th) + free_edge_cusp_radius; 
-    plot(x,y); 
+%     figure; 
+%     % six times circle radius
+%     z_free_edge = squeeze(X(3,:,1));
+%     
+%     dx = 6 * free_edge_cusp_radius / length(z_component); 
+%     x_circles = dx * (1:length(z_component));     
+%     % x_circles = linspace(0,6 * free_edge_cusp_radius, length(z_component)); 
+%     plot(x_circles, z_free_edge, 'ko'); 
+%     axis equal 
+%     title('circles in 2d')
+%     hold on 
+%     
+%     th = 0:.001:2*pi;         
+%     x = free_edge_cusp_radius * cos(th) + free_edge_cusp_radius; 
+%     y = free_edge_cusp_radius * sin(th) + free_edge_cusp_radius; 
+%     plot(x,y); 
     
 end 
     
