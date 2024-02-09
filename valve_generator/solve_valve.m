@@ -342,6 +342,12 @@ if build_reference
                 end 
             end 
             
+            if isfield(valve_with_reference, 'comm_raise_normal_height') 
+                if valve_with_reference.comm_raise_normal_height ~= valve_with_reference.skeleton.normal_height 
+                    valve_with_reference = aortic_raise_comm(valve_with_reference); 
+                end
+            end 
+            
             
             if isfield(valve, 'dirichlet_free_edge_with_ref_only') && valve.dirichlet_free_edge_with_ref_only && ... 
                isfield(valve, 'dirichlet_free_edge_comm_ref_only') && valve.dirichlet_free_edge_comm_ref_only
