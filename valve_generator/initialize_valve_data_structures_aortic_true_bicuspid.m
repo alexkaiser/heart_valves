@@ -79,8 +79,8 @@ valve.in_heart = true;
 mri_box = false;
 
 graft_tester_geometry = true; 
-dilate_graft = true; 
-dilation_dist = 0.05; 
+dilate_graft = false; 
+dilation_dist = 0.0; 
 
 fused_commissure = false; 
 
