@@ -14,9 +14,14 @@ function valve_with_reference = aortic_dialate_annulus(valve_with_reference)
     [~, len_annulus_min_initial] = build_initial_fibers_aortic(leaflet, valve_with_reference); 
 
     % adjust radius 
-    valve_with_reference.skeleton.r            = valve_with_reference.skeleton.r            + dilation_dist; 
-    valve_with_reference.skeleton.r_commissure = valve_with_reference.skeleton.r_commissure + dilation_dist; 
-
+    valve_with_reference.skeleton.r            = valve_with_reference.skeleton.r              + dilation_dist; 
+    valve_with_reference.skeleton.r_of_z       = @(z) valve_with_reference.skeleton.r_of_z(z) + dilation_dist; 
+    valve_with_reference.skeleton.r_commissure = valve_with_reference.skeleton.r_commissure   + dilation_dist; 
+    valve_with_reference.skeleton.r_co         = valve_with_reference.skeleton.r_co           + dilation_dist; 
+    valve_with_reference.r                     = valve_with_reference.r                       + dilation_dist; 
+    
+    height_comm = valve_with_reference.skeleton.normal_height - valve_with_reference.skeleton.height_min_comm; 
+    
     height_min_comm_override_initial_guess = valve_with_reference.skeleton.height_min_comm; 
 
     options = optimset('Display','off','TolFun',1e-16);
@@ -31,10 +36,19 @@ function valve_with_reference = aortic_dialate_annulus(valve_with_reference)
 
     height_min_comm_new = fsolve(len_annulus_minus_initial,height_min_comm_override_initial_guess,options);     
     
-    X = build_initial_fibers_aortic(leaflet, valve_with_reference, height_min_comm_new); 
+    valve_with_reference.skeleton.height_min_comm = height_min_comm_new; 
+    valve_with_reference.skeleton.normal_height = height_min_comm_new + height_comm; 
+    
+    [X, len_annulus_new] = build_initial_fibers_aortic(leaflet, valve_with_reference, height_min_comm_new); 
     
     valve_with_reference.leaflets(1).X = X;  
 
+    
+    tol = 1e-10;
+    if norm(len_annulus_min_initial - len_annulus_new) > tol 
+        error('new annulus len not equal to previous after raising comm')
+    end 
+    
     % for j=1:j_max 
     %     for k=1:k_max 
     %        [th, r, z] = cart2pol(X(1,j,k), X(2,j,k), X(3,j,k));

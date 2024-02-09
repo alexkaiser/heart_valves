@@ -198,6 +198,9 @@ valve.z_min_cylinder = 0.0;
 valve.n_layers_cylinder = 3; 
 
 
+% comm_raise_normal_height = 0.6 * valve.skeleton.r * 2; 
+
+
 % Base constants, individual pieces are tuned relative to these values
 
 % tension coefficients structure 
@@ -279,7 +282,11 @@ if valve.in_heart
                                     
         valve.dilate_graft = dilate_graft; 
         valve.dilation_dist = dilation_dist; 
-                                 
+        
+        if exist('comm_raise_normal_height', 'var')
+            valve.comm_raise_normal_height = comm_raise_normal_height;                          
+        end 
+        
         debug_extender_plot = false; 
         if debug_extender_plot 
             z = valve.z_min_cylinder:0.0001:valve.z_max_cylinder;             

@@ -46,21 +46,59 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
     % for debug info 
     [free_edge_length_single_loaded, free_edge_length_single_rest] = get_free_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths); 
     
+    % find radius of annulus
+    r = norm(leaflet.X(1:2,1,1));  
+    
     
     % find desired coefficient for initial curve before iteration 
     % this is the parameter to search over 
     % y_max_from_center = 0.9; 
     
-    free_edge_len_minus_rest = @(y_max) run_temp_free_edge_interp(leaflet, extra_stretch_radial, y_max) - free_edge_length_single_rest * extra_stretch_circ; 
+    free_edge_len_minus_rest = @(y_max) abs(run_temp_free_edge_interp(leaflet, extra_stretch_radial, y_max) - free_edge_length_single_rest * extra_stretch_circ); 
     
     y_max_from_center_initial_guess = 1.0; 
     options = optimset('Display','off','TolFun',1e-16);
-    y_max_from_center = fsolve(free_edge_len_minus_rest,y_max_from_center_initial_guess,options); 
-        
-    % do not go lower than threshold 
-    y_max_from_center_min = 0.1;
+
+    % 
     
-    y_max_from_center = max(y_max_from_center, y_max_from_center_min); 
+    % do not go lower than threshold 
+    % can be close in the middle 
+    y_max_from_center_min = 0.1;
+    % but keep farther from the outside 
+    y_max_from_center_max_thresh = r - 0.4;
+    
+    use_fsolve = false; 
+    use_fmincon = true; 
+    
+    if use_fsolve 
+        y_max_from_center = fsolve(free_edge_len_minus_rest,y_max_from_center_initial_guess,options); 
+        y_max_from_center = max(y_max_from_center, y_max_from_center_min); 
+    elseif use_fmincon
+        y_max_from_center = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],y_max_from_center_min,y_max_from_center_max_thresh,[],options);           
+    else 
+        y_max_from_center = r/2; 
+    end 
+    
+%     y_max_from_center_fsolve = fsolve(free_edge_len_minus_rest,y_max_from_center_initial_guess,options)
+%     y_max_from_center_fmincon_unconstrained = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],[],[],[],options) 
+%     y_max_from_center_fmincon = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],y_max_from_center_min,y_max_from_center_max_thresh,[],options) 
+%     
+    
+    debug_plots = false; 
+    if debug_plots
+        figure; 
+        y_range = linspace(0,r,1000); 
+        
+        vals = zeros(size(y_range)); 
+        
+        for j=1:length(y_range)
+            vals(j) = free_edge_len_minus_rest(y_range(j)); 
+        end 
+        
+        plot(y_range, vals); 
+        % xlabel('y', 'free_edge_len_minus_rest'); 
+    end 
+    
 
     
     % set initial version of the new leaflet position 

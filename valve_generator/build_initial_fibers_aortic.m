@@ -1,4 +1,4 @@
-function [X, len_annulus_min] = build_initial_fibers_aortic(leaflet, valve, height_min_comm_override)
+function [X, len_annulus_min] = build_initial_fibers_aortic(leaflet, valve, height_min_comm_override, power_override)
 %
 % Builds initial fibers for current layout 
 % 
@@ -69,10 +69,6 @@ else
     % cusp radius is one sixth of the circumference 
     free_edge_cusp_radius = 2*pi*r/6; 
     
-    if free_edge_cusp_radius > normal_height
-        warning('REMOVE THIS WARNING: inconsistent radius and height'); 
-    end 
-    
     if isfield(valve.skeleton, 'height_min_comm')
         height_min_comm = valve.skeleton.height_min_comm; 
     else 
@@ -112,6 +108,11 @@ else
 
         % polynomial height profile 
         power = 3; 
+        
+        if exist('power_override', 'var')
+            power = power_override; 
+        end 
+        
         normalization = 2^power; % normalization so function takes value 1 at 1/2 
         z_tmp = height_min_comm * normalization * abs(x_this_cusp - center_cusp)^power; 
         

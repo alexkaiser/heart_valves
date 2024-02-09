@@ -1,3 +1,4 @@
+
 function leaflet = aortic_free_edge_to_dirichlet_bc(leaflet, extra_stretch_radial, extra_stretch_circ)
 
 j_max  = leaflet.j_max; 
