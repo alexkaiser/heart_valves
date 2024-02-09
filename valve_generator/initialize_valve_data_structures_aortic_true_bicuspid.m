@@ -80,7 +80,7 @@ mri_box = false;
 
 graft_tester_geometry = true; 
 dilate_graft = false; 
-dilation_dist = -0.05; 
+dilation_dist = -0.15; 
 
 fused_commissure = false; 
 
