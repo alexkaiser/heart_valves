@@ -34,7 +34,10 @@ function valve_with_reference = aortic_dialate_annulus(valve_with_reference)
     
     len_annulus_minus_initial = @(height_min_comm) abs(len_annulus(height_min_comm) - len_annulus_min_initial); 
 
-    height_min_comm_new = fsolve(len_annulus_minus_initial,height_min_comm_override_initial_guess,options);     
+    % height_min_comm_new = fsolve(len_annulus_minus_initial,height_min_comm_override_initial_guess,options);     
+    
+    lower_bd = 0; 
+    height_min_comm_new = fmincon(len_annulus_minus_initial,height_min_comm_override_initial_guess,[],[],[],[],lower_bd,[],[],options);     
     
     valve_with_reference.skeleton.height_min_comm = height_min_comm_new; 
     valve_with_reference.skeleton.normal_height = height_min_comm_new + height_comm; 
@@ -46,7 +49,7 @@ function valve_with_reference = aortic_dialate_annulus(valve_with_reference)
     
     tol = 1e-10;
     if norm(len_annulus_min_initial - len_annulus_new) > tol 
-        error('new annulus len not equal to previous after raising comm')
+        warning('new annulus len not equal to previous after raising comm')
     end 
     
     % for j=1:j_max 
