@@ -80,7 +80,7 @@ mri_box = false;
 
 graft_tester_geometry = true; 
 dilate_graft = true; 
-dilation_dist = -0.15; 
+dilation_dist = 0.0; 
 
 fused_commissure = false; 
 
@@ -187,7 +187,11 @@ valve.p_final_fixed_comm = 0.1 * MMHG_TO_CGS;
 
 valve.L = 2.25; 
 
-valve.skeleton = get_skeleton_aortic_generic(); 
+r_temp = 2.5/2; % 25 mm valve 
+hc = 0.25 * r_temp; % 1 mm attachment 
+h1 = 1.4 * r_temp - hc; 
+valve.skeleton = get_skeleton_aortic_generic(r_temp, h1, hc); 
+% valve.skeleton = get_skeleton_aortic_generic(); 
 valve.r = valve.skeleton.r; 
 
 valve.place_cylinder = true; 
@@ -223,7 +227,7 @@ tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
 tension_coeffs.c_circ_dec       = 2.9;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.3;  % radial
+tension_coeffs.c_rad_dec        = 1.44;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.8;        
 
