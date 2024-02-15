@@ -74,4 +74,4 @@ for comm_idx = 1:N_leaflets
     end 
 end 
 
-free_edge_len = get_free_edge_lengths(leaflet, N_each, k_max, X, R_u); 
+free_edge_len = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u); 

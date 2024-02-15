@@ -44,7 +44,7 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
     debug_lengths = false; 
     
     % for debug info 
-    [free_edge_length_single_loaded, free_edge_length_single_rest] = get_free_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths); 
+    [free_edge_length_single_loaded, free_edge_length_single_rest] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths); 
     
     % find radius of annulus
     r = norm(leaflet.X(1:2,1,1));  
@@ -168,7 +168,7 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
         
         % get free edge lengths 
         % 'after sin^2 interpolation'
-        [free_edge_length_single_loaded, free_edge_length_single_rest, portion_of_current_edge, portion_of_free_edge] = get_free_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
+        [free_edge_length_single_loaded, free_edge_length_single_rest, portion_of_current_edge, portion_of_free_edge] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
         % free_edge_length_single_loaded, free_edge_length_single_rest; 
 
         X_free_edge_leaflet_1_with_wrap = [X(:,j_max,k_max), X(:, 1:N_each,k_max)]; 
@@ -187,7 +187,7 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
         X(:,:,k_max) = free_edge_interp_points; 
 
         % 'after respacing free edge interp points'
-        [free_edge_length_single_loaded, free_edge_length_single_rest, ~, ~, strains] = get_free_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
+        [free_edge_length_single_loaded, free_edge_length_single_rest, ~, ~, strains] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
         % free_edge_length_single_loaded, free_edge_length_single_rest
         
         

@@ -3,7 +3,7 @@ function [free_edge_length_single_loaded, ...
           portion_of_current_edge, ...
           portion_of_free_edge, ...
           strains] ... 
-           = get_free_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths)
+           = get_circ_edge_lengths(leaflet, N_each, k, X, R_u, debug_lengths)
 
     free_edge_length_single_loaded = 0; 
     free_edge_length_single_rest = 0; 
@@ -19,7 +19,7 @@ function [free_edge_length_single_loaded, ...
     rest_lens = zeros(N_each,1); 
     
     for j=1:N_each
-        k=k_max; 
+        % k passed in 
 
         j_nbr_tmp = j-1; 
         k_nbr_tmp = k; 

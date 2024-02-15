@@ -170,7 +170,7 @@ if debug_lengths
 %     free_edge_length_single_rest
     
     'after reinterpolating free edge'
-    [free_edge_length_single_loaded, free_edge_length_single_rest] = get_free_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
+    [free_edge_length_single_loaded, free_edge_length_single_rest] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
 end 
 
 
