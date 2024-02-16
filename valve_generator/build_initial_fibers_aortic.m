@@ -1,4 +1,4 @@
-function [X, len_annulus_min] = build_initial_fibers_aortic(leaflet, valve, height_min_comm_override, power_override)
+function [X, len_annulus_min, len_annulus_each] = build_initial_fibers_aortic(leaflet, valve, height_min_comm_override, power_override)
 %
 % Builds initial fibers for current layout 
 % 
@@ -210,6 +210,7 @@ end
 
 % minimum ring 
 len_annulus_min = 0; 
+len_annulus_each = zeros(j_max,1); 
 k = 1; 
 for j = 1:j_max
 
@@ -219,6 +220,7 @@ for j = 1:j_max
     end 
 
     len_annulus_min = len_annulus_min + norm(X(:,j_nbr,k_nbr) - X(:,j,k));     
+    len_annulus_each(j) = norm(X(:,j_nbr,k_nbr) - X(:,j,k)); 
 end 
     
     

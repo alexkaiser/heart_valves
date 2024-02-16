@@ -11,8 +11,8 @@ function valve_with_reference = aortic_dialate_annulus(valve_with_reference)
     leaflet = valve_with_reference.leaflets(1); 
 
     % compute annular length initial 
-    [~, len_annulus_min_initial] = build_initial_fibers_aortic(leaflet, valve_with_reference); 
-
+    [~, len_annulus_min_initial, len_annulus_each] = build_initial_fibers_aortic(leaflet, valve_with_reference); 
+        
     % adjust radius 
     valve_with_reference.skeleton.r            = valve_with_reference.skeleton.r              + dilation_dist; 
     valve_with_reference.skeleton.r_of_z       = @(z) valve_with_reference.skeleton.r_of_z(z) + dilation_dist; 
@@ -43,15 +43,79 @@ function valve_with_reference = aortic_dialate_annulus(valve_with_reference)
     valve_with_reference.skeleton.normal_height = height_min_comm_new + height_comm; 
     
     [X, len_annulus_new] = build_initial_fibers_aortic(leaflet, valve_with_reference, height_min_comm_new); 
-    
-    valve_with_reference.leaflets(1).X = X;  
 
-    
     tol = 1e-10;
     if norm(len_annulus_min_initial - len_annulus_new) > tol 
         warning('new annulus len not equal to previous after raising comm')
     end 
     
+    
+    redistribute_annulus_points = true; 
+    if redistribute_annulus_points 
+        % respace free edge points 
+        N_each = leaflet.N_each; 
+        j_max = leaflet.j_max; 
+        debug_lengths = false; 
+        k = 1; 
+        [~, ~, portion_of_current_edge, portion_of_rest_edge] = get_circ_edge_lengths(leaflet, N_each, k, X, len_annulus_each, debug_lengths);
+
+        X_annular_leaflet_1_with_wrap = [X(:,j_max,k), X(:, 1:N_each,k)]; 
+
+        % spacing of points as fraction of arc length 
+        interp_idx_annular = [0; portion_of_current_edge];  
+
+        % interpolate as fraction of rest length 
+        annular_edge_interp_points_respaced = interp1(interp_idx_annular, X_annular_leaflet_1_with_wrap', portion_of_rest_edge(1:N_each-1))'; 
+
+        X(:,(1:N_each-1),k) = annular_edge_interp_points_respaced; 
+
+        % other leaflet by rotation 
+        X(:, (N_each+1:j_max-1),k) = rotation_matrix_z(pi) * annular_edge_interp_points_respaced;     
+        
+        debug_redistribute = false; 
+        if debug_redistribute
+            % minimum ring 
+            len_annulus_each_updated = zeros(j_max,1); 
+            k = 1; 
+            for j = 1:j_max
+
+                [valid, j_nbr, k_nbr] = get_indices(leaflet, j, k, j+1, k); 
+                if ~valid
+                    error('failed to find valid index'); 
+                end 
+                len_annulus_each_updated(j) = norm(X(:,j_nbr,k_nbr) - X(:,j,k)); 
+            end 
+                        
+            len_annulus_each
+            len_annulus_each_updated
+        end 
+        
+        % minimum ring 
+        len_annulus_new_reinterp = 0; 
+        k = 1; 
+        for j = 1:j_max
+
+            [valid, j_nbr, k_nbr] = get_indices(leaflet, j, k, j+1, k); 
+            if ~valid
+                error('failed to find valid index'); 
+            end 
+
+            len_annulus_new_reinterp = len_annulus_new_reinterp + norm(X(:,j_nbr,k_nbr) - X(:,j,k));     
+        end 
+        
+        if norm(len_annulus_min_initial - len_annulus_new_reinterp) > tol 
+            warning('new annulus len not equal to previous after raising comm, initial = %f, reinterp = %f, diff = %e\n', ...
+                len_annulus_min_initial, len_annulus_new_reinterp, norm(len_annulus_min_initial - len_annulus_new_reinterp)); 
+        end 
+        
+    end 
+    
+    % reset leaflet in data structure 
+    valve_with_reference.leaflets(1).X = X;  
+    
+    
+    
+
     % for j=1:j_max 
     %     for k=1:k_max 
     %        [th, r, z] = cart2pol(X(1,j,k), X(2,j,k), X(3,j,k));

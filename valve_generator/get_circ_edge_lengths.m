@@ -1,7 +1,7 @@
 function [free_edge_length_single_loaded, ...
           free_edge_length_single_rest, ...
           portion_of_current_edge, ...
-          portion_of_free_edge, ...
+          portion_of_restlen_edge, ...
           strains] ... 
            = get_circ_edge_lengths(leaflet, N_each, k, X, R_u, debug_lengths)
 
@@ -9,7 +9,7 @@ function [free_edge_length_single_loaded, ...
     free_edge_length_single_rest = 0; 
     
     portion_of_current_edge = zeros(N_each,1);
-    portion_of_free_edge = zeros(N_each,1);
+    portion_of_restlen_edge = zeros(N_each,1);
     
     if ~exist('debug_lengths', 'var')
         debug_lengths = false; 
@@ -38,17 +38,19 @@ function [free_edge_length_single_loaded, ...
         free_edge_length_single_rest = free_edge_length_single_rest + R_u(j_spr,k_spr); 
         
         portion_of_current_edge(j) = free_edge_length_single_loaded;
-        portion_of_free_edge(j) = free_edge_length_single_rest; 
+        portion_of_restlen_edge(j) = free_edge_length_single_rest; 
     end
     
     strains = (loaded_lens ./ rest_lens) - 1; 
     if debug_lengths 
+%         fprintf('in get_circ_edge_lengths')
 %         loaded_lens 
 %         rest_lens 
         strains 
+%         fprintf('end debug output get_circ_edge_lengths')
     end 
     
     portion_of_current_edge = portion_of_current_edge / free_edge_length_single_loaded;
-    portion_of_free_edge = portion_of_free_edge / free_edge_length_single_rest;
+    portion_of_restlen_edge = portion_of_restlen_edge / free_edge_length_single_rest;
     
 end 
