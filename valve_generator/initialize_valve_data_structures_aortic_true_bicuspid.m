@@ -202,7 +202,7 @@ valve.z_min_cylinder = 0.0;
 valve.n_layers_cylinder = 3; 
 
 
-comm_raise_normal_height = 0.6 * valve.skeleton.r * 2; 
+comm_raise_normal_height = 0.8 * valve.skeleton.r * 2; 
 
 
 % Base constants, individual pieces are tuned relative to these values

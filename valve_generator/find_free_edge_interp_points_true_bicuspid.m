@@ -55,6 +55,7 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
     % y_max_from_center = 0.9; 
     
     free_edge_len_minus_rest = @(y_max) abs(run_temp_free_edge_interp(leaflet, extra_stretch_radial, y_max) - free_edge_length_single_rest * extra_stretch_circ); 
+    % free_edge_len_minus_rest = @(y_max) abs(run_temp_free_edge_interp(leaflet, extra_stretch_radial, y_max)); 
     
     y_max_from_center_initial_guess = 1.0; 
     options = optimset('Display','off','TolFun',1e-16);
