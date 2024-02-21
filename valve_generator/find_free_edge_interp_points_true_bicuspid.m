@@ -57,16 +57,20 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
     free_edge_len_minus_rest = @(y_max) abs(run_temp_free_edge_interp(leaflet, extra_stretch_radial, y_max) - free_edge_length_single_rest * extra_stretch_circ); 
     % free_edge_len_minus_rest = @(y_max) abs(run_temp_free_edge_interp(leaflet, extra_stretch_radial, y_max)); 
     
-    y_max_from_center_initial_guess = 1.0; 
+
     options = optimset('Display','off','TolFun',1e-16);
 
     % 
     
     % do not go lower than threshold 
     % can be close in the middle 
-    y_max_from_center_min = 0.1;
+    % originally tuned for r = 1.25 cm valve, scale relative to this 
+    r_basic = 1.25; 
+    y_max_from_center_min = (r/r_basic) * 0.1;
     % but keep farther from the outside 
-    y_max_from_center_max_thresh = r - 0.4;
+    y_max_from_center_max_thresh = (r/r_basic) * (r_basic - 0.4);
+    
+    y_max_from_center_initial_guess = 1.0 * (r/r_basic); 
     
     use_fsolve = false; 
     use_fmincon = true; 
