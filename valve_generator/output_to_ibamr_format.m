@@ -236,9 +236,12 @@ function params = output_to_ibamr_format(valve)
     
     % Spring constant base for targets and 
     % Approximate force is tension_base multiplied by a length element 
-    du = 1/N; 
-    k_rel = tension_base * du; 
-        
+    if isfield(valve, 'k_rel_unscaled')
+        k_rel = tension_base * valve.k_rel_unscaled; 
+    else 
+        du = 1/N; 
+        k_rel = tension_base * du; 
+    end 
 
     % papillary target constants 
     % this does not scale when the mesh is changed 

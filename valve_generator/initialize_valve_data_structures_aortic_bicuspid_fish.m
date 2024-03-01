@@ -74,7 +74,7 @@ variety= 'bicuspid';
 valve.variety = variety; 
 
 % does not place partition
-valve.in_heart = true; 
+valve.in_heart = false; 
 
 % proportional takedown from 25 mm diameter valve 
 distance_scaling = 1e-2; 
@@ -88,7 +88,7 @@ if valve.in_heart
     valve.z_extra_cylinder = 0.3; 
 
 else 
-    valve.base_name = sprintf('aortic_%d', N); 
+    valve.base_name = sprintf('aortic_fish_box_%d', N); 
 end 
 MMHG_TO_CGS     = 1333.22368;
 
@@ -166,7 +166,8 @@ valve.p_final_fixed_comm = 0.1 * MMHG_TO_CGS;
 % valve.r_dip = 0.75; 
 % valve.total_angle_dip = pi; 
 
-valve.L = 2.25; 
+% scale human box length down by 100 
+valve.L = 2.25 / 100; 
 
 % scan points 
 % valve.skeleton = get_skeleton_fish(); 
@@ -178,9 +179,9 @@ h1 = 1.4 * r_temp - hc;
 valve.skeleton = get_skeleton_aortic_generic(r_temp, h1, hc); 
 valve.r = valve.skeleton.r; 
 % 
-valve.place_cylinder = false; 
-% valve.z_max_cylinder = (pi/3) * valve.r; 
-% valve.z_min_cylinder = 0.0; 
+valve.place_cylinder = true; 
+valve.z_max_cylinder = 1.4 * valve.r; 
+valve.z_min_cylinder = 0.0; 
 
 
 valve.n_layers_cylinder = 3; 
@@ -220,10 +221,10 @@ tension_coeffs.c_circ_dec_free_edge_percentage = 0.0;
 % and scaling for copies is handled by the output routine 
 
 % scales for by mesh width for consistant total mesh force on ring 
-valve.target_net_unscaled       = (8 / valve.N) * (192/N); 
+valve.target_net_unscaled       = 1e-3 * (8 / valve.N) * (192/N); 
 
 % does not scale since total number of points is constant 
-valve.target_papillary_unscaled = 2 * 40/128; 
+valve.target_papillary_unscaled = 0; 
 
 % viscoelastic damping coefficients for net, does not include copies 
 valve.eta_net_unscaled = 0; % 1e-5 * valve.target_net_unscaled; 
@@ -234,18 +235,18 @@ valve.eta_papillary_unscaled = 0.0; valve.target_papillary_unscaled/500;
 % if nonzero, linear springs of rest length with spacing between the layers 
 % are placed with this value 
 % final formula is multiplied by valve.tension_base  
-valve.kappa_cross_layer_multipler = 2 * (384/N)^2 * 1e4 / 256^2;
+valve.kappa_cross_layer_multipler = 1e-3 * 2 * (384/N)^2 * 1e4 / 256^2;
 
 % valve.k_bend_radial = [0 0 1e5 1e5] * 192/N;
-valve.k_bend_radial = 0; 1e2 * 192/N;
+% valve.k_bend_radial = 0; 1e2 * 192/N;
 % valve.k_bend_radial_annulus = 1e2 * 192/N;
-valve.k_bend_radial_free_edge = 0; 1e4 * 192/N;
-valve.k_bend_radial_free_edge_percentage = 0; 
-valve.k_bend_circ = 0; 
-valve.k_bend_circ_free_edge = 0; 
-valve.k_bend_circ_free_edge_percentage = 0;
-
-valve.k_bend_cross_layer = 0;
+% valve.k_bend_radial_free_edge = 0; 1e4 * 192/N;
+% valve.k_bend_radial_free_edge_percentage = 0; 
+% valve.k_bend_circ = 0; 
+% valve.k_bend_circ_free_edge = 0; 
+% valve.k_bend_circ_free_edge_percentage = 0;
+% 
+% valve.k_bend_cross_layer = 0;
 
 % if valve.in_heart 
 % 
@@ -313,6 +314,8 @@ valve.k_bend_cross_layer = 0;
 % Used for later splitting of springs 
 % If any spring is placed at more than double this length an extra vertex is placed
 valve.ds = 2*pi*valve.skeleton.r / N; 
+
+valve.k_rel_unscaled = valve.ds * 1e-3; 
 
 [leaflet valve] = initialize_leaflet_aortic(name,                                ... 
                                             N,                                   ...
