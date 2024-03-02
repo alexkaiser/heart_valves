@@ -74,7 +74,8 @@ variety= 'bicuspid';
 valve.variety = variety; 
 
 % does not place partition
-valve.in_heart = false; 
+valve.in_heart = true; 
+graft_tester_geometry = true; 
 
 % proportional takedown from 25 mm diameter valve 
 distance_scaling = 1e-2; 
@@ -84,9 +85,10 @@ if valve.in_heart
     valve.base_name = sprintf('aortic_fish_%d', N); 
     valve.extra_radius_hoops = 0.0; % adds points out the partition up to this amount 
 
-    valve.tight_cylinder = true; 
-    valve.z_extra_cylinder = 0.3; 
-
+    if ~graft_tester_geometry    
+        valve.tight_cylinder = true; 
+        valve.z_extra_cylinder = 0.3; 
+    end 
 else 
     valve.base_name = sprintf('aortic_fish_box_%d', N); 
 end 
@@ -237,78 +239,45 @@ valve.eta_papillary_unscaled = 0.0; valve.target_papillary_unscaled/500;
 % final formula is multiplied by valve.tension_base  
 valve.kappa_cross_layer_multipler = 1e-3 * 2 * (384/N)^2 * 1e4 / 256^2;
 
-% valve.k_bend_radial = [0 0 1e5 1e5] * 192/N;
-% valve.k_bend_radial = 0; 1e2 * 192/N;
-% valve.k_bend_radial_annulus = 1e2 * 192/N;
-% valve.k_bend_radial_free_edge = 0; 1e4 * 192/N;
-% valve.k_bend_radial_free_edge_percentage = 0; 
-% valve.k_bend_circ = 0; 
-% valve.k_bend_circ_free_edge = 0; 
-% valve.k_bend_circ_free_edge_percentage = 0;
-% 
-% valve.k_bend_cross_layer = 0;
 
-% if valve.in_heart 
-% 
-%     dx = 5 /(N/4); 
-%     valve.ds = dx/2; %2*pi*valve.skeleton.r / N; 
-% 
-%     thickness_cylinder = 0.15; 
-%     valve.n_layers_cylinder = ceil(thickness_cylinder/valve.ds) + 1; 
-% 
-%     h_top_scaffold_min = 0.2; 
-% 
-%     h_top_scaffold_max = valve.skeleton.normal_height; 
-% 
-%     h_top_scaffold_amplitude = h_top_scaffold_max - h_top_scaffold_min; 
-% 
-%     % value from least squares on pulm 
-%     % p = 3.095653361985474; 
-%     p = 3; 
-% 
-%     % function with unspecified power 
-%     valve.z_max_cylinder = @(theta) h_top_scaffold_min * ones(size(theta))  +  h_top_scaffold_amplitude * abs(cos(theta)).^(p); 
-% 
-%     % bottom flat at zero 
-%     valve.z_min_cylinder = @(theta) zeros(size(theta)); 
-% 
-%     debug_plot = true; 
-%     if debug_plot
-%         th = linspace(0,2*pi,1000);
-%         plot(th,valve.z_min_cylinder(th))
-%         hold on 
-%         plot(th,valve.z_max_cylinder(th))
-% 
-% %         f = @(theta)  0.28*ones(size(theta))  + (1.095 - 0.28)*0.5 * (cos(3*theta)+1);
-% %         plot(th, f(th)); 
-% 
-%         legend('bottom', 'top')
-% 
-% %         plot(th, h_min_scaffold * ones(size(th))); 
-% %         plot(th, (h_min_scaffold + h_min_amplitude)*ones(size(th))); 
-% %         plot(th,  h_top_scaffold_min * ones(size(th))); 
-% %         plot(th,  h_top_scaffold_max * ones(size(th)));
-% 
-%         % heights from top of scaffold to minimum 
-% %        plot(angles, heights_theta,'k*')
-% 
-%         axis equal
-%     end
-% end 
+if valve.in_heart 
+
+    if graft_tester_geometry        
+    
+        dx = distance_scaling * 0.1 * (192/N);
+        NZ = 90 * (N/192); 
+        valve.z_min_cylinder = -3 * distance_scaling; 
+        valve.z_max_cylinder = valve.z_min_cylinder + dx * (NZ - 1); 
+        
+        % update r_of_z for extender 
+        
+        extender_extra_rad = 0.5 * distance_scaling; 
+        extender_length = 1.5 * distance_scaling; 
+        
+        valve.skeleton.r_of_z = @(z) valve.skeleton.r .* ones(size(z)) + ...
+                                     (z <= (valve.z_min_cylinder + extender_length)) .* ... % mask for bottom portion 
+                                     extender_extra_rad .* 0.5 .* (cos(pi * (z - valve.z_min_cylinder)/(extender_length)) + 1.0); 
+
+        
+        debug_extender_plot = false; 
+        if debug_extender_plot 
+            z = valve.z_min_cylinder:0.0001:valve.z_max_cylinder;             
+            figure; 
+            plot(valve.skeleton.r_of_z(z), z)
+            ylabel('z')
+            xlabel('r_of_z')
+            xlim([0 3])
+            axis equal 
+            
+        end
+    else 
+        error('not implemented');         
+    end
+end 
 
 
 
-% coaptation height for Swanson and Clark 
-% width is the same 
-% valve.k_bend_nodule_length = 0.17*2*valve.skeleton.r;
-% valve.k_bend_nodule        = 1e5 * 192/N;
 
-% valve.k_bend_radial_interp_pts  = [0    .36  .46   1];
-
-% valve.kappa_radial_free_edge_compressive_unscaled = 1e3 / 256^2;
-% valve.kappa_radial_free_edge_compressive_percentage = 0.4;
-% valve.kappa_radial_free_edge_compressive_stretch = 1.54;
-% valve.kappa_radial_free_edge_compressive_fn_idx = 4;
 
 % Approximate Lagrangian mesh spacing at ring 
 % Used for later splitting of springs 

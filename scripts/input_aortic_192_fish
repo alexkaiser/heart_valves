@@ -1,9 +1,11 @@
 
 // physical parameters
-MU  = 0.042                            // viscosity
+MU  = 0.04                            // viscosity
 RHO = 1.0
 
-L = 2.25/100.0   // box sizing 
+DISTANCE_SCALING = 1.0e-2
+
+L = 2.25*DISTANCE_SCALING   // box sizing 
 N_FLUID = 48 // fluid mesh width 
 
 
@@ -11,7 +13,7 @@ N_FLUID = 48 // fluid mesh width
 MAX_LEVELS = 1                            // maximum number of levels in locally refined grid
 REF_RATIO  = 4                            // refinement ratio between levels
 
-NAME = "aortic_fish_box_192"
+NAME = "aortic_192"
 MAX_RESTART_TO_WRITE = 20
 
 
@@ -19,20 +21,26 @@ R_proximal =  137691.35108550685
 C =  1.0028853623291751e-07
 R_distal =  2119016.2472250084
 
-FOURIER_COEFFS_FILENAME = "fourier_coeffs_ventricle_fish.txt"
+FOURIER_COEFFS_FILENAME_VENTRICLE = "fourier_coeffs_ventricle_fish.txt"
 
 CYCLE_DURATION = 0.323651000000000
 
-P_aorta_0_MMHG = 0.914133579843965
+P_aorta_0_MMHG =    1.257537902219257
+
+T_OFFSET_START_BCS_UNSCALED = 0.2
 
 
-// FOURIER_COEFFS_FILENAME = "fourier_coeffs_aorta_minus_ventricle.txt"
+BOUNDARY_FILENAME_VENTRICLE = "cylinder_bdry_min.vertex"
+BOUNDARY_FILENAME_AORTA = "cylinder_bdry_max.vertex"
+
+VESSEL_FILENAME = "aortic_fish_192_cylinder.vertex"
+
 
 // solver parameters
 DELTA_FUNCTION      = "IB_5"
 SOLVER_TYPE         = "STAGGERED"         // the fluid solver to use (STAGGERED or COLLOCATED)
 START_TIME          = 0.0e0               // initial simulation time
-END_TIME            = 0.8                 // final simulation time
+END_TIME            = 1.0*CYCLE_DURATION    // final simulation time
 GROW_DT             = 2.0e0               // growth factor for timesteps
 NUM_CYCLES          = 1                   // number of cycles of fixed-point iteration
 CONVECTIVE_TS_TYPE = "ADAMS_BASHFORTH"    // convective time stepping type
@@ -51,6 +59,29 @@ OUTPUT_F            = TRUE
 OUTPUT_OMEGA        = TRUE
 OUTPUT_DIV_U        = FALSE
 ENABLE_LOGGING      = TRUE
+
+// cm 
+DX = 0.1 * DISTANCE_SCALING
+
+EXTRA_BDRY = 1.0e-6 * DISTANCE_SCALING
+
+// number points 
+NX = 48
+NY = 48
+NZ = 90
+
+X_WIDTH = 48 * DX 
+Y_WIDTH = 48 * DX 
+
+X_LOW = -X_WIDTH / 2.0
+Y_LOW = -Y_WIDTH / 2.0
+
+
+Z_LOW = -3.0 * DISTANCE_SCALING
+
+X_HIGH = X_LOW + DX * (NX - 1)
+Y_HIGH = Y_LOW + DX * (NY - 1)
+Z_HIGH = Z_LOW + DX * (NZ - 1)
 
 
 VelocityInitialConditions {
@@ -130,53 +161,6 @@ VelocityBcCoefs_2 {
    gcoef_function_2 = "0.0"
    gcoef_function_3 = "0.0"
    gcoef_function_4 = "0.0"  // face with normal -e_z, do not change this 
-   
-   // 
-   // all pressures are applied at face 5, that is, the atrial side 
-   // negative of pressure goes in g
-   // positive pressure on atrial side opens 
-   // negative pressure on atrial side = positive on ventricular = closed 
-   // 
-   
-    MMHG_TO_CGS = 1333.22368
-    
-    // pressures, higher pressure in atrium is positive 
-    diastolic_p =    2.5 * MMHG_TO_CGS
-    systolic__p = -100.0 * MMHG_TO_CGS
-
-    // times for opening, open, closing and closed  
-    t_opening  = 0.08
-    t_diastole = 0.5
-    t_closing  = 0.02
-    t_systole  = 0.2
-
-    beat_time = t_diastole + t_systole + t_opening + t_closing
-
-    // slope on opening part of curve 
-    a_opening = (diastolic_p - systolic__p)/t_opening
-    a_closing = (systolic__p - diastolic_p)/t_closing
-    
-    // time at which valve is completely open 
-    t_1 = diastolic_p / a_opening
-    
-    // time at which closing begins 
-    t_2 = t_1 + t_diastole
-    
-    // linear offset for closing part of function 
-    b = diastolic_p - a_closing * t_2
-    
-    // time at which constant systolic pressure is achieved 
-    t_3 = t_2 + t_closing
-    
-    // time at which opening begins 
-    t_4 = t_3 + t_systole
-    
-    // linear offset for opening part of function at end 
-    c = systolic__p - a_opening * t_4
-
-    // apparently this all has to go on one line
-    gcoef_function_5 = "-1.0*if( (t - beat_time*rint(t/beat_time - 0.5)) < t_1, a_opening * (t - beat_time*rint(t/beat_time - 0.5)), if( (t - beat_time*rint(t/beat_time - 0.5)) < t_2, diastolic_p, if( (t - beat_time*rint(t/beat_time - 0.5)) < t_3, a_closing * (t - beat_time*rint(t/beat_time - 0.5)) + b, if( (t - beat_time*rint(t/beat_time - 0.5)) < t_4, systolic__p, a_opening * (t - beat_time*rint(t/beat_time - 0.5)) + c))))"
-
 
 }
 
@@ -218,16 +202,14 @@ IBMethod {
 
 IBStandardInitializer {
    max_levels      = MAX_LEVELS
-   structure_names = "aortic_fish_box_192", "aortic_fish_box_192_cylinder", "aortic_fish_box_192_particles"
-   aortic_fish_box_192 {
+   structure_names = "aortic_fish_192", "aortic_fish_192_cylinder"
+   aortic_fish_192 {
       level_number = MAX_LEVELS - 1
    }
-   aortic_fish_box_192_cylinder {
+   aortic_fish_192_cylinder {
       level_number = MAX_LEVELS - 1
    }
-   aortic_fish_box_192_particles {
-      level_number = MAX_LEVELS - 1
-   }
+
 }
 
 
@@ -280,10 +262,10 @@ Main {
 }
 
 CartesianGeometry {
-domain_boxes = [ (0,0,0),(N_FLUID - 1,N_FLUID - 1, 2*N_FLUID - 1) ]
-x_lo =  -L, -L,  -4.0/100.0 
-x_up =   L,  L,  -4.0/100.0 + 4.0*L
-   periodic_dimension = 0,0,1
+domain_boxes = [ (0,0,0),(NX - 1, NY - 1, NZ - 1) ]
+x_lo =  X_LOW, Y_LOW, Z_LOW 
+x_up =  X_HIGH, Y_HIGH, Z_HIGH 
+   periodic_dimension = 0,0,0
 }
 
 GriddingAlgorithm {
