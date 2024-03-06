@@ -20,7 +20,7 @@ TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_384_graft_bicuspid_1pt57
+RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_384_1768df4_graft_bicuspid_annulus_len_const_24mm
 mkdir $RUNDIR
 
 # set up run info 
@@ -64,4 +64,8 @@ python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS"
 source ~/.bash_profile
 visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py $TOTAL_TASKS $TOTAL_TASKS
 
-# sbatch ~/copies_scripts/post_process_aorta.sh 
+
+source ~/.bash_profile
+module load python/3.9.0
+SESSION_NAME_PARAVIEW="~/copies_scripts/graft_slice_simple.py"
+python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $TOTAL_TASKS

@@ -29,6 +29,8 @@ P_aorta_0_MMHG =    1.257537902219257
 
 T_OFFSET_START_BCS_UNSCALED = 0.2
 
+RCR_ON_TIME = CYCLE_DURATION / 4.0
+
 
 BOUNDARY_FILENAME_VENTRICLE = "cylinder_bdry_min.vertex"
 BOUNDARY_FILENAME_AORTA = "cylinder_bdry_max.vertex"

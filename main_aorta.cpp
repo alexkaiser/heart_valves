@@ -437,6 +437,14 @@ int main(int argc, char* argv[])
                 t_offset_start_bcs_unscaled = 0.0; 
             }
 
+            double rcr_on_time; 
+            if (input_db->keyExists("RCR_ON_TIME")){
+                rcr_on_time = input_db->getDouble("RCR_ON_TIME"); // starts this 
+            }
+            else {
+                rcr_on_time = 0.2; 
+            }
+
             // start in physical time with relation to Fourier series 
             double t_offeset_start = t_offset_start_bcs_unscaled * (t_cycle_length / fourier_series_ventricle->L);
 
@@ -444,7 +452,7 @@ int main(int argc, char* argv[])
 
             // start with a linear ramp up in pressure 
             bool P_initial_aorta_equal_to_ventricle = true; 
-            double rcr_on_time = 0.2; 
+            // double rcr_on_time = 0.2; 
 
             bool graft_version = true; 
 

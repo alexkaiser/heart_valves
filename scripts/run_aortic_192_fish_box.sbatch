@@ -6,7 +6,7 @@
 #SBATCH --job-name=aortic_1
 #SBATCH --mail-user=adkaiser@gmail.com
 #SBATCH --mail-type=ALL
-#SBATCH --partition=willhies,amarsden
+#SBATCH --partition=amarsden
 #SBATCH --exclude=sh03-16n02
 # #SBATCH --exclude=sh-107-[59-64]
 
@@ -20,11 +20,11 @@ TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_fish_initial
+RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_61fee35_fish_initial
 mkdir $RUNDIR
 
 # set up run info 
-BASE_NAME=aortic_192
+BASE_NAME=aortic_fish_box_192
 INPUT_NAME=input_aortic_192_fish
 RUN_LINE="mpiexec --bind-to core -report-bindings main3d"
 OPTIONS="-velocity_ksp_type cg -velocity_pc_type none -velocity_ksp_max_it 1 -velocity_ksp_norm_type none > output.txt 2>&1"

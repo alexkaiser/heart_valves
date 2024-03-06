@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=24
+#SBATCH --ntasks-per-node=12
 #SBATCH --time=24:00:00
 #SBATCH --mem=185GB
 #SBATCH --job-name=aortic_1
@@ -20,7 +20,7 @@ TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_61fee35_fish_initial_tube
+RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_f50d529_fish_initial_tube
 mkdir $RUNDIR
 
 # set up run info 
@@ -40,6 +40,7 @@ cp $INPUT_NAME                               $RUNDIR
 cp *.cpp                                     $RUNDIR
 cp main_aorta                                $RUNDIR
 cp fourier_coeffs_ventricle_fish.txt         $RUNDIR
+cp cylinder_bdry_*                           $RUNDIR
 cp watchdog_job_restart.py                   $RUNDIR
 cp kill_all_mpi.sh                           $RUNDIR
 cp run_aortic_N192.sbatch                    $RUNDIR
@@ -63,6 +64,6 @@ visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py 
 
 source ~/.bash_profile
 module load python/3.9.0
-SESSION_NAME_PARAVIEW="~/copies_scripts/graft_slice_simple.py"
-python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $TOTAL_TASKS
+# SESSION_NAME_PARAVIEW="~/copies_scripts/graft_slice_simple.py"
+# python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $TOTAL_TASKS
 
