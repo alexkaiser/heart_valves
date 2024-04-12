@@ -753,7 +753,7 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
     f.open(lag_file_name.c_str(), ios::in);
     
     if (!f.is_open()){
-        std::cout << "Failed to open file\n" ; 
+        std::cout << "Failed to open file " << lag_file_name << "\n" ; 
     } 
     
     // total lagrangian points 
@@ -772,7 +772,7 @@ void FeedbackForcer::initialize_masks(Pointer<CartesianGridGeometry<NDIM> > grid
     f_internal_ring.open(internal_ring_file_name.c_str(), ios::in);
     
     if (!f_internal_ring.is_open()){
-        std::cout << "Failed to open file\n" ; 
+        std::cout << "Failed to open file " << internal_ring_file_name << "\n" ; 
     } 
     
     // lagrangian 
