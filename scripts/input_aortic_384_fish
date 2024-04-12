@@ -13,7 +13,7 @@ N_FLUID = 48 // fluid mesh width
 MAX_LEVELS = 1                            // maximum number of levels in locally refined grid
 REF_RATIO  = 4                            // refinement ratio between levels
 
-NAME = "aortic_192"
+NAME = "aortic_384"
 MAX_RESTART_TO_WRITE = 20
 
 
@@ -35,7 +35,7 @@ RCR_ON_TIME = CYCLE_DURATION / 4.0
 BOUNDARY_FILENAME_VENTRICLE = "cylinder_bdry_min.vertex"
 BOUNDARY_FILENAME_AORTA = "cylinder_bdry_max.vertex"
 
-VESSEL_FILENAME = "aortic_fish_394_cylinder.vertex"
+VESSEL_FILENAME = "aortic_fish_384_cylinder.vertex"
 
 
 // solver parameters
@@ -74,8 +74,8 @@ NX = 48 * int(RATIO_TO_192_COARSE)
 NY = 48 * int(RATIO_TO_192_COARSE)
 NZ = 90 * int(RATIO_TO_192_COARSE)
 
-X_WIDTH = 48 * DX 
-Y_WIDTH = 48 * DX 
+X_WIDTH = NX * DX 
+Y_WIDTH = NY * DX 
 
 X_LOW = -X_WIDTH / 2.0
 Y_LOW = -Y_WIDTH / 2.0
@@ -206,11 +206,11 @@ IBMethod {
 
 IBStandardInitializer {
    max_levels      = MAX_LEVELS
-   structure_names = "aortic_fish_192", "aortic_fish_192_cylinder"
-   aortic_fish_192 {
+   structure_names = "aortic_fish_384", "aortic_fish_384_cylinder"
+   aortic_fish_384 {
       level_number = MAX_LEVELS - 1
    }
-   aortic_fish_192_cylinder {
+   aortic_fish_384_cylinder {
       level_number = MAX_LEVELS - 1
    }
 
