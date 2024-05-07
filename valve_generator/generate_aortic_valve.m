@@ -31,7 +31,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N_each_range = 2^6; %2.^(6:7); 
+N_each_range = 2^7; %2.^(6:7); 
 
 for N_each = N_each_range
 
@@ -47,8 +47,8 @@ for N_each = N_each_range
     % Many parameters are in this script 
 
     pulm = false; 
-    true_bicuspid = false;
-    fish = true;  
+    true_bicuspid = true;
+    fish = false;  
     
     if pulm
         valve = initialize_valve_data_structures_pulm_mri_box(N); 
@@ -70,7 +70,7 @@ for N_each = N_each_range
     end 
 
 
-    interactive = false; 
+    interactive = true; 
 
     from_history = false; 
     if from_history 

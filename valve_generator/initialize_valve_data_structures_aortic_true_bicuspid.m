@@ -37,7 +37,7 @@ function [valve] = initialize_valve_data_structures_aortic_true_bicuspid(N)
 % OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-% Main data structure with everything 
+% Main data structure with everything
 valve.N = N; 
 
 % effective infinity by default 
@@ -78,7 +78,7 @@ valve.in_heart = true;
 
 mri_box = false;
 
-graft_tester_geometry = true; 
+graft_tester_geometry = false; 
 dilate_graft = false; 
 dilation_dist = 0.0; 
 
@@ -202,7 +202,7 @@ valve.z_min_cylinder = 0.0;
 valve.n_layers_cylinder = 3; 
 
 
-comm_raise_normal_height = 0.8 * valve.skeleton.r * 2; 
+% comm_raise_normal_height = 0.8 * valve.skeleton.r * 2; 
 
 
 % Base constants, individual pieces are tuned relative to these values
@@ -226,7 +226,7 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 2.9;  % circumferential 
+tension_coeffs.c_circ_dec       = 2.86;  % circumferential 
 tension_coeffs.c_rad_dec        = 1.44;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.89;        
