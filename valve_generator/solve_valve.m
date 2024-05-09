@@ -335,7 +335,7 @@ if build_reference
             if isfield(valve_with_reference, 'dilate_graft') && valve_with_reference.dilate_graft
                 if isfield(valve_with_reference, 'dilation_dist')
                     if valve_with_reference.dilation_dist ~= 0
-                        valve_with_reference = aortic_dialate_annulus(valve_with_reference); 
+                        valve_with_reference = aortic_dilate_annulus(valve_with_reference); 
                     end 
                 else 
                     error('must provide dilation_dist if valve.dilate_graft is true'); 

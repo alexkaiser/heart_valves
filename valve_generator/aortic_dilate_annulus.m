@@ -1,4 +1,4 @@
-function valve_with_reference = aortic_dialate_annulus(valve_with_reference)
+function valve_with_reference = aortic_dilate_annulus(valve_with_reference)
 
     % dialation with preserved arc length 
 
