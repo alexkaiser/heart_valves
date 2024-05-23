@@ -218,7 +218,9 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
     }
 
     // get fourier series value for pressure interpolation 
-    double t_reduced = d_rcr_on_time / 2.0;
+    d_p_equal_fraction = 0.1; 
+
+    double t_reduced = d_p_equal_fraction * d_rcr_on_time;
     double t_scaled = t_reduced * (d_fourier_ventricle->L  / d_cycle_duration);
     double t_scaled_offset = t_scaled + d_t_offset_bcs_unscaled;
     unsigned int k = (unsigned int) floor(t_scaled_offset / (d_fourier_ventricle->dt));
@@ -387,9 +389,8 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
 
     if (d_rcr_bcs_on){
         // The downstream pressure is determined by a three-element Windkessel model.
-        const double p_equal_fraction = 0.1; 
-
-        if ((d_P_initial_aorta_equal_to_ventricle) && (d_time < (p_equal_fraction*d_rcr_on_time))){
+        
+        if ((d_P_initial_aorta_equal_to_ventricle) && (d_time < (d_p_equal_fraction*d_rcr_on_time))){
             // equal to ventricle for half the time 
             d_aorta_P =  MMHG_TO_CGS * d_fourier_ventricle->values[d_current_idx_series];
         }
@@ -399,11 +400,11 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
             // linear interpolation to pressurize 
             // resistance hooked to linearly interpolated pressures 
             // distal pressure is linearly interpolated 
-            double P_distal_temp = ((d_time  -     d_rcr_on_time) / (p_equal_fraction * d_rcr_on_time - d_rcr_on_time)) * d_P_min_linear_interp + 
-                                   ((d_time  - p_equal_fraction * d_rcr_on_time) / (d_rcr_on_time - p_equal_fraction * d_rcr_on_time)) * d_aorta_P_Wk; // wk pressure is the end pressure for the interpolation
+            double P_distal_temp = ((d_time  -     d_rcr_on_time) / (d_p_equal_fraction * d_rcr_on_time - d_rcr_on_time)) * d_P_min_linear_interp + 
+                                   ((d_time  - d_p_equal_fraction * d_rcr_on_time) / (d_rcr_on_time - d_p_equal_fraction * d_rcr_on_time)) * d_aorta_P_Wk; // wk pressure is the end pressure for the interpolation
 
-            // then gets the total resistance, no capacitor 
-            d_aorta_P = P_distal_temp + (d_aorta_R_distal + d_aorta_R_proximal) * d_Q_aorta; 
+            // then gets the proximal resistance, no capacitor 
+            d_aorta_P = P_distal_temp + d_aorta_R_proximal * d_Q_aorta; 
 
         }
         else{
