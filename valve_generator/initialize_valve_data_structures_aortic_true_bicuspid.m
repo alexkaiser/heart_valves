@@ -227,9 +227,9 @@ tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
 tension_coeffs.c_circ_dec       = 2.86;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.44;  % radial
+tension_coeffs.c_rad_dec        = 1.5;  % radial
 
-tension_coeffs.c_circ_dec_annulus = 1.89;        
+tension_coeffs.c_circ_dec_annulus = 1.93;
 
 % tension_coeffs.c_circ_dec_free_edge = 5.0;
 tension_coeffs.c_circ_dec_free_edge_percentage = 0.0;
@@ -327,7 +327,7 @@ if valve.in_heart
         % bottom flat at zero 
         valve.z_min_cylinder = @(theta) zeros(size(theta)); 
 
-        debug_plot = true; 
+        debug_plot = false; 
         if debug_plot
             th = linspace(0,2*pi,1000);
             plot(th,valve.z_min_cylinder(th))

@@ -45,7 +45,7 @@ else
 end 
 X = NaN * zeros(3,j_max,k_max); 
 
-debug = false; 
+debug = true; 
 
 free_edge_smooth = false; 
 
@@ -89,47 +89,183 @@ else
         error('inconsistent values in mesh'); 
     end 
     
-    % minimum ring 
-    k = 1; 
-    for j = 1:j_max
+    annulus_points_even_spacing = true; 
+    
+    if annulus_points_even_spacing
         
-        j_this_cusp = mod(j,N_each); 
-        x_this_cusp = j_this_cusp / N_each; 
-        center_cusp = 1/2; 
+        % just put a bunch of points 
+        % then interpolate to equally spaced 
+        mesh_scaling = 1000; 
+        N_interp = N * mesh_scaling; 
+        N_each_interp = N_each * mesh_scaling; 
+        du_interp = 1/N_interp; 
+        j_max_interp = j_max*mesh_scaling; 
+        X_annulus_interp = zeros(3,j_max_interp); 
         
-        if j_this_cusp == 0 
-            'stop'; 
-        end 
-        
-%         circle_height = height_min_comm * 2 * sqrt((1/2)^2 - (x_this_cusp - center_cusp)^2); 
-%         
-%         % top of circular part (bottom of commissure) minus a circle 
-%         z_tmp = height_min_comm - circle_height; 
+        % initial positions to interpolate from 
+        k = 1; 
+        for j = 1:j_max_interp
 
-        % polynomial height profile 
-        power = 3; 
-        
-        if exist('power_override', 'var')
-            power = power_override; 
-        end 
-        
-        normalization = 2^power; % normalization so function takes value 1 at 1/2 
-        z_tmp = height_min_comm * normalization * abs(x_this_cusp - center_cusp)^power; 
-        
-        
-        r_tmp = r; 
-        
-        if r ~= r_commissure 
-            if isfield(valve.skeleton, 'r_of_z')
-                r_tmp = valve.skeleton.r_of_z(z_tmp); 
-            else 
-                error('this needs to compute r(z) here if r ~= r_commissure'); 
+            j_this_cusp = mod(j,N_each_interp); 
+            x_this_cusp = j_this_cusp / N_each_interp; 
+            center_cusp = 1/2; 
+
+            % polynomial height profile 
+            power = 3; 
+            if exist('power_override', 'var')
+                power = power_override; 
             end 
-        end         
-        
 
-        X(:,j,k) = [r_tmp*cos(j*du*2*pi + ring_offset_angle) ; r_tmp*sin(j*du*2*pi + ring_offset_angle); z_tmp]; 
-    end
+            normalization = 2^power; % normalization so function takes value 1 at 1/2 
+            z_tmp = height_min_comm * normalization * abs(x_this_cusp - center_cusp)^power; 
+
+            r_tmp = r; 
+
+            if r ~= r_commissure 
+                if isfield(valve.skeleton, 'r_of_z')
+                    r_tmp = valve.skeleton.r_of_z(z_tmp); 
+                else 
+                    error('this needs to compute r(z) here if r ~= r_commissure'); 
+                end 
+            end         
+
+            X_annulus_interp(:,j) = [r_tmp*cos(j*du_interp*2*pi + ring_offset_angle) ; r_tmp*sin(j*du_interp*2*pi + ring_offset_angle); z_tmp]; 
+        end        
+        
+        
+        for comm_idx = 1:N_leaflets
+            
+            min_idx_offset = (comm_idx-1)*N_each;         
+
+            % arrange current leaflet interpolation points 
+            min_idx_offset_interp = (comm_idx-1)*N_each_interp; 
+            X_this_leaflet_interp = X_annulus_interp(:,(1:N_each_interp) + min_idx_offset_interp); 
+            
+            % comm idx below comes from top leaflet if needed 
+            if comm_idx == 1
+                idx_comm_below = N_interp; 
+            else 
+                idx_comm_below = min_idx_offset_interp; 
+            end 
+            
+            % wrapped comm idx here 
+            X_this_leaflet_interp = [X_annulus_interp(:, idx_comm_below), X_this_leaflet_interp]; 
+            
+            arc_len_cumulative = zeros(N_each_interp + 1,1); 
+            
+            for j=2:(N_each_interp+1)
+                arc_len_cumulative(j) = arc_len_cumulative(j-1) + norm(X_this_leaflet_interp(:,j-1) - X_this_leaflet_interp(:,j)); 
+            end 
+            
+            arc_len_total = arc_len_cumulative(end); 
+            
+            query_pts = (arc_len_total/N_each) * (1:N_each);  
+            
+            X(:,(1:N_each) + min_idx_offset,1)= interp1(arc_len_cumulative, X_this_leaflet_interp', query_pts)'; 
+            
+            
+        end     
+        
+        debug_spacing = true; 
+        if debug_spacing
+            figure; 
+
+            x_component = squeeze(X(1,:,1)); 
+            y_component = squeeze(X(2,:,1)); 
+            z_component = squeeze(X(3,:,1)); 
+
+            hold on 
+            width = 1.0; 
+            plot3(x_component, y_component, z_component, 'ko', 'LineWidth',width);
+
+            x_component_X_annulus_interp = squeeze(X_annulus_interp(1,:)); 
+            y_component_X_annulus_interp = squeeze(X_annulus_interp(2,:)); 
+            z_component_X_annulus_interp = squeeze(X_annulus_interp(3,:)); 
+            
+            plot3(x_component_X_annulus_interp, y_component_X_annulus_interp, z_component_X_annulus_interp, 'r', 'LineWidth',width);
+            
+            axis equal 
+            axis auto 
+            
+            xlabel('x'); 
+            ylabel('y'); 
+            title('spacing ')
+            
+            % quick length consistency check 
+            tol_lengths = 1e-3; 
+            for comm_idx = 1:N_leaflets
+            
+                min_idx_offset = (comm_idx-1)*N_each;         
+
+                % comm idx below comes from top leaflet if needed 
+                if comm_idx == 1
+                    idx_comm_below = N; 
+                else 
+                    idx_comm_below = min_idx_offset; 
+                end 
+
+                % comm point below 
+                arc_len_first = norm(X(:,idx_comm_below,1) - X(:,1 + min_idx_offset,1)); 
+                
+                for j=2:N_each
+                    arc_len_current = norm(X(:,j-1 + min_idx_offset,1) - X(:,j + min_idx_offset,1)); 
+                    
+                    if abs((arc_len_current - arc_len_first)/arc_len_first) > tol_lengths
+                        error('inconsistent arc lengths after equalizing'); 
+                    end 
+                                       
+                end 
+                          
+            end     
+                                              
+        end 
+        
+        
+        
+        
+    else 
+        % minimum ring 
+        k = 1; 
+        for j = 1:j_max
+
+            j_this_cusp = mod(j,N_each); 
+            x_this_cusp = j_this_cusp / N_each; 
+            center_cusp = 1/2; 
+
+            if j_this_cusp == 0 
+                'stop'; 
+            end 
+
+    %         circle_height = height_min_comm * 2 * sqrt((1/2)^2 - (x_this_cusp - center_cusp)^2); 
+    %         
+    %         % top of circular part (bottom of commissure) minus a circle 
+    %         z_tmp = height_min_comm - circle_height; 
+
+            % polynomial height profile 
+            power = 3; 
+
+            if exist('power_override', 'var')
+                power = power_override; 
+            end 
+
+            normalization = 2^power; % normalization so function takes value 1 at 1/2 
+            z_tmp = height_min_comm * normalization * abs(x_this_cusp - center_cusp)^power; 
+
+
+            r_tmp = r; 
+
+            if r ~= r_commissure 
+                if isfield(valve.skeleton, 'r_of_z')
+                    r_tmp = valve.skeleton.r_of_z(z_tmp); 
+                else 
+                    error('this needs to compute r(z) here if r ~= r_commissure'); 
+                end 
+            end         
+
+
+            X(:,j,k) = [r_tmp*cos(j*du*2*pi + ring_offset_angle) ; r_tmp*sin(j*du*2*pi + ring_offset_angle); z_tmp]; 
+        end
+    end 
     
     if debug 
         annulus_z = X(3,:,1); 
@@ -201,7 +337,7 @@ end
 for j=1:j_max 
     dk_interp = 1/(k_max-1);         
     for k=2:(k_max-1)
-        X(:,j,k) = (1 - (k-1)*dk_interp) * X(:,j,1) + (k-1)*dk_interp * X(:,j,k_max); 
+        X(:,j,k) = (1 - (k-1)*dk_interp) * X(:,j,1) + (k-1)*dk_interp * X(:,j,k_max);  
     end         
 end 
 
