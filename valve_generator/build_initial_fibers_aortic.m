@@ -89,9 +89,9 @@ else
         error('inconsistent values in mesh'); 
     end 
     
-    annulus_points_even_spacing = true; 
+    % annulus_points_even_spacing = true; 
     
-    if annulus_points_even_spacing
+    if isfield(valve, 'annulus_points_even_spacing') && valve.annulus_points_even_spacing
         
         % just put a bunch of points 
         % then interpolate to equally spaced 

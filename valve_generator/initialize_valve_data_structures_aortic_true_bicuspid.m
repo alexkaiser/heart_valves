@@ -129,6 +129,11 @@ valve.normal_thicken = true;
 % nominal aortic valve thickness
 valve.normal_thickness = 0.044; 
 
+% respace on annulus in 3d 
+% if false, spaced wrt theta 
+valve.annulus_points_even_spacing = true; 
+
+
 % add flags to spring files 
 % to view and output with a stride 
 
@@ -142,6 +147,8 @@ valve.output.stride_mesh    = N/32;
 valve.dirichlet_free_edge = false; 
 
 valve.dirichlet_free_edge_with_ref_only = true; 
+
+
 
 
 % provides a bending resistance for the final solve 
