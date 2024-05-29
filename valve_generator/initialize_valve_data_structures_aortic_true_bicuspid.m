@@ -131,7 +131,7 @@ valve.normal_thickness = 0.044;
 
 % respace on annulus in 3d 
 % if false, spaced wrt theta 
-valve.annulus_points_even_spacing = true; 
+valve.annulus_points_even_spacing = false; 
 
 
 % add flags to spring files 
@@ -234,9 +234,9 @@ tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
 tension_coeffs.c_circ_dec       = 2.86;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.5;  % radial
+tension_coeffs.c_rad_dec        = 1.44;  % radial
 
-tension_coeffs.c_circ_dec_annulus = 1.93;
+tension_coeffs.c_circ_dec_annulus = 1.89;
 
 % tension_coeffs.c_circ_dec_free_edge = 5.0;
 tension_coeffs.c_circ_dec_free_edge_percentage = 0.0;
