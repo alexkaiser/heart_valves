@@ -1076,8 +1076,9 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_targ
                 else 
                     extrude_length = (params.copy - 1) * params.ds_extrude; 
                 end 
-
-                X = normal_extrude_aortic(leaflet, extrude_length); 
+ 
+                % X = normal_extrude_aortic(leaflet, extrude_length); 
+                X = const_extrude_aortic(leaflet, extrude_length); 
             end 
         end 
     end 
