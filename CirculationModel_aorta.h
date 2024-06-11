@@ -54,8 +54,12 @@ public:
     double* d_ventricle_points_idx2;
     int     d_ventricle_axis; 
     int     d_ventricle_side; 
+    double  d_ventricle_P;
+
+    ventricle_0D_model *d_ventricle_0D;     
 
     bool d_rcr_bcs_on; 
+    bool d_ventricle_0D_on; 
 
     // const fourier_series_data *d_fourier_aorta;
     int     d_n_pts_aorta;
@@ -107,6 +111,7 @@ public:
                                                const double  initial_time, 
                                                double P_initial_aorta,
                                                bool rcr_bcs_on,
+                                               bool ventricle_0D_on, 
                                                bool P_initial_aorta_equal_to_ventricle,
                                                double rcr_on_time,
                                                int ventricle_axis,

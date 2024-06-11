@@ -588,7 +588,7 @@ void VelocityBcCoefs_aorta::setBcCoefs(Pointer<ArrayData<NDIM, double> >& acoef_
                 // sign for negative in stress tensor
                 a = 0.0; 
                 b = 1.0; 
-                g = -MMHG_TO_CGS * d_circ_model_aorta->d_fourier_ventricle->values[idx];
+                g = -d_circ_model_aorta->d_ventricle_P; 
                 // pout << "Applying pressure of " << d_circ_model_rv_pa->d_fourier_right_ventricle->values[idx] 
                 //      << "mmHg to right ventricle at position (" << X[0] << ", " << X[1] << ", " << X[2] << ")\n"; 
             }
@@ -730,5 +730,182 @@ void fourier_series_data::print_values() const{
         std::cout << values[j] << "\n" ; 
     }    
 } 
+
+
+
+ventricle_0D_model::ventricle_0D_model(Pointer<Database> input_db, 
+                                       double cycle_duration, 
+                                       double initialization_time)
+    :
+    d_object_name("ventricle_0D_model"),  // constant name here  
+    d_registered_for_restart(true),      // always true
+    d_cycle_duration(cycle_duration),
+    d_initialization_time(initialization_time)
+    
+    {
+
+    double dt = input_db->getDouble("DT");
+
+    std::string fourier_coeffs_name_Q_in = input_db->getStringWithDefault("FOURIER_COEFFS_Q_IN" , "fourier_coeffs_Q_mi.txt"); 
+    std::string fourier_coeffs_name_act  = input_db->getStringWithDefault("FOURIER_COEFFS_ACT" , "fourier_coeffs_lv_activation.txt"); 
+
+    d_fourier_q_in_ventricle = new fourier_series_data(fourier_coeffs_name_Q_in.c_str(), dt);
+    d_act_ventricle = new fourier_series_data(fourier_coeffs_name_act, dt); 
+
+    d_V_rest_diastole = input_db->getDoubleWithDefault("V_REST_DIASTOLE", 26.1);
+    d_V_rest_systole  = input_db->getDoubleWithDefault("V_REST_SYSTOLE", 18.0);
+    d_E_min           = input_db->getDoubleWithDefault("E_MIN", 1.818181818181818e+02);
+    d_E_max           = input_db->getDoubleWithDefault("E_MAX", 1.057082452431290e+04); 
+
+    if (d_registered_for_restart)
+    {
+        RestartManager::getManager()->registerRestartItem(d_object_name, this);
+    }
+
+    // Initialize object with data read from the input and restart databases.
+    const bool from_restart = RestartManager::getManager()->isFromRestart();
+    if (from_restart)
+    {
+        getFromRestart();
+    }    
+    else {
+        // default initialization not from restart 
+        d_Q_out = 0.0; 
+        d_time = 0.0; 
+        d_current_idx_series = 0; 
+
+        double act_temp = 0.0; 
+
+        // use equations with zero activation  
+        d_V_ventricle = d_V_rest_diastole; 
+
+        // rest volume  
+        d_V_rest_ventricle = (1.0 - act_temp) * (d_V_rest_diastole - d_V_rest_systole) + d_V_rest_systole; 
+
+        // elastance 
+        d_Elas = (d_E_max - d_E_min) * act_temp + d_E_min; 
+
+        // pressure 
+        d_P_ventricle = d_Elas * (d_V_ventricle - d_V_rest_ventricle); 
+    }
+
+}
+
+ventricle_0D_model::~ventricle_0D_model(){
+
+    if(d_fourier_q_in_ventricle) {
+        delete d_fourier_q_in_ventricle; 
+    }
+    if(d_act_ventricle){
+        delete d_act_ventricle; 
+    }
+
+}
+
+
+void ventricle_0D_model::advanceTimeDependentData(double dt, double t, double Q_out){
+
+    /* 
+    % eqn 3 for ventricular volume 
+    V_lv(n+1) = V_lv(n) + dt * (Q_mi(n) - Q_ao(n)); 
+
+    % elastance updates 
+    Vrest(n+1) = (1.0 - act(n+1)) * (Vrd - Vrs) + Vrs;
+    Elas(n+1) = (Emax - Emin) * act(n+1) + Emin;
+
+    % pressure update 
+    P_lv_in(n+1) = Elas(n+1) * (V_lv(n+1) - Vrest(n+1)); 
+    */ 
+
+
+    d_Q_out = Q_out; 
+
+    d_time += t; 
+
+    // compute which index in the Fourier series we need here 
+    // always use a time in current cycle 
+    double t_reduced = d_time - d_cycle_duration * floor(d_time/d_cycle_duration); 
+
+    // fourier series has its own period, scale to that 
+    double t_scaled = t_reduced * (d_fourier_q_in_ventricle->L  / d_cycle_duration); 
+
+    // start offset some arbitrary time in the cardiac cycle, but this is relative to the series length 
+    // no scaling allowed for now 
+    double t_scaled_offset = t_scaled; // + d_t_offset_bcs_unscaled; 
+
+    // Fourier data here
+    // index without periodicity 
+    unsigned int k = (unsigned int) floor(t_scaled_offset / (d_fourier_q_in_ventricle->dt));
+    
+    // // take periodic reduction
+    d_current_idx_series = k % (d_fourier_q_in_ventricle->N_times);
+
+    // volume update 
+    d_V_ventricle += dt * (d_fourier_q_in_ventricle->values[d_current_idx_series] - d_Q_out); 
+
+    double act_temp = 0.0; 
+    if (d_time > d_initialization_time){
+        d_act_ventricle->values[d_current_idx_series]; 
+    }
+
+    // rest volume  
+    d_V_rest_ventricle = (1.0 - act_temp) * (d_V_rest_diastole - d_V_rest_systole) + d_V_rest_systole; 
+
+    // elastance 
+    d_Elas = (d_E_max - d_E_min) * act_temp + d_E_min; 
+
+    // pressure 
+    d_P_ventricle = d_Elas * (d_V_ventricle - d_V_rest_ventricle); 
+
+}
+
+
+void ventricle_0D_model::putToDatabase(Pointer<Database> db)
+{
+
+    db->putDouble("d_Q_out", d_Q_out); 
+    db->putDouble("d_time", d_time);
+    db->putInteger("d_current_idx_series", d_current_idx_series); 
+    db->putDouble("d_V_ventricle", d_V_ventricle); 
+    db->putDouble("d_V_rest_ventricle", d_V_rest_ventricle); 
+    db->putDouble("d_Elas", d_Elas); 
+    db->putDouble("d_P_ventricle", d_P_ventricle); 
+    db->putDouble("d_initialization_time", d_initialization_time); 
+    db->putDouble("d_time", d_time); 
+    db->putDouble("d_cycle_duration", d_cycle_duration); 
+
+    return; 
+} // putToDatabase
+
+
+void ventricle_0D_model::getFromRestart()
+{
+    Pointer<Database> restart_db = RestartManager::getManager()->getRootDatabase();
+    Pointer<Database> db;
+    if (restart_db->isDatabase(d_object_name))
+    {
+        db = restart_db->getDatabase(d_object_name);
+    }
+    else
+    {
+        TBOX_ERROR("Restart database corresponding to " << d_object_name << " not found in restart file.");
+    }
+
+    d_Q_out               = db->getDouble("d_Q_out"); 
+    d_time                = db->getDouble("d_time");
+    d_current_idx_series  = db->getInteger("d_current_idx_series"); 
+    d_V_ventricle         = db->getDouble("d_V_ventricle"); 
+    d_V_rest_ventricle    = db->getDouble("d_V_rest_ventricle"); 
+    d_Elas                = db->getDouble("d_Elas"); 
+    d_P_ventricle         = db->getDouble("d_P_ventricle"); 
+    d_initialization_time = db->getDouble("d_initialization_time"); 
+    d_time                = db->getDouble("d_time"); 
+    d_cycle_duration      = db->getDouble("d_cycle_duration"); 
+
+    return;
+} // getFromRestart
+
+
+
 
 

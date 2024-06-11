@@ -450,6 +450,8 @@ int main(int argc, char* argv[])
 
             bool rcr_bcs_on = true;
 
+            bool ventricle_0D_on = false;
+
             // start with a linear ramp up in pressure 
             bool P_initial_aorta_equal_to_ventricle = true; 
             // double rcr_on_time = 0.2; 
@@ -483,6 +485,7 @@ int main(int argc, char* argv[])
                                                                              time_integrator->getIntegratorTime(), 
                                                                              P_aorta_0,
                                                                              rcr_bcs_on, 
+                                                                             ventricle_0D_on,
                                                                              P_initial_aorta_equal_to_ventricle, 
                                                                              rcr_on_time, 
                                                                              ventricle_axis,

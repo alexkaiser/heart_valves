@@ -54,6 +54,7 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
                                                const double  initial_time, 
                                                double P_initial_aorta,
                                                bool rcr_bcs_on,
+                                               bool ventricle_0D_on, 
                                                bool P_initial_aorta_equal_to_ventricle,
                                                double rcr_on_time,
                                                int ventricle_axis = 0,
@@ -77,6 +78,7 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
       d_area_aorta(0.0),
       d_area_initialized(false), 
       d_rcr_bcs_on(rcr_bcs_on), 
+      d_ventricle_0D_on(ventricle_0D_on),
       d_P_initial_aorta_equal_to_ventricle(P_initial_aorta_equal_to_ventricle), 
       d_rcr_on_time(rcr_on_time),
       d_ventricle_axis(ventricle_axis), 
@@ -110,6 +112,15 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
         }
         else {
             TBOX_ERROR("Must provide valid input_db");
+        }
+    }
+
+    if (d_ventricle_0D_on){
+        d_ventricle_0D = new ventricle_0D_model(input_db, d_cycle_duration, d_rcr_on_time); 
+    } else{
+        d_ventricle_0D = NULL; 
+        if (d_fourier_ventricle == NULL){
+            TBOX_ERROR("Must provide valid series for ventricle if d_ventricle_0D_on is off\n"); 
         }
     }
 
@@ -208,15 +219,30 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
     // d_aorta_axis = 2; 
     // d_aorta_side = 1; 
 
+    // misc scalars 
     if (!from_restart){
+
+        // initial ventricle pressure 
+        if (d_ventricle_0D_on){
+            d_ventricle_P = d_ventricle_0D->d_P_ventricle;
+        }
+        else {
+            d_ventricle_P = MMHG_TO_CGS * d_fourier_ventricle->values[0];
+        }
+
+        // initial aorta pressure 
         if (d_P_initial_aorta_equal_to_ventricle){
-            d_aorta_P = MMHG_TO_CGS * this->d_fourier_ventricle->values[0];
+            d_aorta_P = d_ventricle_P; 
         }
         else{
             d_aorta_P = P_initial_aorta; 
         }
+
+        // temp value unused 
+        d_P_min_linear_interp = 0.0; 
     }
 
+    /* 
     // get fourier series value for pressure interpolation 
     d_p_equal_fraction = 0.1; 
 
@@ -228,6 +254,7 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
 
     // pressure value half way through initialization period 
     d_P_min_linear_interp = MMHG_TO_CGS * d_fourier_ventricle->values[idx]; 
+    */ 
 
     pout << "passed contstructor\n"; 
 
@@ -392,7 +419,8 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
         
         if ((d_P_initial_aorta_equal_to_ventricle) && (d_time < (d_p_equal_fraction*d_rcr_on_time))){
             // equal to ventricle for half the time 
-            d_aorta_P =  MMHG_TO_CGS * d_fourier_ventricle->values[d_current_idx_series];
+            d_aorta_P = d_ventricle_P; 
+            d_P_min_linear_interp = d_ventricle_P; 
         }
         else if ((d_P_initial_aorta_equal_to_ventricle) && (d_time < d_rcr_on_time)){
             // linear interpolation to pressurize 
@@ -423,29 +451,41 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
 
     d_time += dt; 
 
-    // compute which index in the Fourier series we need here 
-    // always use a time in current cycle 
-    double t_reduced = d_time - d_cycle_duration * floor(d_time/d_cycle_duration); 
+    if (d_ventricle_0D_on){
 
-    // fourier series has its own period, scale to that 
-    double t_scaled = t_reduced * (d_fourier_ventricle->L  / d_cycle_duration); 
+        d_ventricle_0D->advanceTimeDependentData(dt, d_time, d_Q_aorta);
+        d_ventricle_P = d_ventricle_0D->d_P_ventricle; 
 
-    // start offset some arbitrary time in the cardiac cycle, but this is relative to the series length 
-    double t_scaled_offset = t_scaled + d_t_offset_bcs_unscaled; 
+    }
+    else{
+        // compute which index in the Fourier series we need here 
+        // always use a time in current cycle 
+        double t_reduced = d_time - d_cycle_duration * floor(d_time/d_cycle_duration); 
 
-    // Fourier data here
-    // index without periodicity 
-    unsigned int k = (unsigned int) floor(t_scaled_offset / (d_fourier_ventricle->dt));
-    
-    // // take periodic reduction
-    d_current_idx_series = k % (d_fourier_ventricle->N_times);
+        // fourier series has its own period, scale to that 
+        double t_scaled = t_reduced * (d_fourier_ventricle->L  / d_cycle_duration); 
 
-    // bool debug_out = false; 
-    // if (debug_out){
-    //     pout << "circ mode: d_time = " << d_time << ", d_current_idx_series = " << d_current_idx_series << "\n"; 
-    //     pout << "t_reduced = " << t_reduced << " t_scaled = " << t_scaled << " t_scaled_offset = " << t_scaled_offset << "\n"; 
-    //     pout << "k (unreduced idx) = " << k << " d_current_idx_series = " << d_current_idx_series << "\n\n"; 
-    // }
+        // start offset some arbitrary time in the cardiac cycle, but this is relative to the series length 
+        double t_scaled_offset = t_scaled + d_t_offset_bcs_unscaled; 
+
+        // Fourier data here
+        // index without periodicity 
+        unsigned int k = (unsigned int) floor(t_scaled_offset / (d_fourier_ventricle->dt));
+        
+        // // take periodic reduction
+        d_current_idx_series = k % (d_fourier_ventricle->N_times);
+
+        d_ventricle_P = MMHG_TO_CGS * d_fourier_ventricle->values[d_current_idx_series];
+
+        // bool debug_out = false; 
+        // if (debug_out){
+        //     pout << "circ mode: d_time = " << d_time << ", d_current_idx_series = " << d_current_idx_series << "\n"; 
+        //     pout << "t_reduced = " << t_reduced << " t_scaled = " << t_scaled << " t_scaled_offset = " << t_scaled_offset << "\n"; 
+        //     pout << "k (unreduced idx) = " << k << " d_current_idx_series = " << d_current_idx_series << "\n\n"; 
+        // }        
+    }
+
+
 
 
     writeDataFile(); 
@@ -468,6 +508,7 @@ CirculationModel_aorta::putToDatabase(Pointer<Database> db)
 {
 
     db->putInteger("d_current_idx_series", d_current_idx_series); 
+    db->putDouble("d_ventricle_P", d_ventricle_P); 
     db->putDouble("d_Q_ventricle", d_Q_ventricle); 
     db->putDouble("d_Q_aorta", d_Q_aorta);
     db->putDouble("d_Q_valve", d_Q_valve);
@@ -477,12 +518,13 @@ CirculationModel_aorta::putToDatabase(Pointer<Database> db)
     db->putDouble("d_p_extender_point", d_p_extender_point);
     db->putDouble("d_time", d_time); 
     db->putBool("d_rcr_bcs_on", d_rcr_bcs_on); 
+    db->putBool("d_ventricle_0D_on", d_ventricle_0D_on); 
     return; 
 } // putToDatabase
 
 void CirculationModel_aorta::print_summary(){
 
-    double P_ventricle = d_fourier_ventricle->values[d_current_idx_series]; 
+    double P_ventricle = d_ventricle_P / MMHG_TO_CGS; 
     double P_aorta = d_aorta_P / MMHG_TO_CGS;
 
     if (!d_rcr_bcs_on){
@@ -521,7 +563,7 @@ int CirculationModel_aorta::point_in_aorta(double testx, double testy, int axis,
 }
 
 
-    void CirculationModel_aorta::write_plot_code()
+void CirculationModel_aorta::write_plot_code()
 {
 
     static const int mpi_root = 0;
@@ -605,8 +647,13 @@ void
         {
             ofstream fout(DATA_FILE_NAME.c_str(), ios::out);
             fout << "% time \t P_ventricle (mmHg)\t P_aorta (mmHg)\t d_Q_ventricle (ml/s)\t d_Q_aorta (ml/s)\t d_Q_valve (ml/s)\t" 
-                 << "d_aorta_P_Wk (mmHg) \t d_p_extender_mean (mmHg) \t d_p_extender_point (mmHg)" 
-                 << "\n" 
+                 << "d_aorta_P_Wk (mmHg) \t d_p_extender_mean (mmHg) \t d_p_extender_point (mmHg)"; 
+
+            if (d_ventricle_0D_on){
+                fout << "d_V_ventricle \t d_V_rest_ventricle \t d_P_ventricle (mmHg) \t d_Elas"; 
+            }
+
+            fout << "\n" 
                  << "bc_vals = [";
             file_initialized = true;
         }
@@ -619,7 +666,7 @@ void
 
         fout << d_time;
 
-        double P_ventricle = d_fourier_ventricle->values[d_current_idx_series]; 
+        double P_ventricle = d_ventricle_P / MMHG_TO_CGS; 
 
         double P_aorta = 0.0; 
 
@@ -635,7 +682,15 @@ void
         fout << " " << d_Q_ventricle << " " << d_Q_aorta << " " << d_Q_valve;         
         fout << " " << d_aorta_P_Wk/MMHG_TO_CGS;
         fout << " " << d_p_extender_mean/MMHG_TO_CGS;
-        fout << " " << d_p_extender_point/MMHG_TO_CGS;                        
+        fout << " " << d_p_extender_point/MMHG_TO_CGS;    
+
+        if (d_ventricle_0D_on){
+            fout << " " << d_ventricle_0D->d_V_ventricle;
+            fout << " " << d_ventricle_0D->d_V_rest_ventricle; 
+            fout << " " << d_ventricle_0D->d_P_ventricle / MMHG_TO_CGS;
+            fout << " " << d_ventricle_0D->d_Elas;
+        }
+
         fout << "; \n";
 
     }
@@ -658,6 +713,7 @@ CirculationModel_aorta::getFromRestart()
     }
 
     d_current_idx_series = db->getInteger("d_current_idx_series"); 
+    d_ventricle_P        = db->getDouble("d_ventricle_P");
     d_Q_ventricle        = db->getDouble("d_Q_ventricle"); 
     d_Q_aorta            = db->getDouble("d_Q_aorta");
     d_Q_valve            = db->getDouble("d_Q_valve");
@@ -667,6 +723,8 @@ CirculationModel_aorta::getFromRestart()
     d_p_extender_point   = db->getDouble("d_p_extender_point");
     d_time               = db->getDouble("d_time");
     d_rcr_bcs_on         = db->getBool("d_rcr_bcs_on"); 
+    d_ventricle_0D_on    = db->getBool("d_ventricle_0D_on"); 
+
     return;
 } // getFromRestart
 

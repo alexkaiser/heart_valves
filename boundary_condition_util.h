@@ -56,6 +56,66 @@ class fourier_series_data{
 #endif 
 
 
+#ifndef included_ventricle_0D_model
+#define included_ventricle_0D_model
+
+class ventricle_0D_model : public Serializable
+{    
+    public: 
+        /*!
+         * \brief The object name.
+         */
+        string d_object_name;
+
+        /*!
+         * \brief Whether the object is registered with the restart manager.
+         */
+        bool d_registered_for_restart;
+
+        // prescribed variables 
+        const fourier_series_data *d_fourier_q_in_ventricle;
+        const fourier_series_data *d_act_ventricle;
+
+        double d_V_rest_diastole; 
+        double d_V_rest_systole; 
+        double d_E_min; 
+        double d_E_max; 
+
+        // state variables 
+        double d_Q_out; 
+        double d_V_ventricle; 
+        double d_V_rest_ventricle; 
+        double d_P_ventricle; 
+        double d_Elas; 
+
+        // util variables 
+        double d_initialization_time; 
+        double d_time; 
+        double  d_cycle_duration;
+        unsigned int d_current_idx_series; 
+
+        // constructors 
+        ventricle_0D_model(Pointer<Database> input_db, 
+                           double cycle_duration, 
+                           double initialization_time);
+        
+        // Destructor 
+        ~ventricle_0D_model(); 
+
+        void advanceTimeDependentData(double dt, double t, double Q_out); 
+        
+        void putToDatabase(Pointer<Database> db); 
+
+    private: 
+
+        void getFromRestart();
+
+}; 
+
+#endif 
+
+
+
 #ifndef included_VelocityBcCoefs
 #define included_VelocityBcCoefs
 
