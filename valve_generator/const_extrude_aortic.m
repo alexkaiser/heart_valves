@@ -37,9 +37,8 @@ function X_extruded = const_extrude_aortic(leaflet, extrude_length)
         chord(3) = 0; 
         chord = chord / norm(chord);
         
-        % orthogonal to given chord 
-        comm_idx
-        normal = [-chord(2); chord(1); 0]
+        % orthogonal to given chord         
+        normal = [-chord(2); chord(1); 0]; 
 
         if isfield(leaflet, 'extrusion_out') && leaflet.extrusion_out
             normal = -normal; 
