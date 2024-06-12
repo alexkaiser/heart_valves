@@ -455,7 +455,9 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
 
     if (d_ventricle_0D_on){
 
-        d_ventricle_0D->advanceTimeDependentData(dt, d_time, d_Q_ventricle);
+        // d_Q_ventricle is outflow according to surface normal 
+        // actual Q_ventricle gets negative
+        d_ventricle_0D->advanceTimeDependentData(dt, d_time, -d_Q_ventricle);
         // local ventricle pressure copied from lv circ model 
         d_ventricle_P = d_ventricle_0D->d_P_ventricle; 
 
