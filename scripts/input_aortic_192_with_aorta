@@ -27,7 +27,7 @@ BOUNDARY_FILENAME_AORTA = "aorta_bdry_192.vertex"
 
 // ventricle LPN 
 
-VENTRICLE_0D_ON = true
+VENTRICLE_0D_ON = TRUE
 FOURIER_COEFFS_Q_IN = "fourier_coeffs_Q_mi.txt"
 FOURIER_COEFFS_ACT = "fourier_coeffs_lv_activation.txt"
 V_REST_DIASTOLE = 26.1
