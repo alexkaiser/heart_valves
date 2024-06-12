@@ -242,10 +242,11 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
         d_P_min_linear_interp = 0.0; 
     }
 
-    /* 
-    // get fourier series value for pressure interpolation 
     d_p_equal_fraction = 0.1; 
 
+    /* 
+    // get fourier series value for pressure interpolation 
+    
     double t_reduced = d_p_equal_fraction * d_rcr_on_time;
     double t_scaled = t_reduced * (d_fourier_ventricle->L  / d_cycle_duration);
     double t_scaled_offset = t_scaled + d_t_offset_bcs_unscaled;
@@ -415,6 +416,7 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
     }
 
     if (d_rcr_bcs_on){
+        
         // The downstream pressure is determined by a three-element Windkessel model.
         
         if ((d_P_initial_aorta_equal_to_ventricle) && (d_time < (d_p_equal_fraction*d_rcr_on_time))){
