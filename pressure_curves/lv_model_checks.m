@@ -231,9 +231,6 @@ plots = false;
 t = 0:dt:cycle_length; 
 vals_Q_mi_series = Series_Q_mi(t); 
 
-output_series_coeffs_to_txt(a_0_Q_mi, a_n_Q_mi, b_n_Q_mi, n_fourier_coeffs, cycle_length, file_name); 
-
-
 % fig = figure; 
 % plot(t, vals_Q_mi_series, 'k'); 
 % hold on
@@ -246,8 +243,13 @@ output_series_coeffs_to_txt(a_0_Q_mi, a_n_Q_mi, b_n_Q_mi, n_fourier_coeffs, cycl
 % trap integral 
 Q_mi_total = sum(vals_Q_mi_series(1:(end-1)) * dt); 
 
+scaling_q_mi = Q_goal_ml_per_cycle / Q_mi_total; 
+
 % scale mitral to goal 
-Series_Q_mi_scaled = @(t) (Q_goal_ml_per_cycle / Q_mi_total) * Series_Q_mi(t); 
+Series_Q_mi_scaled = @(t) scaling_q_mi * Series_Q_mi(t); 
+
+output_series_coeffs_to_txt(scaling_q_mi * a_0_Q_mi, scaling_q_mi * a_n_Q_mi, scaling_q_mi * b_n_Q_mi, n_fourier_coeffs, cycle_length, file_name); 
+
 
 
 base_name = 'fourier_coeffs';
