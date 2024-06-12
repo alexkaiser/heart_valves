@@ -648,11 +648,11 @@ void
         if (!from_restart && !file_initialized)
         {
             ofstream fout(DATA_FILE_NAME.c_str(), ios::out);
-            fout << "% time \t P_ventricle (mmHg)\t P_aorta (mmHg)\t d_Q_ventricle (ml/s)\t d_Q_aorta (ml/s)\t d_Q_valve (ml/s)\t" 
+            fout << "% time \t P_ventricle (mmHg)\t P_aorta (mmHg)\t d_Q_ventricle (ml/s)\t d_Q_aorta (ml/s) \t d_Q_valve (ml/s) \t " 
                  << "d_aorta_P_Wk (mmHg) \t d_p_extender_mean (mmHg) \t d_p_extender_point (mmHg)"; 
 
             if (d_ventricle_0D_on){
-                fout << "d_V_ventricle \t d_V_rest_ventricle \t d_P_ventricle (mmHg) \t d_Elas"; 
+                fout << "d_V_ventricle \t d_V_rest_ventricle \t d_Elas"; 
             }
 
             fout << "\n" 
@@ -689,7 +689,6 @@ void
         if (d_ventricle_0D_on){
             fout << " " << d_ventricle_0D->d_V_ventricle;
             fout << " " << d_ventricle_0D->d_V_rest_ventricle; 
-            fout << " " << d_ventricle_0D->d_P_ventricle / MMHG_TO_CGS;
             fout << " " << d_ventricle_0D->d_Elas;
         }
 

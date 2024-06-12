@@ -450,7 +450,7 @@ int main(int argc, char* argv[])
 
             bool rcr_bcs_on = true;
 
-            bool ventricle_0D_on = false;
+            bool ventricle_0D_on = input_db->getBoolWithDefault("VENTRICLE_0D_ON", true);
 
             // start with a linear ramp up in pressure 
             bool P_initial_aorta_equal_to_ventricle = true; 
