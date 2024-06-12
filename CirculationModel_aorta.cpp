@@ -407,7 +407,7 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
     }
 
     d_Q_ventricle = SAMRAI_MPI::sumReduction(Q_ventricle_local);
-    d_Q_aorta        = SAMRAI_MPI::sumReduction(Q_aorta_local);
+    d_Q_aorta     = SAMRAI_MPI::sumReduction(Q_aorta_local);
 
     if (!d_area_initialized){
         d_area_ventricle   = SAMRAI_MPI::sumReduction(area_ventricle_local);
@@ -455,7 +455,8 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
 
     if (d_ventricle_0D_on){
 
-        d_ventricle_0D->advanceTimeDependentData(dt, d_time, d_Q_aorta);
+        d_ventricle_0D->advanceTimeDependentData(dt, d_time, d_Q_ventricle);
+        // local ventricle pressure copied from lv circ model 
         d_ventricle_P = d_ventricle_0D->d_P_ventricle; 
 
     }
@@ -652,7 +653,7 @@ void
                  << "d_aorta_P_Wk (mmHg) \t d_p_extender_mean (mmHg) \t d_p_extender_point (mmHg)"; 
 
             if (d_ventricle_0D_on){
-                fout << "d_V_ventricle \t d_V_rest_ventricle \t d_Elas"; 
+                fout << "\t d_V_ventricle \t d_V_rest_ventricle \t d_Elas \t d_act_temp \t d_Q_in"; 
             }
 
             fout << "\n" 
@@ -690,6 +691,8 @@ void
             fout << " " << d_ventricle_0D->d_V_ventricle;
             fout << " " << d_ventricle_0D->d_V_rest_ventricle; 
             fout << " " << d_ventricle_0D->d_Elas;
+            fout << " " << d_ventricle_0D->d_act_temp;
+            fout << " " << d_ventricle_0D->d_Q_in;
         }
 
         fout << "; \n";

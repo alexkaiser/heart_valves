@@ -24,6 +24,8 @@
 
 // SAMRAI INCLUDES
 #include <CartesianPatchGeometry.h>
+#include <tbox/RestartManager.h>
+#include <tbox/Utilities.h>
 
 #include <iostream>
 #include <math.h>
@@ -737,7 +739,7 @@ ventricle_0D_model::ventricle_0D_model(Pointer<Database> input_db,
                                        double cycle_duration, 
                                        double initialization_time)
     :
-    d_object_name("ventricle_0D_model"),  // constant name here  
+    d_object_name("ventricle_0D_model_name"),  // constant name here  
     d_registered_for_restart(true),      // always true
     d_cycle_duration(cycle_duration),
     d_initialization_time(initialization_time)
@@ -757,6 +759,14 @@ ventricle_0D_model::ventricle_0D_model(Pointer<Database> input_db,
     d_E_min           = input_db->getDoubleWithDefault("E_MIN", 1.818181818181818e+02);
     d_E_max           = input_db->getDoubleWithDefault("E_MAX", 1.057082452431290e+04); 
 
+    const bool print_debug = true; 
+    if (print_debug){
+        pout << "ventricle_0D_model initializing.\n"; 
+        pout << "d_cycle_duration = " << d_cycle_duration << "\n"; 
+        pout << "d_initialization_time = " << d_initialization_time << "\n"; 
+    }
+
+
     if (d_registered_for_restart)
     {
         RestartManager::getManager()->registerRestartItem(d_object_name, this);
@@ -774,16 +784,16 @@ ventricle_0D_model::ventricle_0D_model(Pointer<Database> input_db,
         d_time = 0.0; 
         d_current_idx_series = 0; 
 
-        double act_temp = 0.0; 
+        double d_act_temp = 0.0; 
 
         // use equations with zero activation  
         d_V_ventricle = d_V_rest_diastole; 
 
         // rest volume  
-        d_V_rest_ventricle = (1.0 - act_temp) * (d_V_rest_diastole - d_V_rest_systole) + d_V_rest_systole; 
+        d_V_rest_ventricle = (1.0 - d_act_temp) * (d_V_rest_diastole - d_V_rest_systole) + d_V_rest_systole; 
 
         // elastance 
-        d_Elas = (d_E_max - d_E_min) * act_temp + d_E_min; 
+        d_Elas = (d_E_max - d_E_min) * d_act_temp + d_E_min; 
 
         // pressure 
         d_P_ventricle = d_Elas * (d_V_ventricle - d_V_rest_ventricle); 
@@ -803,7 +813,7 @@ ventricle_0D_model::~ventricle_0D_model(){
 }
 
 
-void ventricle_0D_model::advanceTimeDependentData(double dt, double t, double Q_out){
+void ventricle_0D_model::advanceTimeDependentData(double dt, double time, double Q_out){
 
     /* 
     % eqn 3 for ventricular volume 
@@ -820,7 +830,7 @@ void ventricle_0D_model::advanceTimeDependentData(double dt, double t, double Q_
 
     d_Q_out = Q_out; 
 
-    d_time += t; 
+    d_time = time; 
 
     // compute which index in the Fourier series we need here 
     // always use a time in current cycle 
@@ -840,19 +850,21 @@ void ventricle_0D_model::advanceTimeDependentData(double dt, double t, double Q_
     // // take periodic reduction
     d_current_idx_series = k % (d_fourier_q_in_ventricle->N_times);
 
-    // volume update 
-    d_V_ventricle += dt * (d_fourier_q_in_ventricle->values[d_current_idx_series] - d_Q_out); 
+    d_Q_in = d_fourier_q_in_ventricle->values[d_current_idx_series]; 
 
-    double act_temp = 0.0; 
+    // volume update 
+    d_V_ventricle += dt * (d_Q_in - d_Q_out); 
+
+    d_act_temp = 0.0; 
     if (d_time > d_initialization_time){
-        d_act_ventricle->values[d_current_idx_series]; 
+        d_act_temp = d_act_ventricle->values[d_current_idx_series]; 
     }
 
     // rest volume  
-    d_V_rest_ventricle = (1.0 - act_temp) * (d_V_rest_diastole - d_V_rest_systole) + d_V_rest_systole; 
+    d_V_rest_ventricle = (1.0 - d_act_temp) * (d_V_rest_diastole - d_V_rest_systole) + d_V_rest_systole; 
 
     // elastance 
-    d_Elas = (d_E_max - d_E_min) * act_temp + d_E_min; 
+    d_Elas = (d_E_max - d_E_min) * d_act_temp + d_E_min; 
 
     // pressure 
     d_P_ventricle = d_Elas * (d_V_ventricle - d_V_rest_ventricle); 

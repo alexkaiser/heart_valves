@@ -88,6 +88,10 @@ class ventricle_0D_model : public Serializable
         double d_P_ventricle; 
         double d_Elas; 
 
+        // redundant debug vars 
+        double d_Q_in; 
+        double d_act_temp; 
+
         // util variables 
         double d_initialization_time; 
         double d_time; 
@@ -102,7 +106,7 @@ class ventricle_0D_model : public Serializable
         // Destructor 
         ~ventricle_0D_model(); 
 
-        void advanceTimeDependentData(double dt, double t, double Q_out); 
+        void advanceTimeDependentData(double dt, double time, double Q_out); 
         
         void putToDatabase(Pointer<Database> db); 
 
