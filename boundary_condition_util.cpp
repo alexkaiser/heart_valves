@@ -876,15 +876,18 @@ void ventricle_0D_model::putToDatabase(Pointer<Database> db)
 {
 
     db->putDouble("d_Q_out", d_Q_out); 
-    db->putDouble("d_time", d_time);
-    db->putInteger("d_current_idx_series", d_current_idx_series); 
     db->putDouble("d_V_ventricle", d_V_ventricle); 
     db->putDouble("d_V_rest_ventricle", d_V_rest_ventricle); 
-    db->putDouble("d_Elas", d_Elas); 
     db->putDouble("d_P_ventricle", d_P_ventricle); 
+    db->putDouble("d_Elas", d_Elas);
+
+    db->putDouble("d_Q_in", d_Q_in); 
+    db->putDouble("d_act_temp", d_act_temp); 
+
     db->putDouble("d_initialization_time", d_initialization_time); 
-    db->putDouble("d_time", d_time); 
+    db->putDouble("d_time", d_time);
     db->putDouble("d_cycle_duration", d_cycle_duration); 
+    db->putInteger("d_current_idx_series", d_current_idx_series); 
 
     return; 
 } // putToDatabase
@@ -904,15 +907,18 @@ void ventricle_0D_model::getFromRestart()
     }
 
     d_Q_out               = db->getDouble("d_Q_out"); 
-    d_time                = db->getDouble("d_time");
-    d_current_idx_series  = db->getInteger("d_current_idx_series"); 
     d_V_ventricle         = db->getDouble("d_V_ventricle"); 
     d_V_rest_ventricle    = db->getDouble("d_V_rest_ventricle"); 
-    d_Elas                = db->getDouble("d_Elas"); 
     d_P_ventricle         = db->getDouble("d_P_ventricle"); 
+    d_Elas                = db->getDouble("d_Elas"); 
+
+    d_Q_in                = db->getDouble("d_Q_in");
+    d_act_temp            = db->getDouble("d_act_temp");
+
     d_initialization_time = db->getDouble("d_initialization_time"); 
-    d_time                = db->getDouble("d_time"); 
+    d_time                = db->getDouble("d_time");
     d_cycle_duration      = db->getDouble("d_cycle_duration"); 
+    d_current_idx_series  = db->getInteger("d_current_idx_series"); 
 
     return;
 } // getFromRestart
