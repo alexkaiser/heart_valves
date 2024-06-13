@@ -20,7 +20,7 @@ TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_4c534da_basic_mesh_f06657d
+RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_998c7d0_true_bicuspid_circ_3pt9_rad_1pt7_0D_ventricle
 mkdir $RUNDIR
 
 # set up run info 
