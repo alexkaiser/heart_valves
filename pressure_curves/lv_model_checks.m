@@ -17,16 +17,16 @@ C_max_ml_over_kPa = 0.946;
 ML_OVER_KPA_TO_ML_OVER_DYNEPERCM2 = 1e-4; 
 
 C_min_scaling = 5; 
-C_max_scaling = 1; 
+C_max_scaling = 5; 
 
 C_min_ml_over_dynespercm2 = C_min_scaling * C_min_ml_over_kPa * ML_OVER_KPA_TO_ML_OVER_DYNEPERCM2; 
 C_max_ml_over_dynespercm2 = C_max_scaling * C_max_ml_over_kPa * ML_OVER_KPA_TO_ML_OVER_DYNEPERCM2; 
 
-Emax = 1/C_max_ml_over_dynespercm2; 
-Emin = 1/C_min_ml_over_dynespercm2; 
+Emax = 1/C_max_ml_over_dynespercm2 
+Emin = 1/C_min_ml_over_dynespercm2 
 
 Emin_mmHg_over_ml = Emin / MMHG_TO_CGS; 
-Emax_mmHg_over_ml = Emax / MMHG_TO_CGS; 
+Emax_mmHg_over_ml = Emax / MMHG_TO_CGS;
 
 
 % estimate R ao 
