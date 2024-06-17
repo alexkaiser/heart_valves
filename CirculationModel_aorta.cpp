@@ -655,7 +655,7 @@ void
                  << "d_aorta_P_Wk (mmHg) \t d_p_extender_mean (mmHg) \t d_p_extender_point (mmHg)"; 
 
             if (d_ventricle_0D_on){
-                fout << "\t d_V_ventricle \t d_V_rest_ventricle \t d_Elas \t d_act_temp \t d_Q_in"; 
+                fout << "\t d_V_ventricle \t d_V_rest_ventricle \t d_Elas \t d_act_temp \t d_Q_in \t d_P_ventricle_in"; 
             }
 
             fout << "\n" 
@@ -695,6 +695,7 @@ void
             fout << " " << d_ventricle_0D->d_Elas;
             fout << " " << d_ventricle_0D->d_act_temp;
             fout << " " << d_ventricle_0D->d_Q_in;
+            fout << " " << d_ventricle_0D->d_P_ventricle_in;
         }
 
         fout << "; \n";

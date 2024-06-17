@@ -87,8 +87,8 @@ class ventricle_0D_model : public Serializable
         double d_Q_out_prev; 
         double d_V_ventricle; 
         double d_V_rest_ventricle; 
+        double d_P_ventricle_in;
         double d_P_ventricle;
-        double d_P_ventricle_out;
         double d_Elas; 
 
         // redundant debug vars 
