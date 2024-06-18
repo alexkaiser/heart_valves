@@ -227,7 +227,7 @@ if __name__ == '__main__':
         print('No log file found after 10 checks, killing python script')
         sys.exit()
 
-    wait_time_s = 5*60              # check every ten minutes, max 20 minutes lost
+    wait_time_s = 1*60              # check every ten minutes, max 20 minutes lost
     wait_time_before_restart = 2*60  # after everything is killed, just hang out for two minutes
     wait_time_after_restart = 5*60   # once the restart goes, add a few extra minutes for initialization 
     number_restarts = 0
@@ -371,63 +371,6 @@ if __name__ == '__main__':
         prev_time = mod_time
         check_number += 1
 
-    # wait 30 s for good measure
-    print('Through main loop, check for post processing')
-    time.sleep(30)
-
-    # submit movie script for post processing 
-    # if os.path.isfile('done.txt') and (session_file_name is not None):
-    if False: 
-        
-        print('done.txt found')
-    
-        for f in os.listdir('.'):
-            if f.startswith('viz'): 
-                
-                print('Found viz directory')
-                
-                os.chdir(f)
-                
-                viz_dir_name = os.getcwd()
-                
-                # clean up visit files to be consistent after restarts
-                # if number_restarts > 0:
-                fix_visit_files(viz_dir_name)
-                
-                movie_script = open('make_movie.sbatch', 'w')
-                
-                slurm = '''#!/bin/bash
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --time=16:00:00
-#SBATCH --mem=4GB
-#SBATCH --job-name=movie
-#SBATCH --mail-user=adkaiser@gmail.com
-#SBATCH --mail-type=ALL
-#SBATCH --partition=amarsden,normal
-
-source ~/.bash_profile
-visit -cli -nowin -s ~/scratch/make_movie_generic.py ~/scratch/''' 
-                slurm += session_file_name + "\n"
-
-                movie_script.write(slurm)
-                movie_script.close()
-                
-                # again, wait for good measure
-                time.sleep(10)
-                
-                code = subprocess.call('sbatch make_movie.sbatch', shell=True)
-                if code is None:
-                    print('submit of movie script failed, check for problems.\n')
-
-                # code = subprocess.call('sbatch ~/mitral_fully_discrete/post_process.sbatch', shell=True)
-                # if code is None:
-                #     print 'submit of lines3d post process failed, check for problems.\n'
-
-                break
-
-    else:
-        print('Could not find done.txt\n')
     
     print('Done with main, exiting.\n')
     
