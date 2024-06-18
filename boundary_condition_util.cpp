@@ -888,7 +888,8 @@ void ventricle_0D_model::advanceTimeDependentData(double dt, double time, double
         d_P_ventricle = d_P_ventricle_in - d_inductance * (d_Q_out - d_Q_out_prev)/dt;        
     }
     else{
-        d_P_ventricle = d_P_ventricle_in;
+        double inductance_tmp = (d_time / d_initialization_time) * d_inductance; 
+        d_P_ventricle = d_P_ventricle_in - inductance_tmp * (d_Q_out - d_Q_out_prev)/dt;        
     }
 
 }
