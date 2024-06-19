@@ -17,23 +17,16 @@ C_max_ml_over_kPa = 0.946;
 ML_OVER_KPA_TO_ML_OVER_DYNEPERCM2 = 1e-4; 
 
 C_min_scaling = 5; 
-C_max_scaling = 10; 
+C_max_scaling = 1; % 7.5; 
 
 C_min_ml_over_dynespercm2 = C_min_scaling * C_min_ml_over_kPa * ML_OVER_KPA_TO_ML_OVER_DYNEPERCM2; 
 C_max_ml_over_dynespercm2 = C_max_scaling * C_max_ml_over_kPa * ML_OVER_KPA_TO_ML_OVER_DYNEPERCM2; 
 
-Emax = 1/C_max_ml_over_dynespercm2 
-Emin = 1/C_min_ml_over_dynespercm2 
+Emax = 1/C_max_ml_over_dynespercm2  
+Emin = 1/C_min_ml_over_dynespercm2
 
-Emin_mmHg_over_ml = Emin / MMHG_TO_CGS 
-Emax_mmHg_over_ml = Emax / MMHG_TO_CGS
-
-% values from brown ABME 2023
-Emin_mmhg_over_ml_brown = 0.01; 
-Emax_mmhg_over_ml_brown = 0.1191; 
-
-Emin_brown = Emin_mmhg_over_ml_brown * MMHG_TO_CGS 
-Emax_brown = Emax_mmhg_over_ml_brown * MMHG_TO_CGS 
+Emin_mmHg_over_ml = Emin / MMHG_TO_CGS; 
+Emax_mmHg_over_ml = Emax / MMHG_TO_CGS;
 
 % estimate R ao 
 delta_p_av_mmHg = 7; 
@@ -45,13 +38,23 @@ r_av = delta_p_av_dynescm2 / q_av_est;
 cos_power = 1; 
 
 
+rcr_on = false; 
+
+R_proximal = 83.6698220729; 
+C =  0.00167055364456;
+R_distal = 1287.64596307;
+
+
+
+
 Vrd = 26.1; % ml 
 Vrs = 18.0; % ml
 t_active = 0.6; % s 
 t_twitch = 0.2; % s 
 
-% 
-inductance = 0.000351787; 
+% from sv 0d      0.000351787 in mks 
+inductance_mmHg = 0.000416; % mmHg s^2/ml, Danielsen and Ottesen 2004
+inductance = inductance_mmHg * MMHG_TO_CGS; 
 
 
 
@@ -100,7 +103,7 @@ Q_goal_ml_per_s = Q_goal_L_per_min * 1e3 / 60;
 Q_goal_ml_per_cycle = Q_goal_ml_per_s * cycle_length; 
 
 % quadrature spacing 
-debug = false; 
+debug = true; 
 if debug 
     dt = 5e-5; 
 else 
@@ -274,14 +277,14 @@ output_series_coeffs_to_txt(a_0_lv_act, a_n_lv_act, b_n_lv_act, n_fourier_coeffs
 t = 0:dt:cycle_length; 
 vals_lv_activation = Series_lv_activation(t); 
 
-fig = figure; 
-plot(t, vals_lv_activation, 'k'); 
-hold on
-title('lv act')
-xlabel('t')
-ylabel('act')
-set(fig, 'Position', [100, 100, 1000, 500])
-set(fig,'PaperPositionMode','auto')
+% fig = figure; 
+% plot(t, vals_lv_activation, 'k'); 
+% hold on
+% title('lv act')
+% xlabel('t')
+% ylabel('act')
+% set(fig, 'Position', [100, 100, 1000, 500])
+% set(fig,'PaperPositionMode','auto')
 
 % % trap integral 
 % Q_mi_total = sum(vals_Q_mi_series(1:(end-1)) * dt); 
@@ -354,7 +357,16 @@ if prescribe_Q_ao
     Q_ao = Series_Q_Ao_scaled(times); 
 else 
     Q_ao = zeros(n_times, 1); 
-    P_ao_distal = Series_P_Ao_dynescm2(times); 
+    
+    if rcr_on
+        P_ao_initial = 94 * MMHG_TO_CGS; 
+        P_ao_distal = zeros(n_times, 1); 
+        P_wk        = zeros(n_times, 1); 
+        P_ao_distal(1) = P_ao_initial; 
+        P_wk(1) = P_ao_initial; 
+    else 
+        P_ao_distal = Series_P_Ao_dynescm2(times); 
+    end 
 end 
 
 V_lv(1) = Vrd; 
@@ -369,6 +381,12 @@ for n = 1:(n_times-1)
         else 
             Q_ao(n) = 0; 
         end 
+    end 
+    
+    % rcr update 
+    if rcr_on
+        P_wk(n+1) = P_wk(n) + (dt/C) * (-P_wk(n)/R_distal + Q_ao(n)); 
+        P_ao_distal(n+1) = P_wk(n+1) + R_proximal * Q_ao(n); 
     end 
     
     % eqn 3 for ventricular volume 
@@ -394,7 +412,7 @@ for n = 1:(n_times-1)
     end 
 
     Vrest(n+1) = (1.0 - act_temp) * (Vrd - Vrs) + Vrs;
-    Elas(n+1) = (Emax - Emin) * act_temp+ Emin;
+    Elas(n+1) = (Emax - Emin) * act_temp + Emin;
 
     % eqn 2 
     % check the time lags here 
@@ -408,7 +426,22 @@ for n = 1:(n_times-1)
     
 end 
 
+% figure; 
+% dQao_dt = (Q_ao(2:end) - Q_ao(1:(end-1))) / dt; 
+% plot(times, P_lv_in - P_lv_out); 
+% hold on 
+% plot(times(2:end), dQao_dt)
+% legend('P_lv_out - P_lv_in', 'L * dQao_dt')
 
+
+figure; 
+times_cycle_2   = times_ao(min_idx_times_ao:max_idx_times_ao); 
+q_aorta_cycle_2 = q_aorta(min_idx_times_ao:max_idx_times_ao); 
+dt_prescribed = times_cycle_2(2) - times_cycle_2(1); 
+
+dQao_prescribed_dt = (q_aorta_cycle_2(2:end) - q_aorta_cycle_2(1:(end-1))) / dt_prescribed; 
+plot(times_cycle_2(2:end), dQao_prescribed_dt)
+title('dq prescribed dt')
 
 
 
@@ -440,9 +473,11 @@ if ~prescribe_Q_ao
     P_ao_distal_mmHg = P_ao_distal / MMHG_TO_CGS; 
     plot(times, P_ao_distal_mmHg); 
 end 
-
+if rcr_on
+    plot(times, P_wk / MMHG_TO_CGS); 
+end 
 ylabel('P mmHg')
-legend('P lv in mmHg', 'P lv out mmHg', 'P ao distal mmHg')
+legend('P lv in mmHg', 'P lv out mmHg', 'P ao distal mmHg', 'P wk')
 
 subplot(5,1,4); 
 hold on 
@@ -453,7 +488,6 @@ subplot(5,1,5);
 hold on 
 plot(times, Elas)
 legend('Elas')
-
 
 
 
