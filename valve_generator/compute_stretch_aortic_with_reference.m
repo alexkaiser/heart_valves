@@ -374,7 +374,7 @@ function [lambda_circ, lambda_rad, lambda_circ_mean, lambda_rad_mean, fig] = com
             colorbar('Ticks', tick_array, 'TickLabels', tick_labels);
         end 
         
-        colorbar_figure = true; 
+        colorbar_figure = false; 
         if colorbar_figure 
             fig_colorbar = figure; 
 
@@ -408,7 +408,7 @@ function [lambda_circ, lambda_rad, lambda_circ_mean, lambda_rad_mean, fig] = com
             figure(fig); 
         end 
 
-        title_on = true; 
+        title_on = false; 
         if title_on
             if circ
                 title("Circumferential Stretch")

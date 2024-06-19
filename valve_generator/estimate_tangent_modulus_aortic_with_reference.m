@@ -1,4 +1,5 @@
-function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimate_tangent_modulus_aortic_with_reference(leaflet, thickness, fig, fiber_stride, stride_offset_j, circ, rad, ratio, max_plot_cap)
+function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, stress_circ_mean, stress_rad_mean] ...
+    = estimate_tangent_modulus_aortic_with_reference(leaflet, thickness, fig, fiber_stride, stride_offset_j, circ, rad, ratio, max_plot_cap, plot_stress)
     % estimates the tangent modulus for current strain 
     % 
 
@@ -41,9 +42,20 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimat
     k_v                = leaflet.k_v;
     N_each             = leaflet.N_each; 
     
+    if isfield(leaflet, 'N_leaflets')
+        N_leaflets         = leaflet.N_leaflets; 
+    else 
+        % trileaflet default
+        N_leaflets         = 3; 
+    end 
+    % tangent modulus, slope of stress 
     sigma_circ = zeros(j_max, k_max); 
     sigma_rad  = zeros(j_max, k_max); 
         
+    % values of stress 
+    stress_circ = zeros(j_max, k_max); 
+    stress_rad  = zeros(j_max, k_max); 
+    
     collagen_constitutive_circ = leaflet.collagen_constitutive_circ; 
     collagen_constitutive_rad  = leaflet.collagen_constitutive_rad; 
     
@@ -86,6 +98,10 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimat
     
     if rad && isinf(max_plot_cap)
         radial_autoscale = true; 
+    end 
+    
+    if ~exist('plot_stress', 'var')
+        plot_stress = false;
     end 
     
     one_leaflet = true; 
@@ -136,6 +152,7 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimat
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
                     tension_grad = tension_derivative_with_reference_wrt_strain(X, X_nbr, R_u(j_spr,k_spr), k_u(j_spr,k_spr), leaflet, collagen_constitutive_circ); 
+                    tension = tension_with_reference(X, X_nbr, R_u(j_spr,k_spr), k_u(j_spr,k_spr), leaflet, collagen_constitutive_circ); 
 
                     n_valid_cross_circ = 0; 
 
@@ -156,6 +173,10 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimat
                     element_count_circ = element_count_circ + 1; 
                     if ~isnan(tension_grad)
                         sigma_circ(j,k) = sigma_circ(j,k) + tension_grad / (len_element_u_type_temp * thickness);
+                    end 
+                    
+                    if ~isnan(tension)
+                        stress_circ(j,k) = stress_circ(j,k) + tension / (len_element_u_type_temp * thickness);
                     end 
                     
                     if one_leaflet 
@@ -180,7 +201,8 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimat
 
             % average forces collected 
             if element_count_circ > 0
-                sigma_circ(j,k) = sigma_circ(j,k)/element_count_circ; 
+                sigma_circ(j,k)  = sigma_circ(j,k)/element_count_circ; 
+                stress_circ(j,k) = stress_circ(j,k)/element_count_circ; 
             end 
 
             element_count_rad = 0; 
@@ -198,6 +220,7 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimat
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
                     tension_grad = tension_derivative_with_reference_wrt_strain(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet, collagen_constitutive_rad); 
+                    tension = tension_with_reference(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet, collagen_constitutive_rad); 
 
                     n_valid_cross_rad = 0; 
 
@@ -219,6 +242,9 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimat
                     if ~isnan(tension_grad)
                         sigma_rad(j,k) = sigma_rad(j,k) + tension_grad / (len_element_v_type_temp * thickness);
                     end 
+                    if ~isnan(tension)
+                        stress_rad(j,k) = stress_rad(j,k) + tension / (len_element_v_type_temp * thickness);
+                    end 
                     
                     x_vals = [X(1), X_nbr(1)]; 
                     y_vals = [X(2), X_nbr(2)]; 
@@ -234,7 +260,8 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimat
 
             % average forces collected 
             if element_count_rad > 0
-                sigma_rad(j,k) = sigma_rad(j,k)/element_count_rad; 
+                sigma_rad(j,k)  = sigma_rad(j,k)/element_count_rad; 
+                stress_rad(j,k) = stress_rad(j,k)/element_count_rad; 
             end 
 
             
@@ -250,16 +277,36 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimat
     sigma_circ_mean = mean(sigma_circ_valid); 
     sigma_rad_mean  = mean(sigma_rad_valid); 
 
+    stress_circ_linear = stress_circ(:); 
+    stress_circ_valid  = stress_circ_linear(find(stress_circ_linear ~= 0)); 
+    
+    stress_rad_linear = stress_rad(:); 
+    stress_rad_valid  = stress_rad_linear(find(stress_rad_linear ~= 0)); 
+    
+    stress_circ_mean = mean(stress_circ_valid); 
+    stress_rad_mean  = mean(stress_rad_valid); 
+    
     if plots
         
-        if circ
-            sigma = sigma_circ; 
-        elseif rad 
-            sigma = sigma_rad; 
-        elseif ratio 
-            sigma = sigma_circ ./ sigma_rad; 
+        if plot_stress
+            if circ
+                sigma = stress_circ; 
+            elseif rad 
+                sigma = stress_rad; 
+            elseif ratio 
+                sigma = stress_circ ./ stress_rad; 
+            end 
+        else 
+            % tangent mod default 
+            if circ
+                sigma = sigma_circ; 
+            elseif rad 
+                sigma = sigma_rad; 
+            elseif ratio 
+                sigma = sigma_circ ./ sigma_rad; 
+            end 
         end 
-
+        
         if ratio 
             mean_ratio = 0; 
             valid_ratio = 0; 
@@ -349,7 +396,7 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimat
         comm_color_patch = true; 
         if (rad || ratio) && comm_color_patch
             
-            for j=(N_each * (1:3))
+            for j=(N_each * (1:N_leaflets))
                 for k=1:k_max
                     
                     if ~((sigma(j,k) == 0) || isnan(sigma(j,k)) || isinf(sigma(j,k)))
@@ -421,18 +468,18 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean fig]  = estimat
             if ratio 
                 tick_labels{n} = sprintf('%.0f', tmp); 
             else 
-                exponent_removed = 10^floor(log10(tick_max)); 
-                tick_labels{n} = sprintf('%.1f', tmp/exponent_removed); 
-                %tick_labels{n} = sprintf('%.1e', tmp); 
+%                 exponent_removed = 10^floor(log10(tick_max)); 
+%                 tick_labels{n} = sprintf('%.1f', tmp/exponent_removed); 
+                tick_labels{n} = sprintf('%.1e', tmp); 
             end 
         end 
         
-        colorbar_on = false; 
+        colorbar_on = true; 
         if colorbar_on
             colorbar('Ticks', tick_array, 'TickLabels', tick_labels);
         end 
         
-        colorbar_figure = true; 
+        colorbar_figure = false; 
         if colorbar_figure 
             fig_colorbar = figure; 
 

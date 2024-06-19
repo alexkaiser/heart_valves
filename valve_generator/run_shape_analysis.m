@@ -311,10 +311,24 @@ paper_table = true;
 
 if paper_table
    
+    % data is here 
+    src_dir = '~/mitral_fully_discrete/valve_generator/'; 
+    cd '/Users/alex/Dropbox/stanford/research_stanford/aortic_bicuspidization_2023'; 
+    
     table_1 = false; 
     table_2 = true; 
     
+    % plots diastolic stretches 
+    stretch_plots = false; 
+    
+    coaptation_analysis = true; 
+    
     if table_1
+        
+        to_stretch_plot = [2;6]; 
+        
+        to_coapt_analysis = [6];
+        
         names_struct(1).dir =  "aortic_22425104_384_40405e1_true_bicuspid_circ_2pt7_1pt1d_rad_1pt6_semifinal_1"; 
         names_struct(1).circ =  "2.8"; 
         names_struct(1).circ_over_d =  "1.1d"; 
@@ -359,7 +373,7 @@ if paper_table
         names_struct(6).circ =  "3.9"; 
         names_struct(6).circ_over_d =  "1.6d"; 
         names_struct(6).rad =  "1.7"; 
-        names_struct(6).comment = "At circ";
+        names_struct(6).comment = "At_circ";
         names_struct(6).frame_sys = 893; 
         names_struct(6).frame_dia = 775; 
 
@@ -381,30 +395,41 @@ if paper_table
     end 
     
     if table_2
+        
+        to_stretch_plot = [3]; 
+        
         names_struct(1).dir =  "aortic_22387241_384_8e666fd_true_bicuspid_circ_3pt9_1pt65d_rad_1pt7_semifinal_1"; 
         names_struct(1).comment = "Basic";
+        names_struct(6).circ_over_d =  "1.6d"; 
+        names_struct(6).rad =  "1.7"; 
         names_struct(1).frame_sys = 893; 
         names_struct(1).frame_dia = 775; 
 
         names_struct(2).dir =  "aortic_22596921_384_f0a4135_true_bicuspid_circ_3pt9_1pt6d_rad_1pt65_less_bowl_semifinal_1"; 
         names_struct(2).comment = "Less bowl";
+        names_struct(6).circ_over_d =  "1.6d"; 
+        names_struct(6).rad =  "1.7"; 
         names_struct(2).frame_sys = 891; 
         names_struct(2).frame_dia = 774; 
 
         names_struct(3).dir =  "aortic_23161126_384_69ce172_true_bicuspid_circ_4pt0_1pt6d_rad_1pt4_less_height_semifinal_2"; 
         names_struct(3).comment = "Less height";
+        names_struct(6).circ_over_d =  "1.6d"; 
+        names_struct(6).rad =  "1.4"; 
         names_struct(3).frame_sys = 891; 
         names_struct(3).frame_dia = 774; 
 
         names_struct(4).dir =  "aortic_22940401_384_12963f1_true_bicuspid_circ_4pt0_1pt6d_rad_1pt4_less_bowl_semifinal_1"; 
         names_struct(4).comment = "Less bowl, height";
+        names_struct(6).circ_over_d =  "1.6d"; 
+        names_struct(6).rad =  "1.4"; 
         names_struct(4).frame_sys = 893; 
         names_struct(4).frame_dia = 775; 
     end         
     
     
     % data_idx_to_output = [4,6,7,8]; 
-    % data_idx_to_output = 1:8; 
+    data_idx_to_output = 1:8; % [2,6]; 
     
     n_times = 2; 
     idx_frames = [775, 893]; 
@@ -419,7 +444,7 @@ if paper_table
     t_mid_flow = 1.5; 
     
     % diastolic only 
-    for data_idx = 1:length(names_struct) % data_idx_to_output 
+    for data_idx = data_idx_to_output % 1:length(names_struct) 
 
         dir = names_struct(data_idx).dir;  
 
@@ -456,6 +481,9 @@ if paper_table
         Eh_over_Gh = Eh ./ Gh;
         Eh_from_min_over_Gh = Eh_from_minimum ./ Gh;
 
+        coapt_plots = false; 
+        coapt_threshold = 0.1; 
+        [coapt_height, coapt_reserve_height, fig] = coaptation_analysis_aortic(leaflet_layer_3, coapt_threshold, coapt_plots); 
 
 
         % fprintf('%s & %s & %s & ', names_struct(data_idx).circ_over_d, names_struct(data_idx).circ, names_struct(data_idx).rad); 
@@ -467,19 +495,119 @@ if paper_table
             error('must pick table type')
         end 
 
-        fprintf('%.2f & %.2f & %.2f & %.2f & %.2f & %.2f & %.2f & %.2f & %.2f ', Gh(1), Gh_over_radius(1), min_height_center(1), Eh(1), Eh_from_minimum(1), ...
-                                        Eh_over_Gh(1), Eh_from_min_over_Gh(1), free_edge_length(1), free_edge_length_over_diameter(1)); 
+        fprintf('%.2f & %.2f & %.2f & %.2f & %.2f & %.2f & %.2f & %.2f & %.2f & %.2f & %.2f ', Gh(1), Gh_over_radius(1), min_height_center(1), Eh(1), Eh_from_minimum(1), ...
+                                        Eh_over_Gh(1), Eh_from_min_over_Gh(1), free_edge_length(1), free_edge_length_over_diameter(1), coapt_height, coapt_reserve_height); 
 
         fprintf('\\\\ \n'); 
         fprintf('\\hline \n'); 
 
+        if stretch_plots
+            
+            if ismember(data_idx, to_stretch_plot)
+            
+                fiber_output    = true; 
+                fiber_stride    = 8; 
+                stride_offset_j = 4; 
+
+                ratio = false; 
+                
+                circ  = true; 
+                rad   = false; 
+
+                az = 0; 
+                el = 60; 
+
+                min_plot_cap = 1.0; 
+                max_plot_cap = 1.2; 
+
+                fig = figure; 
+                set(fig, 'Renderer', 'Painters');
+
+                [~, ~, lambda_circ_mean, lambda_rad_mean, fig]  = compute_stretch_aortic_with_reference(valve_with_reference.leaflets(1), fig, fiber_stride, stride_offset_j, circ, rad, min_plot_cap, max_plot_cap);
+                view(az,el);
+
+                outname_circ = sprintf('circ_stretch_aortic_circ_%s_rad_%s_%s.eps', names_struct(data_idx).circ_over_d, names_struct(data_idx).rad, names_struct(data_idx).comment);                 
+                print(fig, '-depsc', outname_circ);
+                
+                fig = figure; 
+                plot_stress = true; 
+                max_plot_cap = 2e6; 
+                [~, ~, sigma_circ_mean, sigma_rad_mean, fig, stress_circ_mean, stress_rad_mean]  = estimate_tangent_modulus_aortic_with_reference(valve_with_reference.leaflets(1), valve_with_reference.normal_thickness, fig, fiber_stride, stride_offset_j, circ, rad, ratio, max_plot_cap, plot_stress);
+                view(az,el);
+                outname_circ = sprintf('circ_stress_aortic_circ_%s_rad_%s_%s.eps', names_struct(data_idx).circ_over_d, names_struct(data_idx).rad, names_struct(data_idx).comment);                 
+                print(fig, '-depsc', outname_circ);
+                
+                fig = figure; 
+                plot_stress = false; 
+                max_plot_cap = 1e8; 
+                [~, ~, sigma_circ_mean, sigma_rad_mean, fig, stress_circ_mean, stress_rad_mean]  = estimate_tangent_modulus_aortic_with_reference(valve_with_reference.leaflets(1), valve_with_reference.normal_thickness, fig, fiber_stride, stride_offset_j, circ, rad, ratio, max_plot_cap, plot_stress);
+                view(az,el);
+                outname_circ = sprintf('circ_tan_mod_aortic_circ_%s_rad_%s_%s.eps', names_struct(data_idx).circ_over_d, names_struct(data_idx).rad, names_struct(data_idx).comment);                 
+                print(fig, '-depsc', outname_circ);
+                
+                circ  = false; 
+                rad   = true; 
+                
+                fig = figure; 
+                set(fig, 'Renderer', 'Painters');
+                min_plot_cap = 1.0; 
+                max_plot_cap = 2.0; 
+                [lambda_circ, lambda_rad, lambda_circ_mean, lambda_rad_mean, fig]  = compute_stretch_aortic_with_reference(valve_with_reference.leaflets(1), fig, fiber_stride, stride_offset_j, circ, rad, min_plot_cap, max_plot_cap);
+                view(az,el);
+                outname_rad = sprintf('rad_stretch_aortic_circ_%s_rad_%s_%s.eps', names_struct(data_idx).circ_over_d, names_struct(data_idx).rad, names_struct(data_idx).comment);
+                print(fig, '-depsc', outname_rad);
+                
+                
+                fig = figure; 
+                plot_stress = true; 
+                max_plot_cap = 2e5; 
+                [~, ~, sigma_circ_mean, sigma_rad_mean, fig, stress_circ_mean, stress_rad_mean]  = estimate_tangent_modulus_aortic_with_reference(valve_with_reference.leaflets(1), valve_with_reference.normal_thickness, fig, fiber_stride, stride_offset_j, circ, rad, ratio, max_plot_cap, plot_stress);
+                view(az,el);
+                outname_rad = sprintf('rad_stress_aortic_circ_%s_rad_%s_%s.eps', names_struct(data_idx).circ_over_d, names_struct(data_idx).rad, names_struct(data_idx).comment);
+                print(fig, '-depsc', outname_rad);
+                
+                fig = figure; 
+                plot_stress = false; 
+                max_plot_cap = 1e7;                 
+                [~, ~, sigma_circ_mean, sigma_rad_mean, fig, stress_circ_mean, stress_rad_mean]  = estimate_tangent_modulus_aortic_with_reference(valve_with_reference.leaflets(1), valve_with_reference.normal_thickness, fig, fiber_stride, stride_offset_j, circ, rad, ratio, max_plot_cap, plot_stress);
+                view(az,el);
+                outname_rad = sprintf('rad_tan_mod_aortic_circ_%s_rad_%s_%s.eps', names_struct(data_idx).circ_over_d, names_struct(data_idx).rad, names_struct(data_idx).comment);
+                print(fig, '-depsc', outname_rad);
+                
+                sigma_circ_mean, 
+                sigma_rad_mean, 
+                stress_circ_mean, 
+                stress_rad_mean
+                
+                % close all 
+            end 
+        end 
+        
+        if coaptation_analysis
+            
+            % third layer is ventricular side
+            if ismember(data_idx, to_stretch_plot)
+                coapt_threshold = .1; 
+                fig = figure; 
+                plots = true; 
+                az = 0; 
+                el = 60; 
+                [coapt_height, coapt_reserve_height, fig] = coaptation_analysis_aortic(leaflet_layer_3, coapt_threshold, plots, fig); 
+                coapt_height
+                coapt_reserve_height
+                view(az,el);
+                outname = sprintf('coaptation_aortic_circ_%s_rad_%s_%s.eps', names_struct(data_idx).circ_over_d, names_struct(data_idx).rad, names_struct(data_idx).comment);                 
+                print(fig, '-depsc', outname);
+            end 
+        end 
+        
 
         cd .. 
 
     end     
     
     % systolic only 
-    for data_idx = 1:length(names_struct) % data_idx_to_output  
+    for data_idx = data_idx_to_output % 1:length(names_struct)   
 
         dir = names_struct(data_idx).dir;  
 
@@ -536,7 +664,7 @@ if paper_table
 
     end 
     
-    
+    cd(src_dir); 
 end 
 
 
