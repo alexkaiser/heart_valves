@@ -54,11 +54,11 @@ SESSION_NAME_PARAVIEW="~/copies_scripts/bicuspid_slices_paraview.py"
 cd .. 
 python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $TOTAL_TASKS
 
-SESSION_NAME_PARAVIEW_PAPER="~/copies_scripts/bicuspid_slices_paraview_paper.py"
-python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_PAPER $TOTAL_TASKS
+# SESSION_NAME_PARAVIEW_PAPER="~/copies_scripts/bicuspid_slices_paraview_paper.py"
+# python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_PAPER $TOTAL_TASKS
 
-SESSION_NAME_PARAVIEW_TOP="~/copies_scripts/top_view_valve_0_paper.py"
-python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_TOP $TOTAL_TASKS
+# SESSION_NAME_PARAVIEW_TOP="~/copies_scripts/top_view_valve_0_paper.py"
+# python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_TOP $TOTAL_TASKS
 
-SESSION_NAME_PARAVIEW_VERTICAL="~/copies_scripts/bicuspid_slices_paraview_vertical.py"
-python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_VERTICAL $TOTAL_TASKS
+# SESSION_NAME_PARAVIEW_VERTICAL="~/copies_scripts/bicuspid_slices_paraview_vertical.py"
+# python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_VERTICAL $TOTAL_TASKS
