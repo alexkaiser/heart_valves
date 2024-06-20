@@ -258,13 +258,13 @@ if valve.in_heart
         
         dx = distance_scaling_fluid * 0.1 * (192/N);
         NZ = 96 * (N/192); 
-        valve.z_min_cylinder = -3 * distance_scaling; 
+        valve.z_min_cylinder = -3 * distance_scaling_fluid; 
         valve.z_max_cylinder = valve.z_min_cylinder + dx * (NZ - 1); 
         
         % update r_of_z for extender 
         
-        extender_extra_rad = 0.5 * distance_scaling; 
-        extender_length = 1.5 * distance_scaling; 
+        extender_extra_rad = 0.5 * distance_scaling_fluid; 
+        extender_length = 1.5 * distance_scaling_fluid; 
         
         valve.skeleton.r_of_z = @(z) valve.skeleton.r .* ones(size(z)) + ...
                                      (z <= (valve.z_min_cylinder + extender_length)) .* ... % mask for bottom portion 
