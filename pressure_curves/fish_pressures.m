@@ -83,6 +83,7 @@ bump_radius = .015;
 
 t = 0:dt:cycle_length; 
 vals_aorta_series = Series_aorta(t); 
+vals_ventricle_series = Series_ventricle(t); 
 
 min_pressure_aorta = min(vals_aorta_series)
 max_pressure_aorta = max(vals_aorta_series)
@@ -96,6 +97,18 @@ dp_dt = (vals_plus_one - vals_minus_one)/(2*dt);
 
 min_dp_dt_aorta = min(dp_dt)
 max_dp_dt_aorta = max(dp_dt)
+
+pressure_diff = vals_aorta_series - vals_ventricle_series; 
+figure; 
+plot(t, pressure_diff); 
+
+pressure_diff_pos = pressure_diff((pressure_diff > 0)); 
+
+min_fwd_pressure = min(pressure_diff_pos)
+max_fwd_pressure = max(pressure_diff_pos)
+mean_fwd_pressure = mean(pressure_diff_pos)
+
+
 
 % fig = figure; 
 % plot(t, dp_dt, 'k'); 

@@ -150,8 +150,8 @@ valve.extra_stretch_radial_dirichlet_free_edge = 1.0 * valve.strain_rad + 1.0;
 % 8.3326e-04 is a good number here
 valve.tol_global = 1e-3;
 
-
-valve.p_physical = 2 * MMHG_TO_CGS; 
+% mean fwd pressure diff 
+valve.p_physical = 0.9250 * MMHG_TO_CGS; 
 
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
