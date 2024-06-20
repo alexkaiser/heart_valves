@@ -77,8 +77,6 @@ valve.variety = variety;
 valve.in_heart = true; 
 graft_tester_geometry = true; 
 
-% proportional takedown from 25 mm diameter valve 
-distance_scaling = 1e-2; 
 
 % name 
 if valve.in_heart
@@ -110,9 +108,11 @@ valve.num_copies = 3;
 
 % valve.copy_spring_weights = [1/2 1/4 1/4];
 
-valve.normal_thicken = true; 
-% nominal aortic valve thickness
-valve.normal_thickness = 0.044 * distance_scaling; 
+
+% respace on annulus in 3d 
+% if false, spaced wrt theta 
+valve.annulus_points_even_spacing = true; 
+
 
 % add flags to spring files 
 % to view and output with a stride 
@@ -175,15 +175,25 @@ valve.L = 2.25 / 100;
 % valve.skeleton = get_skeleton_fish(); 
 
 % 300 microns 
-r_temp = 0.03/2; 
+r_temp = 363e-4 / 2; 
 hc = 0.1 * r_temp; 
-h1 = 1.4 * r_temp - hc; 
+h1 = 285e-4 - hc; 
 valve.skeleton = get_skeleton_aortic_generic(r_temp, h1, hc); 
 valve.r = valve.skeleton.r; 
 % 
 valve.place_cylinder = true; 
 valve.z_max_cylinder = 1.4 * valve.r; 
 valve.z_min_cylinder = 0.0; 
+
+
+% proportional takedown from 25 mm diameter valve 
+% distance_scaling = 1e-2; 
+distance_scaling = (valve.r * 2) / 2.5; 
+
+valve.normal_thicken = true; 
+% nominal aortic valve thickness
+valve.normal_thickness = 0.044 * distance_scaling; 
+
 
 
 valve.n_layers_cylinder = 3; 
@@ -210,10 +220,10 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 2.95;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.95;  % radial
+tension_coeffs.c_circ_dec       = 5;  % circumferential 
+tension_coeffs.c_rad_dec        = 2;  % radial
 
-tension_coeffs.c_circ_dec_annulus = 1.8;        
+tension_coeffs.c_circ_dec_annulus = 1.31;
 
 % tension_coeffs.c_circ_dec_free_edge = 5.0;
 tension_coeffs.c_circ_dec_free_edge_percentage = 0.0;
