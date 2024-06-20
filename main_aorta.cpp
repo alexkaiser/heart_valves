@@ -395,6 +395,7 @@ int main(int argc, char* argv[])
             else {
                 fourier_coeffs_name_rv = "fourier_coeffs_ventricle.txt"; 
             }
+            pout << "attempting to build series with from file: " << fourier_coeffs_name_rv << "\n"; 
             fourier_series_data *fourier_series_ventricle = new fourier_series_data(fourier_coeffs_name_rv.c_str(), dt);
 
             // boundary vertex files 
@@ -450,7 +451,7 @@ int main(int argc, char* argv[])
 
             bool rcr_bcs_on = true;
 
-            bool ventricle_0D_on = input_db->getBoolWithDefault("VENTRICLE_0D_ON", true);
+            bool ventricle_0D_on = input_db->getBoolWithDefault("VENTRICLE_0D_ON", false);
 
             // start with a linear ramp up in pressure 
             bool P_initial_aorta_equal_to_ventricle = true; 

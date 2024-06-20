@@ -257,7 +257,7 @@ if valve.in_heart
         distance_scaling_fluid = 1e-2; 
         
         dx = distance_scaling_fluid * 0.1 * (192/N);
-        NZ = 96 * (N/192); 
+        NZ = 128 * (N/192); 
         valve.z_min_cylinder = -3 * distance_scaling_fluid; 
         valve.z_max_cylinder = valve.z_min_cylinder + dx * (NZ - 1); 
         

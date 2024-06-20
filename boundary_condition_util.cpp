@@ -671,6 +671,7 @@ fourier_series_data::fourier_series_data(string file_name, double dt_input){
     f.open(file_name.c_str(), ios::in);
     
     if (!f.is_open()){
+        pout << "file_name.c_str() = " << file_name.c_str() << "\n"; 
         TBOX_ERROR("Failed to open file in Fourier series intialization\n"); 
     } 
     
