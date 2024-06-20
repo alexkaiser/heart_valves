@@ -456,7 +456,7 @@ int main(int argc, char* argv[])
             bool P_initial_aorta_equal_to_ventricle = true; 
             // double rcr_on_time = 0.2; 
 
-            bool graft_version = false; 
+            bool graft_version = input_db->getBoolWithDefault("GRAFT_VERSION", false); 
 
             int ventricle_axis; 
             int ventricle_side; 
