@@ -254,8 +254,10 @@ if valve.in_heart
 
     if graft_tester_geometry        
     
-        dx = distance_scaling * 0.1 * (192/N);
-        NZ = 90 * (N/192); 
+        distance_scaling_fluid = 1e-2; 
+        
+        dx = distance_scaling_fluid * 0.1 * (192/N);
+        NZ = 96 * (N/192); 
         valve.z_min_cylinder = -3 * distance_scaling; 
         valve.z_max_cylinder = valve.z_min_cylinder + dx * (NZ - 1); 
         

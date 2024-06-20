@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=12
+#SBATCH --ntasks-per-node=24
 #SBATCH --time=24:00:00
 #SBATCH --mem=185GB
 #SBATCH --job-name=aortic_1
@@ -20,7 +20,7 @@ TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_f50d529_fish_initial_tube
+RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_a30b675_fish_initial_tube_c_1pt57_r_pt017
 mkdir $RUNDIR
 
 # set up run info 

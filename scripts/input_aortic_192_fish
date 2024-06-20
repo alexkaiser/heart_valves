@@ -68,12 +68,12 @@ DX = 0.1 * DISTANCE_SCALING
 EXTRA_BDRY = 1.0e-6 * DISTANCE_SCALING
 
 // number points 
-NX = 48
-NY = 48
-NZ = 90
+NX = 64
+NY = 64
+NZ = 96
 
-X_WIDTH = 48 * DX 
-Y_WIDTH = 48 * DX 
+X_WIDTH = NX * DX 
+Y_WIDTH = NY * DX 
 
 X_LOW = -X_WIDTH / 2.0
 Y_LOW = -Y_WIDTH / 2.0
