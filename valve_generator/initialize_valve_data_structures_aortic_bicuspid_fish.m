@@ -194,7 +194,7 @@ valve.normal_thicken = true;
 % nominal aortic valve thickness
 valve.normal_thickness = 0.044 * distance_scaling; 
 
-
+valve.extrusion_out = true; 
 
 valve.n_layers_cylinder = 3; 
 
@@ -306,6 +306,10 @@ valve.k_rel_unscaled = valve.ds * 1e-3;
 
 valve.leaflets(1) = leaflet; 
     
+if isfield(valve, 'extrusion_out') 
+    valve.leaflets(1).extrusion_out = valve.extrusion_out; 
+end
+
 
 % viscoelastic damping coefficients springs 
 % eta, damping coeff here, is multiplied by the coefficient on the 
