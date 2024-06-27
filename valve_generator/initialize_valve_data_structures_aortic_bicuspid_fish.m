@@ -194,7 +194,7 @@ valve.normal_thicken = true;
 % nominal aortic valve thickness
 valve.normal_thickness = 0.044 * distance_scaling; 
 
-valve.extrusion_out = true; 
+valve.extrusion_out = false; 
 
 valve.n_layers_cylinder = 3; 
 

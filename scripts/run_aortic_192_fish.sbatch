@@ -20,7 +20,7 @@ TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_a30b675_fish_initial_tube_c_1pt57_r_pt017
+RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_a30b675_fish_initial_tube_c_1pt57_r_pt017_stiffness_down_extrude_out
 mkdir $RUNDIR
 
 # set up run info 
@@ -43,7 +43,7 @@ cp fourier_coeffs_ventricle_fish.txt         $RUNDIR
 cp cylinder_bdry_*                           $RUNDIR
 cp watchdog_job_restart.py                   $RUNDIR
 cp kill_all_mpi.sh                           $RUNDIR
-cp run_aortic_N192.sbatch                    $RUNDIR
+cp run_aortic_N192_fish.sbatch               $RUNDIR
 cp run_parallel_movie.py                     $RUNDIR
 
 # go to the run directory before running anything 

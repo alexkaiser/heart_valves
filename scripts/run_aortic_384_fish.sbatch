@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=12
-#SBATCH --time=24:00:00
+#SBATCH --ntasks-per-node=24
+#SBATCH --time=168:00:00
 #SBATCH --mem=185GB
 #SBATCH --job-name=aortic_1
 #SBATCH --mail-user=adkaiser@gmail.com
@@ -20,7 +20,7 @@ TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_384_f50d529_fish_initial_tube
+RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_384_
 mkdir $RUNDIR
 
 # set up run info 
@@ -60,7 +60,7 @@ python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS"
 # load stuff for movie making 
 source ~/.bash_profile
 
-visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py $TOTAL_TASKS $TOTAL_TASKS
+# visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py $TOTAL_TASKS $TOTAL_TASKS
 
 source ~/.bash_profile
 module load python/3.9.0
