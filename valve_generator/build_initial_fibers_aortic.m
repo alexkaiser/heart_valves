@@ -45,7 +45,7 @@ else
 end 
 X = NaN * zeros(3,j_max,k_max); 
 
-debug = true; 
+debug = false; 
 
 free_edge_smooth = false; 
 
@@ -166,7 +166,7 @@ else
             
         end     
         
-        debug_spacing = true; 
+        debug_spacing = false; 
         if debug_spacing
             figure; 
 

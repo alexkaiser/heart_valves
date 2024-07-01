@@ -35,8 +35,8 @@ function [leaflet pass err any_passed] = solve_valve_pressure_auto_continuation(
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-initial_p_plot = true; 
-plots = true; 
+initial_p_plot = false; 
+plots = false; 
 
 if ~exist('goal_first', 'var')
     goal_first = true; 
