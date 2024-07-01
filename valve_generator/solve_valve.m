@@ -74,7 +74,7 @@ for i=1:length(valve.leaflets)
     
     p_easy = 0; 
     p_goal    = leaflet.p_0; 
-    goal_first = false; 
+    goal_first = true; 
     
     [valve.leaflets(i) pass err] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_continuations, p_easy, p_goal, max_consecutive_fails, max_total_fails, goal_first); 
 
