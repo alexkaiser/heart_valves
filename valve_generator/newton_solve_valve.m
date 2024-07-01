@@ -160,8 +160,8 @@ while true
         n_extra_it = n_extra_it + 1; 
         
         if n_extra_it > max_extra_iterations
-            fprintf(' -- Newton: Max extra iterations reached'); 
-            error_out = true; 
+            fprintf(' -- Newton: Max extra iterations reached\n'); 
+            error_out = false;
             break; 
         end 
         
