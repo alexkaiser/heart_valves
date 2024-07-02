@@ -2124,8 +2124,8 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
     
     cylinder_bdry_file = true; 
     if cylinder_bdry_file
-        f_cylinder_min = fopen('cylinder_bdry_min.vertex', 'w'); 
-        f_cylinder_max = fopen('cylinder_bdry_max.vertex', 'w'); 
+        f_cylinder_min = fopen(sprintf('cylinder_bdry_min_%d.vertex', leaflet.N), 'w'); 
+        f_cylinder_max = fopen(sprintf('cylinder_bdry_max_%d.vertex', leaflet.N), 'w'); 
         fprintf(f_cylinder_min, '%d\n', N_theta); 
         fprintf(f_cylinder_max, '%d\n', N_theta); 
     end 

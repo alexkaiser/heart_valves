@@ -34,8 +34,8 @@ RCR_ON_TIME = CYCLE_DURATION / 4.0
 GRAFT_VERSION = TRUE
 
 
-BOUNDARY_FILENAME_VENTRICLE = "cylinder_bdry_min.vertex"
-BOUNDARY_FILENAME_AORTA = "cylinder_bdry_max.vertex"
+BOUNDARY_FILENAME_VENTRICLE = "cylinder_bdry_min_192.vertex"
+BOUNDARY_FILENAME_AORTA = "cylinder_bdry_max_192.vertex"
 
 VESSEL_FILENAME = "aortic_fish_192_cylinder.vertex"
 
