@@ -546,8 +546,9 @@ function params = output_to_ibamr_format(valve)
         
         if isfield(valve, 'place_cylinder') && valve.place_cylinder
             
+            params_cylinder.base_name     = strcat(base_name, '_cylinder'); 
             params_cylinder.vertex        = fopen(strcat(base_name, '_cylinder.vertex'), 'w'); 
-            params_cylinder.spring        = fopen(strcat(base_name, '_cylinder.spring'), 'w'); 
+            params_cylinder.spring        = fopen(strcat(base_name, '_cylind er.spring'), 'w'); 
             params_cylinder.target        = fopen(strcat(base_name, '_cylinder.target'), 'w'); 
             params_cylinder.total_vertices  = 0; 
             params_cylinder.total_springs   = 0; 
@@ -2130,6 +2131,12 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
         fprintf(f_cylinder_max, '%d\n', N_theta); 
     end 
     
+    cylinder_cell_file = true; 
+    if cylinder_cell_file 
+        cell_file_name = strcat(params.base_name, '_cells.csv'); 
+        cell_file = fopen(cell_file_name, 'w'); 
+    end 
+    
     % bottom leaflet ring
     X = leaflet.X; 
     j_max = leaflet.j_max; 
@@ -2325,6 +2332,55 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
         end 
     end 
 
+    if cylinder_cell_file
+        % cylinder cells file 
+        cell_indices = zeros(8,1); 
+
+        for z_idx=1:(N_z-1) % moving up from current index in cells, skip last row 
+            for r_idx=1:(N_r-1) % moving up from current index in cells, skip last row 
+                for theta_idx=1:N_theta % theta gets periodic wrap  
+
+
+                    if theta_idx < N_theta
+                        theta_nbr_idx = theta_idx + 1; 
+                    elseif theta_idx == N_theta
+                        % periodic wrap 
+                        theta_nbr_idx = 1; 
+                    else 
+                        error('should be impossible')
+                    end 
+
+                    cell_indices(1) = indices_global(theta_idx    , r_idx    , z_idx    );
+                    cell_indices(2) = indices_global(theta_nbr_idx, r_idx    , z_idx    );
+                    cell_indices(3) = indices_global(theta_nbr_idx, r_idx + 1, z_idx    );
+                    cell_indices(4) = indices_global(theta_idx    , r_idx + 1, z_idx    );
+                    cell_indices(5) = indices_global(theta_idx    , r_idx    , z_idx + 1);
+                    cell_indices(6) = indices_global(theta_nbr_idx, r_idx    , z_idx + 1);
+                    cell_indices(7) = indices_global(theta_nbr_idx, r_idx + 1, z_idx + 1);
+                    cell_indices(8) = indices_global(theta_idx    , r_idx + 1, z_idx + 1);
+
+
+                    if ~any(isnan(cell_indices))
+
+                        fprintf(cell_file, '8 %d %d %d %d %d %d %d %d\n', ...
+                            cell_indices(1), cell_indices(2), cell_indices(3), cell_indices(4), ...
+                            cell_indices(5), cell_indices(6), cell_indices(7), cell_indices(8));                 
+%                         for cell_idx = 1:8
+%                             fprintf(cell_file, '%d  ', cell_indices(cell_idx)); 
+%                         end 
+                        fprintf(cell_file, '\n'); 
+                    else 
+                        warning("skipping cell with index (%d, %d, %d) and global idx %d\n", theta_idx, r_idx, z_idx, cell_indices(1)); 
+                    end 
+
+                end            
+            end 
+        end 
+    
+        fclose(cell_file); 
+        
+    end 
+    
 end 
 
 
