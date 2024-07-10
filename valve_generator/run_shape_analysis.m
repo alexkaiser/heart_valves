@@ -315,8 +315,8 @@ if paper_table
     src_dir = '~/mitral_fully_discrete/valve_generator/'; 
     cd '/Users/alex/Dropbox/stanford/research_stanford/aortic_bicuspidization_2023'; 
     
-    table_1 = false; 
-    table_2 = true; 
+    table_1 = true; 
+    table_2 = false; 
     
     % plots diastolic stretches 
     stretch_plots = false; 
@@ -429,7 +429,7 @@ if paper_table
     
     
     % data_idx_to_output = [4,6,7,8]; 
-    data_idx_to_output = 1:8; % [2,6]; 
+    data_idx_to_output = 2; % 1:8; % [2,6]; 
     
     n_times = 2; 
     idx_frames = [775, 893]; 
@@ -482,9 +482,16 @@ if paper_table
         Eh_from_min_over_Gh = Eh_from_minimum ./ Gh;
 
         coapt_plots = false; 
-        coapt_threshold = 0.1; 
-        [coapt_height, coapt_reserve_height, fig] = coaptation_analysis_aortic(leaflet_layer_3, coapt_threshold, coapt_plots); 
+        coapt_threshold = 0.2; 
+        [coapt_height, coapt_reserve_height, belly_height, coapt_min, coapt_max, fig] = coaptation_analysis_aortic(leaflet_layer_3, coapt_threshold, coapt_plots); 
 
+        r_vbr = leaflet_layer_3.skeleton.r; 
+        r_ic  = leaflet_layer_3.skeleton.r; 
+        h     = leaflet_layer_3.skeleton.normal_height;   
+        x = h - coapt_max; 
+        y = coapt_min; 
+        
+        % eval_aortic_formulas(r_vbr, r_ic, h, belly_height, coapt_reserve_height, Gh(1), Eh(1), free_edge_length(1)/2, x, y); 
 
         % fprintf('%s & %s & %s & ', names_struct(data_idx).circ_over_d, names_struct(data_idx).circ, names_struct(data_idx).rad); 
         if table_1
@@ -587,12 +594,11 @@ if paper_table
             
             % third layer is ventricular side
             if ismember(data_idx, to_stretch_plot)
-                coapt_threshold = .1; 
                 fig = figure; 
                 plots = true; 
                 az = 0; 
                 el = 60; 
-                [coapt_height, coapt_reserve_height, fig] = coaptation_analysis_aortic(leaflet_layer_3, coapt_threshold, plots, fig); 
+                [coapt_height, coapt_reserve_height, belly_height, coapt_min, coapt_max, fig] = coaptation_analysis_aortic(leaflet_layer_3, coapt_threshold, plots, fig); 
                 coapt_height
                 coapt_reserve_height
                 view(az,el);

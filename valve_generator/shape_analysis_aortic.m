@@ -151,7 +151,7 @@ conv_hull_idx = boundary(x_component_norm_inverted_vector, y_component_norm_inve
 % if exist('debug_plots', 'var') && debug_plots
 %     figure; 
 %     plot(x_component_norm_inverted_vector, y_component_norm_inverted_vector, 'b*')
-%     hold on 
+%     hold on           
 %     plot(x_component_norm_inverted_vector(conv_hull_idx), y_component_norm_inverted_vector(conv_hull_idx), 'r-')
 % end 
 
