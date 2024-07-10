@@ -21,14 +21,14 @@ def convert_csv(basename, frame_number, extension_in='.vtu', extension_out='.csv
 if __name__ == '__main__':
 
 
-    basename = "aortic_no_partition_"
+    # basename = "aortic_no_partition_"
 
-    if '_192_' in os.getcwd(): 
-        resolution_string = '192'
-    if '_384_' in os.getcwd(): 
-        resolution_string = '384'
+    # if '_192_' in os.getcwd(): 
+    #     resolution_string = '192'
+    # if '_384_' in os.getcwd(): 
+    #     resolution_string = '384'
 
-    basename += resolution_string
+    # basename += resolution_string
 
     # first make sure there is a times file 
     if not os.path.isfile('times.txt'):
@@ -42,13 +42,20 @@ if __name__ == '__main__':
 
     frame_number = 444 
 
-    # convert_csv(basename, frame_number)
+    lag_name_base_to_check = ['aortic']
 
-    pool = multiprocessing.Pool() #use all available cores, otherwise specify the number you want as an argument
-    for i in range(nsteps):
-        pool.apply_async(convert_csv, args=(basename, i))
-    pool.close()
-    pool.join()
+    for lag_file in os.listdir('..'):
+        for lag_base in lag_name_base_to_check: 
+            if lag_file.startswith(lag_base) and lag_file.endswith('.vertex'):
+
+                basename = lag_file.rsplit('.', 1)[0]
+                # convert_csv(basename, frame_number)
+
+                pool = multiprocessing.Pool() #use all available cores, otherwise specify the number you want as an argument
+                for i in range(nsteps):
+                    pool.apply_async(convert_csv, args=(basename, i))
+                pool.close()
+                pool.join()
 
 
 

@@ -8,9 +8,31 @@ import glob
 
 def convert_csv(basename, suffix='_faces', vertex_ext='_vertices.csv', cells_ext='_cells.csv', ext_out='.stl'):
 
-    vertices = np.loadtxt(basename + vertex_ext)
+    print("processing basename = ", basename)
 
-    cells = np.loadtxt(basename + cells_ext, dtype=int)
+    print("reading vertices file: ", basename + vertex_ext)
+    try: 
+        vertices = np.loadtxt(basename + vertex_ext)
+    except:
+        vertices = np.loadtxt(basename + vertex_ext, delimiter=',')
+
+    basename_no_frame = basename[:-4]
+
+    # make sure what was stripped is actually numeric 
+    frame_number = basename[-4:]
+    assert frame_number.isnumeric()
+
+    print("reading cells file: ", basename_no_frame + cells_ext)
+
+    cell_name = basename_no_frame + cells_ext
+
+    if not os.path.isfile(cell_name):
+        if os.path.isfile('../' + cell_name):
+            cell_name = '../' + cell_name
+        else:
+            raise FileNotFoundError(cell_name)
+
+    cells = np.loadtxt(cell_name, dtype=int)
 
     # print("vertices = ", vertices)
     # print("cells = ", cells)
@@ -44,8 +66,46 @@ if __name__ == '__main__':
 
 
     run_all = True 
-
     if run_all:
+        lag_name_base_to_check = ['aortic']
+
+        for lag_base in lag_name_base_to_check: 
+
+            suffix='_faces'
+            vertex_ext = '_vertices.csv'
+            extension_out = '.vtu'
+
+            file_list = glob.glob(lag_base + '*' + vertex_ext)
+            print("lag_base = ", lag_base)
+            print("file_list = ", file_list)
+
+            for name_full in file_list:
+                if not 'cylinder' in name_full:
+                    basename = name_full.rsplit(vertex_ext)[0]
+                    convert_csv(basename, suffix, vertex_ext=vertex_ext, ext_out=extension_out)                    
+
+    run_cylinder = True
+    if run_cylinder:
+        lag_base = 'cylinder'
+
+        suffix='_faces'
+        vertex_ext = '.csv'
+        extension_out = '.vtu'
+
+        file_list = glob.glob('*' + lag_base + '*' + vertex_ext)
+        print("file_list = ", file_list)
+
+        for name_full in file_list:
+            try:
+                basename = name_full.rsplit(vertex_ext)[0]
+                convert_csv(basename, suffix, vertex_ext=vertex_ext, ext_out=extension_out)                    
+            except FileNotFoundError:
+                print("FileNotFoundError in cylinder, proceeding")
+                break 
+
+
+    run_basic = False
+    if run_basic:
 
         basename_no_frame = 'aortic_no_partition_384'
         suffix='_faces'
@@ -60,8 +120,10 @@ if __name__ == '__main__':
             convert_csv(basename, suffix, vertex_ext=vertex_ext, ext_out=extension_out)
 
 
-    local_example = False 
 
+
+
+    local_example = False 
     if local_example:
 
         # dir_list = ["aortic_14234920_384_a75f53c_true_bicuspid_circ_2pt8_1pt1d_rad_1pt4_new_initial_cond", 
