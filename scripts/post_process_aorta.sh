@@ -16,6 +16,16 @@ module load openmpi/2.0.2
 source ~/.bash_profile
 
 module load python/3.9.0
+module load matlab/R2017b
+
+# generate bc data 
+if [ -e bc_data.mat ]
+then
+    echo "ok"
+else
+    matlab -nodesktop -nodisplay -r 'addpath ~/valve_generator; bc_data; exit;'
+fi
+
 
 # change dir even if not needed 
 cd viz_IB3d_tree_cycle_256 
@@ -39,26 +49,28 @@ python3 ~/copies_scripts/fix_pvd_files.py
 
 python3 ~/copies_scripts/convert_vtu_vertices_to_csv.py
 
-module load matlab/R2017b
+cp ../bc_data.mat . 
 cp ../aortic_no_partition*final_data.mat . 
 matlab -nodesktop -nodisplay -r 'addpath ~/valve_generator; generate_cells_file; "matlab generate cells complete"; exit;'
 
 python3 ~/copies_scripts/convert_csv_with_cells.py
 
+matlab -nodesktop -nodisplay -r 'addpath ~/valve_generator; run_shape_analysis_local; exit;'
 
-SESSION_NAME_PARAVIEW="~/copies_scripts/bicuspid_slices_paraview.py"
 # SESSION_NAME_PARAVIEW="~/copies_scripts/bicuspid_slices_paraview_paper.py"
 
 # renders movie 
 # assumes located in main sim directory 
 cd .. 
-python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $TOTAL_TASKS
+
+# SESSION_NAME_PARAVIEW="~/copies_scripts/bicuspid_slices_paraview.py"
+# python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $TOTAL_TASKS
 
 # SESSION_NAME_PARAVIEW_PAPER="~/copies_scripts/bicuspid_slices_paraview_paper.py"
 # python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_PAPER $TOTAL_TASKS
 
-# SESSION_NAME_PARAVIEW_TOP="~/copies_scripts/top_view_valve_0_paper.py"
-# python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_TOP $TOTAL_TASKS
+SESSION_NAME_PARAVIEW_TOP="~/copies_scripts/top_view_valve_0_paper.py"
+python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_TOP $TOTAL_TASKS
 
-# SESSION_NAME_PARAVIEW_VERTICAL="~/copies_scripts/bicuspid_slices_paraview_vertical.py"
-# python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_VERTICAL $TOTAL_TASKS
+SESSION_NAME_PARAVIEW_VERTICAL="~/copies_scripts/bicuspid_slices_paraview_vertical.py"
+python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_VERTICAL $TOTAL_TASKS
