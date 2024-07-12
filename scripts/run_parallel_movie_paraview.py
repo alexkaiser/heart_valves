@@ -3,12 +3,12 @@ from __future__ import print_function
 import os, sys, subprocess, time
 
 
-def run_command_parallel(call_str_base, n_procs):
+def run_command_parallel(call_str_base, n_procs, arg_extra):
 
     processes = []
 
     for i in range(n_procs):
-        call_str = call_str_base + ' ' + str(n_procs) + ' ' + str(i)
+        call_str = call_str_base + ' ' + str(n_procs) + ' ' + str(i) + ' ' + str(arg_extra) 
 
         print ("call str with n_procs = ", n_procs, " proc_num = ", i, "call_str = ", call_str)
 
@@ -67,6 +67,16 @@ if __name__ == '__main__':
         raise ValueError("Must specify n_procs")
     n_procs = int(sys.argv[2])
 
+    # default render movie 
+    render = True 
+
+    if len(sys.argv) >= 4:
+        arg_extra = sys.argv[2]        
+        # render off for alternative sizing 
+        render = False 
+    else: 
+        arg_extra = ""
+
     if ('particle' in session_file_name) or ('pathline' in session_file_name):
         base_name += "_particles"
     else:
@@ -81,6 +91,7 @@ if __name__ == '__main__':
 
     if 'vertical' in session_file_name:
         base_name += '_vertical'
+
 
     if os.path.isfile('done.txt'):
         
@@ -98,32 +109,32 @@ if __name__ == '__main__':
 
                 call_str_base = "pvbatch " + session_file_name + " " + base_name + " "
                 print ("call_str_base = ", call_str_base )
-                run_command_parallel(call_str_base, n_procs)
+                run_command_parallel(call_str_base, n_procs, arg_extra)
+
+                if render: 
+                    # ffmpeg from here so variables are all in place
+                    movie_string = 'ffmpeg -y -framerate 60 -i '
+                    movie_string += base_name
+                    movie_string += '%4d.jpeg -vf scale=1920:-2 -r 60 -c:v libx264 -preset veryslow -g 3 -crf 18 '
+                    movie_string += base_name + '.mp4'
+
+                    code = subprocess.call(movie_string, shell=True)
+                    if code is None:
+                        print ('something wrong in movie make, call returned prematurely')
 
 
-                # ffmpeg from here so variables are all in place
-                movie_string = 'ffmpeg -y -framerate 60 -i '
-                movie_string += base_name
-                movie_string += '%4d.jpeg -vf scale=1920:-2 -r 60 -c:v libx264 -preset veryslow -g 3 -crf 18 '
-                movie_string += base_name + '.mp4'
+                    # # reduce by 10x
+                    # # 60 input, 60 output is 10x slow motion
+                    # # 600 input, 60 output is real time 
 
-                code = subprocess.call(movie_string, shell=True)
-                if code is None:
-                    print ('something wrong in movie make, call returned prematurely')
+                    movie_string = 'ffmpeg -y -framerate 600 -i '
+                    movie_string += base_name
+                    movie_string += '%4d.jpeg -vf scale=1920:-2 -r 60 -c:v libx264 -preset veryslow -g 3 -crf 18 '
+                    movie_string += base_name + '_real_time.mp4'
 
-
-                # # reduce by 10x
-                # # 60 input, 60 output is 10x slow motion
-                # # 600 input, 60 output is real time 
-
-                movie_string = 'ffmpeg -y -framerate 600 -i '
-                movie_string += base_name
-                movie_string += '%4d.jpeg -vf scale=1920:-2 -r 60 -c:v libx264 -preset veryslow -g 3 -crf 18 '
-                movie_string += base_name + '_real_time.mp4'
-
-                code = subprocess.call(movie_string, shell=True)
-                if code is None:
-                    print ('something wrong in movie make, call returned prematurely')
+                    code = subprocess.call(movie_string, shell=True)
+                    if code is None:
+                        print ('something wrong in movie make, call returned prematurely')
 
     else:
         print("could not find done.txt")

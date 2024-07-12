@@ -59,13 +59,10 @@ def convert_csv(basename, suffix='_faces', vertex_ext='_vertices.csv', cells_ext
         mesh.save(outname)
 
 
-
-
-
 if __name__ == '__main__':
 
 
-    run_all = True 
+    run_all = False 
     if run_all:
         lag_name_base_to_check = ['aortic']
 
@@ -80,7 +77,7 @@ if __name__ == '__main__':
             print("file_list = ", file_list)
 
             for name_full in file_list:
-                if not 'cylinder' in name_full:
+                if (not 'cylinder' in name_full) and (not 'cells' in name_full):
                     basename = name_full.rsplit(vertex_ext)[0]
                     convert_csv(basename, suffix, vertex_ext=vertex_ext, ext_out=extension_out)                    
 
@@ -96,12 +93,13 @@ if __name__ == '__main__':
         print("file_list = ", file_list)
 
         for name_full in file_list:
-            try:
-                basename = name_full.rsplit(vertex_ext)[0]
-                convert_csv(basename, suffix, vertex_ext=vertex_ext, ext_out=extension_out)                    
-            except FileNotFoundError:
-                print("FileNotFoundError in cylinder, proceeding")
-                break 
+            if not "cells" in name_full:
+                try:
+                    basename = name_full.rsplit(vertex_ext)[0]
+                    convert_csv(basename, suffix, vertex_ext=vertex_ext, ext_out=extension_out)                    
+                except FileNotFoundError:
+                    print("FileNotFoundError in cylinder, proceeding")
+                    break 
 
 
     run_basic = False
