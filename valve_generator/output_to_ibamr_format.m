@@ -548,7 +548,7 @@ function params = output_to_ibamr_format(valve)
             
             params_cylinder.base_name     = strcat(base_name, '_cylinder'); 
             params_cylinder.vertex        = fopen(strcat(base_name, '_cylinder.vertex'), 'w'); 
-            params_cylinder.spring        = fopen(strcat(base_name, '_cylind er.spring'), 'w'); 
+            params_cylinder.spring        = fopen(strcat(base_name, '_cylinder.spring'), 'w'); 
             params_cylinder.target        = fopen(strcat(base_name, '_cylinder.target'), 'w'); 
             params_cylinder.total_vertices  = 0; 
             params_cylinder.total_springs   = 0; 
