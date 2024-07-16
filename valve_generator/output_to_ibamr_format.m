@@ -2370,7 +2370,7 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
 %                         end 
                         fprintf(cell_file, '\n'); 
                     else 
-                        warning("skipping cell with index (%d, %d, %d) and global idx %d\n", theta_idx, r_idx, z_idx, cell_indices(1)); 
+                        % warning("skipping cell with index (%d, %d, %d) and global idx %d\n", theta_idx, r_idx, z_idx, cell_indices(1)); 
                     end 
 
                 end            
