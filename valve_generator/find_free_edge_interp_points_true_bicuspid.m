@@ -79,10 +79,11 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
         y_max_from_center = fsolve(free_edge_len_minus_rest,y_max_from_center_initial_guess,options); 
         y_max_from_center = max(y_max_from_center, y_max_from_center_min); 
     elseif use_fmincon
-        y_max_from_center = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],y_max_from_center_min,y_max_from_center_max_thresh,[],options);           
+        y_max_from_center = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],y_max_from_center_min,y_max_from_center_max_thresh,[],options)
     else 
         y_max_from_center = r/2; 
     end 
+    
     
 %     y_max_from_center_fsolve = fsolve(free_edge_len_minus_rest,y_max_from_center_initial_guess,options)
 %     y_max_from_center_fmincon_unconstrained = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],[],[],[],options) 
@@ -105,45 +106,13 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
     end 
     
 
-    
-    % set initial version of the new leaflet position 
-    % with free edge at given functional form (sin^2) 
-    for comm_idx = 1:N_leaflets
+    % compute the resulting values 
+    [free_edge_len_temp, free_edge_interp_points] = run_temp_free_edge_interp(leaflet, extra_stretch_radial, y_max_from_center);
 
-        % point one internal of commissure to point that m
-        % N_each is a power of two 
-        min_idx = (comm_idx-1)*N_each;         
-
-        for j=1:(N_each-1)
-
-            ring_point = X(:,j + min_idx ,1); 
-
-            th = atan2(ring_point(2), ring_point(1));  
-
-            % make a litle 
-            strained_len_total = extra_stretch_radial * sum(R_v(j + min_idx, :)); 
-
-            % cm apart at middle 
-            y_free_edge_end = y_max_from_center * sign(sin(th)) * sin(th)^2; 
-            % y_free_edge_end = 0; 
-            % this would put the two free edges exactly coinciding 
-
-            % if using exact x 
-            % then (y_diff^2 + height^2) = strained_len_total^2 
-            % so height is given as 
-            interp_height = sqrt(strained_len_total^2 - (ring_point(2) - y_free_edge_end)^2) ; 
-
-            % comm_interp_point = [ring_point(1) ; (r/2) * sin(th); comm_prev(3)];                 
-            free_edge_interp_points(:,j + min_idx) = [ring_point(1) ; y_free_edge_end; interp_height + ring_point(3)]; 
-
-        end 
-    end 
-
-    
     pass = false; 
     
     for it = 1:n_iterations
-                
+
         % sets the new leaflet position 
         % with free edge at given functional form (sin^2) 
         for comm_idx = 1:N_leaflets

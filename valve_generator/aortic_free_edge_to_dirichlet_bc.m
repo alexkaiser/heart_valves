@@ -195,7 +195,7 @@ if debug
     surf(x_component, y_component, z_component, 'LineWidth',width);
     axis equal 
     axis auto 
-    
+    title('In aortic free edge to dirichlet bc')
 end 
 
 is_internal = ~is_bc; 
