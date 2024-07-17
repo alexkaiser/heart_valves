@@ -6,6 +6,14 @@ times = fscanf(times_file,'%f',[1 inf]);
 systole_time = 1.48416600000000; 
 diastole_time = 1.28805000000000; 
 
+cycle_duration = 0.8; 
+
+cycle_1 = true; 
+if cycle_1 
+    systole_time = systole_time - cycle_duration; 
+    diastole_time = diastole_time - cycle_duration; 
+end 
+
 [~, sys_idx_matlab] = min(abs(times - systole_time))
 [~, dia_idx_matlab] = min(abs(times - diastole_time))
 
