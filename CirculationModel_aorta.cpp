@@ -524,6 +524,7 @@ CirculationModel_aorta::putToDatabase(Pointer<Database> db)
     db->putDouble("d_time", d_time); 
     db->putBool("d_rcr_bcs_on", d_rcr_bcs_on); 
     db->putBool("d_ventricle_0D_on", d_ventricle_0D_on); 
+    db->putDouble("d_P_min_linear_interp", d_P_min_linear_interp);
     return; 
 } // putToDatabase
 
@@ -719,18 +720,19 @@ CirculationModel_aorta::getFromRestart()
         TBOX_ERROR("Restart database corresponding to " << d_object_name << " not found in restart file.");
     }
 
-    d_current_idx_series = db->getInteger("d_current_idx_series"); 
-    d_ventricle_P        = db->getDouble("d_ventricle_P");
-    d_Q_ventricle        = db->getDouble("d_Q_ventricle"); 
-    d_Q_aorta            = db->getDouble("d_Q_aorta");
-    d_Q_valve            = db->getDouble("d_Q_valve");
-    d_aorta_P            = db->getDouble("d_aorta_P");
-    d_aorta_P_Wk         = db->getDouble("d_aorta_P_Wk");
-    d_p_extender_mean    = db->getDouble("d_p_extender_mean");
-    d_p_extender_point   = db->getDouble("d_p_extender_point");
-    d_time               = db->getDouble("d_time");
-    d_rcr_bcs_on         = db->getBool("d_rcr_bcs_on"); 
-    d_ventricle_0D_on    = db->getBool("d_ventricle_0D_on"); 
+    d_current_idx_series  = db->getInteger("d_current_idx_series"); 
+    d_ventricle_P         = db->getDouble("d_ventricle_P");
+    d_Q_ventricle         = db->getDouble("d_Q_ventricle"); 
+    d_Q_aorta             = db->getDouble("d_Q_aorta");
+    d_Q_valve             = db->getDouble("d_Q_valve");
+    d_aorta_P             = db->getDouble("d_aorta_P");
+    d_aorta_P_Wk          = db->getDouble("d_aorta_P_Wk");
+    d_p_extender_mean     = db->getDouble("d_p_extender_mean");
+    d_p_extender_point    = db->getDouble("d_p_extender_point");
+    d_time                = db->getDouble("d_time");
+    d_rcr_bcs_on          = db->getBool("d_rcr_bcs_on"); 
+    d_ventricle_0D_on     = db->getBool("d_ventricle_0D_on"); 
+    d_P_min_linear_interp = db->getDouble("d_P_min_linear_interp");
 
     return;
 } // getFromRestart
