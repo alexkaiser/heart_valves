@@ -114,6 +114,11 @@ valve.num_copies = 3;
 
 % valve.copy_spring_weights = [1/2 1/4 1/4];
 
+% respace on annulus in 3d 
+% if false, spaced wrt theta 
+valve.annulus_points_even_spacing = true; 
+
+
 valve.normal_thicken = true; 
 % nominal aortic valve thickness
 valve.normal_thickness = 0.044 * (384/N); 
@@ -166,7 +171,11 @@ valve.p_final = 0 * MMHG_TO_CGS;
 
 valve.L = 2.25; 
 
-valve.skeleton = get_skeleton_aortic_generic(); 
+r_temp = 2.5/2; % 25 mm valve 
+hc = 0.1 * r_temp; 
+h1 = 1.4 * r_temp - hc; 
+valve.skeleton = get_skeleton_aortic_generic(r_temp, h1, hc); 
+% valve.skeleton = get_skeleton_aortic_generic(); 
 valve.r = valve.skeleton.r; 
 
 valve.place_cylinder = true; 
@@ -196,8 +205,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 4.58;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.2;  % radial
+tension_coeffs.c_circ_dec       = 5.9;  % circumferential 
+tension_coeffs.c_rad_dec        = 1.82;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.8;        
 
