@@ -66,7 +66,7 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
     % can be close in the middle 
     % originally tuned for r = 1.25 cm valve, scale relative to this 
     r_basic = 1.25; 
-    y_max_from_center_min = (r/r_basic) * 0.1;
+    y_max_from_center_min = (r/r_basic) * 0.4;
     % but keep farther from the outside 
     y_max_from_center_max_thresh = (r/r_basic) * (r_basic - 0.4);
     
