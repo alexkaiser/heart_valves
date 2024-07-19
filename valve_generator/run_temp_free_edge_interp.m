@@ -50,10 +50,10 @@ for comm_idx = 1:N_leaflets
         strained_len_total = extra_stretch_radial * sum(R_v(j + min_idx, :)); 
 
         % cm apart at middle 
-        % y_free_edge_end = y_max_from_center * sign(sin(th)) * sin(th)^2; 
-%         power = 1/1.25; 
-%         y_free_edge_end = y_max_from_center * sign(sin(th)) * sin(th)^power;
-        y_free_edge_end = y_max_from_center * ring_point(2);
+%         y_free_edge_end = y_max_from_center * sign(sin(th)) * sin(th)^2; 
+        power = 1.5; 
+        y_free_edge_end = y_max_from_center * sign(sin(th)) * abs(sin(th)^power);
+        % y_free_edge_end = y_max_from_center * ring_point(2);
         % y_free_edge_end = 0; 
         % this would put the two free edges exactly coinciding 
 

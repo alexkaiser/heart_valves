@@ -84,6 +84,8 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
         y_max_from_center = r/2; 
     end 
     
+    r
+    y_max_from_center
     
 %     y_max_from_center_fsolve = fsolve(free_edge_len_minus_rest,y_max_from_center_initial_guess,options)
 %     y_max_from_center_fmincon_unconstrained = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],[],[],[],options) 
