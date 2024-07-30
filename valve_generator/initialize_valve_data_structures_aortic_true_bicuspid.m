@@ -129,7 +129,7 @@ valve.normal_thicken = true;
 % nominal aortic valve thickness
 valve.normal_thickness = 0.044; 
 
-valve.extrusion_out = true; 
+valve.extrusion_out = false; 
 
 % respace on annulus in 3d 
 % if false, spaced wrt theta 
