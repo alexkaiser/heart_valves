@@ -129,6 +129,8 @@ valve.normal_thicken = true;
 % nominal aortic valve thickness
 valve.normal_thickness = 0.044; 
 
+valve.extrusion_out = true; 
+
 % respace on annulus in 3d 
 % if false, spaced wrt theta 
 valve.annulus_points_even_spacing = true; 
@@ -233,10 +235,10 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 2.68;  % circumferential 
+tension_coeffs.c_circ_dec       = 2.86;  % circumferential 
 tension_coeffs.c_rad_dec        = 1.5;  % radial
 
-tension_coeffs.c_circ_dec_annulus = 1.91;
+tension_coeffs.c_circ_dec_annulus = 1.93;
 
 % tension_coeffs.c_circ_dec_free_edge = 5.0;
 tension_coeffs.c_circ_dec_free_edge_percentage = 0.0;
@@ -390,6 +392,10 @@ if fused_commissure
     valve.leaflets(1).fused_commissure = true; 
     valve.leaflets(1).fused_comm_idx    = 3; 
 end 
+
+if isfield(valve, 'extrusion_out') 
+    valve.leaflets(1).extrusion_out = valve.extrusion_out; 
+end
 
 % viscoelastic damping coefficients springs 
 % eta, damping coeff here, is multiplied by the coefficient on the 
