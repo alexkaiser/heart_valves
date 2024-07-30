@@ -129,7 +129,7 @@ valve.normal_thicken = true;
 % nominal aortic valve thickness
 valve.normal_thickness = 0.044; 
 
-valve.extrusion_out = true; 
+valve.extrusion_out = false; 
 
 % respace on annulus in 3d 
 % if false, spaced wrt theta 
@@ -265,15 +265,15 @@ valve.eta_papillary_unscaled = 0.0; valve.target_papillary_unscaled/500;
 valve.kappa_cross_layer_multipler = 2 * (384/N)^2 * 1e4 / 256^2;
 
 % valve.k_bend_radial = [0 0 1e5 1e5] * 192/N;
-valve.k_bend_radial = 0; 1e2 * 192/N;
+valve.k_bend_radial = 1e4 * 192/N;
 % valve.k_bend_radial_annulus = 1e2 * 192/N;
 valve.k_bend_radial_free_edge = 0; 1e4 * 192/N;
 valve.k_bend_radial_free_edge_percentage = 0; 
-valve.k_bend_circ = 0; 
+valve.k_bend_circ = 1e4 * 192/N;
 valve.k_bend_circ_free_edge = 0; 
 valve.k_bend_circ_free_edge_percentage = 0;
 
-valve.k_bend_cross_layer = 0;
+valve.k_bend_cross_layer = 1e4 * 192/N;
 
 if valve.in_heart 
 
