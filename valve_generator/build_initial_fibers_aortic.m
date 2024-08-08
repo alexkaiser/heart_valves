@@ -84,6 +84,20 @@ else
         normal_height = height_min_comm + height_comm; 
     end 
     
+    % polynomial height profile 
+    % default value 
+    power = 3; 
+    if isfield(valve, 'annulus_power')
+        power = valve.annulus_power; 
+    end 
+    if exist('power_override', 'var')
+        power = power_override; 
+        if isfield('valve', 'annulus_power')
+            warning('annulus_power and power_override both provided, using power_override')
+        end 
+    end 
+
+    
     du = leaflet.du; 
     if abs(du - 1/N) > eps
         error('inconsistent values in mesh'); 
@@ -109,12 +123,6 @@ else
             j_this_cusp = mod(j,N_each_interp); 
             x_this_cusp = j_this_cusp / N_each_interp; 
             center_cusp = 1/2; 
-
-            % polynomial height profile 
-            power = 3; 
-            if exist('power_override', 'var')
-                power = power_override; 
-            end 
 
             normalization = 2^power; % normalization so function takes value 1 at 1/2 
             z_tmp = height_min_comm * normalization * abs(x_this_cusp - center_cusp)^power; 
@@ -241,12 +249,12 @@ else
     %         % top of circular part (bottom of commissure) minus a circle 
     %         z_tmp = height_min_comm - circle_height; 
 
-            % polynomial height profile 
-            power = 3; 
-
-            if exist('power_override', 'var')
-                power = power_override; 
-            end 
+%             % polynomial height profile 
+%             power = 3; 
+% 
+%             if exist('power_override', 'var')
+%                 power = power_override; 
+%             end 
 
             normalization = 2^power; % normalization so function takes value 1 at 1/2 
             z_tmp = height_min_comm * normalization * abs(x_this_cusp - center_cusp)^power; 
