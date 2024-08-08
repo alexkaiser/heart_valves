@@ -201,7 +201,7 @@ valve.skeleton = get_skeleton_aortic_generic(r_temp, h1, hc);
 % valve.skeleton = get_skeleton_aortic_generic(); 
 valve.r = valve.skeleton.r; 
 
-valve.annulus_power = 6; 
+valve.annulus_power = 20; 
 
 valve.place_cylinder = true; 
 valve.z_max_cylinder = (pi/3) * valve.r; 
@@ -235,7 +235,7 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 2.94;  % circumferential 
+tension_coeffs.c_circ_dec       = 2.935;  % circumferential 
 tension_coeffs.c_rad_dec        = 1.34;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.93;
