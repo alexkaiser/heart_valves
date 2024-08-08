@@ -1,37 +1,50 @@
 diary shape_analysis_results.txt
 
-times_file = fopen('times.txt','r');
-times = fscanf(times_file,'%f',[1 inf]); 
+if exist('times.txt', 'file')
+    times_file = fopen('times.txt','r');
+    times = fscanf(times_file,'%f',[1 inf]); 
 
-systole_time = 1.48416600000000; 
-diastole_time = 1.28805000000000; 
+    systole_time = 1.48416600000000; 
+    diastole_time = 1.28805000000000; 
 
-cycle_duration = 0.8; 
+    cycle_number = 2; 
+    cycle_duration = 0.8; 
 
-cycle_1 = true; 
-if cycle_1 
-    systole_time = systole_time - cycle_duration; 
-    diastole_time = diastole_time - cycle_duration; 
-end 
+    % one cycle sim 
+    if round(max(times)/cycle_duration) == 1 
+        cycle_number = 1; 
+    end 
 
-[~, sys_idx_matlab] = min(abs(times - systole_time))
-[~, dia_idx_matlab] = min(abs(times - diastole_time))
+    % these are standard for second cycle 
+    systole_time = systole_time + (cycle_number-2) * cycle_duration; 
+    diastole_time = diastole_time + (cycle_number-2) * cycle_duration; 
 
-% frames are zero indexed 
-sys_idx = sys_idx_matlab + 1 
-dia_idx = dia_idx_matlab + 1 
 
-n_times = 2; 
+    [~, sys_idx_matlab] = min(abs(times - systole_time))
+    [~, dia_idx_matlab] = min(abs(times - diastole_time))
+
+    % frames are zero indexed 
+    sys_idx = sys_idx_matlab + 1 
+    dia_idx = dia_idx_matlab + 1 
+else 
+    % first cycle defaults 
+    sys_idx = 893; 
+    dia_idx = 776; 
+    cycle_number = 1; 
+    cycle_duration = 0.8; 
+end
+
+n_times = 2;
 idx_frames = [775, 893]; 
 
 time_printed = false; 
 
-cycle_duration = 0.8; 
-cycle_number = 2; 
-t_min_pressure = 1.42; 
-t_max_pressure = 1.52; 
-t_min_flow = 1.25; 
-t_mid_flow = 1.5; 
+t_min_pressure = 1.42 + (cycle_number-2) * cycle_duration; 
+t_max_pressure = 1.52 + (cycle_number-2) * cycle_duration; 
+t_min_flow = 1.25 + (cycle_number-2) * cycle_duration; 
+t_mid_flow = 1.5 + (cycle_number-2) * cycle_duration; 
+
+
 
 run_inv_transform = true; 
 
@@ -69,17 +82,17 @@ Gh_over_radius = Gh / valve_with_reference.r;
 Eh_over_Gh = Eh ./ Gh;
 Eh_from_min_over_Gh = Eh_from_minimum ./ Gh;
 
-coapt_plots = false; 
+coapt_plots = true; 
 coapt_threshold = 0.2; 
 [coapt_height, coapt_reserve_height, belly_height, coapt_min, coapt_max, fig] = coaptation_analysis_aortic(leaflet_layer_3, coapt_threshold, coapt_plots); 
 
-r_vbr = leaflet_layer_3.skeleton.r; 
-r_ic  = leaflet_layer_3.skeleton.r; 
-h     = leaflet_layer_3.skeleton.normal_height;   
-x = h - coapt_max; 
-y = coapt_min; 
+r_vbr = leaflet_layer_3.skeleton.r 
+r_ic  = leaflet_layer_3.skeleton.r 
+h     = leaflet_layer_3.skeleton.normal_height
+x = h - coapt_max
+y = coapt_min
 
-% eval_aortic_formulas(r_vbr, r_ic, h, belly_height, coapt_reserve_height, Gh(1), Eh(1), free_edge_length(1)/2, x, y); 
+eval_aortic_formulas(r_vbr, r_ic, h, belly_height, coapt_reserve_height, Gh(1), Eh(1), free_edge_length(1)/2, x, y)
 
 % fprintf('%s & %s & %s & ', names_struct(data_idx).circ_over_d, names_struct(data_idx).circ, names_struct(data_idx).rad); 
 % if table_1
@@ -138,3 +151,11 @@ fprintf('\\\\ \n');
 fprintf('\\hline \n'); 
 
 diary off 
+
+figure; 
+
+
+
+
+
+
