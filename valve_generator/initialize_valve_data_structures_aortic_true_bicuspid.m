@@ -131,7 +131,7 @@ valve.normal_thickness = 0.044;
 
 % respace on annulus in 3d 
 % if false, spaced wrt theta 
-valve.annulus_points_even_spacing = true; 
+valve.annulus_points_even_spacing = false; 
 
 
 % add flags to spring files 
@@ -201,7 +201,7 @@ valve.skeleton = get_skeleton_aortic_generic(r_temp, h1, hc);
 % valve.skeleton = get_skeleton_aortic_generic(); 
 valve.r = valve.skeleton.r; 
 
-valve.annulus_power = 4; 
+valve.annulus_power = 6; 
 
 valve.place_cylinder = true; 
 valve.z_max_cylinder = (pi/3) * valve.r; 
@@ -235,8 +235,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 2.89;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.5;  % radial
+tension_coeffs.c_circ_dec       = 2.94;  % circumferential 
+tension_coeffs.c_rad_dec        = 1.34;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.93;
 
