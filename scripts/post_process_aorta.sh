@@ -21,7 +21,7 @@ module load matlab/R2017b
 # generate bc data 
 if [ -e bc_data.mat ]
 then
-    echo "ok"
+    echo "bc_data.mat found"
 else
     matlab -nodesktop -nodisplay -r 'addpath ~/valve_generator; bc_data; exit;'
 fi
@@ -40,7 +40,14 @@ cp ~/mitral_fully_discrete/6_aorta_remeshed_pt5mm_2cm_extender_layers_constricti
 python3 ~/copies_scripts/remove_unnecessary_eulerian_space.py $TOTAL_TASKS
 
 # run integral metrics 
-sbatch ~/copies_scripts/run_integral_metrics.sh
+# sbatch ~/copies_scripts/run_integral_metrics.sh
+/home/groups/amarsden/ParaView-5.9.0-osmesa-MPI-Linux-Python3.8-64bit/bin/pvbatch ~/copies_scripts/integrals_contour_12_2.py annulus_normal_projected & 
+/home/groups/amarsden/ParaView-5.9.0-osmesa-MPI-Linux-Python3.8-64bit/bin/pvbatch ~/copies_scripts/integrals_contour_12_2.py contour_3 & 
+/home/groups/amarsden/ParaView-5.9.0-osmesa-MPI-Linux-Python3.8-64bit/bin/pvbatch ~/copies_scripts/integrals_contour_12_2.py contour_6 & 
+/home/groups/amarsden/ParaView-5.9.0-osmesa-MPI-Linux-Python3.8-64bit/bin/pvbatch ~/copies_scripts/integrals_contour_12_2.py contour_9 & 
+/home/groups/amarsden/ParaView-5.9.0-osmesa-MPI-Linux-Python3.8-64bit/bin/pvbatch ~/copies_scripts/integrals_contour_12_2.py contour_12 & 
+/home/groups/amarsden/ParaView-5.9.0-osmesa-MPI-Linux-Python3.8-64bit/bin/pvbatch ~/copies_scripts/integrals_contour_12_2.py contour_21 & 
+
 
 # adds face data 
 python3 ~/copies_scripts/add_faces.py
@@ -54,6 +61,9 @@ cp ../aortic_no_partition*final_data.mat .
 matlab -nodesktop -nodisplay -r 'addpath ~/valve_generator; generate_cells_file; "matlab generate cells complete"; exit;'
 
 python3 ~/copies_scripts/convert_csv_with_cells.py
+
+# ensure integral metrics have finished 
+wait 
 
 matlab -nodesktop -nodisplay -r 'addpath ~/valve_generator; run_shape_analysis_local; exit;'
 

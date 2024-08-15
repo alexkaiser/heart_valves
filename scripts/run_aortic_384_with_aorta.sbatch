@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=2
 #SBATCH --ntasks-per-node=24
-#SBATCH --time=168qq:00:00
+#SBATCH --time=168:00:00
 #SBATCH --mem=185GB
 #SBATCH --job-name=aortic_1
 #SBATCH --mail-user=adkaiser@gmail.com
@@ -63,6 +63,8 @@ env | grep -v '{' | grep -v '}' | grep -v '()' | grep -v _= > $env_log
 python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS" 
 
 touch done.txt
+
+python3 ~/copies_scripts/fix_visit_files_automatic.py
 
 # load stuff for movie making 
 source ~/.bash_profile

@@ -7,7 +7,7 @@
 #SBATCH --mail-user=adkaiser@gmail.com
 #SBATCH --mail-type=ALL
 # #SBATCH --partition=amarsden
-#SBATCH --partition=willhies,amarsden
+#SBATCH --partition=amarsden
 # #SBATCH --exclude=sh-107-[59-64]
 
 module purge

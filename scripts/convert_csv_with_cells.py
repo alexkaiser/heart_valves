@@ -62,7 +62,7 @@ def convert_csv(basename, suffix='_faces', vertex_ext='_vertices.csv', cells_ext
 if __name__ == '__main__':
 
 
-    run_all = False 
+    run_all = True 
     if run_all:
         lag_name_base_to_check = ['aortic']
 

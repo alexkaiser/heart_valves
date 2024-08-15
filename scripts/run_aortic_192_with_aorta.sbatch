@@ -64,6 +64,8 @@ python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS"
 
 touch done.txt
 
+python3 ~/copies_scripts/fix_visit_files_automatic.py
+
 # load stuff for movie making 
 source ~/.bash_profile
 visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py $TOTAL_TASKS $TOTAL_TASKS
