@@ -97,9 +97,31 @@ else
         end 
     end 
 
-    center_cusp = 1/2; 
-    normalization = 2^power; % normalization so function takes value 1 at 1/2 
-    z_tmp_fn = @(x_this_cusp) height_min_comm * normalization * abs(x_this_cusp - center_cusp)^power; 
+    if isfield(valve, 'use_annulus_flattened_pts') && valve.use_annulus_flattened_pts 
+        
+        if ~isfield(valve, 'annulus_flattened_normalized')
+            error('annulus_flattened_normalized required if valve.use_annulus_flattened_pts is true'); 
+        end 
+        
+        [m,n] = size(valve.annulus_flattened_normalized); 
+        if n ~= 2
+            error('valve.annulus_flattened_normalized must be two column matrix')
+        end 
+        
+        if (abs(valve.annulus_flattened_normalized(1,2) - 1) > eps) || ... 
+           (abs(valve.annulus_flattened_normalized(m,2) - 1) > eps) || ... 
+           (abs(valve.annulus_flattened_normalized(1,1) ~= 0)) || ... 
+           (abs(valve.annulus_flattened_normalized(m,1) ~= 1)) 
+            error('valve.annulus_flattened_normalized boundary values incorrect')
+        end 
+        
+        z_tmp_fn = @(x_this_cusp) height_min_comm * interp1(valve.annulus_flattened_normalized(:,1), valve.annulus_flattened_normalized(:,2), x_this_cusp, 'pchip'); 
+    else
+        % default polynomial 
+        center_cusp = 1/2;
+        normalization = 2^power; % normalization so function takes value 1 at 1/2 
+        z_tmp_fn = @(x_this_cusp) height_min_comm * normalization * abs(x_this_cusp - center_cusp)^power; 
+    end 
     
     du = leaflet.du; 
     if abs(du - 1/N) > eps

@@ -129,9 +129,41 @@ valve.normal_thicken = true;
 % nominal aortic valve thickness
 valve.normal_thickness = 0.044; 
 
+valve.extrusion_out = true;
+
 % respace on annulus in 3d 
 % if false, spaced wrt theta 
 valve.annulus_points_even_spacing = false; 
+
+valve.use_annulus_flattened_pts = true; 
+
+% from Khelil 2015 Surgical Anatomy of the Aortic Annulus Landmarks 
+    % left half of nc leaflet plus reflections and normalization
+valve.annulus_flattened_normalized = [ 
+                   0   1.000000000000000
+   0.002648301903414   0.829006318911995
+   0.010063647338885   0.684870567517156
+   0.034957485019150   0.522829189164894
+   0.074152453295587   0.391226048708535
+   0.113876981846794   0.298119648690557
+   0.154661131477103   0.217546881096994
+   0.224046541240633   0.126231145923352
+   0.310381383503747   0.056401345909868
+   0.382945155975022   0.020591113480958
+   0.441207797850125   0.004476151367872
+   0.499470439725229                   0
+   0.500529560274771                   0
+   0.558792202149874   0.004476151367872
+   0.617054844024978   0.020591113480958
+   0.689618616496253   0.056401345909868
+   0.775953458759367   0.126231145923352
+   0.845338868522897   0.217546881096994
+   0.886123018153206   0.298119648690557
+   0.925847546704413   0.391226048708535
+   0.965042514980850   0.522829189164894
+   0.989936352661115   0.684870567517156
+   0.997351698096586   0.829006318911995
+   1.000000000000000   1.000000000000000];
 
 
 % add flags to spring files 
@@ -235,10 +267,10 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 2.935;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.34;  % radial
+tension_coeffs.c_circ_dec       = 2.86;  % circumferential 
+tension_coeffs.c_rad_dec        = 1.45;  % radial
 
-tension_coeffs.c_circ_dec_annulus = 1.93;
+tension_coeffs.c_circ_dec_annulus = 1.88;
 
 % tension_coeffs.c_circ_dec_free_edge = 5.0;
 tension_coeffs.c_circ_dec_free_edge_percentage = 0.0;
@@ -265,15 +297,15 @@ valve.eta_papillary_unscaled = 0.0; valve.target_papillary_unscaled/500;
 valve.kappa_cross_layer_multipler = 2 * (384/N)^2 * 1e4 / 256^2;
 
 % valve.k_bend_radial = [0 0 1e5 1e5] * 192/N;
-valve.k_bend_radial = 0; 1e2 * 192/N;
+valve.k_bend_radial = 1e4 * 192/N;
 % valve.k_bend_radial_annulus = 1e2 * 192/N;
 valve.k_bend_radial_free_edge = 0; 1e4 * 192/N;
 valve.k_bend_radial_free_edge_percentage = 0; 
-valve.k_bend_circ = 0; 
+valve.k_bend_circ = 1e4 * 192/N;
 valve.k_bend_circ_free_edge = 0; 
 valve.k_bend_circ_free_edge_percentage = 0;
 
-valve.k_bend_cross_layer = 0;
+valve.k_bend_cross_layer = 1e4 * 192/N;
 
 if valve.in_heart 
 
@@ -387,7 +419,11 @@ valve.ds = 2*pi*valve.skeleton.r / N;
                                             valve);  
 
 valve.leaflets(1) = leaflet; 
-    
+
+if isfield(valve, 'extrusion_out') 
+    valve.leaflets(1).extrusion_out = valve.extrusion_out; 
+end
+
 if fused_commissure
     valve.leaflets(1).fused_commissure = true; 
     valve.leaflets(1).fused_comm_idx    = 3; 
