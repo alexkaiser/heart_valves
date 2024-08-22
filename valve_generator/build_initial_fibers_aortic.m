@@ -97,6 +97,9 @@ else
         end 
     end 
 
+    center_cusp = 1/2; 
+    normalization = 2^power; % normalization so function takes value 1 at 1/2 
+    z_tmp_fn = @(x_this_cusp) height_min_comm * normalization * abs(x_this_cusp - center_cusp)^power; 
     
     du = leaflet.du; 
     if abs(du - 1/N) > eps
@@ -122,10 +125,9 @@ else
 
             j_this_cusp = mod(j,N_each_interp); 
             x_this_cusp = j_this_cusp / N_each_interp; 
-            center_cusp = 1/2; 
 
-            normalization = 2^power; % normalization so function takes value 1 at 1/2 
-            z_tmp = height_min_comm * normalization * abs(x_this_cusp - center_cusp)^power; 
+            z_tmp = z_tmp_fn(x_this_cusp);  
+
 
             r_tmp = r; 
 
@@ -238,27 +240,8 @@ else
 
             j_this_cusp = mod(j,N_each); 
             x_this_cusp = j_this_cusp / N_each; 
-            center_cusp = 1/2; 
 
-            if j_this_cusp == 0 
-                'stop'; 
-            end 
-
-    %         circle_height = height_min_comm * 2 * sqrt((1/2)^2 - (x_this_cusp - center_cusp)^2); 
-    %         
-    %         % top of circular part (bottom of commissure) minus a circle 
-    %         z_tmp = height_min_comm - circle_height; 
-
-%             % polynomial height profile 
-%             power = 3; 
-% 
-%             if exist('power_override', 'var')
-%                 power = power_override; 
-%             end 
-
-            normalization = 2^power; % normalization so function takes value 1 at 1/2 
-            z_tmp = height_min_comm * normalization * abs(x_this_cusp - center_cusp)^power; 
-
+            z_tmp = z_tmp_fn(x_this_cusp); 
 
             r_tmp = r; 
 
