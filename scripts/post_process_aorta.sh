@@ -23,7 +23,7 @@ if [ -e bc_data.mat ]
 then
     echo "bc_data.mat found"
 else
-    matlab -nodesktop -nodisplay -r 'addpath ~/valve_generator; bc_data; exit;'
+    matlab -nodesktop -nodisplay -r 'addpath ~/valve_generator; bc_data; exit;' & 
 fi
 
 
@@ -38,6 +38,9 @@ cp ~/mitral_fully_discrete/6_aorta_remeshed_pt5mm_2cm_extender_layers_constricti
 
 # extracts relevant portion of mesh 
 python3 ~/copies_scripts/remove_unnecessary_eulerian_space.py $TOTAL_TASKS
+
+
+wait
 
 # run integral metrics 
 # sbatch ~/copies_scripts/run_integral_metrics.sh
@@ -73,8 +76,8 @@ matlab -nodesktop -nodisplay -r 'addpath ~/valve_generator; run_shape_analysis_l
 # assumes located in main sim directory 
 cd .. 
 
-# SESSION_NAME_PARAVIEW="~/copies_scripts/bicuspid_slices_paraview.py"
-# python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $TOTAL_TASKS
+SESSION_NAME_PARAVIEW="~/copies_scripts/bicuspid_slices_paraview.py"
+python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $TOTAL_TASKS
 
 # SESSION_NAME_PARAVIEW_PAPER="~/copies_scripts/bicuspid_slices_paraview_paper.py"
 # python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_PAPER $TOTAL_TASKS

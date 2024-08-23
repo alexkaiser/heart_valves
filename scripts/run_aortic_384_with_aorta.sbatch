@@ -6,7 +6,7 @@
 #SBATCH --job-name=aortic_1
 #SBATCH --mail-user=adkaiser@gmail.com
 #SBATCH --mail-type=ALL
-#SBATCH --partition=amarsden,willhies
+#SBATCH --partition=amarsden
 #SBATCH --exclude=sh03-16n02
 # #SBATCH --exclude=sh-107-[59-64]
 
@@ -20,7 +20,7 @@ TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_384_d40f931_basic_bspline3_new_mesh_78b36cb
+RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_384_58871d_bicusp_c1pt57d_r1pt7_annulus_lit_theta_spacing
 mkdir $RUNDIR
 
 # set up run info 
@@ -64,7 +64,10 @@ python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS"
 
 touch done.txt
 
+module load python/3.9.0
+cd viz_IB3d_tree_cycle_256
 python3 ~/copies_scripts/fix_visit_files_automatic.py
+cd $RUNDIR
 
 # load stuff for movie making 
 source ~/.bash_profile
