@@ -133,7 +133,7 @@ valve.extrusion_out = true;
 
 % respace on annulus in 3d 
 % if false, spaced wrt theta 
-valve.annulus_points_even_spacing = false; 
+valve.annulus_points_even_spacing = true; 
 
 valve.use_annulus_flattened_pts = true; 
 
@@ -267,10 +267,10 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 2.86;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.45;  % radial
+tension_coeffs.c_circ_dec       = 2.88;  % circumferential 
+tension_coeffs.c_rad_dec        = 1.48;  % radial
 
-tension_coeffs.c_circ_dec_annulus = 1.88;
+tension_coeffs.c_circ_dec_annulus = 1.955;
 
 % tension_coeffs.c_circ_dec_free_edge = 5.0;
 tension_coeffs.c_circ_dec_free_edge_percentage = 0.0;
