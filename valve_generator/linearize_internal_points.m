@@ -76,11 +76,6 @@ end
 % check for existence because chordae only in mitral case
 if exist('chordae', 'var')
     for tree_idx = 1:leaflet.num_trees
-
-        if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs         
-            X_linearized = [X_linearized; chordae(tree_idx).root(:)];
-        end 
-
         X_linearized = [X_linearized; chordae(tree_idx).C(:)]; 
     end 
 end 

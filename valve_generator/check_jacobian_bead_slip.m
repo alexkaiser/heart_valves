@@ -80,11 +80,6 @@ leaflet_Z.X = Z;
 
 for tree_idx = 1:leaflet.num_trees
     leaflet_Z.chordae(tree_idx).C = rand(size(leaflet_Z.chordae(tree_idx).C)); 
-    
-    if leaflet.targets_for_bcs
-        leaflet_Z.chordae(tree_idx).root = rand(3,1); 
-    end 
-    
 end 
 Z_linearized = linearize_internal_points(leaflet_Z); 
 
@@ -103,11 +98,6 @@ for i = 1:length(epsilon_vals)
     
     for tree_idx = 1:leaflet.num_trees
         leaflet_perturbation.chordae(tree_idx).C = leaflet.chordae(tree_idx).C  + ep*leaflet_Z.chordae(tree_idx).C;
-        
-        if leaflet.targets_for_bcs
-            leaflet_perturbation.chordae(tree_idx).root = leaflet.chordae(tree_idx).root + ep*leaflet_Z.chordae(tree_idx).root;
-        end 
-        
     end 
     
     % eval the difference eqns on the perturbation 
@@ -202,11 +192,6 @@ for tree_idx = 1:leaflet.num_trees
 
             for tree_idx_tmp = 1:leaflet.num_trees
                 leaflet_perturbation.chordae(tree_idx_tmp).C = leaflet.chordae(tree_idx_tmp).C  + ep*leaflet_Z.chordae(tree_idx_tmp).C; 
-                
-                if leaflet.targets_for_bcs
-                    leaflet_perturbation.chordae(tree_idx_tmp).root = leaflet.chordae(tree_idx_tmp).root + ep*leaflet_Z.chordae(tree_idx_tmp).root;
-                end
-                
             end
             
             % eval the difference eqns on the perturbation

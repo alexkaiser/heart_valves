@@ -38,8 +38,8 @@ function leaflet = aortic_free_edge_pinch_comms(leaflet, extra_stretch_radial, N
     for j_tmp = 1:(N_each/2)
         j_nbr_tmp = j_tmp - 1; 
         k_nbr_tmp = k_max; 
-        [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j_tmp, k_max, j_nbr_tmp, k_nbr_tmp); 
-        if valid && (~target_spring) && (~target_k_no_j_spring)
+        [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j_tmp, k_max, j_nbr_tmp, k_nbr_tmp); 
+        if valid
             free_edge_radius = free_edge_radius + R_u(j_spr,k_spr); 
         end 
     end
@@ -104,8 +104,8 @@ function leaflet = aortic_free_edge_pinch_comms(leaflet, extra_stretch_radial, N
             for j_tmp = (1+min_idx):(j+min_idx)
                 j_nbr_tmp = j_tmp - 1; 
                 k_nbr_tmp = k_max; 
-                [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j_tmp, k_max, j_nbr_tmp, k_nbr_tmp); 
-                if valid && (~target_spring) && (~target_k_no_j_spring)
+                [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j_tmp, k_max, j_nbr_tmp, k_nbr_tmp); 
+                if valid
                     rest_length_free_edge = rest_length_free_edge + R_u(j_spr,k_spr); 
                     if (k==k_max) && debug_text
                         fprintf('j_tmp = %d, j_spr = %d, R_u = %f\n', j_tmp, j_spr, R_u(j_spr,k_spr)); 
@@ -179,7 +179,7 @@ function leaflet = aortic_free_edge_pinch_comms(leaflet, extra_stretch_radial, N
         if ~free_edge_idx_set(j)
             j_nbr_tmp = j+1; 
             k_nbr_tmp = k; 
-            [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+            [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
 
             if ~valid 
                 error('trying to compute lengths with an invalid rest length')

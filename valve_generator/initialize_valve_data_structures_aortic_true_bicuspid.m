@@ -63,9 +63,6 @@ valve.decreasing_tension = true;
 valve.diff_eqns = @difference_equations_aortic; 
 valve.jacobian  = @build_jacobian_aortic;
 
-valve.targets_for_bcs = false; 
-valve.targets_for_bcs_ref_only = false; 
-
 % general solve parameters
 name = 'aortic'; 
 valve.name = name; 

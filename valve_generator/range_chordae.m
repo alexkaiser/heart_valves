@@ -41,19 +41,13 @@ function range = range_chordae(chordae, idx_chordae, tree_idx)
 % OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-if isfield(chordae(tree_idx), 'targets_for_bcs') && chordae(tree_idx).targets_for_bcs
-
-    % everything up by one, because root is now an internal variable 
-    range = chordae(tree_idx).min_global_idx + 3*idx_chordae + (0:2);
-
-else 
     
-    % default case with root as bc
-    if idx_chordae == 0
-        range = [];
-    else 
-        range = chordae(tree_idx).min_global_idx + 3*(idx_chordae-1) + (0:2);
-    end 
-
+% default case with root as bc
+if idx_chordae == 0
+    range = [];
+else 
+    range = chordae(tree_idx).min_global_idx + 3*(idx_chordae-1) + (0:2);
 end 
+
+
 

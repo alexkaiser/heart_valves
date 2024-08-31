@@ -141,34 +141,6 @@ end
 
 debug_lengths = true; 
 if debug_lengths
-
-%     free_edge_length_single_loaded = 0; 
-%     free_edge_length_single_rest = 0; 
-%     for j=1:N_each
-%         k=k_max; 
-% 
-%         j_nbr_tmp = j-1; 
-%         k_nbr_tmp = k; 
-%         [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
-%         if ~valid 
-%             error('trying to compute lengths with an invalid rest length')
-%         end
-% 
-%         X_temp = X(:,j,k);
-%         X_nbr = X(:,j_nbr,k_nbr); 
-% 
-%         j
-%         loaded_len = norm(X_temp - X_nbr)
-%         rest_len = R_u(j_spr,k_spr)
-%         
-%         free_edge_length_single_loaded = free_edge_length_single_loaded + norm(X_temp - X_nbr);
-%         
-%         free_edge_length_single_rest = free_edge_length_single_rest + R_u(j_spr,k_spr); 
-%     end     
-%     
-%     free_edge_length_single_loaded
-%     free_edge_length_single_rest
-    
     'after reinterpolating free edge'
     [free_edge_length_single_loaded, free_edge_length_single_rest] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
 end 

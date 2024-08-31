@@ -88,16 +88,6 @@ leaflet.reflect_pressure    = reflect_x;
 leaflet.diff_eqns = @difference_equations_bead_slip; 
 leaflet.jacobian  = @build_jacobian_bead_slip;
 
-if isfield(valve, 'targets_for_bcs')
-    leaflet.targets_for_bcs = valve.targets_for_bcs; 
-    
-    if isfield(valve, 'targets_for_bcs_ref_only')
-        if valve.targets_for_bcs && valve.targets_for_bcs_ref_only
-            error('cannot set targets_for_bcs and for targets_for_bcs_ref_only'); 
-        end 
-    end 
-    
-end 
 
 if isfield(valve, 'careful_early_steps') && valve.careful_early_steps
     leaflet.careful_early_steps = valve.careful_early_steps; 
@@ -129,7 +119,6 @@ leaflet.du = 1/N;
 leaflet.r = valve.r; 
 
 leaflet.ds = valve.ds; 
-leaflet.target_length_check = false;
 
 if size(papillary, 2) ~= leaflet.num_trees
     error('Must have as many papillary coordinates as trees'); 

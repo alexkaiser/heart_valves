@@ -69,30 +69,6 @@ function F = difference_equations_aortic(leaflet)
         tension_debug = false; 
     end 
 
-    if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs 
-        targets_for_bcs = true; 
-        k_target_net = leaflet.target_net; 
-        k_target_papillary = leaflet.target_papillary; 
-    else 
-        targets_for_bcs = false; 
-    end 
-    
-    if isfield(leaflet, 'target_length_check') && leaflet.target_length_check
-        if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs
-            if isfield(leaflet, 'ds')
-                ds = leaflet.ds; 
-                target_length_check = true; 
-            else 
-                warning('target_length_check is on, but ds is not, not checking')
-                target_length_check = false; 
-            end 
-        else 
-            warning('target_length_check is on, but targets_for_bcs is not, not checking'); 
-            target_length_check = false; 
-        end 
-    else 
-        target_length_check = false; 
-    end 
     
     F_leaflet = zeros(size(X_current)); 
     
@@ -119,9 +95,9 @@ function F = difference_equations_aortic(leaflet)
                     
                     k_nbr_tmp = k; 
                     
-                    [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
                     
-                    if valid && (~target_spring) && (~target_k_no_j_spring)
+                    if valid
 
                         X_nbr = X_current(:,j_nbr,k_nbr); 
 
@@ -141,8 +117,6 @@ function F = difference_equations_aortic(leaflet)
 
                         F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
                     
-                    elseif valid && target_spring 
-                        error('No j direction targets allowed'); 
                     end 
                     
                     
@@ -154,9 +128,9 @@ function F = difference_equations_aortic(leaflet)
 
                     j_nbr_tmp = j; 
                     
-                    [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
                     
-                    if valid && (~target_spring)
+                    if valid
                     
                         X_nbr = X_current(:,j_nbr,k_nbr); 
 
@@ -175,26 +149,7 @@ function F = difference_equations_aortic(leaflet)
                         end 
                         
                         F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
-                        
-                    elseif valid && target_spring 
-                        
-                        if ~targets_for_bcs
-                            error('Cannot ask for targets for bcs without flag set')
-                        end
-                        
-                        X_nbr    = X_current(:,j_nbr,k_nbr);
-                        tension_tangent = tension_zero_rest_length_linear_by_tangent(X, X_nbr, k_target_net); 
-                        
-                        if target_length_check
-                            target_length = norm(X - X_nbr); 
-                            if target_length > ds
-                                fprintf('Found long target link in leaflet, L = %f, ds = %f\n', target_length, ds); 
-                            end 
-                        end
-                        
-                        % targets are absolute forces, no du here 
-                        F_tmp = F_tmp + tension_tangent; 
-                       
+                                               
                     end 
 
                 end 

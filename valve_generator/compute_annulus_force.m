@@ -58,23 +58,20 @@ function [annulus_positions, forces_annulus] = compute_annulus_force(leaflet, fi
 
             j_nbr_tmp = j; 
 
-            [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+            [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
 
-            if valid && (~target_spring)
+            if valid
                 X_nbr = X_current(:,j_nbr,k_nbr); 
 
                 tension = tension_with_reference(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet); 
                 F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
-
-            elseif valid && target_spring 
-                error('no logging allowed for target springs'); 
             end 
 
             if (k_nbr_tmp == (k-1)) && (~valid)
                 error('point should be valid but not labeled as such'); 
             end 
             
-            if (k_nbr_tmp == (k+1)) &&   valid
+            if (k_nbr_tmp == (k+1)) && valid
                 error('finding valid spring away from annulus'); 
             end 
             

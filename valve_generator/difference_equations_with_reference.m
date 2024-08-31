@@ -60,32 +60,6 @@ function F = difference_equations_with_reference(leaflet)
         periodic_j = zeros(k_max,1); 
     end 
     
-    if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs 
-        targets_for_bcs = true; 
-        k_target_net = leaflet.target_net; 
-        k_target_papillary = leaflet.target_papillary; 
-    else 
-        targets_for_bcs = false; 
-    end 
-    
-    if isfield(leaflet, 'target_length_check') && leaflet.target_length_check
-        if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs
-            if isfield(leaflet, 'ds')
-                ds = leaflet.ds; 
-                target_length_check = true; 
-            else 
-                warning('target_length_check is on, but ds is not, not checking')
-                target_length_check = false; 
-            end 
-        else 
-            warning('target_length_check is on, but targets_for_bcs is not, not checking'); 
-            target_length_check = false; 
-        end 
-    else 
-        target_length_check = false; 
-    end 
-
-    
     
     F_leaflet = zeros(size(X_current)); 
 
@@ -112,16 +86,13 @@ function F = difference_equations_with_reference(leaflet)
                     
                     k_nbr_tmp = k; 
                     
-                    [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
                     
-                    if valid && (~target_spring) && (~target_k_no_j_spring)
+                    if valid
                         X_nbr = X_current(:,j_nbr,k_nbr); 
 
                         tension = tension_with_reference(X, X_nbr, R_u(j_spr,k_spr), k_u(j_spr,k_spr), leaflet); 
-                        F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
-                    
-                    elseif valid && target_spring 
-                        error('No j direction targets allowed'); 
+                        F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X);                     
                     end 
                     
                 end 
@@ -131,33 +102,13 @@ function F = difference_equations_with_reference(leaflet)
 
                     j_nbr_tmp = j; 
                     
-                    [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
                     
-                    if valid && (~target_spring)
+                    if valid 
                         X_nbr = X_current(:,j_nbr,k_nbr); 
                         
                         tension = tension_with_reference(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet); 
                         F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
-                    
-                    elseif valid && target_spring 
-                        
-                        if ~targets_for_bcs
-                            error('Cannot ask for targets for bcs without flag set')
-                        end
-                        
-                        X_nbr    = X_current(:,j_nbr,k_nbr);
-                        tension_tangent = tension_zero_rest_length_linear_by_tangent(X, X_nbr, k_target_net); 
-                        
-                        if target_length_check
-                            target_length = norm(X - X_nbr); 
-                            if target_length > ds
-                                fprintf('Found long target link in leaflet, L = %f, ds = %f\n', target_length, ds); 
-                            end 
-                        end
-                        
-                        % targets are absolute forces, no du here 
-                        F_tmp = F_tmp + tension_tangent; 
-                       
                     end 
                     
                 end 
@@ -202,43 +153,7 @@ function F = difference_equations_with_reference(leaflet)
         [m N_chordae] = size(C);         
         F_chordae(tree_idx).C = zeros(size(C));  
         
-        % root is an unknown because it is being treated as a target point 
-        % hangle this manually 
-        if targets_for_bcs
-
-            root = chordae(tree_idx).root; 
-            
-            % root attachment to first internal node 
-            F_chordae(tree_idx).root = zeros(3,1); 
-            
-            % root index is zero (and is a separate variable)
-            i = 0; 
-            
-            % root always connects to first point 
-            nbr_idx = 1; 
-            
-            % get the neighbors coordinates, reference coordinate and spring constants
-            [nbr R_nbr k_val j_nbr k_nbr c_dec_tension_chordae] = get_nbr_chordae(leaflet, i, nbr_idx, tree_idx); 
-            
-            tension = tension_with_reference(root, nbr, R_nbr, k_val, leaflet); 
-                        
-            tension_by_tangent = tension * (nbr - root) / norm(nbr - root); 
-            F_chordae(tree_idx).root = F_chordae(tree_idx).root + tension_by_tangent; 
-
-            if target_length_check
-                target_length = norm(chordae(tree_idx).root_target - root); 
-                if target_length > ds
-                    fprintf('Found long target link in chordae, L = %f, ds = %f, tree = %d\n', target_length, ds, tree_idx);   
-                end 
-            end
-            
-            % connection to boundary condition root point 
-            tension_by_tangent = tension_zero_rest_length_linear_by_tangent(root, chordae(tree_idx).root_target, k_target_papillary);
-            F_chordae(tree_idx).root = F_chordae(tree_idx).root + tension_by_tangent; 
-
-        end 
-        
-        
+                
         for i=1:N_chordae
 
             left   = 2*i; 

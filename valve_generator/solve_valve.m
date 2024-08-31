@@ -296,11 +296,6 @@ if interactive && pass_all
     end 
 end 
 
-if isfield(valve, 'targets_for_bcs') && valve.targets_for_bcs 
-    valve.leaflets(1).target_length_check = true;     
-    valve.leaflets(1).diff_eqns(valve.leaflets(1)); 
-    valve.leaflets(1).target_length_check = false; 
-end 
     
     
 if build_reference
@@ -418,10 +413,6 @@ if build_reference
             end 
         end 
 
-        if isfield(valve, 'targets_for_bcs_ref_only') && valve.targets_for_bcs_ref_only
-            adjustment_length = 1e-5; 
-            valve_with_reference = add_targets_for_bcs_to_valve_with_refernece(valve_with_reference, adjustment_length); 
-        end 
 
         leaflet = valve_with_reference.leaflets(i); 
 
@@ -438,11 +429,6 @@ if build_reference
         fprintf('\n\nRefernece configuration initial solve:\n')
         [valve_with_reference.leaflets(i) pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails); 
 
-        if isfield(valve_with_reference, 'targets_for_bcs') && valve_with_reference.targets_for_bcs 
-            valve_with_reference.leaflets(1).target_length_check = true;     
-            valve_with_reference.leaflets(1).diff_eqns(valve_with_reference.leaflets(1));     
-            valve_with_reference.leaflets(1).target_length_check = false; 
-        end 
 
         if isfield(valve, 'dirichlet_free_edge_comm_ref_only') && valve.dirichlet_free_edge_comm_ref_only
             if ~isfield(valve, 'n_fixed_comm')

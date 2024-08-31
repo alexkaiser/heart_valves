@@ -52,13 +52,6 @@ function J = build_jacobian_aortic_with_reference(leaflet)
     collagen_constitutive_circ = leaflet.collagen_constitutive_circ; 
     collagen_constitutive_rad  = leaflet.collagen_constitutive_rad; 
     
-    if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs 
-        targets_for_bcs = true; 
-        k_target_net = leaflet.target_net;
-        k_target_papillary = leaflet.target_papillary; 
-    else 
-        targets_for_bcs = false; 
-    end 
     
     if isfield(leaflet, 'k_bend_radial_ref_only') && (leaflet.k_bend_radial_ref_only ~= 0)
         radial_bending_on = true; 
@@ -149,18 +142,15 @@ function J = build_jacobian_aortic_with_reference(leaflet)
                     
                     k_nbr_tmp = k; 
                     
-                    [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
                     
-                    if valid && (~target_k_no_j_spring)
+                    if valid
                         
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
 
-                        if ~target_spring 
-                            J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, R_u(j_spr,k_spr), k_u(j_spr,k_spr), leaflet, collagen_constitutive_circ);                    
-                        else 
-                            error('j direction target springs not allowed'); 
-                        end 
+                        J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, R_u(j_spr,k_spr), k_u(j_spr,k_spr), leaflet, collagen_constitutive_circ);                    
+                        
                         % current term is always added in 
                         % this gets no sign 
                         % this is always at the current,current block in the matrix 
@@ -182,18 +172,14 @@ function J = build_jacobian_aortic_with_reference(leaflet)
 
                     j_nbr_tmp = j; 
                     
-                    [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
                     
                     if valid
                         
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
  
-                        if ~target_spring 
-                            J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet, collagen_constitutive_rad);
-                        else 
-                            J_tmp = tension_zero_rest_length_linear_by_tangent_jacobian(X, X_nbr, k_target_net);
-                        end
+                        J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet, collagen_constitutive_rad);
                         
                         % current term is always added in
                         % this gets no sign  

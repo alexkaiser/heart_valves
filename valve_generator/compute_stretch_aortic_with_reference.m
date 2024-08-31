@@ -129,9 +129,9 @@ function [lambda_circ, lambda_rad, lambda_circ_mean, lambda_rad_mean, fig] = com
 
                 k_nbr_tmp = k; 
 
-                [valid, j_nbr, k_nbr, j_spr, k_spr, target_spring, target_k_no_j_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                [valid, j_nbr, k_nbr, j_spr, k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
 
-                if valid && (~target_spring) && (~target_k_no_j_spring)
+                if valid
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
                     [tension, E_temp_circ] = tension_with_reference(X, X_nbr, R_u(j_spr,k_spr), k_u(j_spr,k_spr), leaflet, collagen_constitutive_circ); 
@@ -155,8 +155,6 @@ function [lambda_circ, lambda_rad, lambda_circ_mean, lambda_rad_mean, fig] = com
                         plot3(x_vals,y_vals,z_vals,'k'); 
                     end 
 
-                elseif valid && target_spring 
-                    error('No j direction targets allowed'); 
                 end 
 
             end  
@@ -173,9 +171,9 @@ function [lambda_circ, lambda_rad, lambda_circ_mean, lambda_rad_mean, fig] = com
 
                 j_nbr_tmp = j; 
 
-                [valid, j_nbr, k_nbr, j_spr, k_spr, target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                [valid, j_nbr, k_nbr, j_spr, k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
 
-                if valid && (~target_spring)
+                if valid
                     X_nbr = X_current(:,j_nbr,k_nbr); 
 
                     [tension, E_temp_rad] = tension_with_reference(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet, collagen_constitutive_rad); 
@@ -306,7 +304,7 @@ function [lambda_circ, lambda_rad, lambda_circ_mean, lambda_rad_mean, fig] = com
                                             
                     for j_nbr_tmp = [j-1,j+1]
                         k_nbr_tmp = k; 
-                        [valid, j_nbr, k_nbr, j_spr, k_spr, target_spring, target_k_no_j_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                        [valid, j_nbr, k_nbr, j_spr, k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
                         
                         if ~valid 
                             error('should always have two neighbors here'); 

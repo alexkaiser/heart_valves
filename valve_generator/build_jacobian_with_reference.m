@@ -58,15 +58,7 @@ function J = build_jacobian_with_reference(leaflet)
     else
         periodic_j = zeros(k_max,1); 
     end
-    
-    if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs 
-        targets_for_bcs = true; 
-        k_target_net = leaflet.target_net;
-        k_target_papillary = leaflet.target_papillary; 
-    else 
-        targets_for_bcs = false; 
-    end 
-    
+       
     
     % there are fewer than 15 nnz per row
     % if using the redundant features on sparse creation use more 
@@ -149,18 +141,15 @@ function J = build_jacobian_with_reference(leaflet)
                     
                     k_nbr_tmp = k; 
                     
-                    [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
                     
-                    if valid && (~target_k_no_j_spring)
+                    if valid
                         
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
-
-                        if ~target_spring 
-                            J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, R_u(j_spr,k_spr), k_u(j_spr,k_spr), leaflet);                    
-                        else 
-                            error('j direction target springs not allowed'); 
-                        end 
+                        
+                        J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, R_u(j_spr,k_spr), k_u(j_spr,k_spr), leaflet);                    
+                                                    
                         % current term is always added in 
                         % this gets no sign 
                         % this is always at the current,current block in the matrix 
@@ -182,19 +171,15 @@ function J = build_jacobian_with_reference(leaflet)
 
                     j_nbr_tmp = j; 
                     
-                    [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
                     
                     if valid
                         
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
  
-                        if ~target_spring 
-                            J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet);
-                        else 
-                            J_tmp = tension_zero_rest_length_linear_by_tangent_jacobian(X, X_nbr, k_target_net);
-                        end
-                        
+                        J_tmp = tension_tangent_jacobian_with_reference(X, X_nbr, R_v(j_spr,k_spr), k_v(j_spr,k_spr), leaflet);
+                       
                         % current term is always added in
                         % this gets no sign  
                         % this is always at the current,current block in the matrix 
@@ -255,49 +240,7 @@ function J = build_jacobian_with_reference(leaflet)
         C = chordae(tree_idx).C; 
         [m N_chordae] = size(C);
 
-        % root is an unknown because it is being treated as a target point 
-        % hangle this manually 
-        if targets_for_bcs
 
-            root = chordae(tree_idx).root; 
-                        
-            % root index is zero (and is a separate variable)
-            i = 0; 
-            
-            % root always connects to first point 
-            nbr_idx = 1; 
-            
-            % and current range 
-            range_current = range_chordae(chordae, i, tree_idx); 
-            
-            % get the neighbors coordinates, reference coordinate and spring constants
-            [nbr R_nbr k_val j_nbr k_nbr c_dec_tension_chordae] = get_nbr_chordae(leaflet, i, nbr_idx, tree_idx); 
-        
-            % if the neighbor is in the chordae 
-            if isempty(j_nbr) && isempty(k_nbr) 
-                range_nbr = range_chordae(chordae, nbr_idx, tree_idx); 
-            else 
-                error('Root neighbor must exist and be in the chordae'); 
-            end
-            
-            % tension Jacobian for this spring 
-            J_tmp = tension_tangent_jacobian_with_reference(root, nbr, R_nbr, k_val, leaflet); 
-            
-            % current always gets a contribution from this spring 
-            place_tmp_block(range_current, range_current, J_tmp); 
-
-            % range may not be empty here
-            place_tmp_block(range_current, range_nbr, -J_tmp); 
-
-            
-            % block for attachment to boundary condition with target spring 
-            J_tmp = tension_zero_rest_length_linear_by_tangent_jacobian(root, chordae(tree_idx).root_target, k_target_papillary);                             
-            place_tmp_block(range_current, range_current, J_tmp); 
-            % neighbor block is, by definition, a bc and gets no block
-            
-        end 
-        
-        
         for i=1:N_chordae
 
             left   = 2*i; 

@@ -28,7 +28,7 @@ for k=1:(k_max-1)
         j_nbr_tmp = j; 
         k_nbr_tmp = k + 1; 
 
-        [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+        [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
         if ~valid 
             error('trying to compute lengths with an invalid rest length')
         end
@@ -47,7 +47,7 @@ for j=1:N_each
     
     j_nbr_tmp = j-1; 
     k_nbr_tmp = k; 
-    [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
     if ~valid 
         error('trying to compute lengths with an invalid rest length')
     end
@@ -101,7 +101,7 @@ for j=1:j_max
                     j_nbr_tmp = j; 
                     k_nbr_tmp = k_tmp + 1; 
                     
-                    [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k_tmp, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k_tmp, j_nbr_tmp, k_nbr_tmp); 
 
                     if ~valid 
                         error('trying to compute lengths with an invalid rest length')
@@ -131,7 +131,7 @@ for j=1:N_each
         if is_internal(j,k) || is_bc(j,k)
             j_nbr_tmp = j+1; 
             k_nbr_tmp = k; 
-            [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+            [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
 
             if ~valid 
                 error('trying to compute lengths with an invalid rest length')

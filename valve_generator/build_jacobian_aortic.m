@@ -62,14 +62,6 @@ function J = build_jacobian_aortic(leaflet)
         periodic_j = zeros(k_max,1); 
     end 
     
-    if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs 
-        targets_for_bcs = true; 
-        k_target_net = leaflet.target_net; 
-        k_target_papillary = leaflet.target_papillary; 
-    else 
-        targets_for_bcs = false; 
-    end 
-    
     % there are fewer than 15 nnz per row
     % if using the redundant features on sparse creation use more 
     capacity = 10 * 15 * total_internal_leaflet; 
@@ -149,31 +141,24 @@ function J = build_jacobian_aortic(leaflet)
                     
                     k_nbr_tmp = k; 
                     
-                    [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
 
-                    if valid && (~target_k_no_j_spring)
+                    if valid
 
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
+                       
+                        alpha_tmp     = alpha(j_spr,k_spr);
+                        c_dec_tension = c_dec_circumferential(j_spr,k_spr); 
 
-                        
-                        if ~target_spring 
-                            alpha_tmp     = alpha(j_spr,k_spr);
-                            c_dec_tension = c_dec_circumferential(j_spr,k_spr); 
+                        % There is a 1/du term throughout from taking a finite difference derivative 
+                        % Place this on the tension variables, one of which apprears in each term 
+                        J_tmp = du * alpha_tmp * tangent_jacobian(X, X_nbr); 
 
-                            % There is a 1/du term throughout from taking a finite difference derivative 
-                            % Place this on the tension variables, one of which apprears in each term 
-                            J_tmp = du * alpha_tmp * tangent_jacobian(X, X_nbr); 
-
-                            if decreasing_tension && (alpha_tmp ~= 0)
-                                J_tmp = J_tmp + du * alpha_tmp * dec_tension_jacobian(X, X_nbr, du, c_dec_tension); 
-                            end 
-                        
-                        else 
-                            error('No j direction targets allowed'); 
+                        if decreasing_tension && (alpha_tmp ~= 0)
+                            J_tmp = J_tmp + du * alpha_tmp * dec_tension_jacobian(X, X_nbr, du, c_dec_tension); 
                         end 
                         
-
                         % current term is always added in 
                         % this gets no sign 
                         % this is always at the current,current block in the matrix 
@@ -195,30 +180,23 @@ function J = build_jacobian_aortic(leaflet)
 
                     j_nbr_tmp = j; 
                     
-                    [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
                     
                     if valid
                         % X_nbr = X_current(:,j_nbr,k_nbr);
                         [X_nbr range_nbr nbr_jacobian_needed] = get_neighbor(); 
                         
-                        if ~target_spring 
-                            beta_tmp      = beta(j_spr,k_spr); 
-                            c_dec_tension = c_dec_radial(j_spr,k_spr); 
+                        beta_tmp      = beta(j_spr,k_spr); 
+                        c_dec_tension = c_dec_radial(j_spr,k_spr); 
 
-                            % There is a 1/du term throughout from taking a finite difference derivative 
-                            % Place this on the tension variables, one of which apprears in each term 
-                            J_tmp = du * beta_tmp * tangent_jacobian(X, X_nbr); 
+                        % There is a 1/du term throughout from taking a finite difference derivative 
+                        % Place this on the tension variables, one of which apprears in each term 
+                        J_tmp = du * beta_tmp * tangent_jacobian(X, X_nbr); 
 
-                            if decreasing_tension && (beta_tmp ~= 0)
-                                J_tmp = J_tmp + du * beta_tmp * dec_tension_jacobian(X, X_nbr, du, c_dec_tension); 
-                            end
-                            
-                        else
-                            % connected to a node by a target spring that is a bc 
-                            % targets are absolute forces, no du here 
-                            J_tmp = tension_zero_rest_length_linear_by_tangent_jacobian(X, X_nbr, k_target_net);                           
-                        end 
-                        
+                        if decreasing_tension && (beta_tmp ~= 0)
+                            J_tmp = J_tmp + du * beta_tmp * dec_tension_jacobian(X, X_nbr, du, c_dec_tension); 
+                        end
+                                                    
                         % current term is always added in 
                         % this gets no sign  
                         % this is always at the current,current block in the matrix 

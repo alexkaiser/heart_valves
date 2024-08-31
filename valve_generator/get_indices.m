@@ -1,4 +1,4 @@
-function [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j, k, j_nbr, k_nbr)
+function [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr, k_nbr)
 %
 % Returns whether neighbor is a valid point, 
 % If valid retuns neighbor indicies 
@@ -60,29 +60,12 @@ j_nbr = get_j_nbr(j_nbr, k, periodic_j, j_max);
 
 k_spr = min(k, k_nbr);
 
-target_spring = false; 
-target_k_no_j_spring = false; 
-
 % neighbor must be valid 
 if (j_nbr > 0) && (k_nbr > 0) && ...
    (j_nbr <= j_max) && (k_nbr <= k_max) && ...
    (is_internal(j_nbr,k_nbr) || is_bc(j_nbr,k_nbr))
     valid = true; 
-    
-    % if boundary conditions are target points, then return flag accordingly 
-    if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs && is_bc(j_nbr,k_nbr)
-        target_spring = true; 
-    end
 else
     valid = false; 
-end 
-
-% trap for non-valid j direction spring spring when final hoop is just connecting to targets 
-if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs
-    if (k == k_nbr) && (k < k_max)
-        if is_bc(j,k+1)
-            target_k_no_j_spring = true; 
-        end 
-    end 
 end 
 

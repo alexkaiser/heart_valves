@@ -53,16 +53,6 @@ leaflet.jacobian  = valve.jacobian;
 
 leaflet.skeleton = valve.skeleton; 
 
-if isfield(valve, 'targets_for_bcs')
-    leaflet.targets_for_bcs = valve.targets_for_bcs; 
-    
-    if isfield(valve, 'targets_for_bcs_ref_only')
-        if valve.targets_for_bcs && valve.targets_for_bcs_ref_only
-            error('cannot set targets_for_bcs and for targets_for_bcs_ref_only'); 
-        end 
-    end 
-    
-end 
 
 if isfield(valve, 'careful_early_steps')
     leaflet.careful_early_steps = valve.careful_early_steps; 
@@ -102,7 +92,6 @@ leaflet.du = 1/N;
 leaflet.r = valve.r; 
 
 leaflet.ds = valve.ds; 
-leaflet.target_length_check = false;
 
 % information about geometry 
 leaflet = get_util_arrays_aortic(leaflet, valve); 

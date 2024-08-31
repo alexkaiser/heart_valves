@@ -158,16 +158,7 @@ function params = output_to_ibamr_format(valve)
     % would be better to implement some resizing but that will also clutter things up 
     params.vertices_capacity = 100 * N^2; 
     params.vertices = zeros(3,params.vertices_capacity);        % this has the initial points for target points 
-    
-    if valve.targets_for_bcs
-        params.targets_for_bcs = true; 
-        params.vertices_target = nan * zeros(3,params.vertices_capacity); % this has the target locations for target points 
-        params.vertex_target_pos_file = fopen(strcat(base_name, '_target_position.vertex'), 'w'); 
-        params.total_vertices_target = 0; 
-    else 
-        params.targets_for_bcs = false; 
-    end 
-    
+
     if isfield(valve.skeleton, 'inverse_transformation_initial_condition')
         params.inverse_transformation_initial_condition = valve.skeleton.inverse_transformation_initial_condition; 
     end 
@@ -458,38 +449,31 @@ function params = output_to_ibamr_format(valve)
                 params = place_cartesian_net(params, valve.leaflets(i), r_extra, L, ds, k_rel, k_target_net, ref_frac_net, eta_net); 
             end 
             
-        else 
-            
-            
-            if isfield(params, 'targets_for_bcs') && params.targets_for_bcs 
-                if copy == 1
-                    params = write_inst_for_targets_as_bcs(params, valve.leaflets(1));                 
-                end 
-            else             
-                % pass L=r to get only one ring placed 
-                hoop_springs = true; 
-                
-                if isfield(valve, 'extra_radius_hoops')
-                    extra_radius_hoops = valve.extra_radius_hoops; 
-                else 
-                    extra_radius_hoops = 0; 
-                end 
-                
-                if strcmp(params.type, 'aortic') 
-                    % only place on the first copy here 
-                    if copy == 1 
-                        params = place_net(params, valve.leaflets(i), ds, r, r + extra_radius_hoops, k_rel, k_target_net, ref_frac_net, eta_net, hoop_springs); 
-                    end 
-                else
+        else             
+            % pass L=r to get only one ring placed 
+            hoop_springs = true; 
+
+            if isfield(valve, 'extra_radius_hoops')
+                extra_radius_hoops = valve.extra_radius_hoops; 
+            else 
+                extra_radius_hoops = 0; 
+            end 
+
+            if strcmp(params.type, 'aortic') 
+                % only place on the first copy here 
+                if copy == 1 
                     params = place_net(params, valve.leaflets(i), ds, r, r + extra_radius_hoops, k_rel, k_target_net, ref_frac_net, eta_net, hoop_springs); 
                 end 
-                
-                if extra_radius_hoops > 0.0
-                    max_to_place = max(0,floor(extra_radius_hoops / ds) - 1);
-                    params = place_rays(params, valve.leaflets(i), ds, r + extra_radius_hoops, k_rel, k_target_net, ref_frac_net, eta_net, max_to_place);
-                end 
-                
+            else
+                params = place_net(params, valve.leaflets(i), ds, r, r + extra_radius_hoops, k_rel, k_target_net, ref_frac_net, eta_net, hoop_springs); 
             end 
+
+            if extra_radius_hoops > 0.0
+                max_to_place = max(0,floor(extra_radius_hoops / ds) - 1);
+                params = place_rays(params, valve.leaflets(i), ds, r + extra_radius_hoops, k_rel, k_target_net, ref_frac_net, eta_net, max_to_place);
+            end 
+                
+             
         end 
         
 
@@ -506,9 +490,6 @@ function params = output_to_ibamr_format(valve)
         
         params.vertices(3,first_idx:last_idx) = params.vertices(3,first_idx:last_idx) + params.z_offset; 
         
-        if params.targets_for_bcs
-            params.vertices_target(3,first_idx:last_idx) = params.vertices_target(3,first_idx:last_idx) + params.z_offset; 
-        end 
         
         if strcmp(params.type, 'aortic') && (copy == 1) && isfield(params, 'normal_thicken') && params.normal_thicken 
             % set end links in circ fibers to be bc in the normal thicken since they cross each other 
@@ -749,16 +730,6 @@ function params = output_to_ibamr_format(valve)
         prepend_line_with_int(strcat(base_name, '.beam'), params.total_beams); 
     end 
     
-    if params.targets_for_bcs
-        fclose(params.vertex_target_pos_file); 
-        prepend_line_with_int(strcat(base_name, '_target_position.vertex'), params.total_vertices_target); 
-        
-        if params.total_vertices_target ~= params.total_vertices
-            error('total vertices in target position file and basic position file are not consistent')
-        end 
-        
-    end
-
 end 
 
 
@@ -786,17 +757,6 @@ function params = write_all_vertices(params)
     for i=1:max_idx
         vertex_string(params.vertices(:,i), params.vertex); 
         params.total_vertices = params.total_vertices + 1; 
-    end 
-    
-    if isfield(params, 'targets_for_bcs') && params.targets_for_bcs
-        
-        nan_indices = isnan(params.vertices_target); 
-        params.vertices_target(nan_indices) = params.vertices(nan_indices); 
-        
-        for i=1:max_idx
-            vertex_string(params.vertices_target(:,i), params.vertex_target_pos_file); 
-            params.total_vertices_target = params.total_vertices_target + 1; 
-        end 
     end 
     
 end 
@@ -1088,88 +1048,28 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_targ
    
     for k=1:k_max
         for j=1:j_max
-            
-            if leaflet.targets_for_bcs
-
-                % every internal point written to the file 
-                % targets written in separate array
-                if is_internal(j,k)
-
-                    % check all neighbors for boundary conditions 
-                    found_target = false; 
-                    target_j = []; 
-                    target_k = []; 
-                    for j_nbr_tmp = [j-1,j+1]
-                        k_nbr_tmp = k;                 
-                        [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
-                        if target_spring
-                            if found_target
-                                error('Found two targets attached to same location, should be impossible'); 
-                            end 
                             
-                            found_target = true; 
-                            target_j = j_nbr; 
-                            target_k = k_nbr; 
-                        end 
-                    end 
-                        
-                    for k_nbr_tmp = [k-1,k+1]
-                        j_nbr_tmp = j; 
-                        [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
-                    
-                        if target_spring
-                            if found_target
-                                error('Found two targets attached to same location, should be impossible'); 
-                            end 
-                            
-                            found_target = true; 
-                            target_j = j_nbr; 
-                            target_k = k_nbr; 
-                        end 
-                    end 
-                    
-                    params.vertices(:,params.global_idx + 1) = X(:,j,k); 
-                    
-                    if found_target
-                        params.vertices_target(:,params.global_idx + 1) = X(:,target_j,target_k); 
-                    end 
-                    leaflet.indices_global(j,k) = params.global_idx; 
+            % default behavior, bcs are targets with current position 
 
-                    % if flag set, this is a target point 
-                    if found_target
-                        if exist('eta_net', 'var')
-                            params = target_string(params, params.global_idx, k_target_net, eta_net);     
-                        else
-                            params = target_string(params, params.global_idx, k_target_net);     
-                        end 
-                    end 
+            % every internal and boundary point written to the file 
+            if is_internal(j,k) || is_bc(j,k)
 
-                    params.global_idx = params.global_idx + 1;
+                params.vertices(:,params.global_idx + 1) = X(:,j,k); 
+                leaflet.indices_global(j,k) = params.global_idx; 
+
+                % if on boundary, this is a target point 
+                if is_bc(j,k)
+                    if exist('eta_net', 'var')
+                        params = target_string(params, params.global_idx, k_target_net, eta_net);     
+                    else
+                        params = target_string(params, params.global_idx, k_target_net);     
+                    end 
                 end 
-                
-            else % ~leaflet.targets_for_bcs 
-                
-                % default behavior, bcs are targets with current position 
-                
-                % every internal and boundary point written to the file 
-                if is_internal(j,k) || is_bc(j,k)
 
-                    params.vertices(:,params.global_idx + 1) = X(:,j,k); 
-                    leaflet.indices_global(j,k) = params.global_idx; 
-
-                    % if on boundary, this is a target point 
-                    if is_bc(j,k)
-                        if exist('eta_net', 'var')
-                            params = target_string(params, params.global_idx, k_target_net, eta_net);     
-                        else
-                            params = target_string(params, params.global_idx, k_target_net);     
-                        end 
-                    end 
-
-                    params.global_idx = params.global_idx + 1;
-                end 
-                
+                params.global_idx = params.global_idx + 1;
             end 
+                
+             
         end 
     end
     
@@ -1182,14 +1082,7 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_targ
 
             % always place root index first 
 
-            if leaflet.targets_for_bcs
-                % split location of targets and their current position   
-                params.vertices       (:,params.global_idx + 1) = leaflet.chordae(tree_idx).root;
-                params.vertices_target(:,params.global_idx + 1) = leaflet.chordae(tree_idx).root_target;
-            else
-                % default behavior with only one position 
-                params.vertices(:,params.global_idx + 1) = leaflet.chordae(tree_idx).root;
-            end 
+            params.vertices(:,params.global_idx + 1) = leaflet.chordae(tree_idx).root;
 
             leaflet.chordae(tree_idx).idx_root = params.global_idx;                 
 
@@ -1288,7 +1181,7 @@ function params = add_leaflet_springs(params, leaflet, ds, collagen_spring)
         for j=1:j_max
             
             % every internal and boundary point may have springs connected to it 
-            if is_internal(j,k) || (is_bc(j,k) && ~leaflet.targets_for_bcs)
+            if is_internal(j,k) || is_bc(j,k)
                 
                 if output && ((mod(j,output_stride) == 1) || (output_stride == 1))
                     output_tmp_k = true; 
@@ -1335,8 +1228,8 @@ function params = add_leaflet_springs(params, leaflet, ds, collagen_spring)
                 % springs in leaflet, only go in up direction 
                 j_nbr_tmp = j + 1; 
                 k_nbr_tmp = k; 
-                [valid j_nbr k_nbr j_spr k_spr target_spring target_k_no_j_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
-                if valid && (~target_spring) && (~target_k_no_j_spring)
+                [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                if valid
                     
                     % no bc to bc springs 
                     if ~(is_bc(j, k) && is_bc(j_nbr, k_nbr))
@@ -1362,8 +1255,8 @@ function params = add_leaflet_springs(params, leaflet, ds, collagen_spring)
                 % springs in leaflet, only go in up direction 
                 j_nbr_tmp = j; 
                 k_nbr_tmp = k + 1; 
-                [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
-                if valid && (~target_spring)
+                [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+                if valid
                     
                     % no bc to bc springs 
                     if ~(is_bc(j, k) && is_bc(j_nbr, k_nbr))
@@ -1612,7 +1505,7 @@ function params = place_nodule_beams(params, leaflet, k_bend_nodule_length, k_be
     for k=(k_max:-1:1)
         j_nbr_tmp = j; 
         k_nbr_tmp = k-1; 
-        [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+        [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
         
         height = height + R_v(j_spr,k_spr); 
         
@@ -1634,7 +1527,7 @@ function params = place_nodule_beams(params, leaflet, k_bend_nodule_length, k_be
     for j=(center_leaflet_idx+1):N_each
         j_nbr_tmp = j-1; 
         k_nbr_tmp = k; 
-        [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+        [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
 
         length = length + R_u(j_spr,k_spr);
 
@@ -2385,41 +2278,6 @@ end
 
 
 
-
-function params = write_inst_for_targets_as_bcs(params, leaflet)
-    % if targets_for_bcs, then want to set the maximum vertices (which are the points connected to the exact ring location)
-    % as the instrument points 
-
-    j_max = leaflet.j_max; 
-    k_max = leaflet.k_max; 
-    
-    % write the instrument file header here 
-    fprintf(params.inst, '1   # num meters in file\n'); 
-    fprintf(params.inst, 'meter_0   # name\n'); 
-    fprintf(params.inst, '%d  # number of meter points\n', j_max); 
-    
-
-    k = k_max - 1; 
-    instrument_idx = 0; 
-    
-    for j=1:j_max
-    
-        % pull the global index here 
-        idx = leaflet.indices_global(j,k); 
-        
-        if ~leaflet.is_internal(j,k)
-            error('placing non internal vertex in inst file')
-        end 
-        if ~leaflet.is_bc(j,k+1)
-            error('placing an instrument point, but nbr up in k is not a bc')
-        end 
-        
-        fprintf(params.inst, '%d \t0 \t %d\n', idx, instrument_idx); 
-        instrument_idx = instrument_idx + 1; 
-                    
-    end 
-
-end 
 
 function params = place_rays(params, leaflet, ds, L, k_rel, k_target, ref_frac, eta, max_to_place)
     % 

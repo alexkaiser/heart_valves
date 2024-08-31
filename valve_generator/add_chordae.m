@@ -59,12 +59,6 @@ function leaflet = add_chordae(leaflet, tree_idx, C)
     if n_tree < 1
         warning('weird boundary errors possible on such a small tree'); 
     end 
-
-    if isfield(leaflet, 'targets_for_bcs') && leaflet.targets_for_bcs 
-        targets_for_bcs = true; 
-    else 
-        targets_for_bcs = false; 
-    end 
     
     % just for initial guess 
     tree_frac           = 0.5; 
@@ -104,17 +98,6 @@ function leaflet = add_chordae(leaflet, tree_idx, C)
         end 
     end 
         
-        
-    if targets_for_bcs
-        % root target pulled from the papillary arrays 
-        chordae(tree_idx).root_target = papillary(:,tree_idx); 
-        chordae(tree_idx).targets_for_bcs = true; 
-        
-        % just move the initial condition up slightly for the root 
-        % which is now an internal point
-        root_frac = 0.95; 
-        chordae(tree_idx).root = root_frac *chordae(tree_idx).root_target + (1-root_frac) * chordae(tree_idx).C(:,1); 
-    end 
     
     
     % do not actually want the leaves (which are copied)
@@ -137,11 +120,6 @@ function leaflet = add_chordae(leaflet, tree_idx, C)
     chordae(tree_idx).min_global_idx   = leaflet.total_internal_with_trees + 1; 
     
     leaflet.total_internal_with_trees  = leaflet.total_internal_with_trees + 3*max_internal; 
-    
-    % one extra internal here for root
-    if targets_for_bcs
-        leaflet.total_internal_with_trees = leaflet.total_internal_with_trees + 3; 
-    end 
     
     leaflet.chordae = chordae;
 end 

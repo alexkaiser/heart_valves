@@ -65,9 +65,8 @@ valve.decreasing_tension = decreasing_tension;
 
 
 valve.diff_eqns = @difference_equations_bead_slip; 
-valve.jacobian  = @build_jacobian_bead_slip;
-        
-valve.targets_for_bcs = false; 
+valve.jacobian  = @build_jacobian_bead_slip;        
+
 
 % general solve parameters
 

@@ -23,7 +23,7 @@ function [free_edge_length_single_loaded, ...
 
         j_nbr_tmp = j-1; 
         k_nbr_tmp = k; 
-        [valid j_nbr k_nbr j_spr k_spr target_spring] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+        [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
         if ~valid 
             error('trying to compute lengths with an invalid rest length')
         end
