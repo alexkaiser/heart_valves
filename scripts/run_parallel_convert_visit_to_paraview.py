@@ -2,6 +2,52 @@ from __future__ import print_function
 import os, sys, subprocess, time
 
 
+def fix_visit_files(viz_directory):
+    ''' 
+    Checks viz directory to find output increment and rewrites visit files 
+    '''
+                
+    prev_dir = os.getcwd()
+    os.chdir(viz_directory)
+    
+    # minimum nonzero step 
+    min_nonzero = float('Inf')
+    max_idx = 0
+    
+    for f in os.listdir('.'): 
+        if f.startswith('visit_dump.'):
+            step_num = int(f.split('.')[1])
+            
+            if (step_num is not 0):
+                if step_num < min_nonzero: 
+                    min_nonzero = step_num
+                    
+            if step_num > max_idx: 
+                max_idx = step_num
+    
+    dumps = open('dumps.visit', 'w')
+    lag   = open('lag_data.visit', 'w')
+
+    state = 0
+    stride = min_nonzero
+    max_step = max_idx
+
+    dumps.write('visit_dump.' + str('%05d' % state)    +  '/summary.samrai\n')
+    lag.write('lag_data.cycle_' + str('%06d' % state) + '/lag_data.cycle_' + str('%06d' % state) + '.summary.silo\n') 
+
+    for state in range(stride, max_step, stride):
+        dumps.write('visit_dump.' + str('%05d' % state)    +  '/summary.samrai\n')
+        lag.write('lag_data.cycle_' + str('%06d' % state) + '/lag_data.cycle_' + str('%06d' % state) + '.summary.silo\n') 
+
+    state = max_step
+    dumps.write('visit_dump.' + str('%05d' % state)    +  '/summary.samrai\n')
+    lag.write('lag_data.cycle_' + str('%06d' % state) + '/lag_data.cycle_' + str('%06d' % state) + '.summary.silo\n') 
+
+    dumps.close()
+    lag.close()
+    os.chdir(prev_dir)
+
+
 def run_command_parallel(call_str_base, n_procs):
 
     processes = []
@@ -60,6 +106,10 @@ if __name__ == '__main__':
                 os.chdir(f)
                 
                 viz_dir_name = os.getcwd()
+                
+                # clean up visit files to be consistent after restarts
+                # if number_restarts > 0:
+                fix_visit_files(viz_dir_name)
 
                 if len(sys.argv) < 2:
                     raise InputError("Must specify n_procs_sim")
