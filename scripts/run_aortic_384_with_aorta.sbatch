@@ -65,9 +65,6 @@ python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS"
 # touch done.txt
 
 module load python/3.9.0
-cd viz_IB3d_tree_cycle_256
-python3 ~/copies_scripts/fix_visit_files_automatic.py
-cd $RUNDIR
 
 # load stuff for movie making 
 source ~/.bash_profile

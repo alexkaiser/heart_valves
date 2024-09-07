@@ -35,11 +35,18 @@ if bicuspid_paper
     axis_vec_flow     = [0 2.4 -300 800];
 end 
 
-bicuspidization_paper = true; 
+bicuspidization_paper = false; 
 if bicuspidization_paper
     nframes = 1446; 
     axis_vec_pressure = [0.8 2.4 -5 160]; 
     axis_vec_flow     = [0.8 2.4 -350 600];
+end 
+
+trileaflet_update_9_2024 = true; 
+if trileaflet_update_9_2024
+    nframes = 1922;
+    axis_vec_pressure = [0.0 3.2 0 160]; 
+    axis_vec_flow     = [0.0 3.2 -300 600];
 end 
 
 
