@@ -23,7 +23,7 @@ load(mat_file_name , 'valve_with_reference', 'params');
 
 cell_file_exported = false; 
 
-file_list = dir('aortic_*.csv'); 
+file_list = dir('aortic_*.csv');
 
 for i = 1:length(file_list)
     

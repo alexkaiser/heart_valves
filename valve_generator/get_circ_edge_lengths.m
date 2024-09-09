@@ -21,7 +21,7 @@ function [free_edge_length_single_loaded, ...
     for j=1:N_each
         % k passed in 
 
-        j_nbr_tmp = j-1; 
+        j_nbr_tmp = j+1; 
         k_nbr_tmp = k; 
         [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
         if ~valid 

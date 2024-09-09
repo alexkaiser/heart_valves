@@ -39,8 +39,6 @@ function leaflet = get_util_arrays_aortic(leaflet, valve)
 
 N = leaflet.N; 
 
-j_max = N; 
-
 if isfield(leaflet, 'variety') && strcmp(leaflet.variety, 'bicuspid') 
     N_each = N/2; 
     N_leaflets = 2; 
@@ -56,6 +54,22 @@ else
     end 
 end 
 
+    
+if mod(N,2) ~= 0 
+    error("N must be multiple of 2")
+end 
+if mod(N,3) ~= 0 
+    error("N must be multiple of 3")
+end 
+% redundant 
+% if mod(N,6) ~= 0 
+%     error("N must be multiple of 6")
+% end 
+
+
+% plus one for bottom bc 
+j_max = N_each + 1; 
+
 leaflet.N_each = N_each; 
 leaflet.N_leaflets = N_leaflets; 
 
@@ -63,14 +77,13 @@ leaflet.N_leaflets = N_leaflets;
 k_max = N/6 + 1; % N_each/2 + 1 in standard tricuspid case 
 
 leaflet.j_max                = j_max; 
+leaflet.j_max_all_leaflets   = j_max * N_leaflets; 
 leaflet.k_max                = k_max; 
 
-% all are periodic 
-periodic_j = ones(k_max, 1); 
-leaflet.periodic_j           = periodic_j; 
+% none are periodic 
+periodic_j = zeros(k_max, 1); 
+leaflet.periodic_j = periodic_j; 
 
-j_max                     = leaflet.j_max; 
-k_max                     = leaflet.k_max; 
 
 % data management stuff 
 % set below 
@@ -81,11 +94,12 @@ point_idx_with_bc         = zeros(j_max, k_max);
     
 % edges are boundary conditions 
 % vertical boundaries at each commissure 
-for j=(N_each * (1:N_leaflets))
+for j=[1,j_max]
     for k=1:k_max
         is_bc(j,k) = true; 
     end 
 end 
+
 % valve ring boundary and free edge boundary 
 % Neumann boundary for free edge left still 
 for j=1:j_max
@@ -97,6 +111,7 @@ for j=1:j_max
         is_bc(j,k) = true; 
     end 
 end 
+
 
 is_internal = ~is_bc; 
 

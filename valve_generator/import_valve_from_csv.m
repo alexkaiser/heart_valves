@@ -1,4 +1,4 @@
-function leaflet = import_valve_from_csv(valve, file_name, indices_global, directory, run_inv_transform)
+function leaflet = import_valve_from_csv(valve, file_name, indices_global, directory, run_inv_transform, leaflet_num)
 
 if exist('directory', 'var')
     file_with_path = fullfile(directory, file_name); 
@@ -10,7 +10,11 @@ if ~exist('run_inv_transform', 'var')
     run_inv_transform = false; 
 end 
 
-leaflet = valve.leaflets(1); 
+if ~exist('leaflet_num', 'var')
+    leaflet_num = 1; 
+end 
+
+leaflet = valve.leaflets(leaflet_num); 
 
 % file_with_path
 

@@ -482,14 +482,7 @@ if build_reference
 
                 if extrude_length ~= 0
                     
-                    % turns off final radial layer at comms of extruded aortic 
-                    leaflet_temp = add_bc_layer_at_commmissure_aortic(leaflet_temp); 
-                    
-                    % remove another layer since that is where all the problems are 
-                    leaflet_temp = add_bc_layer_at_commmissure_aortic(leaflet_temp); 
-                    
                     % relax 
-                    % warning('relaxation on pre extrude is off!')
                     [leaflet_temp pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet_temp, tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails);             
                     
                     if ~pass
@@ -508,10 +501,7 @@ if build_reference
                 
         end 
         
-        
-        
-        
-        
+                
         % reset the free edges of the aortic to neumann bc for final output 
         if isfield(valve, 'name') && strcmp(valve.name, 'aortic')
             if isfield(valve, 'dirichlet_free_edge_with_ref_only') && valve.dirichlet_free_edge_with_ref_only
@@ -536,6 +526,9 @@ if build_reference
 %             end 
 %         end 
         
+        if isfield(valve, 'rotate_identical_leaflets') && valve.rotate_identical_leaflets 
+            valve_with_reference = add_rotated_leaflets_aortic(valve_with_reference);
+        end 
         
         if pass
             fprintf('Global solve passed, err = %e\n\n', err); 

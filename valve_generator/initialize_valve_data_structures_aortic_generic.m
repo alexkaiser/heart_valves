@@ -40,6 +40,8 @@ function [valve] = initialize_valve_data_structures_aortic_generic(N)
 % Main data structure with everything 
 valve.N = N; 
 
+valve.rotate_identical_leaflets = true;
+
 % effective infinity by default 
 valve.max_it                = 1e8; 
 valve.max_continuations     = 1e8; 
@@ -114,12 +116,14 @@ valve.num_copies = 3;
 
 % respace on annulus in 3d 
 % if false, spaced wrt theta 
-valve.annulus_points_even_spacing = true; 
+valve.annulus_points_even_spacing = false; 
 
 
 valve.normal_thicken = true; 
 % nominal aortic valve thickness
 valve.normal_thickness = 0.044 * (384/N); 
+
+valve.extrusion_out = true;
 
 % add flags to spring files 
 % to view and output with a stride 
@@ -266,7 +270,7 @@ if valve.in_heart
     % bottom flat at zero 
     valve.z_min_cylinder = @(theta) zeros(size(theta)); 
     
-    debug_plot = true; 
+    debug_plot = false; 
     if debug_plot
         th = linspace(0,2*pi,1000);
         plot(th,valve.z_min_cylinder(th))

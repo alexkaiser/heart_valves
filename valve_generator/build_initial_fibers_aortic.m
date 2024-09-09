@@ -31,8 +31,8 @@ function [X, len_annulus_min, len_annulus_each] = build_initial_fibers_aortic(le
 % OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-j_max            = leaflet.j_max; 
-k_max            = leaflet.k_max; 
+j_max = leaflet.j_max; 
+k_max = leaflet.k_max; 
 
 N = leaflet.N; 
 N_each = leaflet.N_each; 
@@ -45,9 +45,8 @@ else
 end 
 X = NaN * zeros(3,j_max,k_max); 
 
-debug = false; 
+debug = true; 
 
-free_edge_smooth = false; 
 
 if isfield(valve.skeleton, 'valve_ring_pts')
     % use whatever points are measured for valve ring 
@@ -131,25 +130,22 @@ else
     % annulus_points_even_spacing = true; 
     
     if isfield(valve, 'annulus_points_even_spacing') && valve.annulus_points_even_spacing
-        
+        error('not implemented')
         % just put a bunch of points 
         % then interpolate to equally spaced 
         mesh_scaling = 1000; 
         N_interp = N * mesh_scaling; 
         N_each_interp = N_each * mesh_scaling; 
         du_interp = 1/N_interp; 
-        j_max_interp = j_max*mesh_scaling; 
+        j_max_interp = N_each_interp + 1; 
         X_annulus_interp = zeros(3,j_max_interp); 
         
         % initial positions to interpolate from 
-        k = 1; 
-        for j = 1:j_max_interp
+        for j = 1:(N_each_interp + 1)
 
-            j_this_cusp = mod(j,N_each_interp); 
-            x_this_cusp = j_this_cusp / N_each_interp; 
+            x_this_cusp = (j-1) / N_each_interp; 
 
             z_tmp = z_tmp_fn(x_this_cusp);  
-
 
             r_tmp = r; 
 
@@ -161,44 +157,24 @@ else
                 end 
             end         
 
-            X_annulus_interp(:,j) = [r_tmp*cos(j*du_interp*2*pi + ring_offset_angle) ; r_tmp*sin(j*du_interp*2*pi + ring_offset_angle); z_tmp]; 
+            X_annulus_interp(:,j) = [r_tmp*cos((j-1)*du_interp*2*pi + ring_offset_angle) ; r_tmp*sin((j-1)*du_interp*2*pi + ring_offset_angle); z_tmp]; 
         end        
         
-        
-        for comm_idx = 1:N_leaflets
-            
-            min_idx_offset = (comm_idx-1)*N_each;         
+        arc_len_cumulative = zeros(N_each_interp + 1,1); 
 
-            % arrange current leaflet interpolation points 
-            min_idx_offset_interp = (comm_idx-1)*N_each_interp; 
-            X_this_leaflet_interp = X_annulus_interp(:,(1:N_each_interp) + min_idx_offset_interp); 
+        for j=2:(N_each_interp+1)
+            arc_len_cumulative(j) = arc_len_cumulative(j-1) + norm(X_annulus_interp(:,j-1) - X_annulus_interp(:,j)); 
+        end 
+
+        arc_len_total = arc_len_cumulative(end); 
+
+        query_pts = (arc_len_total/N_each) * (0:N_each);  
+
+        X(:,1:j_max,1)= interp1(arc_len_cumulative, X_annulus_interp', query_pts)'; 
             
-            % comm idx below comes from top leaflet if needed 
-            if comm_idx == 1
-                idx_comm_below = N_interp; 
-            else 
-                idx_comm_below = min_idx_offset_interp; 
-            end 
-            
-            % wrapped comm idx here 
-            X_this_leaflet_interp = [X_annulus_interp(:, idx_comm_below), X_this_leaflet_interp]; 
-            
-            arc_len_cumulative = zeros(N_each_interp + 1,1); 
-            
-            for j=2:(N_each_interp+1)
-                arc_len_cumulative(j) = arc_len_cumulative(j-1) + norm(X_this_leaflet_interp(:,j-1) - X_this_leaflet_interp(:,j)); 
-            end 
-            
-            arc_len_total = arc_len_cumulative(end); 
-            
-            query_pts = (arc_len_total/N_each) * (1:N_each);  
-            
-            X(:,(1:N_each) + min_idx_offset,1)= interp1(arc_len_cumulative, X_this_leaflet_interp', query_pts)'; 
-            
-            
-        end     
+                         
         
-        debug_spacing = false; 
+        debug_spacing = true; 
         if debug_spacing
             figure; 
 
@@ -225,43 +201,31 @@ else
             
             % quick length consistency check 
             tol_lengths = 1e-3; 
-            for comm_idx = 1:N_leaflets
             
-                min_idx_offset = (comm_idx-1)*N_each;         
+            % comm point below 
+            arc_len_first = norm(X(:,1,1) - X(:,2,1)); 
 
-                % comm idx below comes from top leaflet if needed 
-                if comm_idx == 1
-                    idx_comm_below = N; 
-                else 
-                    idx_comm_below = min_idx_offset; 
-                end 
+            for j=2:N_each
+                arc_len_current = norm(X(:,j-1,1) - X(:,j,1)); 
 
-                % comm point below 
-                arc_len_first = norm(X(:,idx_comm_below,1) - X(:,1 + min_idx_offset,1)); 
-                
-                for j=2:N_each
-                    arc_len_current = norm(X(:,j-1 + min_idx_offset,1) - X(:,j + min_idx_offset,1)); 
-                    
-                    if abs((arc_len_current - arc_len_first)/arc_len_first) > tol_lengths
-                        error('inconsistent arc lengths after equalizing'); 
-                    end 
-                                       
+                if abs((arc_len_current - arc_len_first)/arc_len_first) > tol_lengths
+                    error('inconsistent arc lengths after equalizing'); 
                 end 
-                          
-            end     
+            end 
                                               
         end 
-        
-        
+                
         
         
     else 
         % minimum ring 
         k = 1; 
         for j = 1:j_max
-
-            j_this_cusp = mod(j,N_each); 
-            x_this_cusp = j_this_cusp / N_each; 
+            
+            % no mod necessary 
+            % j_this_cusp = mod(j,N_each); 
+            % subtract one for bc
+            x_this_cusp = (j-1) / N_each; 
 
             z_tmp = z_tmp_fn(x_this_cusp); 
 
@@ -276,7 +240,7 @@ else
             end         
 
 
-            X(:,j,k) = [r_tmp*cos(j*du*2*pi + ring_offset_angle) ; r_tmp*sin(j*du*2*pi + ring_offset_angle); z_tmp]; 
+            X(:,j,k) = [r_tmp*cos((j-1)*du*2*pi + ring_offset_angle) ; r_tmp*sin((j-1)*du*2*pi + ring_offset_angle); z_tmp]; 
         end
     end 
     
@@ -299,54 +263,32 @@ else
 end 
 
 
+% set initial reasonable free edge 
 % for interpolated or parameteric 
 k = k_max; 
+comm_idx = 1;
+dj_interp = 1/(N_each/2); 
 
-for comm_idx = 1:N_leaflets
-
-    % point one internal of commissure to point that m
-    % N_each is a power of two 
-    min_idx = (comm_idx-1)*N_each;         
-
-    dj_interp = 1/(N_each/2); 
-
-    for j=1:(N_each/2)
-        X(:,j + min_idx           ,k) = (1 - j*dj_interp) * commissure_points(:,comm_idx) + j*dj_interp * center; 
-    end 
-
-    % center out to commissure point 
-    if comm_idx < N_leaflets
-        comm_idx_next = comm_idx+1; 
-    else 
-        comm_idx_next = 1; 
-    end
-
-    for j=1:(N_each/2)
-        X(:,j + min_idx + N_each/2,k) = (1 - j*dj_interp) * center + j*dj_interp * commissure_points(:,comm_idx_next); 
-    end 
-
-    if free_edge_smooth && (N_each > 16)
-
-        smooth_points = N_each/16; 
-
-        free_edge_copy = X(:,:,k); 
-
-        smooth_min = (N_each/2) - smooth_points; 
-        smooth_max = (N_each/2) + smooth_points; 
-
-        for j = smooth_min:smooth_max
-            for component = 1:3
-                free_edge_copy(component,j + min_idx) = mean(X(component,(j + min_idx - smooth_points):(j + min_idx + smooth_points)  ,k)); 
-            end 
-        end 
-
-        X(:,:,k) = free_edge_copy; 
-
-    end 
-
+% first half of leaflet including commissure 
+for j=0:(N_each/2)
+    X(:,j + 1,k) = (1 - j*dj_interp) * commissure_points(:,comm_idx) + j*dj_interp * center; 
 end 
 
-%     % now, linear interpolation from annulus to free edge 
+% center out to commissure point 
+if comm_idx < N_leaflets
+    comm_idx_next = comm_idx+1; 
+else 
+    comm_idx_next = 1; 
+end
+
+% second half of leaflet 
+for j=1:(N_each/2)
+    X(:,j + 1 + N_each/2,k) = (1 - j*dj_interp) * center + j*dj_interp * commissure_points(:,comm_idx_next); 
+end 
+
+
+
+% linear interpolation from annulus to free edge 
 for j=1:j_max 
     dk_interp = 1/(k_max-1);         
     for k=2:(k_max-1)
@@ -355,13 +297,11 @@ for j=1:j_max
 end 
 
 
-
-
 % minimum ring 
 len_annulus_min = 0; 
 len_annulus_each = zeros(j_max,1); 
 k = 1; 
-for j = 1:j_max
+for j = 1:N_each
 
     [valid, j_nbr, k_nbr] = get_indices(leaflet, j, k, j+1, k); 
     if ~valid
@@ -371,8 +311,7 @@ for j = 1:j_max
     len_annulus_min = len_annulus_min + norm(X(:,j_nbr,k_nbr) - X(:,j,k));     
     len_annulus_each(j) = norm(X(:,j_nbr,k_nbr) - X(:,j,k)); 
 end 
-    
-    
+
 
 if debug 
     figure; 

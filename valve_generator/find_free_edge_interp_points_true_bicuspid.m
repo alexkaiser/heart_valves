@@ -60,7 +60,6 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
 
     options = optimset('Display','off','TolFun',1e-16);
 
-    % 
     
     % do not go lower than threshold 
     % can be close in the middle 
@@ -115,58 +114,46 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
     
     for it = 1:n_iterations
 
-        % sets the new leaflet position 
-        % with free edge at given functional form (sin^2) 
-        for comm_idx = 1:N_leaflets
+        for j=2:N_each
+            for k=k_range
 
-            % point one internal of commissure to point that m
-            % N_each is a power of two 
-            min_idx = (comm_idx-1)*N_each;         
+                ring_point = X(:,j,1); 
 
-            for j=1:(N_each-1)
-                for k=k_range
+                % total radial rest length of this radial fiber 
+                total_rest_length = sum(R_v(j, 1:(k-1))); 
 
-                    ring_point = X(:,j + min_idx ,1); 
+                tangent = (free_edge_interp_points(:,j) - ring_point); 
+                tangent = tangent / norm(tangent); 
 
-                    % total radial rest length of this radial fiber 
-                    total_rest_length = sum(R_v(j + min_idx, 1:(k-1))); 
+                % based on the rest length 
+                X(:,j,k) = total_rest_length * tangent * extra_stretch_radial + ring_point; 
 
-                    tangent = (free_edge_interp_points(:,j) - ring_point); 
-                    tangent = tangent / norm(tangent); 
-
-                    % based on the rest length 
-                    X(:,j + min_idx ,k) = total_rest_length * tangent * extra_stretch_radial + ring_point; 
-
-                end 
             end 
-
         end 
+
+         
         
         % get free edge lengths 
         % 'after sin^2 interpolation'
         [free_edge_length_single_loaded, free_edge_length_single_rest, portion_of_current_edge, portion_of_free_edge] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
         % free_edge_length_single_loaded, free_edge_length_single_rest; 
 
-        X_free_edge_leaflet_1_with_wrap = [X(:,j_max,k_max), X(:, 1:N_each,k_max)]; 
+        X_free_edge_leaflet_1 = X(:,:,k_max); 
 
         % spacing of points as fraction of arc length 
         interp_idx_free_edge = [0; portion_of_current_edge];  
 
         % interpolate as fraction of rest length 
-        free_edge_interp_points_respaced = interp1(interp_idx_free_edge, X_free_edge_leaflet_1_with_wrap', portion_of_free_edge(1:N_each-1))'; 
+        free_edge_interp_points_respaced = interp1(interp_idx_free_edge, X_free_edge_leaflet_1', portion_of_free_edge(1:N_each-1))'; 
 
-        free_edge_interp_points(:, (1:N_each-1)) = free_edge_interp_points_respaced; 
-
-        % other leaflet by rotation 
-        free_edge_interp_points(:, (N_each+1:j_max-1)) = rotation_matrix_z(pi) * free_edge_interp_points_respaced; 
+        free_edge_interp_points(:, 2:N_each) = free_edge_interp_points_respaced; 
 
         X(:,:,k_max) = free_edge_interp_points; 
 
         % 'after respacing free edge interp points'
         [free_edge_length_single_loaded, free_edge_length_single_rest, ~, ~, strains] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
         % free_edge_length_single_loaded, free_edge_length_single_rest
-        
-        
+                
         mean_strain = mean(strains); 
         rms_err_strain = sqrt(sum((strains - mean_strain).^2)); 
         

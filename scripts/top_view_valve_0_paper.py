@@ -2,6 +2,7 @@
 
 #### import the simple module from the paraview
 from paraview.simple import *
+import os 
 #### disable automatic camera reset on 'Show'
 paraview.simple._DisableFirstRenderCameraReset()
 
@@ -56,8 +57,24 @@ SetActiveView(renderView2)
 # setup the data processing pipelines
 # ----------------------------------------------------------------
 
+if '_96_' in os.getcwd(): 
+    resolution_string = '96'
+if '_192_' in os.getcwd(): 
+    resolution_string = '192'
+if '_384_' in os.getcwd(): 
+    resolution_string = '384'
+if '_768_' in os.getcwd(): 
+    resolution_string = '768'
+
+use_faces_valve = True 
+if use_faces_valve:
+    faces_str = "_faces"
+else:
+    faces_str = ""
+
+
 # create a new 'PVD Reader'
-aorta_384pvd = PVDReader(registrationName='aorta_384.pvd', FileName='aorta_384.pvd')
+aorta_384pvd = PVDReader(FileName='aorta_' + resolution_string + '.pvd')
 
 # create a new 'XML Unstructured Grid Reader'
 # aorta_384_volumetricmeshvtu = XMLUnstructuredGridReader(registrationName='aorta_384_volumetric.mesh.vtu', FileName=['/Users/alex/Dropbox/stanford/research_stanford/aortic_bicuspid_2020/aorta_384_volumetric.mesh.vtu'])
@@ -68,7 +85,7 @@ aorta_384pvd = PVDReader(registrationName='aorta_384.pvd', FileName='aorta_384.p
 # extractSelection1 = ExtractSelection(registrationName='ExtractSelection1', Input=aorta_384_volumetricmeshvtu)
 
 # create a new 'PVD Reader'
-aortic_no_partition_384_facespvd = PVDReader(registrationName='aortic_no_partition_384_faces.pvd', FileName='aortic_no_partition_384_faces.pvd')
+aortic_no_partition_384_facespvd = PVDReader(FileName='aortic_no_partition_' + resolution_string + faces_str + '.pvd')
 
 # create a new 'Clip'
 clip1 = Clip(registrationName='Clip1', Input=aorta_384pvd)

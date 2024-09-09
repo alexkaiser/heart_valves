@@ -43,8 +43,8 @@ X = leaflet.X;
 debug = true; 
 
 is_bc = leaflet.is_bc; 
-linear_idx_offset         = zeros(j_max, k_max); 
-point_idx_with_bc         = zeros(j_max, k_max); 
+linear_idx_offset = zeros(j_max, k_max); 
+point_idx_with_bc = zeros(j_max, k_max); 
 
 
 if N_leaflets == 2 
@@ -52,92 +52,46 @@ if N_leaflets == 2
 end 
 
 
-
-for comm_idx = 1:N_leaflets
-
-    % point one internal of commissure to point that m
-    % N_each is a power of two 
-    min_idx = (comm_idx-1)*N_each;         
-
-    dj_interp = 1/N_each; 
-
-    prev_comm_idx = min_idx; 
-    if prev_comm_idx == 0
-        prev_comm_idx = j_max; 
-    end 
-    
-    comm_prev = X(:,prev_comm_idx,k_max); 
-    comm_next = X(:,min_idx + N_each,k_max); 
-    
-    for j=1:(N_each-1)
-        for k=k_range
-        
-            ring_point = X(:,j + min_idx ,1); 
-            
-            % total radial rest length of this radial fiber 
-            total_rest_length = sum(R_v(j + min_idx, 1:(k-1))); 
-            
-            if N_leaflets == 2 
-                comm_interp_point = free_edge_interp_points(:,j + min_idx); 
-            else 
-                comm_interp_point = (1 - j*dj_interp) * comm_prev ...
-                                       + j*dj_interp  * comm_next; 
-            end 
+dj_interp = 1/N_each; 
 
 
-            tangent = (comm_interp_point - ring_point); 
-            tangent = tangent / norm(tangent); 
+% always boundaries 
+comm_prev = X(:,1,k_max); 
+comm_next = X(:,j_max,k_max); 
+
+for j=2:N_each
+    for k=k_range
+
+        ring_point = X(:,j,1); 
+
+        % total radial rest length of this radial fiber 
+        total_rest_length = sum(R_v(j, 1:(k-1))); 
+
+        if N_leaflets == 2 
+            comm_interp_point = free_edge_interp_points(:,j); 
+        else 
+            comm_interp_point = (1 - (j-1)*dj_interp) * comm_prev ...
+                                   + (j-1)*dj_interp  * comm_next; 
+        end 
 
 
-            % based on the rest length 
-            X(:,j + min_idx ,k) = total_rest_length * tangent * extra_stretch_radial + ring_point; 
+        tangent = (comm_interp_point - ring_point); 
+        tangent = tangent / norm(tangent); 
 
-            % based on putting the free edge as a triangle between commn points 
-            % generally bad 
-            % X(:,j + min_idx ,k) = (k/k_max) * (comm_interp_point - ring_point) + ring_point; 
-            
-            if is_bc(j + min_idx ,k)
-                error('trying to set a bc as new position'); 
-            end 
 
-            if k == k_max
-                is_bc(j + min_idx ,k) = true; 
-            end 
+        % based on the rest length 
+        X(:,j,k) = total_rest_length * tangent * extra_stretch_radial + ring_point; 
+
+        if is_bc(j,k)
+            error('trying to set a bc as new position'); 
+        end 
+
+        if k == k_max
+            is_bc(j,k) = true; 
         end 
     end 
-
 end 
 
-% % allows a bit of equalizing at the free edge by comms 
-% % looks terrible 
-% if (N_leaflets == 2)
-%     for comm_idx = 1:N_leaflets
-%         % point one internal of commissure to point that m
-%         % N_each is a power of two 
-%         neumann_fraction_each_half = 1/8;                 
-%         min_idx = (comm_idx-1)*N_each;         
-%         for j=1:(N_each-1)
-%             if abs(j - (N_each/2)) > (N_each * (1/2 - neumann_fraction_each_half))
-%                 is_bc(j + min_idx ,k_max) = false;  
-%             end 
-%         end 
-%     end 
-% end 
-
-% 
-% if (N_leaflets == 2)
-%     for comm_idx = 1:N_leaflets
-%         % point one internal of commissure to point that m
-%         % N_each is a power of two 
-%         neumann_fraction_center = 1/4;                 
-%         min_idx = (comm_idx-1)*N_each;         
-%         for j=1:(N_each-1)
-%             if abs(j - (N_each/2)) < (N_each * neumann_fraction_center)
-%                 is_bc(j + min_idx ,k_max) = false;  
-%             end 
-%         end 
-%     end 
-% end 
 
 debug_lengths = true; 
 if debug_lengths

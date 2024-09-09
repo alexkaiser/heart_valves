@@ -20,7 +20,7 @@ is_internal            = leaflet.is_internal;
 is_bc                  = leaflet.is_bc; 
 N_each                 = leaflet.N_each; 
 
-center_leaflet_idx = N_each/2; 
+center_leaflet_idx = N_each/2 + 1; 
 j = center_leaflet_idx; 
 radial_leaflet_height_loaded = 0; 
 for k=1:(k_max-1)
@@ -45,7 +45,7 @@ free_edge_length_single_loaded = 0;
 for j=1:N_each
     k=k_max; 
     
-    j_nbr_tmp = j-1; 
+    j_nbr_tmp = j+1; 
     k_nbr_tmp = k; 
     [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
     if ~valid 
@@ -75,14 +75,14 @@ is_bc                  = leaflet.is_bc;
 R_v                    = leaflet.R_v; 
 R_u                    = leaflet.R_u; 
 N_each                 = leaflet.N_each; 
+N_leaflets             = leaflet.N_leaflets; 
 
-circ_cumulative_sum = linspace(0, 2*pi*radius, j_max+1); 
-circ_cumulative_sum = circ_cumulative_sum(1:j_max);  
+circ_cumulative_sum = linspace(0, 2*pi*radius / N_leaflets, j_max); 
 
 positions_x = nan(j_max,k_max); 
 positions_y = nan(j_max,k_max); 
 
-center_leaflet_idx = N_each/2; 
+center_leaflet_idx = N_each/2 + 1; 
 
 for j=1:j_max
     for k=1:k_max
