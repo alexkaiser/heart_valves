@@ -225,10 +225,12 @@ valve.p_final_fixed_comm = 0.1 * MMHG_TO_CGS;
 
 valve.L = 2.25; 
 
-r_temp = 2.5/2; % 25 mm valve 
+r_stj = 2.5/2; % 25 mm valve 
+r_temp = r_stj / 1.1; 
 hc = 0.1 * r_temp; 
 h1 = 1.4 * r_temp - hc; 
-valve.skeleton = get_skeleton_aortic_generic(r_temp, h1, hc); 
+r_commissure = r_stj; 
+valve.skeleton = get_skeleton_aortic_generic(r_temp, h1, hc, r_commissure); 
 % valve.skeleton = get_skeleton_aortic_generic(); 
 valve.r = valve.skeleton.r; 
 
@@ -266,10 +268,10 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 3.1;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.08;  % radial
+tension_coeffs.c_circ_dec       = 2.81;  % circumferential 
+tension_coeffs.c_rad_dec        = 1.14;  % radial
 
-tension_coeffs.c_circ_dec_annulus = 1.95;
+tension_coeffs.c_circ_dec_annulus = 1.91;
 
 % tension_coeffs.c_circ_dec_free_edge = 5.0;
 tension_coeffs.c_circ_dec_free_edge_percentage = 0.0;

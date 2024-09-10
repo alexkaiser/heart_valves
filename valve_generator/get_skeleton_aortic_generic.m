@@ -1,4 +1,4 @@
-function skeleton = get_skeleton_aortic_generic(r, h1, hc)
+function skeleton = get_skeleton_aortic_generic(r, h1, hc, r_commissure)
 % 
 % hardcoded patient specific MV skeleton
 % 
@@ -54,20 +54,25 @@ debug = false;
 if ~exist('r','var')
     r = 1.25; 
 end 
+
+if ~exist('r_commissure','var')
+    r_commissure = r; 
+end 
+
 skeleton.r = r; 
 
 % aorta radius 
-r_aorta = r; % 1.1 * r; 
+% r_aorta = r; % 1.1 * r; 
 
 % sinus radius at widest point (valve not to here)
-r_sinus = r; %1.4 * r; 
+% r_sinus = r; %1.4 * r; 
 
 % commissure radius 
-skeleton.r_commissure = (2/3) * r_aorta + (1/3) * r_sinus; 
+skeleton.r_commissure = r_commissure; 
 
 % r_co in paper 
 % wide point in verticle plane through origin and commissure 
-skeleton.r_co = (1/2) * (r_aorta + r_sinus); 
+% skeleton.r_co = (1/2) * (r_aorta + r_sinus); 
 
 % height from annulus to origin 
 % equal to height from annulus to height at which r_co is the radius
@@ -90,20 +95,36 @@ skeleton.ring_offset_angle = 0;
 
 
 heights = [0; skeleton.height_min_comm; skeleton.normal_height]; 
-radii   = [r; skeleton.r_co; skeleton.r_commissure]; 
+radii   = [r; skeleton.r_commissure; skeleton.r_commissure]; 
 skeleton.r_of_z = @(z) (z<0) .* r + ... 
-                       (0<=z).*(z<skeleton.normal_height) .* interp1(heights, radii, z, 'spline') + ... 
-                       (skeleton.normal_height<z) .* skeleton.r_commissure; 
+                       (0<=z).*(z<skeleton.normal_height) .* interp1(heights, radii, z, 'pchip') + ... 
+                       (skeleton.normal_height<=z) .* skeleton.r_commissure; 
 
+
+                                    
 if debug 
-    z = linspace(-1, 2*skeleton.normal_height, 100); 
+    r_of_z_spline = @(z) (z<0) .* r + ... 
+                       (0<=z).*(z<skeleton.normal_height) .* interp1(heights, radii, z, 'spline') + ... 
+                       (skeleton.normal_height<=z) .* skeleton.r_commissure; 
+    
+    r_of_z_linear = @(z) (z<0) .* r + ... 
+       (0<=z).*(z<skeleton.normal_height) .* interp1(heights, radii, z, 'linear') + ... 
+       (skeleton.normal_height<=z) .* skeleton.r_commissure; 
+    
+    z = linspace(0 - 0.02, skeleton.normal_height + .02, 1000); 
     plot(skeleton.r_of_z(z), z); 
+    hold on 
+    plot(r_of_z_spline(z), z); 
+    plot(r_of_z_linear(z), z); 
+    legend('pchip', 'spline', 'linear')
     
     xlabel('r_of_z')
     ylabel('z')
     title('spline for radius')
+%     xlim([0 1.5])
+%     ylim([0 skeleton.normal_height])
     axis equal
-    
+        
 end 
 
 

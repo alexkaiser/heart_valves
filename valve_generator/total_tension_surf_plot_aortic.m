@@ -121,19 +121,8 @@ if ~exist('colorbar_on', 'var')
 end 
 
 
+j_range = 1:j_max; 
 
-one_leaflet = true; 
-if one_leaflet 
-%     X_current(:,1:(N_each-1),:) = NaN;    
-%     X_current(:,(2*N_each:end),:) = NaN;
-
-    j_min_plot = N_each; 
-    j_max_plot = 2*N_each; 
-    j_range = j_min_plot:j_max_plot; 
-    
-else 
-    j_range = 1:j_max; 
-end 
 
 
 % max value to plot for ratio 
@@ -213,13 +202,6 @@ for j=1:j_max
             output_tmp_j = false; 
         end     
 
-        if one_leaflet 
-            if (j < j_min_plot) || (j > j_max_plot)
-                output_tmp_j = false; 
-                output_tmp_k = false; 
-            end 
-        end 
-
 
         X = X_current(:,j,k); 
 
@@ -232,14 +214,6 @@ for j=1:j_max
             k_nbr_tmp = k; 
 
             [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
-
-            if one_leaflet 
-                if (j_nbr < j_min_plot) || (j_nbr > j_max_plot)
-                    output_tmp_j = false; 
-                    output_tmp_k = false; 
-                end 
-            end 
-
 
             if valid 
 
@@ -286,13 +260,6 @@ for j=1:j_max
             j_nbr_tmp = j; 
 
             [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
-
-            if one_leaflet 
-                if (j_nbr < j_min_plot) || (j_nbr > j_max_plot)
-                    output_tmp_j = false; 
-                    output_tmp_k = false; 
-                end 
-            end 
 
             if valid
 
@@ -418,48 +385,42 @@ for j=1:j_max
 end
 
 
-if one_leaflet 
-    X_copy(:,1:(j_min_plot-1),:) = NaN;    
-    X_copy(:,(j_max_plot+1):end,:) = NaN;
 
 
-    outline_cleanup = true; 
-    if outline_cleanup 
-        
-        % horizontal at bottom and free edge 
-        for k=[1,k_max]
-            for j=j_min_plot:(j_max_plot-1)
 
-                X = X_copy(:,j,k); 
-                X_nbr = X_copy(:,j+1,k); 
-                
-                x_vals = [X(1), X_nbr(1)]; 
-                y_vals = [X(2), X_nbr(2)]; 
-                z_vals = [X(3), X_nbr(3)]; 
-                
-                plot3(x_vals,y_vals,z_vals,'k'); 
-            end 
-        end 
-
-        % vertical at commissures 
-        for k=1:(k_max-1)
-            for j=[j_min_plot,j_max_plot]
-
-                X = X_copy(:,j,k); 
-                X_nbr = X_copy(:,j,k+1); 
-                
-                x_vals = [X(1), X_nbr(1)]; 
-                y_vals = [X(2), X_nbr(2)]; 
-                z_vals = [X(3), X_nbr(3)]; 
-                
-                plot3(x_vals,y_vals,z_vals,'k'); 
-            end 
-        end 
-        
-        
-    end 
-end 
-
+% outline_cleanup = true; 
+% if outline_cleanup 
+% 
+%     % horizontal at bottom and free edge 
+%     for k=[1,k_max]
+%         for j=j_min_plot:(j_max_plot-1)
+% 
+%             X = X_copy(:,j,k); 
+%             X_nbr = X_copy(:,j+1,k); 
+% 
+%             x_vals = [X(1), X_nbr(1)]; 
+%             y_vals = [X(2), X_nbr(2)]; 
+%             z_vals = [X(3), X_nbr(3)]; 
+% 
+%             plot3(x_vals,y_vals,z_vals,'k'); 
+%         end 
+%     end 
+% 
+%     % vertical at commissures 
+%     for k=1:(k_max-1)
+%         for j=[j_min_plot,j_max_plot]
+% 
+%             X = X_copy(:,j,k); 
+%             X_nbr = X_copy(:,j,k+1); 
+% 
+%             x_vals = [X(1), X_nbr(1)]; 
+%             y_vals = [X(2), X_nbr(2)]; 
+%             z_vals = [X(3), X_nbr(3)]; 
+% 
+%             plot3(x_vals,y_vals,z_vals,'k'); 
+%         end 
+%     end 
+% end 
 
 
 

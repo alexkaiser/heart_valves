@@ -47,7 +47,7 @@ for N_each = N_each_range
     % Many parameters are in this script 
 
     pulm = false; 
-    true_bicuspid = false;
+    true_bicuspid = true;
     fish = false;  
     
     if pulm

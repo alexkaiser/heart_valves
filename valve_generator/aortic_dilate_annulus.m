@@ -17,7 +17,7 @@ function valve_with_reference = aortic_dilate_annulus(valve_with_reference)
     valve_with_reference.skeleton.r            = valve_with_reference.skeleton.r              + dilation_dist; 
     valve_with_reference.skeleton.r_of_z       = @(z) valve_with_reference.skeleton.r_of_z(z) + dilation_dist; 
     valve_with_reference.skeleton.r_commissure = valve_with_reference.skeleton.r_commissure   + dilation_dist; 
-    valve_with_reference.skeleton.r_co         = valve_with_reference.skeleton.r_co           + dilation_dist; 
+    % valve_with_reference.skeleton.r_co         = valve_with_reference.skeleton.r_co           + dilation_dist; 
     valve_with_reference.r                     = valve_with_reference.r                       + dilation_dist; 
     
     height_comm = valve_with_reference.skeleton.normal_height - valve_with_reference.skeleton.height_min_comm; 

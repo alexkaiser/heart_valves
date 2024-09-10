@@ -65,6 +65,7 @@ valve_with_reference.leaflets(1) = set_rest_lengths_and_constants_aortic(valve.l
 
 leaflet = valve_with_reference.leaflets(1); 
 
+r_commissure = valve.skeleton.r_commissure; 
 radius = valve.skeleton.r; 
 
 X_current              = leaflet.X; 
@@ -183,12 +184,15 @@ stretch_rad = valve.strain_rad + 1;
 if isfield(leaflet, 'variety') && strcmp(leaflet.variety, 'bicuspid') 
     fprintf('Rest length height summary, true bicuspid:\n'); 
     fprintf("Radius                             = %f\n", radius); 
-    fprintf("One half circumference             = %f\n", pi*radius); 
+    fprintf("One half vbr circumference         = %f\t", pi*radius); 
+    fprintf("One half inter comm circumference  = %f\n", pi*r_commissure); 
     fprintf("Geometric height goal (1.3 r)      = %f\n", 1.3*radius);
     fprintf("Circ free edge loaded length       = %f\t", free_edge_length_single_loaded); 
     fprintf("Circ free edge rest length         = %f\n", length_one_leaflet_free_edge(k_max));
     fprintf("Ratio loaded free edge to diameter = %f\t", free_edge_length_single_loaded/(2*radius));     
-    fprintf("Ratio rest   free edge to diameter = %f\n", length_one_leaflet_free_edge(k_max)/(2*radius));    
+    fprintf("Ratio rest   free edge to diameter = %f\n", length_one_leaflet_free_edge(k_max)/(2*radius));   
+    fprintf("Ratio loaded free edge to comm d   = %f\t", free_edge_length_single_loaded/(2*r_commissure));     
+    fprintf("Ratio rest   free edge to comm d   = %f\n", length_one_leaflet_free_edge(k_max)/(2*r_commissure));    
     fprintf("Radial height loaded length        = %f\t", radial_leaflet_height_loaded); 
     fprintf("Radial height rest length          = %f\n", radial_leaflet_height); 
 else 
