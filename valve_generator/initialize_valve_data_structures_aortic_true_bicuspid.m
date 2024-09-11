@@ -350,10 +350,12 @@ if valve.in_heart
         dx = 5 /(N/4); 
         valve.ds = dx/2; %2*pi*valve.skeleton.r / N; 
 
-        thickness_cylinder = 0.15; 
+        thickness_cylinder = 0.3; 
         valve.n_layers_cylinder = ceil(thickness_cylinder/valve.ds) + 1; 
 
-        h_top_scaffold_min = 0.2; 
+        h_scaffold_min = -0.05;
+        
+        h_top_scaffold_min = 0.05; 
 
         h_top_scaffold_max = valve.skeleton.normal_height; 
 
@@ -361,25 +363,39 @@ if valve.in_heart
 
         % value from least squares on pulm 
         % p = 3.095653361985474; 
-        p = 3; 
+        p = 100; 
 
         % function with unspecified power 
-        valve.z_max_cylinder = @(theta) h_top_scaffold_min * ones(size(theta))  +  h_top_scaffold_amplitude * abs(cos(theta)).^(p); 
+        % valve.z_max_cylinder = @(theta) h_top_scaffold_min * ones(size(theta))  +  h_top_scaffold_amplitude * abs(cos(theta)).^(p); 
 
-        % bottom flat at zero 
-        valve.z_min_cylinder = @(theta) zeros(size(theta)); 
+        cos_power = @(theta) h_top_scaffold_min * ones(size(theta)) + (0.05 + h_top_scaffold_max) * abs(cos(theta)).^(p); 
+        
+        annulus_min_fn = @(theta) h_top_scaffold_max * interp1(valve.annulus_flattened_normalized(:,1), valve.annulus_flattened_normalized(:,2), mod(theta,pi)/pi, 'pchip'); 
+        
+        h_top_min_adjust = @(theta) h_top_scaffold_min * ones(size(theta));
+        
+        % extra_comm = @(theta) hc * abs(cos(theta)).^(p); 
+        
+        % valve.z_max_cylinder = @(theta) annulus_min_fn(theta) + extra_comm(theta) + h_top_min_adjust(theta);
+        valve.z_max_cylinder = @(theta) max(cos_power(theta), annulus_min_fn(theta) + h_top_min_adjust(theta));
+        
+        % bottom flat 
+        valve.z_min_cylinder = @(theta) h_scaffold_min * ones(size(theta)); 
 
-        debug_plot = false; 
+        debug_plot = true; 
         if debug_plot
-            th = linspace(0,2*pi,1000);
+            th = linspace(0,2*pi,100000);
             plot(th,valve.z_min_cylinder(th))
             hold on 
-            plot(th,valve.z_max_cylinder(th))
+            plot(th,valve.z_max_cylinder(th),'k')
 
+            plot(th,cos_power(th))
+            plot(th,annulus_min_fn(th))
+%             plot(th,extra_comm(th))
     %         f = @(theta)  0.28*ones(size(theta))  + (1.095 - 0.28)*0.5 * (cos(3*theta)+1);
     %         plot(th, f(th)); 
 
-            legend('bottom', 'top')
+            legend('bottom', 'top', 'cos_power', 'annulus_min')
 
     %         plot(th, h_min_scaffold * ones(size(th))); 
     %         plot(th, (h_min_scaffold + h_min_amplitude)*ones(size(th))); 
