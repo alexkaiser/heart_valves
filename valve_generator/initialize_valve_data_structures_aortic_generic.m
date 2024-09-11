@@ -321,7 +321,8 @@ valve.ds = 2*pi*valve.skeleton.r / N;
                                             valve);  
 
 valve.leaflets(1) = leaflet; 
-    
+valve.leaflets(1).extrusion_out = valve.extrusion_out;    
+
 if fused_commissure
     valve.leaflets(1).fused_commissure = true; 
     valve.leaflets(1).fused_comm_idx    = 3; 
