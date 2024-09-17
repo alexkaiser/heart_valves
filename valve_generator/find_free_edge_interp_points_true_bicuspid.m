@@ -26,150 +26,182 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
     if ~exist('extra_stretch_circ', 'var')
         extra_stretch_circ = 1.0; 
     end
-    
-    X = leaflet.X; 
 
-
-
-    % tol change 
-    tol_rms_err_strain = 1e-10; 
+    % search down in power to find as flat a leaflet as possible by the comms 
+    % but without intersection 
+    % power_search_list = [4,3,2,1.75,1.5,1.25,1];
+    power_search_list = [2,1.75,1.5,1.25,1];
+    % power_search_list = [4];
     
-    % start with initial free edge 
-    % commissure points stay fixed 
-    free_edge_interp_points = X(:,:,k_max); 
+    pass_y_gt_0_constraint = false; 
     
-    % give it plenty 
-    n_iterations = 2000; 
+    for power = power_search_list
     
-    debug_lengths = false; 
-    
-    % for debug info 
-    [free_edge_length_single_loaded, free_edge_length_single_rest] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths); 
-    
-    % find radius of annulus
-    r = norm(leaflet.X(1:2,1,1));  
-    
-    
-    % find desired coefficient for initial curve before iteration 
-    % this is the parameter to search over 
-    % y_max_from_center = 0.9; 
-    
-    free_edge_len_minus_rest = @(y_max) abs(run_temp_free_edge_interp(leaflet, extra_stretch_radial, y_max) - free_edge_length_single_rest * extra_stretch_circ); 
-    % free_edge_len_minus_rest = @(y_max) abs(run_temp_free_edge_interp(leaflet, extra_stretch_radial, y_max)); 
-    
-
-    options = optimset('Display','off','TolFun',1e-16);
-
-    
-    % do not go lower than threshold 
-    % can be close in the middle 
-    % originally tuned for r = 1.25 cm valve, scale relative to this 
-    r_basic = 1.25; 
-    y_max_from_center_min = (r/r_basic) * 0.4;
-    % but keep farther from the outside 
-    y_max_from_center_max_thresh = (r/r_basic) * (r_basic - 0.4);
-    
-    y_max_from_center_initial_guess = 1.0 * (r/r_basic); 
-    
-    use_fsolve = false; 
-    use_fmincon = true; 
-    
-    if use_fsolve 
-        y_max_from_center = fsolve(free_edge_len_minus_rest,y_max_from_center_initial_guess,options); 
-        y_max_from_center = max(y_max_from_center, y_max_from_center_min); 
-    elseif use_fmincon
-        y_max_from_center = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],y_max_from_center_min,y_max_from_center_max_thresh,[],options)
-    else 
-        y_max_from_center = r/2; 
-    end 
-    
-    r
-    y_max_from_center
-    
-%     y_max_from_center_fsolve = fsolve(free_edge_len_minus_rest,y_max_from_center_initial_guess,options)
-%     y_max_from_center_fmincon_unconstrained = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],[],[],[],options) 
-%     y_max_from_center_fmincon = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],y_max_from_center_min,y_max_from_center_max_thresh,[],options) 
-%     
-    
-    debug_plots = false; 
-    if debug_plots
-        figure; 
-        y_range = linspace(0,r,1000); 
+        X = leaflet.X; 
         
-        vals = zeros(size(y_range)); 
+        % tol change 
+        tol_rms_err_strain = 1e-10; 
+
+        % start with initial free edge 
+        % commissure points stay fixed 
+        % free_edge_interp_points = X(:,:,k_max); 
+
+        % give it plenty 
+        n_iterations = 2000; 
+
+        debug_lengths = false; 
+
+        % for debug info 
+        [free_edge_length_single_loaded, free_edge_length_single_rest] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths); 
+
+        % find radius of annulus
+        r = norm(leaflet.X(1:2,1,1));  
+
+
+        % find desired coefficient for initial curve before iteration 
+        % this is the parameter to search over 
+        % y_max_from_center = 0.9; 
+
+        free_edge_len_minus_rest = @(y_max) abs(run_temp_free_edge_interp(leaflet, extra_stretch_radial, y_max, power) - free_edge_length_single_rest * extra_stretch_circ); 
         
-        for j=1:length(y_range)
-            vals(j) = free_edge_len_minus_rest(y_range(j)); 
+
+        options = optimset('Display','off','TolFun',1e-16);
+
+
+        % do not go lower than threshold 
+        % can be close in the middle 
+        % originally tuned for r = 1.25 cm valve, scale relative to this 
+        r_basic = 1.25; 
+        y_max_from_center_min = (r/r_basic) * 0.4;
+        % but keep farther from the outside 
+        y_max_from_center_max_thresh = (r/r_basic) * (r_basic - 0.4);
+
+        y_max_from_center_initial_guess = 1.0 * (r/r_basic); 
+
+        use_fsolve = false; 
+        use_fmincon = true; 
+
+        if use_fsolve 
+            y_max_from_center = fsolve(free_edge_len_minus_rest,y_max_from_center_initial_guess,options); 
+            y_max_from_center = max(y_max_from_center, y_max_from_center_min); 
+        elseif use_fmincon
+            y_max_from_center = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],y_max_from_center_min,y_max_from_center_max_thresh,[],options)
+        else 
+            y_max_from_center = r/2; 
         end 
-        
-        plot(y_range, vals); 
-        % xlabel('y', 'free_edge_len_minus_rest'); 
-    end 
-    
 
-    % compute the resulting values 
-    [free_edge_len_temp, free_edge_interp_points] = run_temp_free_edge_interp(leaflet, extra_stretch_radial, y_max_from_center);
+        r
+        y_max_from_center
 
-    pass = false; 
-    
-    for it = 1:n_iterations
+    %     y_max_from_center_fsolve = fsolve(free_edge_len_minus_rest,y_max_from_center_initial_guess,options)
+    %     y_max_from_center_fmincon_unconstrained = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],[],[],[],options) 
+    %     y_max_from_center_fmincon = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],y_max_from_center_min,y_max_from_center_max_thresh,[],options) 
+    %     
 
-        for j=2:N_each
-            for k=k_range
+        debug_plots = false; 
+        if debug_plots
+            figure; 
+            y_range = linspace(0,r,1000); 
 
-                ring_point = X(:,j,1); 
+            vals = zeros(size(y_range)); 
 
-                % total radial rest length of this radial fiber 
-                total_rest_length = sum(R_v(j, 1:(k-1))); 
-
-                tangent = (free_edge_interp_points(:,j) - ring_point); 
-                tangent = tangent / norm(tangent); 
-
-                % based on the rest length 
-                X(:,j,k) = total_rest_length * tangent * extra_stretch_radial + ring_point; 
-
+            for j=1:length(y_range)
+                vals(j) = free_edge_len_minus_rest(y_range(j)); 
             end 
+
+            plot(y_range, vals); 
+            % xlabel('y', 'free_edge_len_minus_rest'); 
         end 
 
-         
+
+        % compute the resulting values 
+        [free_edge_len_temp, free_edge_interp_points] = run_temp_free_edge_interp(leaflet, extra_stretch_radial, y_max_from_center, power);
+
+        pass_equal_strain = false; 
+
+        for it = 1:n_iterations
+
+            for j=2:N_each
+                for k=k_range
+
+                    ring_point = X(:,j,1); 
+
+                    % total radial rest length of this radial fiber 
+                    total_rest_length = sum(R_v(j, 1:(k-1))); 
+
+                    tangent = (free_edge_interp_points(:,j) - ring_point); 
+                    tangent = tangent / norm(tangent); 
+
+                    % based on the rest length 
+                    X(:,j,k) = total_rest_length * tangent * extra_stretch_radial + ring_point; 
+
+                end 
+            end 
+
+
+
+            % get free edge lengths 
+            % 'after sin^2 interpolation'
+            [free_edge_length_single_loaded, free_edge_length_single_rest, portion_of_current_edge, portion_of_free_edge] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
+            % free_edge_length_single_loaded, free_edge_length_single_rest; 
+
+            X_free_edge_leaflet_1 = X(:,:,k_max); 
+
+            % spacing of points as fraction of arc length 
+            interp_idx_free_edge = [0; portion_of_current_edge];  
+
+            % interpolate as fraction of rest length 
+            free_edge_interp_points_respaced = interp1(interp_idx_free_edge, X_free_edge_leaflet_1', portion_of_free_edge(1:N_each-1))'; 
+
+            free_edge_interp_points(:, 2:N_each) = free_edge_interp_points_respaced; 
+
+            X(:,:,k_max) = free_edge_interp_points; 
+
+            % 'after respacing free edge interp points'
+            [free_edge_length_single_loaded, free_edge_length_single_rest, ~, ~, strains] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
+            % free_edge_length_single_loaded, free_edge_length_single_rest
+
+            mean_strain = mean(strains); 
+            rms_err_strain = sqrt(sum((strains - mean_strain).^2)); 
+
+            if rms_err_strain < tol_rms_err_strain
+                % fprintf('Exiting on it %d with mean strain %f and rms error on strain %e\n', it, mean_strain, rms_err_strain); 
+                pass_equal_strain = true; 
+                break
+            end 
+
+        end % strain equalize loop 
+
         
-        % get free edge lengths 
-        % 'after sin^2 interpolation'
-        [free_edge_length_single_loaded, free_edge_length_single_rest, portion_of_current_edge, portion_of_free_edge] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
-        % free_edge_length_single_loaded, free_edge_length_single_rest; 
-
-        X_free_edge_leaflet_1 = X(:,:,k_max); 
-
-        % spacing of points as fraction of arc length 
-        interp_idx_free_edge = [0; portion_of_current_edge];  
-
-        % interpolate as fraction of rest length 
-        free_edge_interp_points_respaced = interp1(interp_idx_free_edge, X_free_edge_leaflet_1', portion_of_free_edge(1:N_each-1))'; 
-
-        free_edge_interp_points(:, 2:N_each) = free_edge_interp_points_respaced; 
-
-        X(:,:,k_max) = free_edge_interp_points; 
-
-        % 'after respacing free edge interp points'
-        [free_edge_length_single_loaded, free_edge_length_single_rest, ~, ~, strains] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
-        % free_edge_length_single_loaded, free_edge_length_single_rest
-                
-        mean_strain = mean(strains); 
-        rms_err_strain = sqrt(sum((strains - mean_strain).^2)); 
-        
-        if rms_err_strain < tol_rms_err_strain
-            % fprintf('Exiting on it %d with mean strain %f and rms error on strain %e\n', it, mean_strain, rms_err_strain); 
-            pass = true; 
-            break
+        % if strain passed, check for constraint violations and move down in power 
+        if pass_equal_strain
+            if all(free_edge_interp_points(2,2:N_each) > 0)
+                pass_y_gt_0_constraint = true; 
+                fprintf('Power %f passed nonzero y constraint and strain constraint\n', power);
+                break; 
+            else 
+                % pass this constraint already false 
+                % pass_y_gt_0_constraint = false; 
+                fprintf('Found negative in free_edge_interp_points with power %f\n', power);
+            end 
+        else 
+            % equal strain did not pass 
+            % proceed in search 
         end 
-        
-    end 
     
-    if ~pass 
+    end % power outer loop
+    
+   
+    % cleanup 
+    if ~pass_equal_strain 
         warning('Exiting on max it %d with mean strain %f and rms error on strain %e, not fully converged.\n', it, mean_strain, rms_err_strain')
+    end
+    
+    if ~pass_y_gt_0_constraint
+        warning('Exiting with power %f and negative values for y along free edge\n');
     end 
-    
-    
+        
 end 
+
 
 

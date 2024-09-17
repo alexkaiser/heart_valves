@@ -1,4 +1,4 @@
-function [free_edge_len, free_edge_interp_points] = run_temp_free_edge_interp(leaflet, extra_stretch_radial, y_max_from_center)
+function [free_edge_len, free_edge_interp_points] = run_temp_free_edge_interp(leaflet, extra_stretch_radial, y_max_from_center, power)
 
 % runs the interpolation via input curve 
 % and returns the resulting length 
@@ -24,6 +24,10 @@ if ~exist('extra_stretch_radial', 'var')
     extra_stretch_radial = 1.0; 
 end
 
+if ~exist('power', 'var')
+    power = 4.0; 
+end
+
 X = leaflet.X; 
 
 % start with initial free edge 
@@ -44,7 +48,7 @@ for j=2:N_each
 
     % cm apart at middle 
 %         y_free_edge_end = y_max_from_center * sign(sin(th)) * sin(th)^2; 
-    power = 4; 
+    % power = 4; 
     y_free_edge_end = y_max_from_center * sign(sin(th)) * abs(sin(th)^power);
     % y_free_edge_end = y_max_from_center * ring_point(2);
     % y_free_edge_end = 0; 
