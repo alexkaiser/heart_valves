@@ -172,22 +172,18 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
 
         end % strain equalize loop 
 
+        fprintf('Power %f through strain loop, pass_equal_strain = %d\n', power, pass_equal_strain);
         
-        % if strain passed, check for constraint violations and move down in power 
-        if pass_equal_strain
-            if all(free_edge_interp_points(2,2:N_each) > 0)
-                pass_y_gt_0_constraint = true; 
-                fprintf('Power %f passed nonzero y constraint and strain constraint\n', power);
-                break; 
-            else 
-                % pass this constraint already false 
-                % pass_y_gt_0_constraint = false; 
-                fprintf('Found negative in free_edge_interp_points with power %f\n', power);
-            end 
+        if all(free_edge_interp_points(2,2:N_each) > 0)
+            pass_y_gt_0_constraint = true; 
+            fprintf('Power %f passed nonzero y constraint\n', power);
+            break; 
         else 
-            % equal strain did not pass 
-            % proceed in search 
+            % pass this constraint already false 
+            % pass_y_gt_0_constraint = false; 
+            fprintf('Found negative in free_edge_interp_points with power %f\n', power);
         end 
+        
     
     end % power outer loop
     
