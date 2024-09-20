@@ -110,6 +110,11 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, stress_ci
         j_max_plot = 2*N_each; 
     end 
     
+    sigma_circ_surf_running = 0; 
+    sigma_rad_surf_running = 0;
+    stress_circ_surf_running = 0;
+    stress_rad_surf_running = 0;
+    leaflet_area_running = 0;
     
     
     % Internal leaflet part 
@@ -262,27 +267,48 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, stress_ci
                 stress_rad(j,k) = stress_rad(j,k)/element_count_rad; 
             end 
 
+            % surface integral running totals 
+            if is_internal(j,k)
+
+                [j_plus__1 j_minus_1 k_plus__1 k_minus_1 m] = get_pressure_nbrs(leaflet,j,k); 
+                    
+                area_local = m * norm(cross(X_current(:,j_plus__1,k) - X_current(:,j_minus_1,k), X_current(:,j,k_plus__1) - X_current(:,j,k_minus_1)));
+                
+                sigma_circ_surf_running  = sigma_circ_surf_running   + sigma_circ(j,k)  * area_local; 
+                stress_circ_surf_running = stress_circ_surf_running  + stress_circ(j,k) * area_local; 
+                sigma_rad_surf_running   = sigma_rad_surf_running    + sigma_rad(j,k)   * area_local; 
+                stress_rad_surf_running  = stress_rad_surf_running   + stress_rad(j,k)  * area_local; 
+                leaflet_area_running     = leaflet_area_running      +                    area_local;
+            end 
             
         end  
     end
     
-    sigma_circ_linear = sigma_circ(:); 
-    sigma_circ_valid  = sigma_circ_linear(find(sigma_circ_linear ~= 0)); 
+    % use surf integral, not raw mean 
+%     sigma_circ_linear = sigma_circ(:); 
+%     sigma_circ_valid  = sigma_circ_linear(find(sigma_circ_linear ~= 0)); 
+%     
+%     sigma_rad_linear = sigma_rad(:); 
+%     sigma_rad_valid  = sigma_rad_linear(find(sigma_rad_linear ~= 0)); 
+%     
+%     sigma_circ_mean = mean(sigma_circ_valid); 
+%     sigma_rad_mean  = mean(sigma_rad_valid); 
+% 
+%     stress_circ_linear = stress_circ(:); 
+%     stress_circ_valid  = stress_circ_linear(find(stress_circ_linear ~= 0)); 
+%     
+%     stress_rad_linear = stress_rad(:); 
+%     stress_rad_valid  = stress_rad_linear(find(stress_rad_linear ~= 0)); 
+%     
+%     stress_circ_mean = mean(stress_circ_valid); 
+%     stress_rad_mean  = mean(stress_rad_valid); 
     
-    sigma_rad_linear = sigma_rad(:); 
-    sigma_rad_valid  = sigma_rad_linear(find(sigma_rad_linear ~= 0)); 
+    leaflet_area = leaflet_area_running; 
     
-    sigma_circ_mean = mean(sigma_circ_valid); 
-    sigma_rad_mean  = mean(sigma_rad_valid); 
-
-    stress_circ_linear = stress_circ(:); 
-    stress_circ_valid  = stress_circ_linear(find(stress_circ_linear ~= 0)); 
-    
-    stress_rad_linear = stress_rad(:); 
-    stress_rad_valid  = stress_rad_linear(find(stress_rad_linear ~= 0)); 
-    
-    stress_circ_mean = mean(stress_circ_valid); 
-    stress_rad_mean  = mean(stress_rad_valid); 
+    sigma_circ_mean  = sigma_circ_surf_running  / leaflet_area; 
+    sigma_rad_mean   = sigma_rad_surf_running   / leaflet_area;
+    stress_circ_mean = stress_circ_surf_running / leaflet_area;
+    stress_rad_mean  = stress_rad_surf_running  / leaflet_area;
     
     if plots
         

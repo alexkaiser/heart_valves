@@ -95,7 +95,9 @@ function [lambda_circ, lambda_rad, lambda_circ_mean, lambda_rad_mean, fig] = com
         j_max_plot = 2*N_each; 
     end 
     
-    
+    lambda_circ_surf_running = 0;
+    lambda_rad_surf_running = 0;
+    leaflet_area_running = 0;
     
     % Internal leaflet part 
     for j=1:j_max
@@ -200,19 +202,36 @@ function [lambda_circ, lambda_rad, lambda_circ_mean, lambda_rad_mean, fig] = com
                 lambda_rad(j,k) = lambda_rad(j,k)/element_count_rad; 
             end 
 
-            
+            % surface integral running totals 
+            if is_internal(j,k)
+
+                [j_plus__1 j_minus_1 k_plus__1 k_minus_1 m] = get_pressure_nbrs(leaflet,j,k); 
+                    
+                area_local = m * norm(cross(X_current(:,j_plus__1,k) - X_current(:,j_minus_1,k), X_current(:,j,k_plus__1) - X_current(:,j,k_minus_1)));
+                
+                lambda_circ_surf_running = lambda_circ_surf_running + lambda_circ(j,k) * area_local; 
+                lambda_rad_surf_running  = lambda_rad_surf_running  + lambda_rad(j,k)  * area_local; 
+                leaflet_area_running     = leaflet_area_running     +                    area_local;
+            end 
+                        
         end  
     end
     
-    lambda_circ_linear = lambda_circ(:); 
-    lambda_circ_valid  = lambda_circ_linear(find(lambda_circ_linear ~= 0)); 
-    
-    lambda_rad_linear = lambda_rad(:); 
-    lambda_rad_valid  = lambda_rad_linear(find(lambda_rad_linear ~= 0)); 
-    
-    lambda_circ_mean = mean(lambda_circ_valid); 
-    lambda_rad_mean  = mean(lambda_rad_valid); 
+    leaflet_area = leaflet_area_running;
 
+    % use surf integral, not raw mean 
+%     lambda_circ_linear = lambda_circ(:); 
+%     lambda_circ_valid  = lambda_circ_linear(find(lambda_circ_linear ~= 0)); 
+%     
+%     lambda_rad_linear = lambda_rad(:); 
+%     lambda_rad_valid  = lambda_rad_linear(find(lambda_rad_linear ~= 0)); 
+%     
+%     lambda_circ_mean = mean(lambda_circ_valid); 
+%     lambda_rad_mean  = mean(lambda_rad_valid); 
+    
+    lambda_circ_mean = lambda_circ_surf_running / leaflet_area; 
+    lambda_rad_mean = lambda_rad_surf_running / leaflet_area; 
+    
     if plots
         
         if circ
