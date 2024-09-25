@@ -27,7 +27,7 @@ mkdir $RUNDIR
 BASE_NAME=aortic_no_partition_192
 BASE_NAME_VESSEL=vessel
 INPUT_NAME=input_PA_box_tester_valve_192
-RUN_LINE="mpiexec --bind-to core -report-bindings main_rv_pa"
+RUN_LINE="srun main_rv_pa"
 OPTIONS="-velocity_ksp_type cg -velocity_pc_type none -velocity_ksp_max_it 1 -velocity_ksp_norm_type none > output.txt 2>&1"
 SESSION_NAME="pa_valve_tester.session"
 VIEW_CLIPPING="0.2"

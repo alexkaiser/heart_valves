@@ -26,7 +26,7 @@ mkdir $RUNDIR
 # set up run info 
 BASE_NAME=mitral_tree_256
 INPUT_NAME=input_mitral_tree_cycle_256_PERIODIC_systole_skeleton
-RUN_LINE="mpiexec --bind-to core -report-bindings main3d"
+RUN_LINE="srun main3d"
 OPTIONS="-velocity_ksp_type cg -velocity_pc_type none -velocity_ksp_max_it 1 -velocity_ksp_norm_type none > output.txt 2>&1"
 
 pwd

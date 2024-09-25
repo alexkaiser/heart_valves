@@ -26,7 +26,7 @@ mkdir $RUNDIR
 # set up run info 
 BASE_NAME=aortic_fish_384
 INPUT_NAME=input_aortic_384_fish
-RUN_LINE="mpiexec --bind-to core -report-bindings main_aorta"
+RUN_LINE="srun main_aorta"
 OPTIONS="-velocity_ksp_type cg -velocity_pc_type none -velocity_ksp_max_it 1 -velocity_ksp_norm_type none > output.txt 2>&1"
 SESSION_NAME="aortic_384_visit2pt9.session"
 VIEW_CLIPPING="-0.2"
