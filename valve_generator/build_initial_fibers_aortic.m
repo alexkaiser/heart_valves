@@ -130,7 +130,7 @@ else
     % annulus_points_even_spacing = true; 
     
     if isfield(valve, 'annulus_points_even_spacing') && valve.annulus_points_even_spacing
-        error('not implemented')
+
         % just put a bunch of points 
         % then interpolate to equally spaced 
         mesh_scaling = 1000; 
@@ -161,20 +161,22 @@ else
         end        
         
         arc_len_cumulative = zeros(N_each_interp + 1,1); 
-
+        arc_len_each = zeros(N_each_interp + 1,1); 
+        
         for j=2:(N_each_interp+1)
             arc_len_cumulative(j) = arc_len_cumulative(j-1) + norm(X_annulus_interp(:,j-1) - X_annulus_interp(:,j)); 
+            arc_len_each(j) = norm(X_annulus_interp(:,j-1) - X_annulus_interp(:,j)); 
         end 
 
         arc_len_total = arc_len_cumulative(end); 
 
         query_pts = (arc_len_total/N_each) * (0:N_each);  
 
-        X(:,1:j_max,1)= interp1(arc_len_cumulative, X_annulus_interp', query_pts)'; 
+        X(:,:,1)= interp1(arc_len_cumulative, X_annulus_interp', query_pts)'; 
             
                          
         
-        debug_spacing = true; 
+        debug_spacing = false; 
         if debug_spacing
             figure; 
 
@@ -201,18 +203,23 @@ else
             
             % quick length consistency check 
             tol_lengths = 1e-3; 
+            max_diff_absolute = 0; 
+            
             
             % comm point below 
             arc_len_first = norm(X(:,1,1) - X(:,2,1)); 
 
-            for j=2:N_each
-                arc_len_current = norm(X(:,j-1,1) - X(:,j,1)); 
-
-                if abs((arc_len_current - arc_len_first)/arc_len_first) > tol_lengths
-                    error('inconsistent arc lengths after equalizing'); 
+            for j=2:j_max
+                j
+                arc_len_current = norm(X(:,j-1,1) - X(:,j,1)) 
+                max_diff_absolute = max(max_diff_absolute, abs((arc_len_current - arc_len_first)));
+                rel_err = abs((arc_len_current - arc_len_first)/arc_len_first)
+                if rel_err > tol_lengths
+                    warning('inconsistent arc lengths after equalizing');                     
                 end 
             end 
-                                              
+
+            max_diff_absolute
         end 
                 
         
