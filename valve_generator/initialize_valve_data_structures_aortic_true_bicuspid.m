@@ -132,9 +132,11 @@ valve.extrusion_out = true;
 
 % respace on annulus in 3d 
 % if false, spaced wrt theta 
-valve.annulus_points_even_spacing = false; 
+valve.annulus_points_even_spacing = true; 
 
 valve.use_annulus_flattened_pts = true; 
+
+valve.annulus_to_comm = true; 
 
 % from Khelil 2015 Surgical Anatomy of the Aortic Annulus Landmarks 
     % left half of nc leaflet plus reflections and normalization
@@ -227,10 +229,12 @@ valve.L = 2.25;
 
 r_stj = 2.5/2; % 25 mm valve 
 r_temp = r_stj / 1.1; 
-hc = 0.1 * r_stj; 
+hc = 0.5 * r_stj; 
 h1 = 1.4 * r_stj - hc; 
 r_commissure = r_stj; 
-valve.skeleton = get_skeleton_aortic_generic(r_temp, h1, hc, r_commissure); 
+% place the post only if not using the full annulus geometry 
+place_vertical_post = ~valve.annulus_to_comm;
+valve.skeleton = get_skeleton_aortic_generic(r_temp, h1, hc, r_commissure, place_vertical_post); 
 % valve.skeleton = get_skeleton_aortic_generic(); 
 valve.r = valve.skeleton.r; 
 
@@ -268,8 +272,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 4.205;  % circumferential 
-tension_coeffs.c_rad_dec        = 0.75;  % radial
+tension_coeffs.c_circ_dec       = 2.66;  % circumferential 
+tension_coeffs.c_rad_dec        = 1.27;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.91;
 
@@ -384,6 +388,7 @@ if valve.in_heart
 
         debug_plot = true; 
         if debug_plot
+            figure; 
             th = linspace(0,2*pi,100000);
             plot(th,valve.z_min_cylinder(th))
             hold on 

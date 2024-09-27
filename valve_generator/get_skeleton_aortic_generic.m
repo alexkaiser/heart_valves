@@ -1,4 +1,4 @@
-function skeleton = get_skeleton_aortic_generic(r, h1, hc, r_commissure)
+function skeleton = get_skeleton_aortic_generic(r, h1, hc, r_commissure, place_vertical_post)
 % 
 % hardcoded patient specific MV skeleton
 % 
@@ -92,10 +92,15 @@ skeleton.normal_height = h1 + hc;
 
 skeleton.ring_offset_angle = 0; 
 
-
-
-heights = [0; skeleton.height_min_comm; skeleton.normal_height]; 
-radii   = [r; skeleton.r_commissure; skeleton.r_commissure]; 
+if exist('place_vertical_post', 'var') && place_vertical_post
+    % flat part at top 
+    heights = [0; skeleton.height_min_comm; skeleton.normal_height]; 
+    radii   = [r; skeleton.r_commissure; skeleton.r_commissure]; 
+else 
+    % no flat part 
+    heights = [0; skeleton.normal_height]; 
+    radii   = [r; skeleton.r_commissure]; 
+end 
 skeleton.r_of_z = @(z) (z<0) .* r + ... 
                        (0<=z).*(z<skeleton.normal_height) .* interp1(heights, radii, z, 'pchip') + ... 
                        (skeleton.normal_height<=z) .* skeleton.r_commissure; 
@@ -111,11 +116,14 @@ if debug
        (0<=z).*(z<skeleton.normal_height) .* interp1(heights, radii, z, 'linear') + ... 
        (skeleton.normal_height<=z) .* skeleton.r_commissure; 
     
-    z = linspace(0 - 0.02, skeleton.normal_height + .02, 1000); 
+    z = linspace(0 - 0.2, skeleton.normal_height + .2, 1000); 
+
+    figure; 
     plot(skeleton.r_of_z(z), z); 
     hold on 
     plot(r_of_z_spline(z), z); 
     plot(r_of_z_linear(z), z); 
+    plot(r_of_z_linear(skeleton.normal_height), skeleton.normal_height, 'x')
     legend('pchip', 'spline', 'linear')
     
     xlabel('r_of_z')

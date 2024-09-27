@@ -114,7 +114,14 @@ else
             error('valve.annulus_flattened_normalized boundary values incorrect')
         end 
         
-        z_tmp_fn = @(x_this_cusp) height_min_comm * interp1(valve.annulus_flattened_normalized(:,1), valve.annulus_flattened_normalized(:,2), x_this_cusp, 'pchip'); 
+        if isfield(valve, 'annulus_to_comm') && valve.annulus_to_comm 
+            height_z_tmp_fn = normal_height;
+        else 
+            height_z_tmp_fn = height_min_comm;
+        end 
+        
+        
+        z_tmp_fn = @(x_this_cusp) height_z_tmp_fn * interp1(valve.annulus_flattened_normalized(:,1), valve.annulus_flattened_normalized(:,2), x_this_cusp, 'pchip'); 
     else
         % default polynomial 
         center_cusp = 1/2;
@@ -160,20 +167,67 @@ else
             X_annulus_interp(:,j) = [r_tmp*cos((j-1)*du_interp*2*pi + ring_offset_angle) ; r_tmp*sin((j-1)*du_interp*2*pi + ring_offset_angle); z_tmp]; 
         end        
         
-        arc_len_cumulative = zeros(N_each_interp + 1,1); 
-        arc_len_each = zeros(N_each_interp + 1,1); 
         
-        for j=2:(N_each_interp+1)
-            arc_len_cumulative(j) = arc_len_cumulative(j-1) + norm(X_annulus_interp(:,j-1) - X_annulus_interp(:,j)); 
-            arc_len_each(j) = norm(X_annulus_interp(:,j-1) - X_annulus_interp(:,j)); 
-        end 
-
-        arc_len_total = arc_len_cumulative(end); 
-
-        query_pts = (arc_len_total/N_each) * (0:N_each);  
-
-        X(:,:,1)= interp1(arc_len_cumulative, X_annulus_interp', query_pts)'; 
+        if isfield(valve, 'annulus_to_comm') && valve.annulus_to_comm 
+        
+            % find points at which radial fibers begin 
+            l_comm_min_range = 1; 
+            l_comm_max_range = find(X_annulus_interp(3,:) < height_min_comm, 1, 'first');
             
+            r_comm_min_range = find(X_annulus_interp(3,:) < height_min_comm, 1, 'last'); 
+            r_romm_max_range = j_max_interp;
+            
+            tol_reflection = 1e-14;
+            if abs(X_annulus_interp(3,l_comm_max_range) - X_annulus_interp(3,r_comm_min_range)) > tol_reflection
+                error('did not find equal height points')
+            end             
+            
+            X_left_comm_interp = X_annulus_interp(:, l_comm_min_range:l_comm_max_range); 
+            % these go from bottom to top 
+            X_left_comm_interp = flip(X_left_comm_interp,2);
+            
+            X_annulus_bottom_interp = X_annulus_interp(:, l_comm_max_range:r_comm_min_range); 
+            X_right_comm_interp = X_annulus_interp(:, r_comm_min_range:r_romm_max_range); 
+            
+            % left comm points 
+            X(:,1,:) = compute_equally_spaced_pts(X_left_comm_interp, k_max);
+            X_l_comm_min = X(:,1,1);
+
+            % right comm points 
+            X(:,j_max,:) = compute_equally_spaced_pts(X_right_comm_interp, k_max);
+            X_r_comm_min = X(:,j_max,1); 
+            
+            % bottom annulus points 
+            % overwrite corner points (which should be equal)
+            X(:,:,1) = compute_equally_spaced_pts(X_annulus_bottom_interp, j_max);
+        
+            % error checking on positions 
+            if norm(X_l_comm_min - X(:,1,1)) > eps 
+                error('inconsistent position at base of radial attachment')
+            end 
+            if norm(X_r_comm_min - X(:,j_max,1)) > eps 
+                error('inconsistent position at base of radial attachment')
+            end 
+            
+            comm_position_set = true; 
+            
+        else 
+            % set a vertical post at the top of the comms 
+            arc_len_cumulative = zeros(N_each_interp + 1,1); 
+            arc_len_each = zeros(N_each_interp + 1,1); 
+
+            for j=2:(N_each_interp+1)
+                arc_len_cumulative(j) = arc_len_cumulative(j-1) + norm(X_annulus_interp(:,j-1) - X_annulus_interp(:,j)); 
+                arc_len_each(j) = norm(X_annulus_interp(:,j-1) - X_annulus_interp(:,j)); 
+            end 
+
+            arc_len_total = arc_len_cumulative(end); 
+
+            query_pts = (arc_len_total/N_each) * (0:N_each);  
+
+            X(:,:,1)= interp1(arc_len_cumulative, X_annulus_interp', query_pts)'; 
+
+        end 
                          
         
         debug_spacing = false; 
@@ -193,6 +247,18 @@ else
             z_component_X_annulus_interp = squeeze(X_annulus_interp(3,:)); 
             
             plot3(x_component_X_annulus_interp, y_component_X_annulus_interp, z_component_X_annulus_interp, 'r', 'LineWidth',width);
+            
+            if exist('comm_position_set', 'var') && comm_position_set
+                x_component = squeeze(X(1,1,:)); 
+                y_component = squeeze(X(2,1,:)); 
+                z_component = squeeze(X(3,1,:)); 
+                plot3(x_component, y_component, z_component, '*', 'LineWidth',width);
+                
+                x_component = squeeze(X(1,j_max,:)); 
+                y_component = squeeze(X(2,j_max,:)); 
+                z_component = squeeze(X(3,j_max,:)); 
+                plot3(x_component, y_component, z_component, '+', 'LineWidth',width);
+            end 
             
             axis equal 
             axis auto 
@@ -294,9 +360,15 @@ for j=1:(N_each/2)
 end 
 
 
+% set range of comms that still need to be set 
+if exist('comm_position_set', 'var') && comm_position_set
+    j_range = 2:N_each;
+else 
+    j_range = 1:j_max;
+end 
 
 % linear interpolation from annulus to free edge 
-for j=1:j_max 
+for j=j_range
     dk_interp = 1/(k_max-1);         
     for k=2:(k_max-1)
         X(:,j,k) = (1 - (k-1)*dk_interp) * X(:,j,1) + (k-1)*dk_interp * X(:,j,k_max);  
