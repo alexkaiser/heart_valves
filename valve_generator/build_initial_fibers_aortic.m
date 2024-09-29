@@ -45,7 +45,7 @@ else
 end 
 X = NaN * zeros(3,j_max,k_max); 
 
-debug = false; 
+debug = true; 
 
 
 if isfield(valve.skeleton, 'valve_ring_pts')
@@ -136,8 +136,11 @@ else
     
     % annulus_points_even_spacing = true; 
     
-    if isfield(valve, 'annulus_points_even_spacing') && valve.annulus_points_even_spacing
+    if (isfield(valve, 'annulus_points_even_spacing') && valve.annulus_points_even_spacing) || ...
+        isfield(valve, 'annulus_to_comm') && valve.annulus_to_comm
 
+        % for both of these conditions, compute even spacing from many points 
+        
         % just put a bunch of points 
         % then interpolate to equally spaced 
         mesh_scaling = 1000; 
@@ -196,17 +199,48 @@ else
             % right comm points 
             X(:,j_max,:) = compute_equally_spaced_pts(X_right_comm_interp, k_max);
             X_r_comm_min = X(:,j_max,1); 
+
+            if isfield(valve, 'annulus_points_even_spacing') && valve.annulus_points_even_spacing
             
-            % bottom annulus points 
-            % overwrite corner points (which should be equal)
-            X(:,:,1) = compute_equally_spaced_pts(X_annulus_bottom_interp, j_max);
-        
-            % error checking on positions 
-            if norm(X_l_comm_min - X(:,1,1)) > eps 
-                error('inconsistent position at base of radial attachment')
+                % bottom annulus points 
+                % overwrite corner points (which should be equal)
+                X(:,:,1) = compute_equally_spaced_pts(X_annulus_bottom_interp, j_max);
+            else 
+                % find the range that the bottom covers in theta
+                % even spacing wrt theta here 
+                theta_min = atan2(X_l_comm_min(2),X_l_comm_min(1));
+                
+                if (theta_min < 0) || (theta_min > pi/2)
+                    error("theta_min must be in first quadrant")
+                end 
+                    
+                th_range = linspace(theta_min, pi - theta_min,j_max);
+                for j = 1:j_max
+                    
+                    z_tmp = z_tmp_fn(th_range(j)/pi);  
+
+                    r_tmp = r; 
+
+                    if r ~= r_commissure 
+                        if isfield(valve.skeleton, 'r_of_z')
+                            r_tmp = valve.skeleton.r_of_z(z_tmp); 
+                        else 
+                            error('this needs to compute r(z) here if r ~= r_commissure'); 
+                        end 
+                    end    
+                    
+                    X(:,j,1) = [r_tmp*cos(th_range(j) + ring_offset_angle) ; r_tmp*sin(th_range(j) + ring_offset_angle); z_tmp]; 
+                end 
+                                
+            end
+            
+            % error checking on positions
+            tol = 1e-14;
+            if norm(X_l_comm_min - X(:,1,1)) > tol 
+                warning('inconsistent position at base of radial attachment')
             end 
-            if norm(X_r_comm_min - X(:,j_max,1)) > eps 
-                error('inconsistent position at base of radial attachment')
+            if norm(X_r_comm_min - X(:,j_max,1)) > tol
+                warning('inconsistent position at base of radial attachment')
             end 
             
             comm_position_set = true; 
@@ -230,7 +264,7 @@ else
         end 
                          
         
-        debug_spacing = false; 
+        debug_spacing = true; 
         if debug_spacing
             figure; 
 
