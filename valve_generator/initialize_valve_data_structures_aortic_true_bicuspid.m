@@ -272,8 +272,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 2.66;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.27;  % radial
+tension_coeffs.c_circ_dec       = 3.9;  % circumferential 
+tension_coeffs.c_rad_dec        = 0.7;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.91;
 
@@ -302,15 +302,15 @@ valve.eta_papillary_unscaled = 0.0; valve.target_papillary_unscaled/500;
 valve.kappa_cross_layer_multipler = 2 * (384/N)^2 * 1e4 / 256^2;
 
 % valve.k_bend_radial = [0 0 1e5 1e5] * 192/N;
-valve.k_bend_radial = 0; % 1e4 * 192/N;
+valve.k_bend_radial = 1e4 * 192/N;
 % valve.k_bend_radial_annulus = 1e2 * 192/N;
 valve.k_bend_radial_free_edge = 0; 1e4 * 192/N;
 valve.k_bend_radial_free_edge_percentage = 0; 
-valve.k_bend_circ = 0; % 1e4 * 192/N;
+valve.k_bend_circ = 1e4 * 192/N;
 valve.k_bend_circ_free_edge = 0; 
 valve.k_bend_circ_free_edge_percentage = 0;
 
-valve.k_bend_cross_layer = 0 % 1e4 * 192/N;
+valve.k_bend_cross_layer = 1e4 * 192/N;
 
 if valve.in_heart 
 
