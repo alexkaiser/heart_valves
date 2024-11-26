@@ -1,4 +1,4 @@
-function [a_0 a_n b_n Series times linear_interp_vals_one_cycle] = series_and_smooth(points_one_cycle, dt, bump_radius, n_fourier_coeffs, plots)
+function [a_0 a_n b_n Series times linear_interp_vals_one_cycle Series_derivative] = series_and_smooth(points_one_cycle, dt, bump_radius, n_fourier_coeffs, plots)
 % 
 % Takes data, computes piecewise linear interpolant, 
 % smooths with convolution with cosine squared bump,
@@ -90,6 +90,6 @@ if plots
     title('After convolution, one cycle')
 end 
 
-[a_0 a_n b_n Series] = fourier_series_uniform(times, smoothed_one_cycle, cycle_length, n_fourier_coeffs, dt); 
+[a_0 a_n b_n Series Series_derivative] = fourier_series_uniform(times, smoothed_one_cycle, cycle_length, n_fourier_coeffs, dt); 
 
 
