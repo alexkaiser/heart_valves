@@ -4,7 +4,6 @@ function [Gh, Eh, Eh_from_minimum, min_height_center, free_edge_length, ...
 j_max  = leaflet.j_max; 
 k_max  = leaflet.k_max; 
 N_each = leaflet.N_each; 
-X      = leaflet.X; 
 
 
 if isfield(leaflet, 'N_leaflets')
@@ -13,27 +12,32 @@ else
     N_leaflets = 3; 
 end 
 
-Eh = zeros(N_leaflets,1); 
-Gh = zeros(N_leaflets,1); 
-min_height_center = zeros(N_leaflets,1); 
-free_edge_length = zeros(N_leaflets,1);
+% all on first leaflet for now, no arrays
+% Eh = zeros(N_leaflets,1); 
+% Gh = zeros(N_leaflets,1); 
+% min_height_center = zeros(N_leaflets,1); 
+% free_edge_length = zeros(N_leaflets,1);
 
-if exist('leaflet_layer_3','var')
-    X_layer_ventricular = leaflet_layer_3.X; 
-else 
-    X_layer_ventricular = X; 
-end 
+Eh = 0;
+Gh = 0;
+min_height_center = 0;
+free_edge_length = 0;
 
 
+X_layer_ventricular = leaflet.X;
+X_layer_aortic = leaflet_layer_3.X; 
+
+N_leaflets = 1; 
 
 % height 
-for comm_idx = 1:N_leaflets
+
+for comm_idx = 1% :N_leaflets
 
     min_idx = (comm_idx-1)*N_each;    
     
     max_idx = N_each + min_idx; 
    
-    center_idx_j = min_idx + N_each/2; 
+    center_idx_j = N_each/2; 
 
     j = center_idx_j; 
     
@@ -41,18 +45,18 @@ for comm_idx = 1:N_leaflets
     
         j_nbr_tmp = j;
         k_nbr_tmp = k-1; 
-        [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+        [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet_layer_3, j, k, j_nbr_tmp, k_nbr_tmp); 
         if ~valid 
             error('trying to compute lengths with an invalid rest length')
         end
 
-        X_temp = X(:,j,k);
-        X_nbr = X(:,j_nbr,k_nbr); 
+        X_temp = X_layer_aortic(:,j,k);
+        X_nbr = X_layer_aortic(:,j_nbr,k_nbr); 
 
         Gh(comm_idx) = Gh(comm_idx) + norm(X_temp - X_nbr);        
     end 
     
-    Eh(comm_idx) = X(3,j,k_max); 
+    Eh(comm_idx) = X_layer_aortic(3,j,k_max); 
     
     % min_height_center(comm_idx) = min(X(3,j,:));
     
@@ -64,11 +68,9 @@ end
 Eh_from_minimum = Eh - min_height_center; 
 
 % free edge lengths 
-for comm_idx = 1:N_leaflets
-
-    min_idx = (comm_idx-1)*N_each;         
+for comm_idx = 1 % :N_leaflets
     
-    for j=(1 + min_idx):(N_each + min_idx)
+    for j=2:j_max
         k = k_max; 
 
         j_nbr_tmp = j-1; 
@@ -78,8 +80,8 @@ for comm_idx = 1:N_leaflets
             error('trying to compute lengths with an invalid rest length')
         end
 
-        X_temp = X(:,j,k);
-        X_nbr = X(:,j_nbr,k_nbr); 
+        X_temp = X_layer_ventricular(:,j,k);
+        X_nbr = X_layer_ventricular(:,j_nbr,k_nbr); 
 
         free_edge_length(comm_idx) = free_edge_length(comm_idx) + norm(X_temp - X_nbr);        
         
@@ -89,7 +91,7 @@ end
 
 free_edge_length_total = sum(free_edge_length); 
 
-orifice_area_free_edge = polyarea(X(1,:,k_max), X(2,:,k_max)); 
+orifice_area_free_edge = polyarea(X_layer_ventricular(1,:,k_max), X_layer_ventricular(2,:,k_max)); 
 
 
 x_component_vector = []; 
@@ -108,7 +110,7 @@ end
 for layer_idx = layer_range 
 
     if layer_idx == 1 
-        X_temp = X; 
+        X_temp = leaflet.X; 
     elseif layer_idx == 2 
         X_temp = leaflet_layer_2.X;
     elseif layer_idx == 3

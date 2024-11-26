@@ -28,7 +28,7 @@ if __name__== "__main__":
 
     MMHG_TO_CGS = 1333.22368
 
-    standard_case = False 
+    standard_case = True 
     if standard_case: 
         high_pressure = False 
         low_pressure = False
@@ -110,7 +110,7 @@ if __name__== "__main__":
         print ("R_distal = ", R_d)
 
 
-    fish_case = True
+    fish_case = False
     if fish_case: 
 
         t_initial = 0.13361
