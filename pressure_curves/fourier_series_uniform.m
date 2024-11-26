@@ -1,4 +1,4 @@
-function [a_0 a_n b_n Series] = fourier_series_uniform(x, y, L, n, dt)
+function [a_0 a_n b_n Series, Series_derivative] = fourier_series_uniform(x, y, L, n, dt)
 %
 % Fourier coefficients on [0,L]
 % Simple trapezoidal quadrature 
@@ -65,4 +65,15 @@ series_no_array = @(t) a_0 + sum(a_n .* cos((2*pi/L) * (1:n) .* t)' + ...
 
 Series = @(t) arrayfun(series_no_array, t); 
 
+a_n_derivative = zeros(n,1);
+b_n_derivative = zeros(n,1);
+for j = 1:n
+    a_n_derivative(j) =  b_n(j) * (2*pi/L) * j; 
+    b_n_derivative(j) = -a_n(j) * (2*pi/L) * j; 
+end 
+
+series_derivative_no_array = @(t) sum(a_n_derivative .* cos((2*pi/L) * (1:n) .* t)' + ...  
+                                      b_n_derivative .* sin((2*pi/L) * (1:n) .* t)' ); 
+
+Series_derivative = @(t) arrayfun(series_derivative_no_array, t); 
 
