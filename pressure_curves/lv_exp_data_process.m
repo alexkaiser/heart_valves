@@ -252,41 +252,49 @@ Emin = 1/C_min_ml_over_dynespercm2
 Emin_mmHg_over_ml = Emin / MMHG_TO_CGS; 
 Emax_mmHg_over_ml = Emax / MMHG_TO_CGS;
 
+R_av_closed = r_av*100;
+steepness_av = 0.00001; 
 
 
-[times_lpn, P_lv, Q_ao, P_ao, V_lv] = solve_lv_ao_lpn(dt_lpn, t_final, v_initial, Vrd, Vrs, Emax, Emin, ...
+[times_lpn, P_lv, Q_ao, P_ao, V_lv, R_tanh] = solve_lv_ao_lpn(dt_lpn, t_final, v_initial, Vrd, Vrs, Emax, Emin, ...
                                      Series_q_mitral_scaled, Series_activation, ...
-                                     P_ao_initial, R_proximal, C, R_distal, r_av);
+                                     P_ao_initial, R_proximal, C, R_distal, r_av, R_av_closed, steepness_av);
 
 
 figure; 
-subplot(4,1,1)
+subplot(5,1,1)
 plot(t, vals_series_pressure_lv)
 hold on 
 plot(t, vals_series_pressure_aorta)
-
 plot(times_lpn, P_lv/MMHG_TO_CGS); 
 plot(times_lpn, P_ao/MMHG_TO_CGS);
+xlim([0 max(times_lpn)])
 
-legend('lv exp', 'ao exp', 'lv lpn', 'lv ao');
+legend('lv exp', 'ao exp', 'lv lpn', 'ao lpn');
 
 
-subplot(4,1,2)
+subplot(5,1,2)
 hold on 
 plot(t, vals_series_q_mitral_scaled)
 plot(t, vals_series_q_aorta_scaled)
 plot(times_lpn, Q_ao)
+xlim([0 max(times_lpn)])
 
 legend('q mi exp', 'q ao exp', 'q ao lpn')
 
-subplot(4,1,3)
+subplot(5,1,3)
 plot(t, vals_ventricular_volume)
 plot(times_lpn, V_lv)
+xlim([0 max(times_lpn)])
 legend('V integrated', 'V lpn')
 
-subplot(4,1,4);
+subplot(5,1,4);
 plot(t, vals_series_activation);
+xlim([0 max(times_lpn)])
 
+subplot(5,1,5)
+plot(times_lpn, R_tanh)
+xlim([0 max(times_lpn)])
 
 figure; 
 hold on 

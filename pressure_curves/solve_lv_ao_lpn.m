@@ -1,5 +1,5 @@
-function [times, P_lv, Q_ao, P_ao, V_lv] = solve_lv_ao_lpn(dt, t_final, V0_ventricle, Vrd, Vrs, Emax, Emin, ... 
-                                              Q_in, act, P_ao_initial, R_proximal, C, R_distal, R_av)
+function [times, P_lv, Q_ao, P_ao, V_lv, R_tanh_valve_series] = solve_lv_ao_lpn(dt, t_final, V0_ventricle, Vrd, Vrs, Emax, Emin, ... 
+                                              Q_in, act, P_ao_initial, R_proximal, C, R_distal, R_av, R_av_closed, steepness_av)
 
 
 n_times = t_final/dt; 
@@ -15,6 +15,8 @@ P_wk  = zeros(n_times, 1);
 Vrest = zeros(n_times, 1); 
 Elas  = zeros(n_times, 1); 
 
+R_tanh_valve_series = zeros(n_times, 1); 
+
 % initial conditions 
 times(1) = 0; 
 P_lv(1)  = 0; 
@@ -29,12 +31,21 @@ Elas(1)  = 0;
 for n = 1:(n_times-1)
 
     times(n+1) = dt*n;
+ 
+    tanh_valve = true; 
     
-    % aortic valve is simple diode 
-    if P_lv(n) > P_ao(n)
-        Q_ao(n+1) = (1/R_av) * (P_lv(n) - P_ao(n)); 
+    if tanh_valve
+        delta_p_valve = P_lv(n) - P_ao(n); 
+        R_tanh_valve = R_av + (R_av_closed - R_av) * 0.5 * (1 + tanh(steepness_av * -delta_p_valve));
+        R_tanh_valve_series(n) = R_tanh_valve;
+        Q_ao(n+1) = (1/R_tanh_valve) * delta_p_valve;
     else 
-        Q_ao(n+1) = 0; 
+        % aortic valve is simple diode 
+        if P_lv(n) > P_ao(n)
+            Q_ao(n+1) = (1/R_av) * (P_lv(n) - P_ao(n)); 
+        else 
+            Q_ao(n+1) = 0; 
+        end 
     end 
     
     % rcr update 
