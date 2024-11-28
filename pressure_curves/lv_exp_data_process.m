@@ -98,6 +98,10 @@ activation_data = activation_data_unscaled / max(activation_data_unscaled);
 
 vals_series_activation = Series_activation(t);
 
+base_name = 'fourier_coeffs';
+suffix = '_lv_activation'
+file_name = strcat(base_name, suffix, '.txt'); 
+output_series_coeffs_to_txt(a_0_activation, a_n_activation, b_n_activation, n_fourier_coeffs, cycle_duration, file_name); 
 
 [a_0_pressure_aorta, a_n_pressure_aorta, b_n_pressure_aorta, Series_pressure_aorta, ~, ~, Series_pressure_aorta_derivative] = ...
     series_and_smooth([times_pressures_adjusted, pressures_aorta_raw], dt, bump_radius, n_fourier_coeffs, plots); 
@@ -157,6 +161,13 @@ vals_series_q_aorta_derivative_scaled = Series_q_aorta_derivative_scaled(t);
 
 q_mitral_cumulative_scaled = dt * trapz(vals_series_q_mitral_scaled)
 q_aorta_cumulative_scaled = dt * trapz(vals_series_q_aorta_scaled)
+
+
+base_name = 'fourier_coeffs';
+suffix = '_Q_mi'
+file_name = strcat(base_name, suffix, '.txt'); 
+output_series_coeffs_to_txt(scaling_q_mitral * a_0_q_mitral, scaling_q_mitral * a_n_q_mitral, scaling_q_mitral * b_n_q_mitral, n_fourier_coeffs, cycle_duration, file_name); 
+
 
 
 % cgs units for pressure

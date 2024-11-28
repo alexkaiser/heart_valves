@@ -761,9 +761,12 @@ ventricle_0D_model::ventricle_0D_model(Pointer<Database> input_db,
     d_E_max           = input_db->getDoubleWithDefault("E_MAX", 1.057082452431290e+04); 
     d_inductance      = input_db->getDoubleWithDefault("INDUCTANCE", 0.0); 
 
+    double V_initial = input_db->getDoubleWithDefault("V_INITIAL", d_V_rest_diastole);
+
     const bool print_debug = true; 
     if (print_debug){
         pout << "ventricle_0D_model initializing.\n"; 
+        pout << "V_initial = " << V_initial << "\n";
         pout << "d_cycle_duration = " << d_cycle_duration << "\n"; 
         pout << "d_initialization_time = " << d_initialization_time << "\n"; 
         pout << "d_V_rest_diastole = " << d_V_rest_diastole  << "\n"; 
