@@ -89,7 +89,7 @@ if check_derivatives
 end 
 
 % activation pressure proportional to ventricular pressure 
-p_lv_activation_threshold = 10; 
+p_lv_activation_threshold = 20; 
 activation_data_unscaled = (pressures_lv_raw > p_lv_activation_threshold) .* pressures_lv_raw;
 activation_data = activation_data_unscaled / max(activation_data_unscaled);
 
@@ -218,7 +218,7 @@ end
 
 % run the lpn 
 dt_lpn = 1e-4; 
-n_cycles = 4; 
+n_cycles = 3; 
 t_final = cycle_duration * n_cycles;
 P_ao_initial = 94*MMHG_TO_CGS;
 R_proximal = 83.6698220729; 
@@ -226,33 +226,47 @@ C =  0.00167055364456;
 R_distal = 1287.64596307;
 
 v_initial = ventricular_volume_initial;
-Vrd = 26.1; % ml 
-Vrs = -500; % ml
 
-% parameters from KERCKHOFFS AMBE 2006 
-% lv 
-% note that min compliance is actually the larger value under confusing naming convention 
-C_min_ml_over_kPa = 11.0; 
-C_max_ml_over_kPa = 0.946; 
 
-% E_min_kPa = 1/C_min_ml_over_kPa; 
-% E_max_kPa = 1/C_max_ml_over_kPa; 
+KERCKHOFFS = true; 
+Regazzoni_aaron = false; 
 
-ML_OVER_KPA_TO_ML_OVER_DYNEPERCM2 = 1e-4; 
+if KERCKHOFFS 
+    Vrd = 26.1; % ml 
+    Vrs = 18; % ml
 
-C_min_scaling = 5; 
-C_max_scaling = 40; 
+    % parameters from KERCKHOFFS AMBE 2006 
+    % lv 
+    % note that min compliance is actually the larger value under confusing naming convention 
+    C_min_ml_over_kPa = 11.0; 
+    C_max_ml_over_kPa = 0.946; 
 
-C_min_ml_over_dynespercm2 = C_min_scaling * C_min_ml_over_kPa * ML_OVER_KPA_TO_ML_OVER_DYNEPERCM2; 
-C_max_ml_over_dynespercm2 = C_max_scaling * C_max_ml_over_kPa * ML_OVER_KPA_TO_ML_OVER_DYNEPERCM2; 
+    % E_min_kPa = 1/C_min_ml_over_kPa; 
+    % E_max_kPa = 1/C_max_ml_over_kPa; 
 
-Emax = 1/C_max_ml_over_dynespercm2
-Emin = 1/C_min_ml_over_dynespercm2
+    ML_OVER_KPA_TO_ML_OVER_DYNEPERCM2 = 1e-4; 
 
-Emin_mmHg_over_ml = Emin / MMHG_TO_CGS; 
-Emax_mmHg_over_ml = Emax / MMHG_TO_CGS;
+    C_min_scaling = 5; 
+    C_max_scaling = 5; 
 
-R_av_closed = r_av*100;
+    C_min_ml_over_dynespercm2 = C_min_scaling * C_min_ml_over_kPa * ML_OVER_KPA_TO_ML_OVER_DYNEPERCM2; 
+    C_max_ml_over_dynespercm2 = C_max_scaling * C_max_ml_over_kPa * ML_OVER_KPA_TO_ML_OVER_DYNEPERCM2; 
+
+    Emax = 1/C_max_ml_over_dynespercm2
+    Emin = 1/C_min_ml_over_dynespercm2
+
+    Emin_mmHg_over_ml = Emin / MMHG_TO_CGS 
+    Emax_mmHg_over_ml = Emax / MMHG_TO_CGS
+
+elseif Regazzoni_aaron
+    
+else 
+    error('not implemented');
+end 
+
+    
+    
+R_av_closed = 100000;
 steepness_av = 0.00001; 
 
 
