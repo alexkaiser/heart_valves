@@ -58,7 +58,7 @@ inductance = inductance_mmHg * MMHG_TO_CGS;
 
 
 
-two_hill = false; 
+two_hill = true; 
 if two_hill
     % hill function parameters 
     % brown AMBE 2023 
@@ -95,6 +95,7 @@ if two_hill
     times_hill = linspace(0,cycle_length,1e4); 
     plot(times_hill, two_hill_function(times_hill)); 
     title('hill function')
+    
 end 
 
 
@@ -325,7 +326,7 @@ p_aorta_cycle_2 = p_aorta(min_idx_times_ao:max_idx_times_ao);
 
 Series_P_Ao_dynescm2 = @(t) MMHG_TO_CGS * Series_P_Ao_mmHg(t); 
 
-dt = 1e-3; 
+dt = 1e-4; 
 
 t_offset_Q_mi = 0; 
 
@@ -350,7 +351,10 @@ V_lv(1) = Vrd;
 
 % forcing terms 
 Q_mi = Series_Q_mi_scaled(times - t_offset_Q_mi); 
-act  = Series_lv_activation(times - t_offset_Q_mi); 
+
+if ~two_hill
+    act  = Series_lv_activation(times - t_offset_Q_mi); 
+end 
 
 prescribe_Q_ao = false; 
 if prescribe_Q_ao
@@ -392,25 +396,29 @@ for n = 1:(n_times-1)
     % eqn 3 for ventricular volume 
     V_lv(n+1) = V_lv(n) + dt * (Q_mi(n) - Q_ao(n)); 
 
-    % calculate current elastance Elas 
-    t_in_cycle = mod(t, cycle_length);
-
-    t_contract = 0;
-    if (t_in_cycle >= t_active)
-        t_contract = t_in_cycle - t_active;
-    end
-
-%     act(n+1) = 0;
-%     if (t_contract <= t_twitch)
-%         % act(n+1) = (-0.5 * cos(2 * pi * t_contract / t_twitch) + 0.5)^cos_power;
-%     end 
-
-    if t < 0.2
-        act_temp = 0; 
+    if two_hill
+        
     else 
-        act_temp = act(n+1); 
-    end 
+        % calculate current elastance Elas 
+        t_in_cycle = mod(t, cycle_length);
 
+        t_contract = 0;
+        if (t_in_cycle >= t_active)
+            t_contract = t_in_cycle - t_active;
+        end
+
+    %     act(n+1) = 0;
+    %     if (t_contract <= t_twitch)
+    %         % act(n+1) = (-0.5 * cos(2 * pi * t_contract / t_twitch) + 0.5)^cos_power;
+    %     end 
+
+        if t < 0.2
+            act_temp = 0; 
+        else 
+            act_temp = act(n+1); 
+        end 
+    end 
+    
     Vrest(n+1) = (1.0 - act_temp) * (Vrd - Vrs) + Vrs;
     Elas(n+1) = (Emax - Emin) * act_temp + Emin;
 

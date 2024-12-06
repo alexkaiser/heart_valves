@@ -1,6 +1,6 @@
 
 % quadrature spacing 
-debug = true; 
+debug = false; 
 if debug 
     dt = 5e-4; 
 else 
@@ -36,6 +36,63 @@ q_av_est = 450; % ml/s
 delta_p_av_dynescm2 = delta_p_av_mmHg * MMHG_TO_CGS; 
 
 r_av = delta_p_av_dynescm2 / q_av_est
+
+
+two_hill = true; 
+if two_hill
+    % hill function parameters 
+    % brown AMBE 2023 
+    tau_1 = 0.0725 * 2 * cycle_duration 
+    tau_2 = 0.4503 * cycle_duration
+
+    m1 = 2.7463
+    m2 = 21.5683
+
+    g1 = @(t) (t > 0) .* (t./tau_1).^m1; 
+    g2 = @(t) (t > 0) .* (t./tau_2).^m2; 
+
+    r1 = @(t) g1(t) ./ (1 + g1(t)); 
+    r2 = @(t) 1 ./ (1 + g2(t)); 
+    two_hill_product = @(t) (g1(t) ./ (1 + g1(t))) .* (1 ./ (1 + g2(t))); 
+
+    % broken 
+    % two_hill_product_maximum_opt = -fminbnd(@(t) -two_hill_product(t), 0, cycle_duration); 
+
+    % hack opt 
+    times_hill = 0:dt:cycle_duration; % linspace(0,cycle_duration,cycle_duration/dt); 
+    two_hill_product_maximum = max(two_hill_product(times_hill)); 
+
+    % times_hill = linspace(0,cycle_duration,cycle_duration/dt); 
+    
+    k_coeff_two_hill = 1 / two_hill_product_maximum; 
+
+    t_shift_hill = 0.45;
+    
+    two_hill_function = @(t) k_coeff_two_hill * two_hill_product(t - t_shift_hill); 
+
+    % two_hill_function = @(t) two_hill_product(t); 
+
+    figure; 
+%     plot(times_hill, two_hill_product(times_hill)); 
+    hold on    
+    plot(times_hill, two_hill_function(times_hill)); 
+%     plot(times_hill, g1(times_hill))
+%     plot(times_hill, max(g1(times_hill), zeros(size(times_hill))) )
+%     plot(times_hill, g1(times_hill)/max(abs(g1(times_hill))))
+%     plot(times_hill, g2(times_hill)/max(abs(g2(times_hill))))
+
+    plot(times_hill, r1(times_hill))
+    plot(times_hill, r2(times_hill))
+
+    legend('hill function', 'r1', 'r2')
+    
+    
+    title('hill function')
+    
+end 
+
+
+
 
 table = readtable('pressure_curve_data/Physiologic_Mechanisms_Aortic_Insufficiency_Yellin/PhysiologicMechanismsinAorticInsufficiency_lv_la_ao.csv'); 
 
@@ -87,6 +144,18 @@ if check_derivatives
     legend('series', 'finite diff derivative')
     
 end 
+
+[a_0_activation_two_hill, a_n_activation_two_hill, b_n_activation_two_hill, Series_activation_two_hill] = ... 
+    series_and_smooth([t', two_hill_function(t)'], dt, bump_radius, n_fourier_coeffs, plots); 
+
+vals_series_activation_two_hill = Series_activation_two_hill(t);
+
+base_name = 'fourier_coeffs';
+suffix = '_lv_activation_two_hill'
+file_name = strcat(base_name, suffix, '.txt'); 
+output_series_coeffs_to_txt(a_0_activation_two_hill, a_n_activation_two_hill, b_n_activation_two_hill, n_fourier_coeffs, cycle_duration, file_name); 
+
+
 
 % activation pressure proportional to ventricular pressure 
 p_lv_activation_threshold = 20; 
@@ -229,7 +298,7 @@ end
 
 % run the lpn 
 dt_lpn = 1e-4; 
-n_cycles = 3; 
+n_cycles = 1; 
 t_final = cycle_duration * n_cycles;
 P_ao_initial = 94*MMHG_TO_CGS;
 R_proximal = 83.6698220729; 
@@ -240,7 +309,6 @@ v_initial = ventricular_volume_initial;
 
 
 KERCKHOFFS = true; 
-Regazzoni_aaron = false; 
 
 if KERCKHOFFS 
     Vrd = 26.1; % ml 
@@ -268,8 +336,6 @@ if KERCKHOFFS
 
     Emin_mmHg_over_ml = Emin / MMHG_TO_CGS 
     Emax_mmHg_over_ml = Emax / MMHG_TO_CGS
-
-elseif Regazzoni_aaron
     
 else 
     error('not implemented');
@@ -286,8 +352,8 @@ steepness_av = 0.00001;
                                      P_ao_initial, R_proximal, C, R_distal, r_av, R_av_closed, steepness_av);
 
 
-figure; 
-subplot(5,1,1)
+figure;
+subplot(6,1,1)
 plot(t, vals_series_pressure_lv)
 hold on 
 plot(t, vals_series_pressure_aorta)
@@ -298,28 +364,41 @@ xlim([0 max(times_lpn)])
 legend('lv exp', 'ao exp', 'lv lpn', 'ao lpn');
 
 
-subplot(5,1,2)
+subplot(6,1,2)
 hold on 
 plot(t, vals_series_q_mitral_scaled)
 plot(t, vals_series_q_aorta_scaled)
 plot(times_lpn, Q_ao)
 xlim([0 max(times_lpn)])
-
 legend('q mi exp', 'q ao exp', 'q ao lpn')
 
-subplot(5,1,3)
+
+subplot(6,1,3)
+plot(times_hill, two_hill_function(times_hill)); 
+
+
+subplot(6,1,4)
 plot(t, vals_ventricular_volume)
+hold on 
 plot(times_lpn, V_lv)
 xlim([0 max(times_lpn)])
 legend('V integrated', 'V lpn')
 
-subplot(5,1,4);
+subplot(6,1,5);
+plot(t, vals_series_activation_two_hill);
+hold on 
 plot(t, vals_series_activation);
 xlim([0 max(times_lpn)])
+legend('two hill', 'act from p lv')
+title('act')
 
-subplot(5,1,5)
+subplot(6,1,6)
 plot(times_lpn, R_tanh)
 xlim([0 max(times_lpn)])
+title('r valve')
+
+
+
 
 figure; 
 hold on 
