@@ -774,10 +774,10 @@ ventricle_0D_model::ventricle_0D_model(Pointer<Database> input_db,
         pout << "d_E_min = " << d_E_min << "\n"; 
         pout << "d_E_max = " << d_E_max << "\n"; 
         pout << "d_inductance = " << d_inductance << "\n"; 
-        pout << "d_fourier_q_in_ventricle = " << "\n"; 
-        d_fourier_q_in_ventricle->print_values(); 
-        pout << "d_act_ventricle = " << "\n"; 
-        d_act_ventricle->print_values(); 
+        //pout << "d_fourier_q_in_ventricle = " << "\n"; 
+        // d_fourier_q_in_ventricle->print_values(); 
+        //pout << "d_act_ventricle = " << "\n"; 
+        //d_act_ventricle->print_values(); 
     }
 
 
@@ -802,7 +802,7 @@ ventricle_0D_model::ventricle_0D_model(Pointer<Database> input_db,
         double d_act_temp = 0.0; 
 
         // use equations with zero activation  
-        d_V_ventricle = d_V_rest_diastole; 
+        d_V_ventricle = V_initial; 
 
         // rest volume  
         d_V_rest_ventricle = (1.0 - d_act_temp) * (d_V_rest_diastole - d_V_rest_systole) + d_V_rest_systole; 
