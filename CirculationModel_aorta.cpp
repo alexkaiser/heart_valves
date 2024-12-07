@@ -695,9 +695,9 @@ void
             fout << " " << d_ventricle_0D->d_V_rest_ventricle; 
             fout << " " << d_ventricle_0D->d_Elas;
             fout << " " << d_ventricle_0D->d_act_temp;
-            fout << " " << d_ventricle_0D->d_Q_in;
-            fout << " " << d_ventricle_0D->d_P_lvot_upstream/MMHG_TO_CGS;
+            fout << " " << d_ventricle_0D->d_Q_in;            
             fout << " " << d_ventricle_0D->d_P_ventricle_in/MMHG_TO_CGS;
+            fout << " " << d_ventricle_0D->d_P_lvot_upstream/MMHG_TO_CGS;
         }
 
         fout << "; \n";
