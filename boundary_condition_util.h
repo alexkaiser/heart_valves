@@ -81,6 +81,7 @@ class ventricle_0D_model : public Serializable
         double d_E_min; 
         double d_E_max; 
         double d_inductance; 
+        double d_R_LVOT;
 
         // state variables 
         double d_Q_out; 
@@ -88,6 +89,7 @@ class ventricle_0D_model : public Serializable
         double d_V_ventricle; 
         double d_V_rest_ventricle; 
         double d_P_ventricle_in;
+        double d_P_lvot_upstream;
         double d_P_ventricle;
         double d_Elas; 
 

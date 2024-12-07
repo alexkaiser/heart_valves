@@ -759,6 +759,7 @@ ventricle_0D_model::ventricle_0D_model(Pointer<Database> input_db,
     d_V_rest_systole  = input_db->getDoubleWithDefault("V_REST_SYSTOLE", 18.0);
     d_E_min           = input_db->getDoubleWithDefault("E_MIN", 1.818181818181818e+02);
     d_E_max           = input_db->getDoubleWithDefault("E_MAX", 1.057082452431290e+04); 
+    d_R_LVOT          = input_db->getDoubleWithDefault("R_LVOT", 0.0); 
     d_inductance      = input_db->getDoubleWithDefault("INDUCTANCE", 0.0); 
 
     double V_initial = input_db->getDoubleWithDefault("V_INITIAL", d_V_rest_diastole);
@@ -773,6 +774,7 @@ ventricle_0D_model::ventricle_0D_model(Pointer<Database> input_db,
         pout << "d_V_rest_systole = " << d_V_rest_systole << "\n"; 
         pout << "d_E_min = " << d_E_min << "\n"; 
         pout << "d_E_max = " << d_E_max << "\n"; 
+        pout << "d_R_LVOT = " << d_R_LVOT << "\n";
         pout << "d_inductance = " << d_inductance << "\n"; 
         //pout << "d_fourier_q_in_ventricle = " << "\n"; 
         // d_fourier_q_in_ventricle->print_values(); 
@@ -812,7 +814,8 @@ ventricle_0D_model::ventricle_0D_model(Pointer<Database> input_db,
 
         // pressure 
         d_P_ventricle_in = d_Elas * (d_V_ventricle - d_V_rest_ventricle); 
-        d_P_ventricle = d_P_ventricle;  
+        d_P_lvot_upstream = d_P_ventricle_in;  
+        d_P_ventricle = d_P_lvot_upstream;  
     }
 
 }
@@ -889,12 +892,14 @@ void ventricle_0D_model::advanceTimeDependentData(double dt, double time, double
 
     // inductor 
     if (d_time > d_initialization_time){
-        d_P_ventricle = d_P_ventricle_in - d_inductance * (d_Q_out - d_Q_out_prev)/dt;        
+        d_P_lvot_upstream = d_P_ventricle_in - d_inductance * (d_Q_out - d_Q_out_prev)/dt;
     }
     else{
         double inductance_tmp = (d_time / d_initialization_time) * d_inductance; 
-        d_P_ventricle = d_P_ventricle_in - inductance_tmp * (d_Q_out - d_Q_out_prev)/dt;        
+        d_P_lvot_upstream = d_P_ventricle_in - inductance_tmp * (d_Q_out - d_Q_out_prev)/dt;
     }
+
+    d_P_ventricle = d_P_lvot_upstream - d_R_LVOT * d_Q_out; 
 
 }
 
@@ -907,6 +912,7 @@ void ventricle_0D_model::putToDatabase(Pointer<Database> db)
     db->putDouble("d_V_ventricle", d_V_ventricle);
     db->putDouble("d_V_rest_ventricle", d_V_rest_ventricle);
     db->putDouble("d_P_ventricle_in", d_P_ventricle_in);
+    db->putDouble("d_P_lvot_upstream", d_P_lvot_upstream);
     db->putDouble("d_P_ventricle", d_P_ventricle);
 
     db->putDouble("d_Elas", d_Elas);
@@ -941,6 +947,7 @@ void ventricle_0D_model::getFromRestart()
     d_V_ventricle         = db->getDouble("d_V_ventricle"); 
     d_V_rest_ventricle    = db->getDouble("d_V_rest_ventricle"); 
     d_P_ventricle_in      = db->getDouble("d_P_ventricle_in"); 
+    d_P_lvot_upstream     = db->getDouble("d_P_lvot_upstream");
     d_P_ventricle         = db->getDouble("d_P_ventricle"); 
     d_Elas                = db->getDouble("d_Elas"); 
 
