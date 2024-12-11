@@ -13,7 +13,13 @@ MMHG_TO_CGS = 1333.22368
 
 class optimizer_class():
 
-    def __init__(self, fwd_sim_file, calibration_data_file, variables_to_opt, cycle_duration=1.0):
+    def __init__(self, 
+                 fwd_sim_file, 
+                 calibration_data_file, 
+                 variables_to_opt, 
+                 bounds_all,
+                 cycle_duration=1.0,
+                 maxit=1000):
 
         with open(fwd_sim_file) as fname:
             self.fwd_sim_obj = json.load(fname)        
@@ -28,11 +34,15 @@ class optimizer_class():
         self.solver_run = False
 
         self.cycle_duration = cycle_duration
+        self.maxit = maxit
 
         # dictionary of all values used in optimization 
         self.values = {}
         for var_name in variables_to_opt:
             self.values[var_name] = None
+
+        self.bounds_all = bounds_all
+
 
 
     def run_and_update(self):
@@ -79,6 +89,8 @@ class optimizer_class():
             # ax.plot(query_pts, data_interpolated, linewidth=2.0)
             # plt.show()
 
+        print("objective_value = ", objective_value)
+
         return objective_value
 
 
@@ -118,28 +130,38 @@ def objective_function_free_params(params, opt_instance, targets):
     for idx,target_name in enumerate(targets):
         opt_instance.fwd_sim_obj['chambers'][0]['values'][target_name] = params[idx]
     opt_instance.solver = pysvzerod.Solver(opt_instance.fwd_sim_obj)
-    opt_instance.run_and_update()
+
+    try:
+        opt_instance.run_and_update()
+    except RuntimeError:
+        return float('inf')
 
     return opt_instance.objective_function()    
 
 
-def run_optimization(opt_instance, targets, maxit=None):
+def run_optimization(opt_instance, targets):
 
     x0 = []
-
+    bounds = []    
     for idx,target_name in enumerate(targets):
         x0.append(opt_instance.fwd_sim_obj['chambers'][0]['values'][target_name])
+        bounds.append(opt_instance.bounds_all[target_name])
     
+    # for target_name in targets:
+    #     bounds.append(opt_instance.bounds_all[target_name])
+
     # x0 = [opt_instance.fwd_sim_obj['chambers'][0]['values']['Emax']]
 
-    if maxit is None: 
-        maxit = 200 * len(targets)
+    print("opt_instance.maxit = ", opt_instance.maxit)
 
     result = minimize(objective_function_free_params, 
                       x0, 
                       args=(opt_instance, targets), 
+                      bounds = bounds,
                       method='Nelder-Mead',
-                      options={'maxiter': maxit})
+                      options={'maxiter': opt_instance.maxit}
+                      )
+
     return result
 
 
@@ -247,35 +269,37 @@ if __name__== "__main__":
     # run_chamber()
 
     cycle_duration = 0.8
-    maxit = 1000
+    maxit = 10000
 
     fwd_sim_file = "chamber_elastance_two_hill_valve_rcr.json"
 
     calibration_data_file = "chamber_elastance_valve_rcr_calibrate.json"
 
-    variables_to_opt = ["flow:ventricle:valve1", "pressure:ventricle:valve1", "pressure:vessel:OUTLET"]    
-
+    # variables_to_opt = ["flow:ventricle:valve1", "pressure:ventricle:valve1", "pressure:vessel:OUTLET"]    
+    variables_to_opt = ["flow:ventricle:valve1", "pressure:ventricle:valve1"]    
 
     targets_all = ['Emax', 'Emin', 'Vrd', 'Vrs', 't_shift', 'tau_1', 'tau_2', 'm1', 'm2']
 
-    targets_with_bounds = {'Emax': [0.0, 1e4], 
-                           'Emin': [0.0, 1e3], 
-                           'Vrd': [0.0, 50.0], 
-                           'Vrs': [0.0, 50.0], 
-                           't_shift': [0.0, cycle_duration], 
-                           'tau_1': [0.0, cycle_duration], 
-                           'tau_2': [0.0, cycle_duration], 
-                           'm1': [1.0, 40.0], 
-                           'm2': [1.0, 40.0] 
-                           }
+    bounds_all = {'Emax': [0.0, 1e4], 
+                  'Emin': [0.0, 1e3], 
+                  'Vrd': [0.0, 50.0], 
+                  'Vrs': [0.0, 50.0], 
+                  't_shift': [0.0, cycle_duration], 
+                  'tau_1': [0.0, cycle_duration], 
+                  'tau_2': [0.0, cycle_duration], 
+                  'm1': [0.0, 40.0], 
+                  'm2': [0.0, 40.0] 
+                  }
 
 
-    # targets = ['Emin', 'Emax', 'Vrd', 'Vrs', 't_shift']
-    # targets = ['Emin', 'Vrd']
 
-    targets = ['t_shift']
 
-    optimizer = optimizer_class(fwd_sim_file, calibration_data_file, variables_to_opt, cycle_duration)
+    optimizer = optimizer_class(fwd_sim_file, 
+                                calibration_data_file, 
+                                variables_to_opt, 
+                                bounds_all,
+                                cycle_duration, 
+                                maxit)
 
 
     optimizer.run_and_update()
@@ -284,10 +308,29 @@ if __name__== "__main__":
     print("obj_val_1 = ", obj_val_1)
 
 
+    # targets = ['Emin', 'Emax', 'Vrd', 'Vrs', 't_shift']
+    targets = ['t_shift']
+    # targets = ['tau_1']
+    # targets = ['Emin']
 
     result = run_optimization(optimizer, targets)
-
     print("result = ", result)
+
+    targets = ['Emin']
+    result = run_optimization(optimizer, targets)    
+    print("result = ", result)    
+
+    targets = ['Emax']
+    result = run_optimization(optimizer, targets)    
+    print("result = ", result)    
+
+    targets = ['tau_1', 'tau_2', 'm1', 'm2']
+    result = run_optimization(optimizer, targets)    
+    print("result = ", result)    
+
+    targets = ['Emax', 'Emin', 't_shift', 'tau_1', 'tau_2', 'm1', 'm2']
+    result = run_optimization(optimizer, targets)    
+    print("result = ", result)    
 
     # print("resulting Emax = ", optimizer.fwd_sim_obj['chambers'][0]['values']['Emax'])
     # optimizer.run_and_update()
