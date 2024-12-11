@@ -42,15 +42,25 @@ two_hill = true;
 if two_hill
     % hill function parameters 
     % brown AMBE 2023 
-    tau_1 = 0.0725 * 2 * cycle_duration 
-    tau_2 = 0.4503 * cycle_duration
+%     tau_1 = 0.0725 * 2 * cycle_duration 
+%     tau_2 = 0.4503 * cycle_duration
+% 
+%     m1 = 2.7463
+%     m2 = 21.5683
 
-    m1 = 2.7463
-    m2 = 21.5683
+    t_shift =  0.4080694895094201
+    tau_1 =  0.7999999995665112
+    tau_2 =  0.37189471760890913
+    m1 =  1.0916763390925226
+    m2 =  18.491969573464523
 
-    g1 = @(t) (t > 0) .* (t./tau_1).^m1; 
-    g2 = @(t) (t > 0) .* (t./tau_2).^m2; 
+%     g1 = @(t) (t > 0) .* (t./tau_1).^m1; 
+%     g2 = @(t) (t > 0) .* (t./tau_2).^m2; 
 
+
+    g1 = @(t) (t./tau_1).^m1; 
+    g2 = @(t) (t./tau_2).^m2; 
+    
     r1 = @(t) g1(t) ./ (1 + g1(t)); 
     r2 = @(t) 1 ./ (1 + g2(t)); 
     two_hill_product = @(t) (g1(t) ./ (1 + g1(t))) .* (1 ./ (1 + g2(t))); 
@@ -66,16 +76,20 @@ if two_hill
     
     k_coeff_two_hill = 1 / two_hill_product_maximum; 
 
-    t_shift_hill = 0.45;
+    t_shift_hill = t_shift;
     
-    two_hill_function = @(t) k_coeff_two_hill * two_hill_product(t - t_shift_hill); 
+    % no periodicity handled here 
+    % two_hill_function = @(t) k_coeff_two_hill * two_hill_product(t - t_shift_hill); 
 
+    two_hill_function = @(t) k_coeff_two_hill * two_hill_product(mod(t - t_shift_hill,cycle_duration)); 
+    
     % two_hill_function = @(t) two_hill_product(t); 
 
     figure; 
 %     plot(times_hill, two_hill_product(times_hill)); 
     hold on    
     plot(times_hill, two_hill_function(times_hill)); 
+    
 %     plot(times_hill, g1(times_hill))
 %     plot(times_hill, max(g1(times_hill), zeros(size(times_hill))) )
 %     plot(times_hill, g1(times_hill)/max(abs(g1(times_hill))))
@@ -84,6 +98,8 @@ if two_hill
     plot(times_hill, r1(times_hill))
     plot(times_hill, r2(times_hill))
 
+    % plot(times_hill, two_hill_function_periodic(times_hill)); 
+    
     legend('hill function', 'r1', 'r2')
     
     
@@ -415,7 +431,7 @@ ylabel('P LV mmHg')
 
 
 
-output_to_sv0d = false; 
+output_to_sv0d = true; 
 if output_to_sv0d
     % output 
     format long 

@@ -13,7 +13,7 @@
         "number_of_cardiac_cycles": 10,
         "number_of_time_pts_per_cardiac_cycle": 201,
         "steady_initial": false,
-        "output_all_cycles": true,
+        "output_all_cycles": false,
         "output_variable_based": true
     },
     "boundary_conditions": [
@@ -86,7 +86,7 @@
             "values": {
                 "Emax": 2.114164904862580e+03,
                 "Emin": 181.8181818181818,
-                "Vrd": 26.1,
+                "Vrd": 0.0,
                 "Vrs": 0.0,
                 "t_active": 0.40,
                 "t_twitch": 0.35,
