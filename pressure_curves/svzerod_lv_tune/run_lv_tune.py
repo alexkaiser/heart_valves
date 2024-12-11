@@ -123,6 +123,48 @@ class optimizer_class():
             plt.show(block=False)
             plt.title(title_str + ' ' + var_name)
 
+    def output_mat(self, matfile_name):
+
+        times = self.solver.get_times()
+        q_aorta = self.solver.get_single_result("flow:vessel:OUTLET")
+        p_aorta = self.solver.get_single_result("pressure:vessel:OUTLET")
+
+        q_mitral = self.solver.get_single_result("flow:valve0:ventricle")
+        p_lv_in = self.solver.get_single_result("pressure:valve0:ventricle")
+
+        q_lv_out = self.solver.get_single_result("flow:ventricle:valve1")
+        p_lv_out = self.solver.get_single_result("pressure:ventricle:valve1")
+
+        q_aortic_valve = self.solver.get_single_result("flow:valve1:vessel")
+        p_aortic_valve = self.solver.get_single_result("pressure:valve1:vessel")
+
+        pressure_c_outlet = self.solver.get_single_result("pressure_c:OUTLET")
+
+        volume_lv = self.solver.get_single_result("Vc:ventricle")
+
+        volume_lv_initial = volume_lv[0]
+        print("volume_lv_initial = ", volume_lv_initial)
+
+        for idx,t in enumerate(times):
+            if t >= 0.2:
+                print("at t = ", t, ", p_aortic_valve_mmHg = ", p_aorta[idx]/MMHG_TO_CGS)
+                break 
+
+        dic = {"times": times, 
+               "q_aorta": q_aorta,
+               "p_aorta": p_aorta,
+               "q_mitral": q_mitral,
+               "p_lv_in": p_lv_in,
+               "q_lv_out": q_lv_out,
+               "p_lv_out": p_lv_out,
+               "q_aortic_valve": q_aortic_valve,
+               "p_aortic_valve": p_aortic_valve,
+               "pressure_c_outlet": pressure_c_outlet,
+               "volume_lv": volume_lv
+            }
+
+        savemat("matfile_name", dic)
+
 
 def objective_function_free_params(params, opt_instance, targets):
 
@@ -268,78 +310,81 @@ if __name__== "__main__":
     # run_calibrator_test()
     # run_chamber()
 
-    cycle_duration = 0.8
-    maxit = 10000
+    run_opt = True
+    if run_opt:
 
-    fwd_sim_file = "chamber_elastance_two_hill_valve_rcr.json"
+        cycle_duration = 0.8
+        maxit = 10000
 
-    calibration_data_file = "chamber_elastance_valve_rcr_calibrate.json"
+        fwd_sim_file = "chamber_elastance_two_hill_valve_rcr.json"
 
-    # variables_to_opt = ["flow:ventricle:valve1", "pressure:ventricle:valve1", "pressure:vessel:OUTLET"]    
-    variables_to_opt = ["flow:ventricle:valve1", "pressure:ventricle:valve1"]    
+        calibration_data_file = "chamber_elastance_valve_rcr_calibrate.json"
 
-    targets_all = ['Emax', 'Emin', 'Vrd', 'Vrs', 't_shift', 'tau_1', 'tau_2', 'm1', 'm2']
+        # variables_to_opt = ["flow:ventricle:valve1", "pressure:ventricle:valve1", "pressure:vessel:OUTLET"]    
+        variables_to_opt = ["flow:ventricle:valve1", "pressure:ventricle:valve1"]    
 
-    bounds_all = {'Emax': [0.0, 1e4], 
-                  'Emin': [0.0, 1e3], 
-                  'Vrd': [0.0, 50.0], 
-                  'Vrs': [0.0, 50.0], 
-                  't_shift': [0.0, cycle_duration], 
-                  'tau_1': [0.0, cycle_duration], 
-                  'tau_2': [0.0, cycle_duration], 
-                  'm1': [0.0, 40.0], 
-                  'm2': [0.0, 40.0] 
-                  }
+        targets_all = ['Emax', 'Emin', 'Vrd', 'Vrs', 't_shift', 'tau_1', 'tau_2', 'm1', 'm2']
 
-
-
-
-    optimizer = optimizer_class(fwd_sim_file, 
-                                calibration_data_file, 
-                                variables_to_opt, 
-                                bounds_all,
-                                cycle_duration, 
-                                maxit)
+        bounds_all = {'Emax': [0.0, 1e4], 
+                      'Emin': [0.0, 1e3], 
+                      'Vrd': [0.0, 50.0], 
+                      'Vrs': [0.0, 50.0], 
+                      't_shift': [0.0, cycle_duration], 
+                      'tau_1': [0.0, cycle_duration], 
+                      'tau_2': [0.0, cycle_duration], 
+                      'm1': [0.0, 40.0], 
+                      'm2': [0.0, 40.0] 
+                      }
 
 
-    optimizer.run_and_update()
-    obj_val_1 = optimizer.objective_function()
-    optimizer.plot('before')
-    print("obj_val_1 = ", obj_val_1)
 
 
-    # targets = ['Emin', 'Emax', 'Vrd', 'Vrs', 't_shift']
-    targets = ['t_shift']
-    # targets = ['tau_1']
-    # targets = ['Emin']
-
-    result = run_optimization(optimizer, targets)
-    print("result = ", result)
-
-    targets = ['Emin']
-    result = run_optimization(optimizer, targets)    
-    print("result = ", result)    
-
-    targets = ['Emax']
-    result = run_optimization(optimizer, targets)    
-    print("result = ", result)    
-
-    targets = ['tau_1', 'tau_2', 'm1', 'm2']
-    result = run_optimization(optimizer, targets)    
-    print("result = ", result)    
-
-    targets = ['Emax', 'Emin', 't_shift', 'tau_1', 'tau_2', 'm1', 'm2']
-    result = run_optimization(optimizer, targets)    
-    print("result = ", result)    
-
-    # print("resulting Emax = ", optimizer.fwd_sim_obj['chambers'][0]['values']['Emax'])
-    # optimizer.run_and_update()
-    for target_name in targets:
-        print(target_name, "= ", optimizer.fwd_sim_obj['chambers'][0]['values'][target_name])
-
-    optimizer.plot('after')
-
-    plt.show()
+        optimizer = optimizer_class(fwd_sim_file, 
+                                    calibration_data_file, 
+                                    variables_to_opt, 
+                                    bounds_all,
+                                    cycle_duration, 
+                                    maxit)
 
 
+        optimizer.run_and_update()
+        obj_val_1 = optimizer.objective_function()
+        optimizer.plot('before')
+        print("obj_val_1 = ", obj_val_1)
+
+
+        # targets = ['Emin', 'Emax', 'Vrd', 'Vrs', 't_shift']
+        # targets = ['t_shift']
+        # # targets = ['tau_1']
+        # # targets = ['Emin']
+
+        # result = run_optimization(optimizer, targets)
+        # print("result = ", result)
+
+        # targets = ['Emin']
+        # result = run_optimization(optimizer, targets)    
+        # print("result = ", result)    
+
+        # targets = ['Emax']
+        # result = run_optimization(optimizer, targets)    
+        # print("result = ", result)    
+
+        # targets = ['tau_1', 'tau_2', 'm1', 'm2']
+        # result = run_optimization(optimizer, targets)    
+        # print("result = ", result)    
+
+        targets = ['Emax', 'Emin', 't_shift', 'tau_1', 'tau_2', 'm1', 'm2']
+        result = run_optimization(optimizer, targets)    
+        print("result = ", result)    
+
+        # print("resulting Emax = ", optimizer.fwd_sim_obj['chambers'][0]['values']['Emax'])
+        # optimizer.run_and_update()
+        for target_name in targets:
+            print(target_name, "= ", optimizer.fwd_sim_obj['chambers'][0]['values'][target_name])
+
+        optimizer.plot('after')
+
+        optimizer.output_mat("chamber_elastance_two_hill_valve_rcr_optimized_results.mat")
+
+        plt.show()
 
