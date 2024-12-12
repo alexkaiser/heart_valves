@@ -14,11 +14,11 @@ REF_RATIO  = 4                            // refinement ratio between levels
 NAME = "aortic_192"
 MAX_RESTART_TO_WRITE = 20
 
-R_proximal =  83.6698220729
-C =  0.00167055364456
-R_distal =  1287.64596307
+C = 0.0012121141865886506
+R_distal = 1394.14049110933
+R_proximal = 96.08527239188635
 
-P_aorta_0_MMHG = 90.22995737938673
+P_aorta_0_MMHG = 96.85944963882397
 
 FOURIER_COEFFS_FILENAME_VENTRICLE = "fourier_coeffs_ventricle.txt"
 
