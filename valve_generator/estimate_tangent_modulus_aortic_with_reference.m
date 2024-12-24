@@ -492,18 +492,21 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, stress_ci
             if ratio 
                 tick_labels{n} = sprintf('%.0f', tmp); 
             else 
-%                 exponent_removed = 10^floor(log10(tick_max)); 
-%                 tick_labels{n} = sprintf('%.1f', tmp/exponent_removed); 
-                tick_labels{n} = sprintf('%.1e', tmp); 
+                exponent_removed = 10^floor(log10(tick_max)); 
+                tick_labels{n} = sprintf('%.2f', tmp/exponent_removed); 
+%                 tick_labels{n} = sprintf('%.1e', tmp); 
             end 
         end 
         
-        colorbar_on = true; 
+        colorbar_on = false; 
         if colorbar_on
             colorbar('Ticks', tick_array, 'TickLabels', tick_labels);
+            fontsize = 28; 
+            ax = gca; 
+            ax.FontSize = fontsize;
         end 
         
-        colorbar_figure = false; 
+        colorbar_figure = true; 
         if colorbar_figure 
             fig_colorbar = figure; 
 
@@ -511,28 +514,47 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, stress_ci
 
             cbar = colorbar('Ticks', tick_array, 'TickLabels', tick_labels); 
 
-            fontsize = 24; 
+            exponent_removed 
+            
+            exponent = floor(log10(tick_max))
+            
+            fontsize = 28; 
             ax = gca; 
             ax.FontSize = fontsize;
             cbar.Label.FontSize = fontsize; 
             cbar.Label.Rotation = 0;
             cbar.Label.Position = [0.4 1.2];
 
+            cbar.Title.String = sprintf('\\cdot 10^%d', exponent);
+            
             grid off 
             axis off 
 
+            bar_name = sprintf('colorbar_only_'); 
+            
             if circ 
-                bar_name = 'colorbar_only_circ_tangent_mod'; 
-            elseif rad && exist('radial_autoscale', 'var') && radial_autoscale
-                exponent_removed 
-                bar_name = 'colorbar_only_radial_tangent_mod_autoscale'; 
-            elseif rad 
-                bar_name = 'colorbar_only_radial_tangent_mod'; 
-            elseif ratio 
-                bar_name = 'colorbar_only_ratio_tangent_mod'; 
-            else
-                error('incompatible format arguments')
+                bar_name = strcat(bar_name, 'circ_');
+            else 
+                bar_name = strcat(bar_name, 'rad_');
             end 
+            
+            if plot_stress
+                bar_name = strcat(bar_name, 'stress');
+            else 
+                bar_name = strcat(bar_name, 'tan_mod');
+            end 
+            
+%             if circ 
+%                 bar_name = 'colorbar_only_circ_tangent_mod'; 
+%             elseif rad && exist('radial_autoscale', 'var') && radial_autoscale                
+%                 bar_name = 'colorbar_only_radial_tangent_mod_autoscale'; 
+%             elseif rad 
+%                 bar_name = 'colorbar_only_radial_tangent_mod'; 
+%             elseif ratio 
+%                 bar_name = 'colorbar_only_ratio_tangent_mod'; 
+%             else
+%                 error('incompatible format arguments')
+%             end 
 
             print(fig_colorbar, '-depsc', bar_name); 
             close(fig_colorbar);    
