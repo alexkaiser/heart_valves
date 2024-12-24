@@ -386,12 +386,15 @@ function [lambda_circ, lambda_rad, lambda_circ_mean, lambda_rad_mean, fig] = com
             tick_labels{n} = sprintf('%.2f', tick_labels_float(n)); 
         end 
         
-        colorbar_on = true; 
+        colorbar_on = false; 
         if colorbar_on
             colorbar('Ticks', tick_array, 'TickLabels', tick_labels);
+            fontsize = 28; 
+            ax = gca; 
+            ax.FontSize = fontsize;
         end 
         
-        colorbar_figure = false; 
+        colorbar_figure = true; 
         if colorbar_figure 
             fig_colorbar = figure; 
 
@@ -399,25 +402,37 @@ function [lambda_circ, lambda_rad, lambda_circ_mean, lambda_rad_mean, fig] = com
 
             cbar = colorbar('Ticks', tick_array, 'TickLabels', tick_labels); 
 
-            fontsize = 24; 
+            fontsize = 28; 
             ax = gca; 
             ax.FontSize = fontsize;
             cbar.Label.FontSize = fontsize; 
             cbar.Label.Rotation = 0;
             cbar.Label.Position = [0.4 1.2];
 
+            cbar.Title.String = sprintf('\\cdot 10^%d', 4);
+            cbar.Title.Color = [1 1 1];
+            
             grid off 
             axis off 
 
+            bar_name = sprintf('colorbar_only_');             
             if circ 
-                bar_name = 'colorbar_only_circ_stretcj'; 
-            elseif rad && exist('radial_autoscale', 'var') && radial_autoscale
-                bar_name = 'colorbar_only_radial_stretch_autoscale'; 
-            elseif rad 
-                bar_name = 'colorbar_only_radial_stretch'; 
-            else
-                error('incompatible format arguments')
-            end 
+                bar_name = strcat(bar_name, 'circ_');
+            else 
+                bar_name = strcat(bar_name, 'rad_');
+            end                         
+            bar_name = strcat(bar_name, 'stretch');
+            
+            
+%             if circ 
+%                 bar_name = 'colorbar_only_circ_stretcj'; 
+%             elseif rad && exist('radial_autoscale', 'var') && radial_autoscale
+%                 bar_name = 'colorbar_only_radial_stretch_autoscale'; 
+%             elseif rad 
+%                 bar_name = 'colorbar_only_radial_stretch'; 
+%             else
+%                 error('incompatible format arguments')
+%             end 
 
             print(fig_colorbar, '-depsc', bar_name); 
             close(fig_colorbar);    
