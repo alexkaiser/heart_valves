@@ -65,7 +65,7 @@ def morph_extender(mesh,
 
 if __name__== "__main__":
 
-    res_192 = True
+    res_192 = False
     if res_192:
         fname = "5_aorta_remeshed_pt5mm_2_cm_extender_layers.stl"
         # fname_out = "6_aorta_remeshed_pt5mm_2cm_extender_layers_constriction.stl"
@@ -83,12 +83,14 @@ if __name__== "__main__":
     else:
         # basic 
         fname = "3_aorta_remeshed_pt25mm_3cm_extender_layers.stl"
-        fname_out = "4_aorta_remeshed_pt25mm_3cm_extender_layers_constriction.stl"
+        # fname_out = "4_aorta_remeshed_pt25mm_3cm_extender_layers_constriction.stl"
+        fname_out = "5_aorta_remeshed_pt25mm_3cm_extender_layers_double_constriction.stl"
 
         bdry_filename = 'lvot_bdry.vtu'
         bdry_filename_out = 'lvot_bdry_384_layer_3_constriction.vtu'
 
-
+        bdry_filename_aorta = 'aorta_bdry.vtu'
+        bdry_filename_aorta_out = 'aorta_bdry_384_layer_3_constriction.vtu'
 
     
     mesh = pyvista.read(fname)
