@@ -82,14 +82,14 @@ if __name__== "__main__":
 
     else:
         # basic 
-        fname = "3_aorta_remeshed_pt25mm_3cm_extender_layers.stl"
+        fname = "4_aorta_remeshed_pt25_3cm_extenders_3_layer_5_layer_extender.stl"
         # fname_out = "4_aorta_remeshed_pt25mm_3cm_extender_layers_constriction.stl"
-        fname_out = "5_aorta_remeshed_pt25mm_3cm_extender_layers_double_constriction.stl"
+        fname_out = "6_aorta_remeshed_pt25mm_3cm_extenders_layers_double_constriction.stl"
 
-        bdry_filename = 'lvot_bdry.vtu'
+        bdry_filename = 'lvot_boundary_layer_3.vtu'
         bdry_filename_out = 'lvot_bdry_384_layer_3_constriction.vtu'
 
-        bdry_filename_aorta = 'aorta_bdry.vtu'
+        bdry_filename_aorta = 'aorta_boundary_layer_3.vtu'
         bdry_filename_aorta_out = 'aorta_bdry_384_layer_3_constriction.vtu'
 
     
@@ -141,7 +141,7 @@ if __name__== "__main__":
 
     # aorta side 
     normal_direction = 2
-    masking_width = 10.0
+    masking_width = 15.0
     mesh_adjusted = morph_extender(mesh_adjusted, 
                                    fname_out, 
                                    mesh_boundary_aorta, 
@@ -161,6 +161,7 @@ if __name__== "__main__":
                                             enforce_flat_bdry, 
                                             flat_bdry_tolerance,
                                             cos_interpolation)    
+
 
 
 

@@ -77,18 +77,18 @@ N=384
 // cm 
 DX = 0.1 * (192.0/N)
 
-EXTRA_BDRY = 1.0e-7
+EXTRA_BDRY = 1.0e-6
 
 // computed from scans 
-X_HIGH =   6.61601104736328125 + EXTRA_BDRY
-Z_HIGH = -17.06925506591796875 + EXTRA_BDRY
+X_HIGH =   6.6153998374938965 + EXTRA_BDRY
+Z_HIGH = -15.069613456726074 + EXTRA_BDRY
 
 Y_MID = -18.4862
 
 // number points 
 NX = int(96         * N/192)
 NY = int(48         * N/192)
-NZ = int(128        * N/192)
+NZ = int(136        * N/192)
 
 Y_HIGH = Y_MID + (NY*DX)/2.0 // put points centered 
 
