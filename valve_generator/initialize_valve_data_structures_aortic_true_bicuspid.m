@@ -227,8 +227,8 @@ valve.p_final_fixed_comm = 0.1 * MMHG_TO_CGS;
 
 valve.L = 2.25; 
 
-r_stj = 2.5/2; % 25 mm valve 
-r_temp = r_stj; 
+r_stj = 2.3/2; % 25 mm valve 
+r_temp = 2.5/2; % vbr radius
 hc = 0.5 * r_stj; 
 h1 = 1.4 * r_stj - hc; 
 r_commissure = r_stj; 
@@ -272,8 +272,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 3.7;  % circumferential 
-tension_coeffs.c_rad_dec        = 0.978;  % radial
+tension_coeffs.c_circ_dec       = 3.56;  % circumferential 
+tension_coeffs.c_rad_dec        = 0.99;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.91;
 
@@ -354,7 +354,8 @@ if valve.in_heart
         dx = 5 /(N/4); 
         valve.ds = dx/2; %2*pi*valve.skeleton.r / N; 
 
-        thickness_cylinder = 0.3; 
+        % if min radius lower than 2.5cm, increase ring thickness accordingly 
+        thickness_cylinder = 0.3 + (2.5 - valve.r); 
         valve.n_layers_cylinder = ceil(thickness_cylinder/valve.ds) + 1; 
 
         h_scaffold_min = -0.05;
