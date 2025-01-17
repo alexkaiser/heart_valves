@@ -355,7 +355,7 @@ if valve.in_heart
         valve.ds = dx/2; %2*pi*valve.skeleton.r / N; 
 
         % if min radius lower than 2.5cm, increase ring thickness accordingly 
-        thickness_cylinder = 0.3 + (2.5 - valve.r); 
+        thickness_cylinder = 0.3 + (2.5/2 - valve.r); 
         valve.n_layers_cylinder = ceil(thickness_cylinder/valve.ds) + 1; 
 
         h_scaffold_min = -0.05;
