@@ -54,8 +54,10 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
         % for debug info 
         [free_edge_length_single_loaded, free_edge_length_single_rest] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths); 
 
+        % use the intercomm radius
+        r = leaflet.skeleton.r_commissure; 
         % find radius of annulus
-        r = norm(leaflet.X(1:2,1,1));  
+        % r = norm(leaflet.X(1:2,1,1));  
 
 
         % find desired coefficient for initial curve before iteration 
