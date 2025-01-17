@@ -33,8 +33,18 @@ if __name__ == '__main__':
     # aorta default 
     else: 
 
-        mesh_with_faces_name = "4_aorta_remeshed_pt25mm_3cm_extender_layers_constriction.vtu"
+        
         base_name = 'aorta_384'
+
+        if os.path.isfile(base_name + '.vtu'):
+            print("file found")
+            mesh_with_faces_name = base_name + '.vtu'
+        elif os.path.isfile('../' + base_name + '.vtu'):
+            print("file found one dir")
+            shutil.copy('../' + base_name + '.vtu', '.') 
+            mesh_with_faces_name = base_name + '.vtu'
+        else: 
+            mesh_with_faces_name = "4_aorta_remeshed_pt25mm_3cm_extender_layers_constriction.vtu"
 
         if "_192_" in os.getcwd():
             mesh_with_faces_name = '6_aorta_remeshed_pt5mm_2cm_extender_layers_constriction.vtu'
@@ -51,7 +61,7 @@ if __name__ == '__main__':
 
 
 
-    use_multiprocessing = False
+    use_multiprocessing = True
     if use_multiprocessing: 
         jobs = []
 
