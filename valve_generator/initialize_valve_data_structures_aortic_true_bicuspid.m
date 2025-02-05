@@ -272,8 +272,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 2.385;  % circumferential 
-tension_coeffs.c_rad_dec        = 0.955;  % radial
+tension_coeffs.c_circ_dec       = 1.48;  % circumferential 
+tension_coeffs.c_rad_dec        = 0.81;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.91;
 
