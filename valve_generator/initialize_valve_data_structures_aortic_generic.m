@@ -116,8 +116,39 @@ valve.num_copies = 3;
 
 % respace on annulus in 3d 
 % if false, spaced wrt theta 
-valve.annulus_points_even_spacing = false; 
+valve.annulus_points_even_spacing = true; 
 
+valve.use_annulus_flattened_pts = true; 
+
+valve.annulus_to_comm = true; 
+
+% from Khelil 2015 Surgical Anatomy of the Aortic Annulus Landmarks 
+    % left half of nc leaflet plus reflections and normalization
+valve.annulus_flattened_normalized = [ 
+                   0   1.000000000000000
+   0.002648301903414   0.829006318911995
+   0.010063647338885   0.684870567517156
+   0.034957485019150   0.522829189164894
+   0.074152453295587   0.391226048708535
+   0.113876981846794   0.298119648690557
+   0.154661131477103   0.217546881096994
+   0.224046541240633   0.126231145923352
+   0.310381383503747   0.056401345909868
+   0.382945155975022   0.020591113480958
+   0.441207797850125   0.004476151367872
+   0.499470439725229                   0
+   0.500529560274771                   0
+   0.558792202149874   0.004476151367872
+   0.617054844024978   0.020591113480958
+   0.689618616496253   0.056401345909868
+   0.775953458759367   0.126231145923352
+   0.845338868522897   0.217546881096994
+   0.886123018153206   0.298119648690557
+   0.925847546704413   0.391226048708535
+   0.965042514980850   0.522829189164894
+   0.989936352661115   0.684870567517156
+   0.997351698096586   0.829006318911995
+   1.000000000000000   1.000000000000000];
 
 valve.normal_thicken = true; 
 % nominal aortic valve thickness
@@ -173,10 +204,14 @@ valve.p_final = 0 * MMHG_TO_CGS;
 
 valve.L = 2.25; 
 
-r_temp = 2.5/2; % 25 mm valve 
-hc = 0.1 * r_temp; 
-h1 = 1.4 * r_temp - hc; 
-valve.skeleton = get_skeleton_aortic_generic(r_temp, h1, hc); 
+r_stj = 2.5/2; % 25 mm valve 
+r_temp = 2.5/2; % vbr radius
+hc = 0.5 * r_stj; 
+h1 = 1.4 * r_stj - hc; 
+r_commissure = r_stj; 
+% place the post only if not using the full annulus geometry 
+place_vertical_post = ~valve.annulus_to_comm;
+valve.skeleton = get_skeleton_aortic_generic(r_temp, h1, hc, r_commissure, place_vertical_post); 
 % valve.skeleton = get_skeleton_aortic_generic(); 
 valve.r = valve.skeleton.r; 
 
@@ -207,8 +242,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 5.9;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.82;  % radial
+tension_coeffs.c_circ_dec       = 4.8;  % circumferential 
+tension_coeffs.c_rad_dec        = 1.53;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.8;        
 
@@ -237,62 +272,125 @@ valve.eta_papillary_unscaled = 0.0; valve.target_papillary_unscaled/500;
 valve.kappa_cross_layer_multipler = 10 * (384/N)^2 * 1e4 / 256^2;
 
 % valve.k_bend_radial = [0 0 1e5 1e5] * 192/N;
-valve.k_bend_radial = 1e5 * 192/N;
+valve.k_bend_radial = 1e4 * 192/N;
 % valve.k_bend_radial_annulus = 1e2 * 192/N;
 valve.k_bend_radial_free_edge = 0; 1e4 * 192/N;
 valve.k_bend_radial_free_edge_percentage = 0; 
-valve.k_bend_circ = 1e5 * 192/N; 
+valve.k_bend_circ = 1e4 * 192/N; 
 valve.k_bend_circ_free_edge = 0; 
 valve.k_bend_circ_free_edge_percentage = 0;
 
-valve.k_bend_cross_layer = 1e5 * 192/N;
+valve.k_bend_cross_layer = 1e4 * 192/N;
 
 if valve.in_heart
+    
     dx = 5 /(N/4); 
     valve.ds = dx/2; %2*pi*valve.skeleton.r / N; 
 
-    thickness_cylinder = 0.15; 
+    % if min radius lower than 2.5cm, increase ring thickness accordingly 
+    thickness_cylinder = 0.3 + (2.5/2 - valve.r); 
     valve.n_layers_cylinder = ceil(thickness_cylinder/valve.ds) + 1; 
-        
-    h_top_scaffold_min = 0.2; 
-    
+
+    h_scaffold_min = -0.05;
+
+    h_top_scaffold_min = 0.05; 
+
     h_top_scaffold_max = valve.skeleton.normal_height; 
-    
+
     h_top_scaffold_amplitude = h_top_scaffold_max - h_top_scaffold_min; 
-    
+
     % value from least squares on pulm 
     % p = 3.095653361985474; 
-    p = 20; 
-    
+    p = 100; 
+
     % function with unspecified power 
-    valve.z_max_cylinder = @(theta) h_top_scaffold_min * ones(size(theta))  +  h_top_scaffold_amplitude * abs(cos((3/2)*theta)).^(p); 
-        
-    % bottom flat at zero 
-    valve.z_min_cylinder = @(theta) zeros(size(theta)); 
-    
-    debug_plot = false; 
+    % valve.z_max_cylinder = @(theta) h_top_scaffold_min * ones(size(theta))  +  h_top_scaffold_amplitude * abs(cos(theta)).^(p); 
+
+    cos_power = @(theta) h_top_scaffold_min * ones(size(theta)) + (0.05 + h_top_scaffold_max) * abs(cos((3/2) * theta)).^(p); 
+
+    annulus_min_fn = @(theta) h_top_scaffold_max * interp1(valve.annulus_flattened_normalized(:,1), valve.annulus_flattened_normalized(:,2), mod(theta,2*pi/3)/(2*pi/3), 'pchip'); 
+
+    h_top_min_adjust = @(theta) h_top_scaffold_min * ones(size(theta));
+
+    % extra_comm = @(theta) hc * abs(cos(theta)).^(p); 
+
+    % valve.z_max_cylinder = @(theta) annulus_min_fn(theta) + extra_comm(theta) + h_top_min_adjust(theta);
+    valve.z_max_cylinder = @(theta) max(cos_power(theta), annulus_min_fn(theta) + h_top_min_adjust(theta));
+
+    % bottom flat 
+    valve.z_min_cylinder = @(theta) h_scaffold_min * ones(size(theta)); 
+
+    debug_plot = true; 
     if debug_plot
-        th = linspace(0,2*pi,1000);
+        figure; 
+        th = linspace(0,2*pi,100000);
         plot(th,valve.z_min_cylinder(th))
         hold on 
-        plot(th,valve.z_max_cylinder(th))
+        plot(th,valve.z_max_cylinder(th),'k')
 
+        plot(th,cos_power(th))
+        plot(th,annulus_min_fn(th))
+%             plot(th,extra_comm(th))
 %         f = @(theta)  0.28*ones(size(theta))  + (1.095 - 0.28)*0.5 * (cos(3*theta)+1);
 %         plot(th, f(th)); 
-        
-        legend('bottom', 'top')
-        
+
+        legend('bottom', 'top', 'cos_power', 'annulus_min')
+
 %         plot(th, h_min_scaffold * ones(size(th))); 
 %         plot(th, (h_min_scaffold + h_min_amplitude)*ones(size(th))); 
 %         plot(th,  h_top_scaffold_min * ones(size(th))); 
 %         plot(th,  h_top_scaffold_max * ones(size(th)));
-        
+
         % heights from top of scaffold to minimum 
 %        plot(angles, heights_theta,'k*')
-        
+
         axis equal
-        
     end 
+%     dx = 5 /(N/4); 
+%     valve.ds = dx/2; %2*pi*valve.skeleton.r / N; 
+% 
+%     thickness_cylinder = 0.15; 
+%     valve.n_layers_cylinder = ceil(thickness_cylinder/valve.ds) + 1; 
+%         
+%     h_top_scaffold_min = 0.2; 
+%     
+%     h_top_scaffold_max = valve.skeleton.normal_height; 
+%     
+%     h_top_scaffold_amplitude = h_top_scaffold_max - h_top_scaffold_min; 
+%     
+%     % value from least squares on pulm 
+%     % p = 3.095653361985474; 
+%     p = 20; 
+%     
+%     % function with unspecified power 
+%     valve.z_max_cylinder = @(theta) h_top_scaffold_min * ones(size(theta))  +  h_top_scaffold_amplitude * abs(cos((3/2)*theta)).^(p); 
+%         
+%     % bottom flat at zero 
+%     valve.z_min_cylinder = @(theta) zeros(size(theta)); 
+%     
+%     debug_plot = false; 
+%     if debug_plot
+%         th = linspace(0,2*pi,1000);
+%         plot(th,valve.z_min_cylinder(th))
+%         hold on 
+%         plot(th,valve.z_max_cylinder(th))
+% 
+% %         f = @(theta)  0.28*ones(size(theta))  + (1.095 - 0.28)*0.5 * (cos(3*theta)+1);
+% %         plot(th, f(th)); 
+%         
+%         legend('bottom', 'top')
+%         
+% %         plot(th, h_min_scaffold * ones(size(th))); 
+% %         plot(th, (h_min_scaffold + h_min_amplitude)*ones(size(th))); 
+% %         plot(th,  h_top_scaffold_min * ones(size(th))); 
+% %         plot(th,  h_top_scaffold_max * ones(size(th)));
+%         
+%         % heights from top of scaffold to minimum 
+% %        plot(angles, heights_theta,'k*')
+%         
+%         axis equal
+%         
+%     end 
 end 
 
 
