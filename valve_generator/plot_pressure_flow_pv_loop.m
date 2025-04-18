@@ -54,6 +54,14 @@ names_struct(1).comment = '';
 names_struct(1).frame_sys = 837; 
 names_struct(1).frame_dia = 662; 
 
+names_struct(2).dir =  'aortic_57414559_384_40d7682_bicusp_c1pt4d_r1pt4_sv0d_lv_stj_vbr_25_mesh_4e03466_3cm_extender'; 
+names_struct(2).circ =  '3.0'; 
+names_struct(2).circ_over_d =  '1.4d'; 
+names_struct(2).rad =  '1.4'; 
+names_struct(2).comment = '';
+names_struct(2).frame_sys = 837; 
+names_struct(2).frame_dia = 662; 
+
 
 y_max_pressure = 200; 
 y_min_flow = -400;
@@ -78,12 +86,20 @@ for data_idx = 1:length(names_struct)
     q_stj = Q;
     clear P A Q t 
 
+    if data_idx == 1 
+        p_lvot_1pt57 = p_lvot;
+        p_stj_1_pt57 = p_stj;
+    elseif data_idx == 2
+        p_lvot_1pt4 = p_lvot;
+        p_stj_1_pt4 = p_stj;        
+    end 
+    
 
     fig = figure;
-    plot(times, p_aorta, 'k', 'LineWidth', line_width)
+    plot(times, p_aorta, 'g', 'LineWidth', line_width)
     hold on
-    plot(times_paraview, p_stj, 'b', 'LineWidth', line_width)
-    plot(times_paraview, p_lvot, 'r', 'LineWidth', line_width)
+    plot(times_paraview, p_stj, 'r', 'LineWidth', line_width)
+    plot(times_paraview, p_lvot, 'b', 'LineWidth', line_width)
     plot(times, p_lv, 'k', 'LineWidth', line_width)
     
     xlim([cycle_duration, 2*cycle_duration])
@@ -106,7 +122,7 @@ for data_idx = 1:length(names_struct)
     ax = gca; 
     ax.FontSize = font; 
     hold on
-    plot(times_1pt4, 0*q_aorta, ':k')
+    plot(times, 0*q_aorta, ':k')
     xlabel('Time (s)')
     ylabel('Flow (ml/s)')
     % legend('Flow', 'Location','NorthEast')
@@ -122,6 +138,36 @@ for data_idx = 1:length(names_struct)
 end 
     
     
+fig = figure; 
+hold on 
+plot(times_paraview, p_stj_1_pt57, 'r', 'LineWidth', line_width)
+plot(times_paraview, p_lvot_1pt57, 'b', 'LineWidth', line_width)
+plot(times_paraview, p_stj_1_pt4, 'm', 'LineWidth', line_width)
+plot(times_paraview, p_lvot_1pt4, 'c', 'LineWidth', line_width)
+
+xlim([1.25 1.55])
+ylim([70 130])
+
+legend('STJ 1.57', 'LVOT 1.57', 'STJ 1.4', 'LVOT 1.4')
+
+set(fig, 'Position', [100, 100, plot_width, plot_height])
+set(fig,'PaperPositionMode','auto')
+printfig(fig, 'pressure_comparision_1pt57_1pt4')
+
+fig = figure; 
+hold on 
+plot(times_paraview, p_lvot_1pt57 - p_stj_1_pt57, 'b', 'LineWidth', line_width)
+plot(times_paraview, p_lvot_1pt4  - p_stj_1_pt4, 'k', 'LineWidth', line_width)
+xlim([1.25 1.55])
+ylim([0 10])
+ax = gca; 
+ax.FontSize = font; 
+legend('1.57', '1.4')
+ylabel('pressure (mmHg)')
+xlabel('time (s)')
+set(fig, 'Position', [100, 100, plot_width, plot_height])
+set(fig,'PaperPositionMode','auto')
+printfig(fig, 'pressure_diffs_1pt57_1pt4')
 
 
 % % colors = parula(8); 
