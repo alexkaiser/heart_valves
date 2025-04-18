@@ -2,9 +2,6 @@
 MMHG_TO_CGS = 1333.22368;
 
 
-fig = figure; 
-hold on 
-
 line_width = 4; 
 font = 24; 
 cycle_duration = 0.8; 
@@ -50,23 +47,57 @@ names_struct(1).dir =  'aortic_57411843_384_f9882c3_bicusp_c1pt57d_r1pt4_sv0d_lv
 names_struct(1).circ =  '3.0'; 
 names_struct(1).circ_over_d =  '1.57d'; 
 names_struct(1).rad =  '1.4'; 
-names_struct(1).comment = '';
+names_struct(1).comment = 'f9882c3_bicusp_c1pt57d_r1pt4';
 names_struct(1).frame_sys = 837; 
 names_struct(1).frame_dia = 662; 
 
-names_struct(2).dir =  'aortic_57414559_384_40d7682_bicusp_c1pt4d_r1pt4_sv0d_lv_stj_vbr_25_mesh_4e03466_3cm_extender'; 
+names_struct(2).dir =  'aortic_57414099_384_3dd0ce9_bicusp_c1pt57d_r0pt8_sv0d_lv_stj_vbr_25_mesh_4e03466_3cm_extender'; 
 names_struct(2).circ =  '3.0'; 
-names_struct(2).circ_over_d =  '1.4d'; 
-names_struct(2).rad =  '1.4'; 
-names_struct(2).comment = '';
+names_struct(2).circ_over_d =  '1.57d'; 
+names_struct(2).rad =  '0.8'; 
+names_struct(2).comment = '3dd0ce9_bicusp_c1pt57d_r0pt8';
 names_struct(2).frame_sys = 837; 
 names_struct(2).frame_dia = 662; 
+
+names_struct(3).dir =  'aortic_57414559_384_40d7682_bicusp_c1pt4d_r1pt4_sv0d_lv_stj_vbr_25_mesh_4e03466_3cm_extender'; 
+names_struct(3).circ =  '3.0'; 
+names_struct(3).circ_over_d =  '1.4d'; 
+names_struct(3).rad =  '1.4'; 
+names_struct(3).comment = '40d7682_bicusp_c1pt4d_r1pt4';
+names_struct(3).frame_sys = 837; 
+names_struct(3).frame_dia = 662; 
+
+names_struct(4).dir =  'aortic_59135540_384_b086bc_c1p57stj_r_1p4_stj25_vbr25_ACTUALLY_C_1pt2'; 
+names_struct(4).circ =  '3.0'; 
+names_struct(4).circ_over_d =  '1.2d'; 
+names_struct(4).rad =  '1.4'; 
+names_struct(4).comment = 'f9882c3_bicusp_c1pt2d_r1pt4';
+names_struct(4).frame_sys = 837; 
+names_struct(4).frame_dia = 662; 
+
+names_struct(5).dir =  'aortic_59342289_384_a4fa8f9_c1p0stj_r_1pt4_stj25_vbr25'; 
+names_struct(5).circ =  '3.0'; 
+names_struct(5).circ_over_d =  '1.0d'; 
+names_struct(5).rad =  '1.4'; 
+names_struct(5).comment = 'a4fa8f9_c1p0stj_r_1pt4';
+names_struct(5).frame_sys = 837; 
+names_struct(5).frame_dia = 662; 
+
 
 
 y_max_pressure = 200; 
 y_min_flow = -400;
 y_max_flow = 800;
 
+t_min_plot = cycle_duration; 
+t_max_plot = 2*cycle_duration;
+
+shift_time_to_zero = true; 
+if shift_time_to_zero
+    t_shift = t_min_plot; 
+else 
+    t_shift = 0; 
+end 
 
 for data_idx = 1:length(names_struct) 
         
@@ -86,23 +117,15 @@ for data_idx = 1:length(names_struct)
     q_stj = Q;
     clear P A Q t 
 
-    if data_idx == 1 
-        p_lvot_1pt57 = p_lvot;
-        p_stj_1_pt57 = p_stj;
-    elseif data_idx == 2
-        p_lvot_1pt4 = p_lvot;
-        p_stj_1_pt4 = p_stj;        
-    end 
-    
 
     fig = figure;
-    plot(times, p_aorta, 'g', 'LineWidth', line_width)
+    plot(times - t_shift, p_aorta, 'color', 'g', 'LineWidth', line_width)
     hold on
-    plot(times_paraview, p_stj, 'r', 'LineWidth', line_width)
-    plot(times_paraview, p_lvot, 'b', 'LineWidth', line_width)
+    plot(times_paraview - t_shift, p_stj, 'r', 'LineWidth', line_width)
+    plot(times_paraview - t_shift, p_lvot, 'b', 'LineWidth', line_width)
     plot(times, p_lv, 'k', 'LineWidth', line_width)
     
-    xlim([cycle_duration, 2*cycle_duration])
+    xlim([t_min_plot  - t_shift, t_max_plot - t_shift])
     ylim([0 y_max_pressure])
     ax = gca; 
     ax.FontSize = font; 
@@ -111,13 +134,13 @@ for data_idx = 1:length(names_struct)
     ylabel('Pressure (mmHg)');
     set(fig, 'Position', [100, 100, plot_width, plot_height])
     set(fig,'PaperPositionMode','auto')
-    file_name_pressure = sprintf('pressure_cycle2_circ_%s_rad_%s_%s.eps', names_struct(data_idx).circ_over_d, names_struct(data_idx).rad, names_struct(data_idx).comment);                 
-    printfig(fig, file_name_pressure)
+    file_name_pressure = sprintf('pressure_cycle2_%s.eps', names_struct(data_idx).comment);                 
+    printfig(fig, fullfile(data_dir, file_name_pressure))
 
 
     fig = figure; 
-    plot(times, q_aorta, 'k', 'LineWidth', line_width)
-    xlim([cycle_duration, 2*cycle_duration])
+    plot(times - t_shift, q_aorta, 'k', 'LineWidth', line_width)
+    xlim([t_min_plot - t_shift, t_max_plot - t_shift])
     ylim([y_min_flow y_max_flow])
     ax = gca; 
     ax.FontSize = font; 
@@ -128,46 +151,45 @@ for data_idx = 1:length(names_struct)
     % legend('Flow', 'Location','NorthEast')
     set(fig, 'Position', [100, 100, plot_width, plot_height])
     set(fig,'PaperPositionMode','auto')
-    file_name_flow = sprintf('flow_cycle2_circ_%s_rad_%s_%s.eps', names_struct(data_idx).circ_over_d, names_struct(data_idx).rad, names_struct(data_idx).comment);                 
-    printfig(fig, file_name_flow)
+    file_name_flow = sprintf('flow_cycle2_%s.eps', names_struct(data_idx).comment);                 
+    printfig(fig, fullfile(data_dir, file_name_flow))
+    
+    min_time_idx_cycle = find(times > t_min_plot,1);
+    
+    min_time_idx_cycle_paraview = find(times_paraview > t_min_plot,1);
+    
+    p_min = 0; 
+    p_max = 200; 
+    v_min = 0; 
+    v_max = 240;
+    
+    V_ventricle_paraview_times = interp1(times, V_ventricle, times_paraview);
     
     
+    fig = figure; 
+    plot(V_ventricle(min_time_idx_cycle:end), p_lv(min_time_idx_cycle:end), 'k', 'LineWidth', line_width)    
+    ax = gca; 
+    ax.FontSize = font; 
+    hold on
+    
+    plot(V_ventricle_paraview_times(min_time_idx_cycle_paraview:end), p_lvot(min_time_idx_cycle_paraview:end), 'b', 'LineWidth', line_width)    
+    
+    legend('LV inlet', 'LVOT mean')
+    
+    xlabel('Volume (ml)')
+    ylabel('Pressure (mmHg)')
+    axis([v_min v_max p_min p_max])
+    set(fig, 'Position', [100, 100, plot_width, plot_height])
+    set(fig,'PaperPositionMode','auto')
+    
+    file_name_pv_loop = sprintf('pv_loop_cycle2_%s.eps', names_struct(data_idx).comment);                 
+    printfig(fig, fullfile(data_dir, file_name_pv_loop))
     
     clear times q_aorta p_aorta p_lv V_ventricle
     clear p_lvot q_lvot p_stj q_stj
 end 
     
     
-fig = figure; 
-hold on 
-plot(times_paraview, p_stj_1_pt57, 'r', 'LineWidth', line_width)
-plot(times_paraview, p_lvot_1pt57, 'b', 'LineWidth', line_width)
-plot(times_paraview, p_stj_1_pt4, 'm', 'LineWidth', line_width)
-plot(times_paraview, p_lvot_1pt4, 'c', 'LineWidth', line_width)
-
-xlim([1.25 1.55])
-ylim([70 130])
-
-legend('STJ 1.57', 'LVOT 1.57', 'STJ 1.4', 'LVOT 1.4')
-
-set(fig, 'Position', [100, 100, plot_width, plot_height])
-set(fig,'PaperPositionMode','auto')
-printfig(fig, 'pressure_comparision_1pt57_1pt4')
-
-fig = figure; 
-hold on 
-plot(times_paraview, p_lvot_1pt57 - p_stj_1_pt57, 'b', 'LineWidth', line_width)
-plot(times_paraview, p_lvot_1pt4  - p_stj_1_pt4, 'k', 'LineWidth', line_width)
-xlim([1.25 1.55])
-ylim([0 10])
-ax = gca; 
-ax.FontSize = font; 
-legend('1.57', '1.4')
-ylabel('pressure (mmHg)')
-xlabel('time (s)')
-set(fig, 'Position', [100, 100, plot_width, plot_height])
-set(fig,'PaperPositionMode','auto')
-printfig(fig, 'pressure_diffs_1pt57_1pt4')
 
 
 % % colors = parula(8); 
