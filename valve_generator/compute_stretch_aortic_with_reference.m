@@ -91,8 +91,8 @@ function [lambda_circ, lambda_rad, lambda_circ_mean, lambda_rad_mean, fig] = com
     
     one_leaflet = true; 
     if one_leaflet 
-        j_min_plot = N_each; 
-        j_max_plot = 2*N_each; 
+        j_min_plot = 1; 
+        j_max_plot = N_each; 
     end 
     
     lambda_circ_surf_running = 0;
@@ -311,10 +311,10 @@ function [lambda_circ, lambda_rad, lambda_circ_mean, lambda_rad_mean, fig] = com
         % at commissures in vertical direction
         % where radial tension is not defined 
         % take the mean of neighbors 
-        comm_color_patch = true; 
+        comm_color_patch = false; 
         if rad && comm_color_patch
             
-            for j=(N_each * (1:N_leaflets))
+            for j=1:j_max
                 for k=1:k_max
                     
                     if ~((lambda(j,k) == 0) || isnan(lambda(j,k)) || isinf(lambda(j,k)))

@@ -1,4 +1,4 @@
-function cmap = make_colormap(len, extended)
+function cmap = make_colormap(len, extended, export_xml)
 % 
 % returns a custom color map of length len 
 % 
@@ -117,13 +117,13 @@ else
     value = ones(flat_value_length, 1); 
     value = [value; linspace(1,0,len - flat_value_length)']; 
     
-    hsv = [hue, saturation, value]; 
+    hsv = [hue, saturation, value]
     
     cmap = hsv2rgb(hsv);
 end 
 
 
-debug = false; 
+debug = true; 
 if debug 
     figure; 
     plot(hsv(:,1)); 
@@ -137,6 +137,47 @@ if debug
     plot(hsv(:,3)); 
     title('value')
 end 
+
+if export_xml 
+    f = fopen('colormap.xml', 'w')
+    
+    n_colors = size(cmap,1); 
+    
+    x_vals = linspace(0,1,n_colors);
+
+    fprintf(f, "<ColorMaps>\n");
+    fprintf(f, '<ColorMap name="RainbowLinear" space="RGB" interpolationspace="RGB" interpolationtype="linear" creator="CCC-Tool">\n');
+    
+    for i=1:n_colors
+        fprintf(f, '<Point x="%.14f" o="1" r="%.14f" g="%.14f" b="%.14f" cms="1" isMoT="true"/>\n', x_vals(i), cmap(i,1), cmap(i,2), cmap(i,3));
+    end 
+    
+    fprintf(f, '<NaN r="0" g="0" b="0"/>\n');
+    fprintf(f, '<Above r="0" g="0" b="0"/>\n');
+    fprintf(f, '<Below r="1" g="1" b="1"/>\n');
+    fprintf(f, '</ColorMap>\n');
+    fprintf(f, '</ColorMaps>\n');
+    
+    
+%     <ColorMaps>
+%     <ColorMap name="YellowGreenPurpleBrown" space="RGB" interpolationspace="lab" interpolationtype="linear" creator="CCC-Tool">
+%     <Point x="0" o="1" r="0.741" g="0.9116833333333333" b="0.95" cms="1" isMoT="true"/>
+%     <Point x="0.125" o="1" r="0.5192000000000001" g="0.7236533333333334" b="0.88" cms="1" isMoT="true"/>
+%     <Point x="0.42" o="1" r="0.246" g="0.3639999999999999" b="0.6" cms="1" isMoT="true"/>
+%     <Point x="0.5" o="1" r="0.06660000000000002" g="0.11210999999999985" b="0.37" cms="1" isMoT="true"/>
+%     <Point x="0.5" o="1" r="0.17359166666666662" g="0.37" b="0.03329999999999999" cms="1" isMoT="true"/>
+%     <Point x="0.65" o="1" r="0.2943791557480731" g="0.59" b="0.21239999999999998" cms="1" isMoT="true"/>
+%     <Point x="1" o="1" r="0.8486949532130028" g="1" b="0.71" cms="1" isMoT="true"/>
+%     <NaN r="0" g="0" b="0"/>
+%     <Above r="0" g="0" b="0"/>
+%     <Below r="0" g="0" b="0"/>
+%     </ColorMap>
+%     </ColorMaps>
+end 
+
+
+
+
 
     
     

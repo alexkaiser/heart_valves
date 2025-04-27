@@ -1,4 +1,4 @@
-function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, stress_circ_mean, stress_rad_mean] ...
+function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, stress_circ, stress_rad, stress_circ_mean, stress_rad_mean] ...
     = estimate_tangent_modulus_aortic_with_reference(leaflet, thickness, fig, fiber_stride, stride_offset_j, circ, rad, ratio, max_plot_cap, plot_stress)
     % estimates the tangent modulus for current strain 
     % 
@@ -59,12 +59,9 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, stress_ci
     collagen_constitutive_circ = leaflet.collagen_constitutive_circ; 
     collagen_constitutive_rad  = leaflet.collagen_constitutive_rad; 
     
-    if ~exist('fig', 'var')
-        fig = figure;  
-    end 
 
     if ~exist('fiber_stride', 'var')
-        fprintf('Using default fiber stride of 1')
+        % fprintf('Using default fiber stride of 1')
         fiber_stride = 1; 
     end 
 
@@ -88,6 +85,14 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, stress_ci
     
     plots = (circ || rad || ratio); 
     
+    if ~exist('fig', 'var')
+        if plots
+            fig = figure;
+        else 
+            fig = [];
+        end 
+    end 
+    
     if (circ && rad) || (circ && ratio) || (rad && ratio)
         error('too many plots requested at once')
     end 
@@ -106,8 +111,8 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, stress_ci
     
     one_leaflet = true; 
     if one_leaflet 
-        j_min_plot = N_each; 
-        j_max_plot = 2*N_each; 
+        j_min_plot = 1; 
+        j_max_plot = N_each; 
     end 
     
     sigma_circ_surf_running = 0; 
@@ -417,7 +422,7 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, stress_ci
         % at commissures in vertical direction
         % where radial tension is not defined 
         % take the mean of neighbors 
-        comm_color_patch = true; 
+        comm_color_patch = false; 
         if (rad || ratio) && comm_color_patch
             
             for j=(N_each * (1:N_leaflets))

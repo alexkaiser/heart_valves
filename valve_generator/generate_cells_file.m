@@ -4,7 +4,7 @@ addpath ~/valve_generator
 addpath ~/mitral_fully_discrete/valve_generator 
 
 data_dir = pwd; 
-run_inv_transform = false; 
+run_inv_transform = true; 
 
 % if isfile('aortic_no_partition_384_final_data.mat')
 %     load('aortic_no_partition_384_final_data.mat', 'valve_with_reference', 'params');  
@@ -38,7 +38,22 @@ for i = 1:length(file_list)
         end
         
         file_name 
-        export_aortic_vertices_cells(file_name, valve_with_reference, params, data_dir, run_inv_transform, export_cells); 
+        
+        [filepath,name,ext] = fileparts(file_name); 
+
+        name_no_number = name(1:end-4); 
+
+        frame_num = str2num(name(end-3:end));
+        
+        if (frame_num == 662) || (frame_num == 837) 
+            export_mechanics = true 
+            export_coaptation = true
+        else 
+            export_mechanics = false
+            export_coaptation = false
+        end 
+        
+        export_aortic_vertices_cells(file_name, valve_with_reference, params, data_dir, run_inv_transform, export_cells, export_mechanics, export_coaptation); 
         
         if export_cells
             cell_file_exported = true; 
