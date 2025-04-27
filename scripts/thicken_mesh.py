@@ -74,15 +74,33 @@ def expand_mesh(mesh,
 if __name__== "__main__":
                 
     run_192 = False
+    run_384_shell = True
     if run_192:
         fname_in = "4_aorta_remeshed_pt5mm_2_cm_extender.stl"
         fname_out = "5_aorta_remeshed_pt5mm_2_cm_extender_layers.stl"
 
+        n_layers_full = 3
+        n_layers_extenders = 2
+
         # extrude length in mm 
         ds = 0.5
+
+    elif run_384_shell:
+        fname_in = "3_aorta_remeshed_pt25_3cm_extenders_no_cap.stl"
+        fname_out = "3_aorta_remeshed_pt25_3cm_extenders_no_cap_two_layer.stl"
+
+        n_layers_full = 2
+        n_layers_extenders = 0
+
+        # extrude length in mm 
+        ds = 0.5
+
     else:
         fname_in = "2_aorta_remeshed_pt25mm_3cm_extender.stl"
         fname_out = "3_aorta_remeshed_pt25mm_3cm_extender_layers.stl"
+
+        n_layers_full = 3
+        n_layers_extenders = 2
 
         # extrude length in mm 
         ds = 0.5/2
@@ -90,10 +108,6 @@ if __name__== "__main__":
     mesh = pyvista.read(fname_in)
 
 
-
-    n_layers_full = 3
-
-    n_layers_extenders = 2
     extender_direction_idx = [0,2]
     extender_top = True
     extender_width = [30.0, 10.0]
@@ -110,58 +124,60 @@ if __name__== "__main__":
 
     mesh_combined.save(fname_out)
 
+    boundary_meshes = False
 
-    x_max = np.max(mesh_combined.points[:,0])
-    z_max = np.max(mesh_combined.points[:,2])
-    tol_edges = 1.0e-1
+    if boundary_meshes:
 
-    print(f"x_max = {x_max:.16f}")
-    print(f"z_max = {z_max:.16f}")
+        z_max = np.max(mesh_combined.points[:,2])
+        tol_edges = 1.0e-1
 
-    # write out edge meshes 
-    edge_name_const_x = "lvot_bdry.vtu"
-    edge_name_const_z = "aorta_bdry.vtu"
+        print(f"x_max = {x_max:.16f}")
+        print(f"z_max = {z_max:.16f}")
 
-    conn = edges.connectivity()
+        # write out edge meshes 
+        edge_name_const_x = "lvot_bdry.vtu"
+        edge_name_const_z = "aorta_bdry.vtu"
 
-    print("conn = ", conn, "conn.point_data = ", conn.point_data)
+        conn = edges.connectivity()
 
-    # n_regions = 2 
+        print("conn = ", conn, "conn.point_data = ", conn.point_data)
 
-    n_regions = max(conn.point_data['RegionId'] + 1)
+        # n_regions = 2 
 
-    min_points_valid_bdry = 50
+        n_regions = max(conn.point_data['RegionId'] + 1)
 
-    # if n_regions != 2:
-    #     print("n_regions =", n_regions)
-    #     print("conn.point_data['RegionId'] = ", conn.point_data['RegionId'])
-    #     raise ValueError("must have two regions")
+        min_points_valid_bdry = 50
 
-    for region_id in range(n_regions):
+        # if n_regions != 2:
+        #     print("n_regions =", n_regions)
+        #     print("conn.point_data['RegionId'] = ", conn.point_data['RegionId'])
+        #     raise ValueError("must have two regions")
 
-        name_found = False
+        for region_id in range(n_regions):
 
-        bdry_mesh = conn.threshold([region_id, region_id + 0.5], scalars="RegionId", all_scalars=True)
+            name_found = False
 
-        # print("bdry_mesh = ", bdry_mesh, "bdry_mesh.points = ", bdry_mesh.points)
-        print("bdry_mesh = ", bdry_mesh)
+            bdry_mesh = conn.threshold([region_id, region_id + 0.5], scalars="RegionId", all_scalars=True)
 
-        if bdry_mesh.n_points > min_points_valid_bdry:
+            # print("bdry_mesh = ", bdry_mesh, "bdry_mesh.points = ", bdry_mesh.points)
+            print("bdry_mesh = ", bdry_mesh)
 
-            if all(abs(bdry_mesh.points[:,0] - x_max) < tol_edges):
-                bdry_mesh_name = edge_name_const_x
-                name_found = True 
-            elif all(abs(bdry_mesh.points[:,2] - z_max) < tol_edges):
-                bdry_mesh_name = edge_name_const_z
-                name_found = True 
+            if bdry_mesh.n_points > min_points_valid_bdry:
 
-            if name_found:
-                bdry_mesh.save(bdry_mesh_name)
-            else:
-                print("Did not find boundary mesh for RegionId ", region_id, ", skipping.")
+                if all(abs(bdry_mesh.points[:,0] - x_max) < tol_edges):
+                    bdry_mesh_name = edge_name_const_x
+                    name_found = True 
+                elif all(abs(bdry_mesh.points[:,2] - z_max) < tol_edges):
+                    bdry_mesh_name = edge_name_const_z
+                    name_found = True 
 
-        else: 
-            print("RegionId ", region_id, " is small and probably an artifact with ", bdry_mesh.n_points, " points, skipping.")
+                if name_found:
+                    bdry_mesh.save(bdry_mesh_name)
+                else:
+                    print("Did not find boundary mesh for RegionId ", region_id, ", skipping.")
+
+            else: 
+                print("RegionId ", region_id, " is small and probably an artifact with ", bdry_mesh.n_points, " points, skipping.")
 
 
 
