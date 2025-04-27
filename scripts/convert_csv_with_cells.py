@@ -4,9 +4,10 @@ import shutil
 import pyvista
 import numpy as np 
 import glob
+import scipy.io
+import pdb 
 
-
-def convert_csv(basename, suffix='_faces', vertex_ext='_vertices.csv', cells_ext='_cells.csv', ext_out='.stl'):
+def convert_csv(basename, suffix='_faces', vertex_ext='_vertices.csv', cells_ext='_cells.csv', ext_out='.stl', mechanics_ext=None):
 
     print("processing basename = ", basename)
 
@@ -45,9 +46,29 @@ def convert_csv(basename, suffix='_faces', vertex_ext='_vertices.csv', cells_ext
 
     mesh = pyvista.UnstructuredGrid(cells, cell_type, vertices)
 
+    mechanics_ext_base = ''
+
+    if mechanics_ext is not None:
+
+        if not mechanics_ext.endswith('.mat'):
+            raise ValueError('Mechanics file must be .mat')
+
+        mechanics_ext_base = mechanics_ext[:-4]
+
+        print("mechanics_ext_base = ", mechanics_ext_base)
+
+        mechanics_dict = scipy.io.loadmat(basename + mechanics_ext)
+
+        print("mechanics_dict = ", mechanics_dict)
+
+        for key in mechanics_dict.keys():
+            if len(mechanics_dict[key]) == mesh.n_points:
+                mesh[key] = mechanics_dict[key]
+
+
     # mesh.plot(show_edges=True)
 
-    outname = basename + suffix + ext_out
+    outname = basename + suffix + mechanics_ext_base + ext_out
 
     print("saving outname = ", outname)
 
@@ -79,7 +100,13 @@ if __name__ == '__main__':
             for name_full in file_list:
                 if (not 'cylinder' in name_full) and (not 'cells' in name_full):
                     basename = name_full.rsplit(vertex_ext)[0]
-                    convert_csv(basename, suffix, vertex_ext=vertex_ext, ext_out=extension_out)                    
+
+                    if os.path.isfile(basename + '_mechanics.mat'):
+                        mechanics_ext = '_mechanics.mat'
+                    else:
+                        mechanics_ext = None    
+
+                    convert_csv(basename, suffix, vertex_ext=vertex_ext, ext_out=extension_out, mechanics_ext=mechanics_ext)                    
 
     run_cylinder = True
     if run_cylinder:
