@@ -123,7 +123,7 @@ else
 end 
 
 
-debug = true; 
+debug = false; 
 if debug 
     figure; 
     plot(hsv(:,1)); 
