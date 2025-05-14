@@ -33,6 +33,8 @@ cd viz_IB3d_tree_cycle_256
 TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
 
 cp ~/heart_valves/2_aorta_remeshed_pt5mm_capped.vtp . 
+cp ~/heart_valves/4_aorta_remeshed_pt25mm_3cm_extender_layers_constriction.vtu . 
+cp ~/heart_valves/6_aorta_remeshed_pt5mm_2cm_extender_layers_constriction.vtu . 
 
 # extracts relevant portion of mesh 
 python3 ~/heart_valves/scripts/remove_unnecessary_eulerian_space.py $TOTAL_TASKS
