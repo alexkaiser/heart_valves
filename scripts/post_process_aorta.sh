@@ -66,7 +66,7 @@ python3 ~/heart_valves/scripts/convert_csv_with_cells.py
 # ensure integral metrics have finished 
 wait 
 
-matlab -nodesktop -nodisplay -r 'addpath ~/heart_valves/valve_generator; run_shape_analysis_local; exit;'
+# matlab -nodesktop -nodisplay -r 'addpath ~/heart_valves/valve_generator; run_shape_analysis_local; exit;'
 
 # SESSION_NAME_PARAVIEW="~/heart_valves/scripts/bicuspid_slices_paraview_paper.py"
 
