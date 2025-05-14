@@ -23,7 +23,7 @@ if [ -e bc_data.mat ]
 then
     echo "bc_data.mat found"
 else
-    matlab -nodesktop -nodisplay -r 'addpath ~/valve_generator; bc_data; exit;' & 
+    matlab -nodesktop -nodisplay -r 'addpath ~/heart_valves/valve_generator; bc_data; exit;' & 
 fi
 
 
@@ -61,14 +61,14 @@ python3 ~/heart_valves/scripts/convert_vtu_vertices_to_csv.py
 
 cp ../bc_data.mat . 
 cp ../aortic_no_partition*final_data.mat . 
-matlab -nodesktop -nodisplay -r 'addpath ~/valve_generator; generate_cells_file; "matlab generate cells complete"; exit;'
+matlab -nodesktop -nodisplay -r 'addpath ~/heart_valves/valve_generator; generate_cells_file; "matlab generate cells complete"; exit;'
 
 python3 ~/heart_valves/scripts/convert_csv_with_cells.py
 
 # ensure integral metrics have finished 
 wait 
 
-matlab -nodesktop -nodisplay -r 'addpath ~/valve_generator; run_shape_analysis_local; exit;'
+matlab -nodesktop -nodisplay -r 'addpath ~/heart_valves/valve_generator; run_shape_analysis_local; exit;'
 
 # SESSION_NAME_PARAVIEW="~/heart_valves/scripts/bicuspid_slices_paraview_paper.py"
 
