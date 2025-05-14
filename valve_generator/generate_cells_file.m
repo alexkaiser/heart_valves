@@ -1,7 +1,6 @@
 
-% add two default locations 
-addpath ~/valve_generator 
-addpath ~/mitral_fully_discrete/valve_generator 
+% add default location
+addpath ~/heart_valves/valve_generator 
 
 data_dir = pwd; 
 run_inv_transform = true; 
