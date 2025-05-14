@@ -77,9 +77,10 @@ exp_db.variables = ('P', 'U', 'Omega')
 export_opts = GetExportOptions("VTK")
 print("export_opts = ", export_opts)
 
-# export_opts['Binary format'] = 1
-# export_opts['XML format'] = 1
-export_opts['FileFormat'] = 'XML Binary'
+export_opts['Binary format'] = 1
+export_opts['XML format'] = 1
+
+# export_opts['FileFormat'] = 'XML Binary'
 print("export_opts = ", export_opts)
 
 nsteps = TimeSliderGetNStates()

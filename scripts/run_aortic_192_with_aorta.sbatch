@@ -64,10 +64,15 @@ python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS"
 
 touch done.txt
 
-python3 ~/heart_valves/scripts/fix_visit_files_automatic.py
+# touch done.txt
 
-# load stuff for movie making 
-source ~/.bash_profile
-visit -cli -nowin -s ~/heart_valves/scripts/run_parallel_convert_visit_to_paraview.py $TOTAL_TASKS $TOTAL_TASKS
+if [ -e done.txt ]
+then
+    module load python/3.9.0
 
-sbatch ~/heart_valves/scripts/post_process_aorta.sh 
+    # load stuff for movie making 
+    source ~/.bash_profile
+    visit -cli -nowin -s ~/heart_valves/scripts/run_parallel_convert_visit_to_paraview.py $TOTAL_TASKS $TOTAL_TASKS
+
+    sbatch ~/heart_valves/scripts/post_process_aorta.sh 
+fi
