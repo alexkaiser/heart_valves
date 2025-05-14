@@ -89,8 +89,8 @@ if __name__ == '__main__':
     for arg in sys.argv:
         print(arg, " ")
 
-    script_dir = "~/copies_scripts/"
-    # script_dir = "~/mitral_fully_discrete/scripts/"
+    script_dir = "~/heart_valves/scripts/"
+    # script_dir = "~/heart_valves/scripts/"
 
     lag_name_base_to_check = ['aortic', 'vessel', 'aorta_384.', 'aorta_192.']
 

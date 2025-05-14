@@ -208,8 +208,8 @@ def run_main():
 
                 # grab this file if it's not here... 
                 if not os.path.isfile(boundary_mesh_name):
-                    if os.path.isfile(os.path.expanduser('~') + '/mitral_fully_discrete/' + boundary_mesh_name):
-                        shutil.copy(os.path.expanduser('~') + '/mitral_fully_discrete/' + boundary_mesh_name, '.') 
+                    if os.path.isfile(os.path.expanduser('~') + '/heart_valves/' + boundary_mesh_name):
+                        shutil.copy(os.path.expanduser('~') + '/heart_valves/' + boundary_mesh_name, '.') 
                     else: 
                         raise FileNotFoundError("cannot find boundary_mesh_name file = ", boundary_mesh_name)
 
@@ -266,8 +266,8 @@ def run_main():
 
             # grab this file if it's not here... 
             if not os.path.isfile(boundary_mesh_name):
-                if os.path.isfile(os.path.expanduser('~') + '/mitral_fully_discrete/' + boundary_mesh_name):
-                    shutil.copy(os.path.expanduser('~') + '/mitral_fully_discrete/' + boundary_mesh_name, '.') 
+                if os.path.isfile(os.path.expanduser('~') + '/heart_valves/' + boundary_mesh_name):
+                    shutil.copy(os.path.expanduser('~') + '/heart_valves/' + boundary_mesh_name, '.') 
                 else: 
                     raise FileNotFoundError("cannot find boundary_mesh_name file = ", boundary_mesh_name)
 

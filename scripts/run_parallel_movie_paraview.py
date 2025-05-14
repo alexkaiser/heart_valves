@@ -45,8 +45,8 @@ if __name__ == '__main__':
     for arg in sys.argv:
         print (arg, " ")
 
-    script_dir = "~/copies_scripts/"
-    # script_dir = "~/mitral_fully_discrete/scripts/"
+    script_dir = "~/heart_valves/scripts/"
+    # script_dir = "~/heart_valves/scripts/"
 
     # get some output names
     cwd = os.getcwd()

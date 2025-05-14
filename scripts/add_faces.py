@@ -52,8 +52,8 @@ if __name__ == '__main__':
 
 
     if not os.path.isfile(mesh_with_faces_name):
-        if os.path.isfile(os.path.expanduser('~') + '/mitral_fully_discrete/' + mesh_with_faces_name):
-            shutil.copy(os.path.expanduser('~') + '/mitral_fully_discrete/' + mesh_with_faces_name, '.') 
+        if os.path.isfile(os.path.expanduser('~') + '/heart_valves/' + mesh_with_faces_name):
+            shutil.copy(os.path.expanduser('~') + '/heart_valves/' + mesh_with_faces_name, '.') 
         else: 
             raise FileNotFoundError("cannot find mesh_with_faces_name file = ", mesh_with_faces_name)
 

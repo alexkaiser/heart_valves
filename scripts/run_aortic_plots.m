@@ -50,8 +50,8 @@ if trileaflet_update_9_2024
 end 
 
 
-addpath('~/mitral_fully_discrete/scripts')
-addpath('~/copies_scripts')
+addpath('~/heart_valves/scripts')
+addpath('~/heart_valves/scripts')
 
 if ~isfile('bc_data.mat')
     if isfile('bc_data.m')

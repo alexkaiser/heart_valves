@@ -68,8 +68,8 @@ source ~/.bash_profile
 python run_parallel_movie.py $SESSION_NAME $TOTAL_TASKS $VIEW_CLIPPING
 
 # # convert to paraview formats 
-# visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py $TOTAL_TASKS $TOTAL_TASKS
+# visit -cli -nowin -s ~/heart_valves/scripts/run_parallel_convert_visit_to_paraview.py $TOTAL_TASKS $TOTAL_TASKS
 
 # if test -f done.txt; then
-#     sbatch ~/copies_scripts/post_process_pa.sh
+#     sbatch ~/heart_valves/scripts/post_process_pa.sh
 # fi

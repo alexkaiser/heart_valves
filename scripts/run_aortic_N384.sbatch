@@ -63,6 +63,6 @@ python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS"
 source ~/.bash_profile
 python run_parallel_movie.py $SESSION_NAME $TOTAL_TASKS $VIEW_CLIPPING
 
-SESSION_NAME_PARAVIEW="~/copies_scripts/velocity_slices_5.py"
-visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py 48 $TOTAL_TASKS
-python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $TOTAL_TASKS
+SESSION_NAME_PARAVIEW="~/heart_valves/scripts/velocity_slices_5.py"
+visit -cli -nowin -s ~/heart_valves/scripts/run_parallel_convert_visit_to_paraview.py 48 $TOTAL_TASKS
+python ~/heart_valves/scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $TOTAL_TASKS

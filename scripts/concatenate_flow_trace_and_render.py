@@ -9,8 +9,8 @@ if __name__ == '__main__':
     for arg in sys.argv:
         print(arg, " ")
 
-    script_dir = "~/copies_scripts/"
-    # script_dir = "~/mitral_fully_discrete/scripts/"
+    script_dir = "~/heart_valves/scripts/"
+    # script_dir = "~/heart_valves/scripts/"
 
     # get some output names
     cwd = os.getcwd()
@@ -37,7 +37,7 @@ if __name__ == '__main__':
                 
                 viz_dir_name = os.getcwd()
 
-                code = subprocess.call('cp ~/copies_scripts/run_aortic_plots.m .', shell=True)
+                code = subprocess.call('cp ~/heart_valves/scripts/run_aortic_plots.m .', shell=True)
                 if code is None:
                    print('call returned prematurely')
                 
@@ -76,7 +76,7 @@ if __name__ == '__main__':
                 base_name_new = base_name + '_flow_trace'
                 nsteps = 1445
 
-                call_str_concatenate = 'python ~/copies_scripts/concatenate_jpegs.py '
+                call_str_concatenate = 'python ~/heart_valves/scripts/concatenate_jpegs.py '
                 call_str_concatenate += left + ' ' + right + ' ' + base_name_new + ' ' + str(nsteps)
 
                 code = subprocess.call(call_str_concatenate, shell=True)

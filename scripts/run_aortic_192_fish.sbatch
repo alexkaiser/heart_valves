@@ -60,10 +60,10 @@ python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS"
 # load stuff for movie making 
 source ~/.bash_profile
 
-visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py $TOTAL_TASKS $TOTAL_TASKS
+visit -cli -nowin -s ~/heart_valves/scripts/run_parallel_convert_visit_to_paraview.py $TOTAL_TASKS $TOTAL_TASKS
 
 source ~/.bash_profile
 module load python/3.9.0
-# SESSION_NAME_PARAVIEW="~/copies_scripts/graft_slice_simple.py"
-# python ~/copies_scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $TOTAL_TASKS
+# SESSION_NAME_PARAVIEW="~/heart_valves/scripts/graft_slice_simple.py"
+# python ~/heart_valves/scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $TOTAL_TASKS
 

@@ -90,7 +90,7 @@ if __name__ == '__main__':
                 else:
                     view_clipping = None
 
-                call_str_base = 'visit -cli -nowin -s ~/copies_scripts/make_movie_generic.py ~/copies_scripts/'
+                call_str_base = 'visit -cli -nowin -s ~/heart_valves/scripts/make_movie_generic.py ~/heart_valves/scripts/'
                 call_str_base += session_file_name + " "
 
                 processes = []

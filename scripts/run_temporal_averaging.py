@@ -162,7 +162,7 @@ if __name__ == '__main__':
 
     # first make sure there is a times file 
     if not os.path.isfile('times.txt'):
-        subprocess.call('visit -cli -nowin -s ~/copies_scripts/write_times_file_visit.py', shell=True)
+        subprocess.call('visit -cli -nowin -s ~/heart_valves/scripts/write_times_file_visit.py', shell=True)
 
     times = []
     times_file = open('times.txt', 'r')

@@ -64,6 +64,6 @@ python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS"
 
 # load stuff for movie making 
 source ~/.bash_profile
-visit -cli -nowin -s ~/copies_scripts/run_parallel_convert_visit_to_paraview.py $TOTAL_TASKS $TOTAL_TASKS
+visit -cli -nowin -s ~/heart_valves/scripts/run_parallel_convert_visit_to_paraview.py $TOTAL_TASKS $TOTAL_TASKS
 
-# sbatch ~/copies_scripts/post_process_aorta.sh 
+# sbatch ~/heart_valves/scripts/post_process_aorta.sh 

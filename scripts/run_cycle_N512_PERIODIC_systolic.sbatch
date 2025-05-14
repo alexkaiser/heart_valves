@@ -13,7 +13,7 @@ module purge
 module load openmpi/gnu/2.0.2
 
 # executable is here 
-SRCDIR=$HOME/mitral_fully_discrete
+SRCDIR=$HOME/heart_valves
 
 # run in scratch, name with the job name
 RUNDIR=$SCRATCH/mitral_cycle_PERIODIC_${SLURM_JOBID/.*}_512_git_9f010d40_best_general_setup_at_high_res

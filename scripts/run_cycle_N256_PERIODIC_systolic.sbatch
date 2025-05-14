@@ -17,7 +17,7 @@ module load openmpi/2.0.2
 SRCDIR=$PWD
 
 # executable is here 
-SRCDIR=$HOME/mitral_fully_discrete
+SRCDIR=$HOME/heart_valves
 
 # run in scratch, name with the job name
 RUNDIR=$SCRATCH/mitral_cycle_PERIODIC_${SLURM_JOBID/.*}_256_58556997_mean_reverting_convergences
