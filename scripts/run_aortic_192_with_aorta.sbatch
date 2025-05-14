@@ -45,7 +45,7 @@ cp *.cpp                                     $RUNDIR
 cp main_aorta                                $RUNDIR
 cp fourier_coeffs_ventricle.txt              $RUNDIR
 cp fourier_coeffs_Q_mi.txt                   $RUNDIR
-cp fourier_coeffs_lv_activation.txt          $RUNDIR
+cp fourier_coeffs_lv_activation_two_hill.txt $RUNDIR
 cp watchdog_job_restart.py                   $RUNDIR
 cp kill_all_mpi.sh                           $RUNDIR
 cp run_aortic_192_with_aorta.sbatch          $RUNDIR
