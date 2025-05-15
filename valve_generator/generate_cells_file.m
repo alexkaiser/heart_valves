@@ -3,7 +3,7 @@
 addpath ~/heart_valves/valve_generator 
 
 data_dir = pwd; 
-run_inv_transform = true; 
+run_inv_transform = false; 
 
 % if isfile('aortic_no_partition_384_final_data.mat')
 %     load('aortic_no_partition_384_final_data.mat', 'valve_with_reference', 'params');  
