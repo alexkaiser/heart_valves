@@ -61,7 +61,7 @@ def read_distributed_vtr(dir_name):
 
     files = natsorted(glob.glob(dir_name + "/*.vtr"))
     blocks = pyvista.MultiBlock([pyvista.RectilinearGrid(f) for f in files])
-    return blocks.combine(merge_points=True, tolerance=0.001)
+    return blocks.combine(merge_points=True, tolerance=0.0001)
 
 
 def sort_points_and_point_data(points, point_data_U=None, point_data_P=None):
