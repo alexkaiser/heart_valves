@@ -275,6 +275,12 @@ if __name__ == '__main__':
             print("using default nprocs = 1")
             nprocs = 1 
 
+        if len(sys.argv) >= 3:
+            boundary_mesh_name = sys.argv[2]
+        # compute masks for all 
+        else:
+            boundary_mesh_name = '2_aorta_remeshed_pt5mm_capped.vtp'
+
         # first make sure there is a times file 
         if not os.path.isfile('times.txt'):
             subprocess.call('visit -cli -nowin -s ~/heart_valves/scripts/write_times_file_visit.py', shell=True)
@@ -319,10 +325,6 @@ if __name__ == '__main__':
             label = '_restricted_cells'
 
         extension = 'vtu'
-
-
-        # compute masks for all 
-        boundary_mesh_name = '2_aorta_remeshed_pt5mm_capped.vtp'
 
         # grab this file if it's not here... 
         if not os.path.isfile(boundary_mesh_name):
