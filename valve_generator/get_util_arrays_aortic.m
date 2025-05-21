@@ -42,6 +42,9 @@ N = leaflet.N;
 if isfield(leaflet, 'variety') && strcmp(leaflet.variety, 'bicuspid') 
     N_each = N/2; 
     N_leaflets = 2; 
+elseif isfield(leaflet, 'variety') && strcmp(leaflet.variety, 'quad') 
+    N_each = N/4; 
+    N_leaflets = 4;     
 else 
     % number for each leaflet 
     N_each = N/3; 
