@@ -18,20 +18,26 @@ R_proximal =  83.6698220729
 C =  0.00167055364456
 R_distal =  1287.64596307
 
-P_aorta_0_MMHG = 94.0
+P_aorta_0_MMHG = 90.22995737938673
 
 FOURIER_COEFFS_FILENAME_VENTRICLE = "fourier_coeffs_ventricle.txt"
 
-BOUNDARY_FILENAME_VENTRICLE = "cylinder_bdry_min.vertex"
-BOUNDARY_FILENAME_AORTA = "cylinder_bdry_max.vertex"
+BOUNDARY_FILENAME_VENTRICLE = "cylinder_bdry_min_192.vertex"
+BOUNDARY_FILENAME_AORTA = "cylinder_bdry_max_192.vertex"
 
-VESSEL_FILENAME = "aortic_no_partition_192_cylinder.vertex"
+// ventricle LPN 
+VENTRICLE_0D_ON = TRUE
+FOURIER_COEFFS_Q_IN = "fourier_coeffs_Q_mi.txt"
+FOURIER_COEFFS_ACT = "fourier_coeffs_lv_activation_two_hill.txt"
+V_INITIAL = 52.4603103077225
+V_REST_DIASTOLE = 0.0
+V_REST_SYSTOLE = 0.0
+E_MIN = 39.733820568097286
+E_MAX = 2758.1890465134265
+R_LVOT = 5.732861824000000
+INDUCTANCE = 0.0
 
-// FOURIER_COEFFS_FILENAME = "fourier_coeffs_zero.txt"
-// FOURIER_COEFFS_FILENAME = "fourier_coeffs_aorta_minus_ventricle.txt"
-
-
-// FOURIER_COEFFS_FILENAME = "fourier_coeffs_aorta_minus_ventricle.txt"
+GRAFT_VERSION = TRUE
 
 CYCLE_DURATION = 0.8
 
@@ -39,7 +45,7 @@ CYCLE_DURATION = 0.8
 DELTA_FUNCTION      = "IB_5"
 SOLVER_TYPE         = "STAGGERED"         // the fluid solver to use (STAGGERED or COLLOCATED)
 START_TIME          = 0.0e0               // initial simulation time
-END_TIME            = 1.0*CYCLE_DURATION    // final simulation time
+END_TIME            = 2.0*CYCLE_DURATION    // final simulation time
 GROW_DT             = 2.0e0               // growth factor for timesteps
 NUM_CYCLES          = 1                   // number of cycles of fixed-point iteration
 CONVECTIVE_TS_TYPE = "ADAMS_BASHFORTH"    // convective time stepping type
