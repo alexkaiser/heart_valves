@@ -542,7 +542,7 @@ if __name__== "__main__":
         process_vtk_file(file_name, base_name_out, kappa_rel, target_strength, damping_strength, scaling, zero_springs)
 
 
-    aorta_384_files_bicuspidization = True
+    aorta_384_files_bicuspidization = False
     if aorta_384_files_bicuspidization:
 
         # this is in mm 
@@ -598,6 +598,37 @@ if __name__== "__main__":
         file_name = '7_aorta_remeshed_pt5mm_2cm_extender_layers_double_constriction.stl'
 
         base_name_out = "aorta_192"
+
+        process_vtk_file_pyvista(file_name, base_name_out, kappa_rel, target_strength, damping_strength, scaling, zero_springs)
+
+    seg_test = True
+    if seg_test:
+
+        # this is in mm 
+        scaling = 0.1
+
+        # target strength aortic_384
+        target_strength = 2.0 * 58229.54577218728809
+
+        # absolute spring const for cross layer springs of length 
+        ds_extrude = 0.025
+
+        # abs spring constant from cylinder mesh 
+        # scale this down by 2, and down by 2 again with ds
+        # if a single spring is split its kappa_abs goes down by two 
+        # but there are more of them, if not in a regular way 
+        # could turn down by 4 if needed for stability
+        kappa_abs = 0.01 * 543733.53989471553359 / 2  
+        
+        kappa_rel = kappa_abs * ds_extrude
+        zero_springs = True
+
+        # damping off 
+        damping_strength = 0.0
+
+        # file_name = "4_aorta_remeshed_pt25mm_3cm_extender_layers_constriction.stl"
+        file_name = "3_aorta_lv_extender_layers_constriction.stl"
+        base_name_out = "aorta_384"
 
         process_vtk_file_pyvista(file_name, base_name_out, kappa_rel, target_strength, damping_strength, scaling, zero_springs)
 

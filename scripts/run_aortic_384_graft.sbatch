@@ -20,7 +20,7 @@ TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_384_1768df4_graft_bicuspid_annulus_len_const_24mm
+RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_384_8b6ec87_quad_c30_r20mm_loaded
 mkdir $RUNDIR
 
 # set up run info 
@@ -36,12 +36,14 @@ pwd
 # move stuff the the run directory 
 cd $SRCDIR
 cp $BASE_NAME*                               $RUNDIR
-cp cylinder_bdry_max.vertex                  $RUNDIR
-cp cylinder_bdry_min.vertex                  $RUNDIR
+cp cylinder_bdry_max_384.vertex              $RUNDIR
+cp cylinder_bdry_min_384.vertex              $RUNDIR
 cp $INPUT_NAME                               $RUNDIR
 cp *.cpp                                     $RUNDIR
 cp main_aorta                                $RUNDIR
 cp fourier_coeffs_ventricle.txt              $RUNDIR
+cp fourier_coeffs_Q_mi.txt                   $RUNDIR
+cp fourier_coeffs_lv_activation_two_hill.txt $RUNDIR
 cp watchdog_job_restart.py                   $RUNDIR
 cp kill_all_mpi.sh                           $RUNDIR
 cp run_aortic_384_graft.sbatch               $RUNDIR

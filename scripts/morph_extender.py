@@ -65,9 +65,22 @@ def morph_extender(mesh,
 
 if __name__== "__main__":
 
+    seg_test = True
     res_192 = False
-    run_384_shell = True
-    if res_192:
+    run_384_shell = False
+    
+    if seg_test:
+        fname = "3_aorta_lv_extender_layers.stl" 
+        fname_out = "3_aorta_lv_extender_layers_constriction.stl" 
+
+        bdry_filename = 'lvot_bdry.vtu'
+        bdry_filename_out = 'lvot_bdry_constriction.vtu'
+
+        bdry_filename_aorta = 'aorta_bdry.vtu'
+        bdry_filename_aorta_out = 'aorta_bdry_outlet.vtu'
+
+
+    elif res_192:
         fname = "5_aorta_remeshed_pt5mm_2_cm_extender_layers.stl"
         # fname_out = "6_aorta_remeshed_pt5mm_2cm_extender_layers_constriction.stl"
         fname_out = "7_aorta_remeshed_pt5mm_2cm_extender_layers_double_constriction.stl"

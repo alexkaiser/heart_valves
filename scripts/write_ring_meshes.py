@@ -276,7 +276,7 @@ if __name__== "__main__":
         base_name_out = "left_pa_bdry_pyvista"
         process_vtk_file_pyvista(file_name, base_name_out, scaling)
 
-    aortic_384_bicuspidization_files = True 
+    aortic_384_bicuspidization_files = False 
     if aortic_384_bicuspidization_files:
         scaling = 0.1
 
@@ -300,5 +300,15 @@ if __name__== "__main__":
         base_name_out = "lvot_bdry_192"
         process_vtk_file_pyvista(file_name, base_name_out, scaling)
 
+    seg_test = True 
+    if seg_test:
+        scaling = 0.1
 
+        file_name = 'aorta_bdry_outlet.vtu'
+        base_name_out = "aorta_bdry_384"
+        process_vtk_file_pyvista(file_name, base_name_out, scaling)
+
+        file_name = 'lvot_bdry_constriction.vtu'
+        base_name_out = "lvot_bdry_384"
+        process_vtk_file_pyvista(file_name, base_name_out, scaling)
 

@@ -72,10 +72,22 @@ def expand_mesh(mesh,
 
 
 if __name__== "__main__":
-                
+    
+    seg_test = True
     run_192 = False
-    run_384_shell = True
-    if run_192:
+    run_384_shell = False
+
+    if seg_test:
+        fname_in = "2_aorta_lv_extender.stl"
+        fname_out = "3_aorta_lv_extender_layers.stl"
+
+        n_layers_full = 3
+        n_layers_extenders = 2
+
+        # extrude length in mm 
+        ds = 0.5        
+
+    elif run_192:
         fname_in = "4_aorta_remeshed_pt5mm_2_cm_extender.stl"
         fname_out = "5_aorta_remeshed_pt5mm_2_cm_extender_layers.stl"
 
@@ -108,7 +120,7 @@ if __name__== "__main__":
     mesh = pyvista.read(fname_in)
 
 
-    extender_direction_idx = [0,2]
+    extender_direction_idx = [0,2] # extra mesh layers at inlet and outlet 
     extender_top = True
     extender_width = [30.0, 10.0]
     extract_edge_layer = 2
@@ -124,10 +136,11 @@ if __name__== "__main__":
 
     mesh_combined.save(fname_out)
 
-    boundary_meshes = False
+    boundary_meshes = True
 
     if boundary_meshes:
 
+        x_max = np.max(mesh_combined.points[:,0])
         z_max = np.max(mesh_combined.points[:,2])
         tol_edges = 1.0e-1
 
