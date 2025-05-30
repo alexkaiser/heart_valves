@@ -24,6 +24,8 @@ cell_file_exported = false;
 
 file_list = dir('aortic_*.csv');
 
+add_mechanics = false;
+
 for i = 1:length(file_list)
     
     file_name = file_list(i).name; 
@@ -44,7 +46,7 @@ for i = 1:length(file_list)
 
         frame_num = str2num(name(end-3:end));
         
-        if (frame_num == 662) || (frame_num == 837) 
+        if add_mechanics && ((frame_num == 662) || (frame_num == 837))
             export_mechanics = true 
             export_coaptation = true
         else 
