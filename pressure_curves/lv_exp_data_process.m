@@ -1,6 +1,6 @@
 
 % quadrature spacing 
-debug = false; 
+debug = true; 
 if debug 
     dt = 5e-4; 
 else 
@@ -311,118 +311,117 @@ if series_plots
 end 
 
 
+run_matlab_zerod = false; 
+if run_matlab_zerod
+    % run the lpn 
+    dt_lpn = 1e-4; 
+    n_cycles = 1; 
+    t_final = cycle_duration * n_cycles;
+    P_ao_initial = 94*MMHG_TO_CGS;
+    R_proximal = 83.6698220729; 
+    C =  0.00167055364456;
+    R_distal = 1287.64596307;
 
-% run the lpn 
-dt_lpn = 1e-4; 
-n_cycles = 1; 
-t_final = cycle_duration * n_cycles;
-P_ao_initial = 94*MMHG_TO_CGS;
-R_proximal = 83.6698220729; 
-C =  0.00167055364456;
-R_distal = 1287.64596307;
-
-v_initial = ventricular_volume_initial;
+    v_initial = ventricular_volume_initial;
 
 
-KERCKHOFFS = true; 
+    KERCKHOFFS = true; 
 
-if KERCKHOFFS 
-    Vrd = 26.1; % ml 
-    Vrs = 18; % ml
+    if KERCKHOFFS 
+        Vrd = 26.1; % ml 
+        Vrs = 18; % ml
 
-    % parameters from KERCKHOFFS AMBE 2006 
-    % lv 
-    % note that min compliance is actually the larger value under confusing naming convention 
-    C_min_ml_over_kPa = 11.0; 
-    C_max_ml_over_kPa = 0.946; 
+        % parameters from KERCKHOFFS AMBE 2006 
+        % lv 
+        % note that min compliance is actually the larger value under confusing naming convention 
+        C_min_ml_over_kPa = 11.0; 
+        C_max_ml_over_kPa = 0.946; 
 
-    % E_min_kPa = 1/C_min_ml_over_kPa; 
-    % E_max_kPa = 1/C_max_ml_over_kPa; 
+        % E_min_kPa = 1/C_min_ml_over_kPa; 
+        % E_max_kPa = 1/C_max_ml_over_kPa; 
 
-    ML_OVER_KPA_TO_ML_OVER_DYNEPERCM2 = 1e-4; 
+        ML_OVER_KPA_TO_ML_OVER_DYNEPERCM2 = 1e-4; 
 
-    C_min_scaling = 5; 
-    C_max_scaling = 5; 
+        C_min_scaling = 5; 
+        C_max_scaling = 5; 
 
-    C_min_ml_over_dynespercm2 = C_min_scaling * C_min_ml_over_kPa * ML_OVER_KPA_TO_ML_OVER_DYNEPERCM2; 
-    C_max_ml_over_dynespercm2 = C_max_scaling * C_max_ml_over_kPa * ML_OVER_KPA_TO_ML_OVER_DYNEPERCM2; 
+        C_min_ml_over_dynespercm2 = C_min_scaling * C_min_ml_over_kPa * ML_OVER_KPA_TO_ML_OVER_DYNEPERCM2; 
+        C_max_ml_over_dynespercm2 = C_max_scaling * C_max_ml_over_kPa * ML_OVER_KPA_TO_ML_OVER_DYNEPERCM2; 
 
-    Emax = 1/C_max_ml_over_dynespercm2
-    Emin = 1/C_min_ml_over_dynespercm2
+        Emax = 1/C_max_ml_over_dynespercm2
+        Emin = 1/C_min_ml_over_dynespercm2
 
-    Emin_mmHg_over_ml = Emin / MMHG_TO_CGS 
-    Emax_mmHg_over_ml = Emax / MMHG_TO_CGS
+        Emin_mmHg_over_ml = Emin / MMHG_TO_CGS 
+        Emax_mmHg_over_ml = Emax / MMHG_TO_CGS
+
+    else 
+        error('not implemented');
+    end 
+
+
+
+    R_av_closed = 100000;
+    steepness_av = 0.00001; 
+
+
+    [times_lpn, P_lv, Q_ao, P_ao, V_lv, R_tanh] = solve_lv_ao_lpn(dt_lpn, t_final, v_initial, Vrd, Vrs, Emax, Emin, ...
+                                         Series_q_mitral_scaled, Series_activation, ...
+                                         P_ao_initial, R_proximal, C, R_distal, r_av, R_av_closed, steepness_av);
+ 
+
+
+    figure;
+    subplot(6,1,1)
+    plot(t, vals_series_pressure_lv)
+    hold on 
+    plot(t, vals_series_pressure_aorta)
+    plot(times_lpn, P_lv/MMHG_TO_CGS); 
+    plot(times_lpn, P_ao/MMHG_TO_CGS);
+    xlim([0 max(times_lpn)])
+
+    legend('lv exp', 'ao exp', 'lv lpn', 'ao lpn');
+
+
+    subplot(6,1,2)
+    hold on 
+    plot(t, vals_series_q_mitral_scaled)
+    plot(t, vals_series_q_aorta_scaled)
+    plot(times_lpn, Q_ao)
+    xlim([0 max(times_lpn)])
+    legend('q mi exp', 'q ao exp', 'q ao lpn')
+
+
+    subplot(6,1,3)
+    plot(times_hill, two_hill_function(times_hill)); 
+
+
+    subplot(6,1,4)
+    plot(t, vals_ventricular_volume)
+    hold on 
+    plot(times_lpn, V_lv)
+    xlim([0 max(times_lpn)])
+    legend('V integrated', 'V lpn')
+
+    subplot(6,1,5);
+    plot(t, vals_series_activation_two_hill);
+    hold on 
+    plot(t, vals_series_activation);
+    xlim([0 max(times_lpn)])
+    legend('two hill', 'act from p lv')
+    title('act')
+
+    subplot(6,1,6)
+    plot(times_lpn, R_tanh)
+    xlim([0 max(times_lpn)])
+    title('r valve')
     
-else 
-    error('not implemented');
-end 
+    figure; 
+    hold on 
+    plot(V_lv, P_lv/MMHG_TO_CGS)
+    xlabel('V ml')
+    ylabel('P LV mmHg')
 
-    
-    
-R_av_closed = 100000;
-steepness_av = 0.00001; 
-
-
-[times_lpn, P_lv, Q_ao, P_ao, V_lv, R_tanh] = solve_lv_ao_lpn(dt_lpn, t_final, v_initial, Vrd, Vrs, Emax, Emin, ...
-                                     Series_q_mitral_scaled, Series_activation, ...
-                                     P_ao_initial, R_proximal, C, R_distal, r_av, R_av_closed, steepness_av);
-
-
-figure;
-subplot(6,1,1)
-plot(t, vals_series_pressure_lv)
-hold on 
-plot(t, vals_series_pressure_aorta)
-plot(times_lpn, P_lv/MMHG_TO_CGS); 
-plot(times_lpn, P_ao/MMHG_TO_CGS);
-xlim([0 max(times_lpn)])
-
-legend('lv exp', 'ao exp', 'lv lpn', 'ao lpn');
-
-
-subplot(6,1,2)
-hold on 
-plot(t, vals_series_q_mitral_scaled)
-plot(t, vals_series_q_aorta_scaled)
-plot(times_lpn, Q_ao)
-xlim([0 max(times_lpn)])
-legend('q mi exp', 'q ao exp', 'q ao lpn')
-
-
-subplot(6,1,3)
-plot(times_hill, two_hill_function(times_hill)); 
-
-
-subplot(6,1,4)
-plot(t, vals_ventricular_volume)
-hold on 
-plot(times_lpn, V_lv)
-xlim([0 max(times_lpn)])
-legend('V integrated', 'V lpn')
-
-subplot(6,1,5);
-plot(t, vals_series_activation_two_hill);
-hold on 
-plot(t, vals_series_activation);
-xlim([0 max(times_lpn)])
-legend('two hill', 'act from p lv')
-title('act')
-
-subplot(6,1,6)
-plot(times_lpn, R_tanh)
-xlim([0 max(times_lpn)])
-title('r valve')
-
-
-
-
-figure; 
-hold on 
-plot(V_lv, P_lv/MMHG_TO_CGS)
-xlabel('V ml')
-ylabel('P LV mmHg')
-
-
+end
 
 
 
