@@ -56,11 +56,7 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
                                                bool rcr_bcs_on,
                                                bool ventricle_0D_on, 
                                                bool P_initial_aorta_equal_to_ventricle,
-                                               double rcr_on_time,
-                                               int ventricle_axis = 0,
-                                               int ventricle_side = 1,
-                                               int aorta_axis = 2,
-                                               int aorta_side = 1)
+                                               double rcr_on_time)
     : 
       d_object_name("circ_model_aorta"),  // constant name here  
       d_registered_for_restart(true),      // always true
@@ -80,12 +76,7 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
       d_rcr_bcs_on(rcr_bcs_on), 
       d_ventricle_0D_on(ventricle_0D_on),
       d_P_initial_aorta_equal_to_ventricle(P_initial_aorta_equal_to_ventricle), 
-      d_rcr_on_time(rcr_on_time),
-      d_ventricle_axis(ventricle_axis), 
-      d_ventricle_side(ventricle_side),
-      d_aorta_axis(aorta_axis), 
-      d_aorta_side(aorta_side) 
-
+      d_rcr_on_time(rcr_on_time)
 {
     
     if (d_registered_for_restart)
@@ -137,42 +128,117 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
 
     ventricle_file >> d_n_pts_ventricle; 
     
-    d_ventricle_points_idx1 = new double[d_n_pts_ventricle]; 
-    d_ventricle_points_idx2 = new double[d_n_pts_ventricle]; 
+
+    double *ventricle_points_idx0 = new double[d_n_pts_ventricle];     
+    double *ventricle_points_idx1 = new double[d_n_pts_ventricle]; 
+    double *ventricle_points_idx2 = new double[d_n_pts_ventricle]; 
+
+    int coords_flat[3] = {1, 1, 1};
+    double x_prev, y_prev, z_prev;
 
     for (int i=0; i<d_n_pts_ventricle; i++){
-        if (d_ventricle_axis == 0){
-            ventricle_file >> coord_normal; 
-            ventricle_file >> d_ventricle_points_idx1[i]; 
-            ventricle_file >> d_ventricle_points_idx2[i];
-        }
-        else if (d_ventricle_axis == 1){
-            ventricle_file >> d_ventricle_points_idx1[i]; 
-            ventricle_file >> coord_normal; 
-            ventricle_file >> d_ventricle_points_idx2[i];
-        }
-        else if (d_ventricle_axis == 2){
-            ventricle_file >> d_ventricle_points_idx1[i]; 
-            ventricle_file >> d_ventricle_points_idx2[i];
-            ventricle_file >> coord_normal; 
-        }
-        else{
-            TBOX_ERROR("error in axis\n"); 
-        }
+
+        ventricle_file >> ventricle_points_idx0[i]; 
+        ventricle_file >> ventricle_points_idx1[i]; 
+        ventricle_file >> ventricle_points_idx2[i]; 
 
         if (i>0){
-            if (fabs(coord_normal_prev - coord_normal) > tol){
-                TBOX_ERROR("x coordinates must be consistent\n"); 
+            if (fabs(x_prev - ventricle_points_idx0[i]) > tol){
+                coords_flat[0] = 0;                
+            }
+            if (fabs(y_prev - ventricle_points_idx1[i]) > tol){
+                coords_flat[1] = 0;                
+            }
+            if (fabs(z_prev - ventricle_points_idx2[i]) > tol){
+                coords_flat[2] = 0;                
             }
         }
-        coord_normal_prev = coord_normal; 
+
+        x_prev = ventricle_points_idx0[i]; 
+        y_prev = ventricle_points_idx1[i]; 
+        z_prev = ventricle_points_idx2[i]; 
 
     }
+
+    if (coords_flat[0]){
+        
+        if (coords_flat[1] || coords_flat[2]){
+            TBOX_ERROR("More than one coordinate is flat");
+        }
+
+        d_ventricle_side = 0;
+
+        if (fabs(x_prev - input_db->getDouble("X_LOW")) < tol){
+            d_ventricle_axis = 0;
+        }
+        else if (fabs(x_prev - input_db->getDouble("X_HIGH")) < tol){
+            d_ventricle_axis = 1;
+        }
+        else{
+            TBOX_ERROR("Flat coodidinate not near boundary");
+        }
+
+        // gets y and z coords         
+        delete[] ventricle_points_idx0;
+        d_ventricle_points_idx1 = ventricle_points_idx1;
+        d_ventricle_points_idx2 = ventricle_points_idx2;
+
+    }
+    else if (coords_flat[1]){
+        if (coords_flat[0] || coords_flat[2]){
+            TBOX_ERROR("More than one coordinate is flat");
+        }
+
+        d_ventricle_side = 1;        
+
+        if (fabs(y_prev - input_db->getDouble("Y_LOW")) < tol){
+            d_ventricle_axis = 0;
+        }
+        else if (fabs(y_prev - input_db->getDouble("Y_HIGH")) < tol){
+            d_ventricle_axis = 1;
+        }
+        else{
+            TBOX_ERROR("Flat coodidinate not near boundary");
+        }
+
+        // gets x and z coords         
+        d_ventricle_points_idx1 = ventricle_points_idx0;
+        delete[] ventricle_points_idx1;
+        d_ventricle_points_idx2 = ventricle_points_idx2;        
+
+    }
+    else if (coords_flat[2]){
+        if (coords_flat[0] || coords_flat[1]){
+            TBOX_ERROR("More than one coordinate is flat");
+        }
+
+        d_ventricle_side = 2;        
+        
+        if (fabs(z_prev - input_db->getDouble("Z_LOW")) < tol){
+            d_ventricle_axis = 0;
+        }
+        else if (fabs(z_prev - input_db->getDouble("Z_HIGH")) < tol){
+            d_ventricle_axis     = 1;
+        }
+        else{
+            TBOX_ERROR("Flat coodidinate not near boundary");
+        }
+
+        // gets x and y coords         
+        d_ventricle_points_idx1 = ventricle_points_idx0;
+        d_ventricle_points_idx2 = ventricle_points_idx1;
+        delete[] ventricle_points_idx1;
+
+    }
+    else{
+        TBOX_ERROR("Flat coodidinate not found in boundary condition");
+    }
+
     pout << "to ventricle file close\n"; 
+    pout << "found d_ventricle_side = " << d_ventricle_side << ", d_ventricle_axis = " << d_ventricle_axis << "\n";
     ventricle_file.close(); 
-    // hardcode to top 
-    // d_ventricle_axis = 0; 
-    // d_ventricle_side = 1; 
+
+
 
     // read vertices from file 
     ifstream aorta_file(aorta_vertices_file_name.c_str(), ios::in);
@@ -183,41 +249,118 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
 
     aorta_file >> d_n_pts_aorta; 
     
-    d_aorta_points_idx1 = new double[d_n_pts_aorta]; 
-    d_aorta_points_idx2 = new double[d_n_pts_aorta]; 
+    double *aorta_points_idx0 = new double[d_n_pts_aorta];     
+    double *aorta_points_idx1 = new double[d_n_pts_aorta]; 
+    double *aorta_points_idx2 = new double[d_n_pts_aorta]; 
+
+    coords_flat[0] = 1; 
+    coords_flat[1] = 1; 
+    coords_flat[2] = 1; 
 
     for (int i=0; i<d_n_pts_aorta; i++){
-        if (d_aorta_axis == 0){
-            aorta_file >> coord_normal; 
-            aorta_file >> d_aorta_points_idx1[i]; 
-            aorta_file >> d_aorta_points_idx2[i];
-        }
-        else if (d_aorta_axis == 1){
-            aorta_file >> d_aorta_points_idx1[i]; 
-            aorta_file >> coord_normal; 
-            aorta_file >> d_aorta_points_idx2[i];
-        }
-        else if (d_aorta_axis == 2){
-            aorta_file >> d_aorta_points_idx1[i]; 
-            aorta_file >> d_aorta_points_idx2[i];
-            aorta_file >> coord_normal; 
-        }
-        else{
-            TBOX_ERROR("error in axis\n"); 
-        }
+
+        aorta_file >> aorta_points_idx0[i]; 
+        aorta_file >> aorta_points_idx1[i]; 
+        aorta_file >> aorta_points_idx2[i]; 
 
         if (i>0){
-            if (fabs(coord_normal_prev - coord_normal) > tol){
-                TBOX_ERROR("normal coordinates must be consistent\n"); 
+            if (fabs(x_prev - aorta_points_idx0[i]) > tol){
+                coords_flat[0] = 0;                
+            }
+            if (fabs(y_prev - aorta_points_idx1[i]) > tol){
+                coords_flat[1] = 0;                
+            }
+            if (fabs(z_prev - aorta_points_idx2[i]) > tol){
+                coords_flat[2] = 0;                
             }
         }
-        coord_normal_prev = coord_normal; 
+
+        x_prev = aorta_points_idx0[i]; 
+        y_prev = aorta_points_idx1[i]; 
+        z_prev = aorta_points_idx2[i]; 
 
     }
+
+    if (coords_flat[0]){
+        
+        if (coords_flat[1] || coords_flat[2]){
+            TBOX_ERROR("More than one coordinate is flat");
+        }
+
+        d_aorta_side = 0;
+
+        if (fabs(x_prev - input_db->getDouble("X_LOW")) < tol){
+            d_aorta_axis = 0;
+        }
+        else if (fabs(x_prev - input_db->getDouble("X_HIGH")) < tol){
+            d_aorta_axis = 1;
+        }
+        else{
+            TBOX_ERROR("Flat coodidinate not near boundary");
+        }
+
+        // gets y and z coords         
+        delete[] aorta_points_idx0;
+        d_aorta_points_idx1 = aorta_points_idx1;
+        d_aorta_points_idx2 = aorta_points_idx2;
+
+    }
+    else if (coords_flat[1]){
+        if (coords_flat[0] || coords_flat[2]){
+            TBOX_ERROR("More than one coordinate is flat");
+        }
+
+        d_aorta_side = 1;        
+
+        if (fabs(y_prev - input_db->getDouble("Y_LOW")) < tol){
+            d_aorta_axis = 0;
+        }
+        else if (fabs(y_prev - input_db->getDouble("Y_HIGH")) < tol){
+            d_aorta_axis = 1;
+        }
+        else{
+            TBOX_ERROR("Flat coodidinate not near boundary");
+        }
+
+        // gets x and z coords         
+        d_aorta_points_idx1 = aorta_points_idx0;
+        delete[] aorta_points_idx1;
+        d_aorta_points_idx2 = aorta_points_idx2;        
+
+    }
+    else if (coords_flat[2]){
+        if (coords_flat[0] || coords_flat[1]){
+            TBOX_ERROR("More than one coordinate is flat");
+        }
+
+        d_aorta_side = 2;        
+        
+        if (fabs(z_prev - input_db->getDouble("Z_LOW")) < tol){
+            d_aorta_axis = 0;
+        }
+        else if (fabs(z_prev - input_db->getDouble("Z_HIGH")) < tol){
+            d_aorta_axis     = 1;
+        }
+        else{
+            TBOX_ERROR("Flat coodidinate not near boundary");
+        }
+
+        // gets x and y coords         
+        d_aorta_points_idx1 = aorta_points_idx0;
+        d_aorta_points_idx2 = aorta_points_idx1;
+        delete[] aorta_points_idx1;
+
+    }
+    else{
+        TBOX_ERROR("Flat coodidinate not found in boundary condition");
+    }
+
+    pout << "to aorta file close\n"; 
+    pout << "found d_aorta_side = " << d_aorta_side << ", d_aorta_axis = " << d_aorta_axis << "\n";
+
     pout << "to aorta file close\n"; 
     aorta_file.close(); 
-    // d_aorta_axis = 2; 
-    // d_aorta_side = 1; 
+
 
     // misc scalars 
     if (!from_restart){
