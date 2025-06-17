@@ -314,11 +314,19 @@ if build_reference
             
             plots = false; 
             fig = figure; 
-            [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean]  = estimate_tangent_modulus_aortic_with_reference(valve_with_reference.leaflets(i), valve.normal_thickness, fig);
+            [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, ~, ...
+            stress_circ, stress_rad, stress_circ_mean, stress_rad_mean, k_u_stress_mean, k_v_stress_mean] ...
+                = estimate_tangent_modulus_aortic_with_reference(valve_with_reference.leaflets(i), valve.normal_thickness, fig);
             valve_with_reference.leaflets(i).sigma_circ = sigma_circ; 
             valve_with_reference.leaflets(i).sigma_rad = sigma_rad; 
             valve_with_reference.leaflets(i).sigma_circ_mean = sigma_circ_mean;  
-            valve_with_reference.leaflets(i).sigma_rad_mean = sigma_rad_mean; 
+            valve_with_reference.leaflets(i).sigma_rad_mean = sigma_rad_mean;                
+            valve_with_reference.leaflets(i).stress_circ = stress_circ; 
+            valve_with_reference.leaflets(i).stress_rad = stress_rad; 
+            valve_with_reference.leaflets(i).stress_circ_mean = stress_circ_mean;  
+            valve_with_reference.leaflets(i).stress_rad_mean = stress_rad_mean;                         
+            valve_with_reference.leaflets(i).k_u_stress_mean = k_u_stress_mean;  
+            valve_with_reference.leaflets(i).k_v_stress_mean = k_v_stress_mean; 
             sigma_circ_mean  
             sigma_rad_mean
             fprintf('\n')
