@@ -226,26 +226,6 @@ def get_hex_pair_list():
     return pairs
 
 
-# def get_cells(mesh):
-#     """Returns a list of the cells from this mesh.
-#     This properly unpacks the VTK cells array.
-#     There are many ways to do this, but this is
-#     safe when dealing with mixed cell types."""
-
-#     # source: 
-#     # https://github.com/pyvista/pyvista-support/issues/66
-
-#     mesh_unstructured = pyvista.UnstructuredGrid(mesh)
-
-#     offset = 0
-#     cells = []
-#     for i in range(mesh_unstructured.n_cells):
-#         loc = i + offset
-#         nc = mesh_unstructured.cells[loc]
-#         offset += nc
-#         cell = mesh_unstructured.cells[loc+1:loc+nc+1]
-#         cells.append(cell)
-#     return cells
 
 
 def process_mesh_to_vertex_spring_target(mesh, base_name_out, spring_strength_rel, target_strength, damping_strength=0.0, scaling=1.0, zero_springs=False):
