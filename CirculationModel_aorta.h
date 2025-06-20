@@ -113,11 +113,8 @@ public:
                                                bool rcr_bcs_on,
                                                bool ventricle_0D_on, 
                                                bool P_initial_aorta_equal_to_ventricle,
-                                               double rcr_on_time,
-                                               int ventricle_axis,
-                                               int ventricle_side,
-                                               int aorta_axis,
-                                               int aorta_side);  
+                                               double rcr_on_time);  
+
 
     /*!
      * \brief Destructor.

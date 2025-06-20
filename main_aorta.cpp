@@ -457,26 +457,6 @@ int main(int argc, char* argv[])
             bool P_initial_aorta_equal_to_ventricle = true; 
             // double rcr_on_time = 0.2; 
 
-            bool graft_version = input_db->getBoolWithDefault("GRAFT_VERSION", false); 
-
-            int ventricle_axis; 
-            int ventricle_side; 
-            int aorta_axis; 
-            int aorta_side; 
-
-            if (graft_version){
-                ventricle_axis = 2;
-                ventricle_side = 0;
-                aorta_axis = 2;
-                aorta_side = 1;
-            }
-            else{
-                ventricle_axis = 0;
-                ventricle_side = 1;
-                aorta_axis = 2;
-                aorta_side = 1;
-            }
-
             CirculationModel_aorta *circ_model_aorta = new CirculationModel_aorta(input_db,
                                                                              fourier_series_ventricle, 
                                                                              ventricle_vertices_file_name,
@@ -488,11 +468,7 @@ int main(int argc, char* argv[])
                                                                              rcr_bcs_on, 
                                                                              ventricle_0D_on,
                                                                              P_initial_aorta_equal_to_ventricle, 
-                                                                             rcr_on_time, 
-                                                                             ventricle_axis,
-                                                                             ventricle_side, 
-                                                                             aorta_axis,
-                                                                             aorta_side); 
+                                                                             rcr_on_time); 
 
             // Create Eulerian boundary condition specification objects.
             vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM);

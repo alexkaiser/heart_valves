@@ -1,4 +1,5 @@
-function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, stress_circ, stress_rad, stress_circ_mean, stress_rad_mean] ...
+function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, ...
+          stress_circ, stress_rad, stress_circ_mean, stress_rad_mean, k_u_stress_mean, k_v_stress_mean] ...
     = estimate_tangent_modulus_aortic_with_reference(leaflet, thickness, fig, fiber_stride, stride_offset_j, circ, rad, ratio, max_plot_cap, plot_stress)
     % estimates the tangent modulus for current strain 
     % 
@@ -55,6 +56,13 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, stress_ci
     % values of stress 
     stress_circ = zeros(j_max, k_max); 
     stress_rad  = zeros(j_max, k_max); 
+    
+    % coefficients in units of stress 
+    % note that orig coefficients have units of force 
+    % must divide by area element to obtain stress 
+    k_u_stress = zeros(j_max, k_max);
+    k_v_stress = zeros(j_max, k_max);
+    
     
     collagen_constitutive_circ = leaflet.collagen_constitutive_circ; 
     collagen_constitutive_rad  = leaflet.collagen_constitutive_rad; 
@@ -119,6 +127,8 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, stress_ci
     sigma_rad_surf_running = 0;
     stress_circ_surf_running = 0;
     stress_rad_surf_running = 0;
+    k_u_stress_surf_running = 0;
+    k_v_stress_surf_running = 0;
     leaflet_area_running = 0;
     
     
@@ -189,6 +199,8 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, stress_ci
                         stress_circ(j,k) = stress_circ(j,k) + tension / (len_element_u_type_temp * thickness);
                     end 
                     
+                    k_u_stress(j,k) = k_u_stress(j,k) + k_u(j_spr,k_spr) / (len_element_u_type_temp * thickness);
+                    
                     if one_leaflet 
                         if (j_nbr < j_min_plot) || (j_nbr > j_max_plot)
                             output_tmp_j = false; 
@@ -254,6 +266,8 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, stress_ci
                         stress_rad(j,k) = stress_rad(j,k) + tension / (len_element_v_type_temp * thickness);
                     end 
                     
+                    k_v_stress(j,k) = k_v_stress(j,k) + k_v(j_spr,k_spr) / (len_element_v_type_temp * thickness);
+                    
                     x_vals = [X(1), X_nbr(1)]; 
                     y_vals = [X(2), X_nbr(2)]; 
                     z_vals = [X(3), X_nbr(3)]; 
@@ -283,6 +297,8 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, stress_ci
                 stress_circ_surf_running = stress_circ_surf_running  + stress_circ(j,k) * area_local; 
                 sigma_rad_surf_running   = sigma_rad_surf_running    + sigma_rad(j,k)   * area_local; 
                 stress_rad_surf_running  = stress_rad_surf_running   + stress_rad(j,k)  * area_local; 
+                k_u_stress_surf_running  = k_u_stress_surf_running   + k_u_stress(j,k)  * area_local;
+                k_v_stress_surf_running  = k_v_stress_surf_running   + k_v_stress(j,k)  * area_local;
                 leaflet_area_running     = leaflet_area_running      +                    area_local;
             end 
             
@@ -314,6 +330,8 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, stress_ci
     sigma_rad_mean   = sigma_rad_surf_running   / leaflet_area;
     stress_circ_mean = stress_circ_surf_running / leaflet_area;
     stress_rad_mean  = stress_rad_surf_running  / leaflet_area;
+    k_u_stress_mean  = k_u_stress_surf_running  / leaflet_area;
+    k_v_stress_mean  = k_v_stress_surf_running  / leaflet_area;
     
     if plots
         

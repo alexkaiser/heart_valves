@@ -36,6 +36,10 @@ function cmap = make_colormap(len, extended, export_xml)
 
 try_number = 0; 
 
+if ~exist('export_xml', 'var')
+    export_xml = false; 
+end 
+
 if try_number == 1 
 
     hue = linspace(3/6,0,len)'; 
@@ -117,7 +121,7 @@ else
     value = ones(flat_value_length, 1); 
     value = [value; linspace(1,0,len - flat_value_length)']; 
     
-    hsv = [hue, saturation, value]
+    hsv = [hue, saturation, value];
     
     cmap = hsv2rgb(hsv);
 end 
@@ -139,7 +143,7 @@ if debug
 end 
 
 if export_xml 
-    f = fopen('colormap.xml', 'w')
+    f = fopen('colormap.xml', 'w');
     
     n_colors = size(cmap,1); 
     
