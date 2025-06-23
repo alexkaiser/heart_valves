@@ -457,7 +457,7 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
                         if (pgeom->getTouchesRegularBoundary(axis, side))
                         {
                             
-                            Vector n;
+                            IBTK::Vector n;
                             for (int d = 0; d < NDIM; ++d)
                             {
                                 n[d] = axis == d ? (is_lower ? -1.0 : +1.0) : 0.0;
