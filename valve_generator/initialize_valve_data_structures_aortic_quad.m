@@ -71,13 +71,14 @@ valve.name = name;
 
 variety= 'quad'; 
 valve.variety = variety; 
+N_leaflets = 4;
 
 % does not place partition
 valve.in_heart = true; 
 
 mri_box = false;
 
-graft_tester_geometry = true; 
+graft_tester_geometry = false; 
 dilate_graft = false; 
 dilation_dist = 0.0; 
 
@@ -227,10 +228,13 @@ valve.p_final_fixed_comm = 0.1 * MMHG_TO_CGS;
 
 valve.L = 2.25; 
 
-r_stj = 2.2/2; % 25 mm valve 
-r_temp = 2.2/2; % vbr radius
-hc = 0.5 * r_stj; 
-h1 = 1.4 * r_stj - hc; 
+r_stj = 2.5/2; % 25 mm valve 
+r_temp = 2.5/2; % vbr radius
+% keep same proportions of attachment 
+% add 
+comm_scaling = (1.5/1.75);
+hc = comm_scaling *  0.5 * r_stj; 
+h1 = comm_scaling * (1.4 * r_stj - 0.5 * r_stj); 
 r_commissure = r_stj; 
 % place the post only if not using the full annulus geometry 
 place_vertical_post = ~valve.annulus_to_comm;
@@ -272,8 +276,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 5.1;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.9;  % radial
+tension_coeffs.c_circ_dec       = 5.05;  % circumferential 
+tension_coeffs.c_rad_dec        = 1.53;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 3.0;
 
@@ -373,9 +377,9 @@ if valve.in_heart
         % function with unspecified power 
         % valve.z_max_cylinder = @(theta) h_top_scaffold_min * ones(size(theta))  +  h_top_scaffold_amplitude * abs(cos(theta)).^(p); 
 
-        cos_power = @(theta) h_top_scaffold_min * ones(size(theta)) + (0.05 + h_top_scaffold_max) * abs(cos(theta)).^(p); 
+        cos_power = @(theta) h_top_scaffold_min * ones(size(theta)) + (0.05 + h_top_scaffold_max) * abs(cos((N_leaflets/2) * theta)).^(p); 
         
-        annulus_min_fn = @(theta) h_top_scaffold_max * interp1(valve.annulus_flattened_normalized(:,1), valve.annulus_flattened_normalized(:,2), mod(theta,pi)/pi, 'pchip'); 
+        annulus_min_fn = @(theta) h_top_scaffold_max * interp1(valve.annulus_flattened_normalized(:,1), valve.annulus_flattened_normalized(:,2), mod(theta,2*pi/N_leaflets)/(2*pi/N_leaflets), 'pchip'); 
         
         h_top_min_adjust = @(theta) h_top_scaffold_min * ones(size(theta));
         
