@@ -45,6 +45,13 @@ if isfield(leaflet, 'variety') && strcmp(leaflet.variety, 'bicuspid')
 elseif isfield(leaflet, 'variety') && strcmp(leaflet.variety, 'quad') 
     N_each = N/4; 
     N_leaflets = 4;     
+elseif isfield(leaflet, 'variety') && strcmp(leaflet.variety, 'pent') 
+    % divide by (about) five but make sure it is even 
+    if mod(N,5) ~= 0
+        error('pentaleaflet requires multiple of 5');
+    end         
+    N_each = N/5;
+    N_leaflets = 5;     
 else 
     % number for each leaflet 
     N_each = N/3; 
