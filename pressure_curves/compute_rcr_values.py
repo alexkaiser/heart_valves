@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 debug = True
 
-def compute_rcr_parameters(P_min, P_max, P_mean, Q_mean, ratio_prox_to_distal_resistors, decay_time, C_prefactor=1.0):
+def compute_rcr_parameters(P_min, P_max_diastolic, P_mean, Q_mean, ratio_prox_to_distal_resistors, decay_time, C_prefactor=1.0):
 
     tol = 1e-14
 
@@ -19,7 +19,7 @@ def compute_rcr_parameters(P_min, P_max, P_mean, Q_mean, ratio_prox_to_distal_re
     assert abs(R_distal + R_proximal - R_total) < tol 
 
     # timescale for pressure decrease during aortic valve closure 
-    C = -C_prefactor * decay_time / (R_distal * np.log(P_min/P_max))
+    C = -C_prefactor * decay_time / (R_distal * np.log(P_min/P_max_diastolic))
 
     return R_proximal, C, R_distal, R_total
 
@@ -55,7 +55,7 @@ if __name__== "__main__":
         print ("systolic_time_fraction = ", systolic_time_fraction)
 
         P_systolic = 120.0
-        P_max = 100.0
+        P_max_diastolic = 100.0
         P_min = 80.0
 
         P_diastolic_mean = P_min # 0.5 * (P_systolic + P_min)
@@ -68,12 +68,12 @@ if __name__== "__main__":
         if high_pressure: 
             P_mean *= 2 
             P_min *= 2
-            P_max = P_min + 2*20 
+            P_max_diastolic = P_min + 2*20 
 
         if low_pressure: 
             P_mean *= 0.5 
             P_min *= 0.5
-            P_max = P_min + 0.5*20 
+            P_max_diastolic = P_min + 0.5*20 
 
         # P_mean = 1.0433437500000039e+02
         
@@ -88,7 +88,7 @@ if __name__== "__main__":
 
         C_prefactor = 1.0
 
-        R_p_mmHg, C_mmHg, R_d_mmHg, R_total_mmHg = compute_rcr_parameters(P_min, P_max, P_mean, Q_mean, ratio_prox_to_distal_resistors, decay_time, C_prefactor)
+        R_p_mmHg, C_mmHg, R_d_mmHg, R_total_mmHg = compute_rcr_parameters(P_min, P_max_diastolic, P_mean, Q_mean, ratio_prox_to_distal_resistors, decay_time, C_prefactor)
 
         name = 'aorta'
 
@@ -97,10 +97,10 @@ if __name__== "__main__":
         print ("\n\n\n")
 
         P_min *= MMHG_TO_CGS
-        P_max *= MMHG_TO_CGS
+        P_max_diastolic *= MMHG_TO_CGS
         P_mean *= MMHG_TO_CGS
 
-        R_p, C, R_d, R_total = compute_rcr_parameters(P_min, P_max, P_mean, Q_mean, ratio_prox_to_distal_resistors, decay_time, C_prefactor)
+        R_p, C, R_d, R_total = compute_rcr_parameters(P_min, P_max_diastolic, P_mean, Q_mean, ratio_prox_to_distal_resistors, decay_time, C_prefactor)
 
         print ("Values CGS")
         print (name, ",\t", R_p, ",\t", C, ",\t", R_d, ",\t", R_total)
@@ -127,7 +127,7 @@ if __name__== "__main__":
         # print ("diastolic_time_fraction = ", diastolic_time_fraction)
         # print ("systolic_time_fraction = ", systolic_time_fraction)
 
-        P_max = 2.081957761631667
+        P_max_diastolic = 2.081957761631667
         P_min = 0.834874912254971
         P_mean = 1.391159596104874
 
@@ -144,7 +144,7 @@ if __name__== "__main__":
 
         C_prefactor = 1.0
 
-        R_p_mmHg, C_mmHg, R_d_mmHg, R_total_mmHg = compute_rcr_parameters(P_min, P_max, P_mean, Q_mean, ratio_prox_to_distal_resistors, decay_time, C_prefactor)
+        R_p_mmHg, C_mmHg, R_d_mmHg, R_total_mmHg = compute_rcr_parameters(P_min, P_max_diastolic, P_mean, Q_mean, ratio_prox_to_distal_resistors, decay_time, C_prefactor)
 
         name = 'aorta'
 
@@ -153,10 +153,10 @@ if __name__== "__main__":
         print ("\n\n\n")
 
         P_min *= MMHG_TO_CGS
-        P_max *= MMHG_TO_CGS
+        P_max_diastolic *= MMHG_TO_CGS
         P_mean *= MMHG_TO_CGS
 
-        R_p, C, R_d, R_total = compute_rcr_parameters(P_min, P_max, P_mean, Q_mean, ratio_prox_to_distal_resistors, decay_time, C_prefactor)
+        R_p, C, R_d, R_total = compute_rcr_parameters(P_min, P_max_diastolic, P_mean, Q_mean, ratio_prox_to_distal_resistors, decay_time, C_prefactor)
 
         print ("Values CGS")
         print (name, ",\t", R_p, ",\t", C, ",\t", R_d, ",\t", R_total)
