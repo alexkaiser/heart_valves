@@ -148,6 +148,7 @@ public:
 
     // basic data summary to stdout 
     void print_summary(); 
+    void print_bc_debug();
 
     int point_in_ventricle(double testx, double testy, int axis, int side);
     int point_in_aorta(double testx, double testy, int axis, int side);
