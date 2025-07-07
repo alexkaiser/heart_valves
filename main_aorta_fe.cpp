@@ -204,21 +204,25 @@ int main(int argc, char** argv)
 
         // std::vector<std::unique_ptr<libMesh::MeshBase> > mesh_vector;
         std::vector<libMesh::MeshBase*> mesh_ptrs;
+        std::vector<std::string> part_names;
 
         Mesh mesh_vessel(init.comm(), NDIM);
         mesh_vessel.read(input_db->getString("MESH_VESSEL"));
         mesh_vessel.prepare_for_use();
         mesh_ptrs.emplace_back(&mesh_vessel);
+        part_names.emplace_back(input_db->getString("MESH_VESSEL"));
 
         Mesh mesh_scaffold(init.comm(), NDIM);
         mesh_scaffold.read(input_db->getString("MESH_SCAFFOLD"));
         mesh_scaffold.prepare_for_use();
         mesh_ptrs.emplace_back(&mesh_scaffold);
+        part_names.emplace_back(input_db->getString("MESH_SCAFFOLD"));
 
         Mesh mesh_valve(init.comm(), NDIM);
         mesh_valve.read(input_db->getString("MESH_VALVE"));
         mesh_valve.prepare_for_use();
         mesh_ptrs.emplace_back(&mesh_valve);
+        part_names.emplace_back(input_db->getString("MESH_VALVE"));
 
         // Create major algorithm and data objects that comprise the
         // application.  These objects are configured from the input database
@@ -382,6 +386,13 @@ int main(int argc, char** argv)
             time_integrator->registerVisItDataWriter(visit_data_writer);
         }
         // std::unique_ptr<ExodusII_IO> exodus_io(uses_exodus ? new ExodusII_IO(mesh) : NULL);
+        // set up exodus II IO objects for each part
+        std::vector<std::unique_ptr<ExodusII_IO> > exodus_io_vector;
+        for(auto mesh_pt : mesh_ptrs)
+        {
+            exodus_io_vector.emplace_back(uses_exodus ? new ExodusII_IO(*mesh_pt) : nullptr);
+        }
+
 
         // Initialize hierarchy configuration and data on all patches.
         ib_method_ops->initializeFEData();
@@ -411,6 +422,10 @@ int main(int argc, char** argv)
                 if (ib_post_processor) ib_post_processor->postProcessData(loop_time);
                 // exodus_io->write_timestep(
                 //     exodus_filename, *equation_systems, iteration_num / viz_dump_interval + 1, loop_time);
+                for(int io_idx=0; io_idx<exodus_io_vector.size(); io_idx++)
+                {
+                    exodus_io_vector[io_idx]->write_timestep(part_names[io_idx], *equation_systems, iteration_num / viz_dump_interval + 1, loop_time);
+                }
             }
         }
 
@@ -470,6 +485,10 @@ int main(int argc, char** argv)
                     if (ib_post_processor) ib_post_processor->postProcessData(loop_time);
                     // exodus_io->write_timestep(
                     //     exodus_filename, *equation_systems, iteration_num / viz_dump_interval + 1, loop_time);
+                    for(int io_idx=0; io_idx<exodus_io_vector.size(); io_idx++)
+                    {
+                        exodus_io_vector[io_idx]->write_timestep(part_names[io_idx], *equation_systems, iteration_num / viz_dump_interval + 1, loop_time);
+                    }
                 }
             }
             if (dump_restart_data && (iteration_num % restart_dump_interval == 0 || last_step))
