@@ -152,7 +152,7 @@ valve.annulus_flattened_normalized = [
 
 valve.normal_thicken = true; 
 % nominal aortic valve thickness
-valve.normal_thickness = 0.044 * (384/N); 
+valve.normal_thickness = 0.044; % * (384/N); 
 
 valve.extrusion_out = true;
 
