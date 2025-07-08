@@ -60,10 +60,23 @@
 // Set up application namespace declarations
 #include <ibamr/app_namespaces.h>
 #include <timing.h>
+#include <boundary_condition_util.h>
+#include <CirculationModel.h>
+#include <CirculationModel_with_lv.h>
+#include <CirculationModel_aorta.h>
+#include <FeedbackForcer.h>
+#include <FourierBodyForce.h>
 
 #define NDIM 3 
 
 // #define DEBUG_ELASTICITY 
+
+#define USE_CIRC_MODEL_AORTA
+
+#define MMHG_TO_CGS 1333.22368
+#define CGS_TO_MMHG 0.000750061683
+#define MPa_TO_CGS 1.0e7
+
 
 // Elasticity model data.
 namespace ModelData
@@ -121,13 +134,29 @@ namespace ModelData
 
         PP.zero();
 
-        double beta_s = 1e4;
+        double beta_s = 1e6;
 
         // W(J) = 0.5 * beta_s * (J - 1)^2
         PP += beta_s * J * (J - 1.0) * FF_inv_trans;
 
         return;
     } // PK1_dil_stress_function
+
+    // Tether (penalty) force functions for lower and upper blocks.
+    double kappa_s = 1.0e6;
+    void tether_force_function(VectorValue<double>& F,
+                                const TensorValue<double>& /*FF*/,
+                                const libMesh::Point& X,
+                                const libMesh::Point& s,
+                                Elem* const /*elem*/,
+                                const vector<const vector<double>*>& /*var_data*/,
+                                const vector<const vector<VectorValue<double> >*>& /*grad_var_data*/,
+                                double /*time*/,
+                                void* /*ctx*/)
+    {
+        F = kappa_s * (s - X);
+        return;
+    } // tether_force_function
 }
 using namespace ModelData;
 
@@ -162,13 +191,48 @@ int main(int argc, char** argv)
 
     { // cleanup dynamically allocated objects prior to shutdown
 
+        // time step used in various places throughout 
+        double dt; 
+        
+        // make some timers
+        timestamp_type time1_total, time2_total;    // For total time
+        timestamp_type time1, time2;                // For step time
+        get_timestamp(&time1_total);                // Get initialization time too
+
         // Parse command line options, set some standard options from the input
         // file, initialize the restart database (if this is a restarted run),
         // and enable file logging.
         Pointer<AppInitializer> app_initializer = new AppInitializer(argc, argv, "IB.log");
         Pointer<Database> input_db = app_initializer->getInputDatabase();
 
-        timestamp_type time1, time2;                // For step time
+        // check if have a restarted run 
+        string restart_read_dirname;
+        // int restore_num = 0;
+        bool from_restart = false;
+        if (argc >= 4)
+        {
+            // Check whether this appears to be a restarted run.
+            FILE* fstream = (SAMRAI_MPI::getRank() == 0 ? fopen(argv[2], "r") : NULL);
+            if (SAMRAI_MPI::bcast(fstream != NULL ? 1 : 0, 0) == 1)
+            {
+                restart_read_dirname = argv[2];
+                // restore_num = atoi(argv[3]);
+                from_restart = true;
+            }
+            if (fstream != NULL)
+            {
+                fclose(fstream);
+            }
+        }
+
+        int n_restarts_written = 0;
+        int max_restart_to_write = 20;
+        if (input_db->keyExists("MAX_RESTART_TO_WRITE")){
+            max_restart_to_write = input_db->getInteger("MAX_RESTART_TO_WRITE");
+        }
+
+
+        // timestamp_type time1, time2;                // For step time
         double step_time; 
 
         // Get various standard options set in the input file.
@@ -212,17 +276,17 @@ int main(int argc, char** argv)
         mesh_ptrs.emplace_back(&mesh_vessel);
         part_names.emplace_back(input_db->getString("MESH_VESSEL"));
 
-        Mesh mesh_scaffold(init.comm(), NDIM);
-        mesh_scaffold.read(input_db->getString("MESH_SCAFFOLD"));
-        mesh_scaffold.prepare_for_use();
-        mesh_ptrs.emplace_back(&mesh_scaffold);
-        part_names.emplace_back(input_db->getString("MESH_SCAFFOLD"));
+        // Mesh mesh_scaffold(init.comm(), NDIM);
+        // mesh_scaffold.read(input_db->getString("MESH_SCAFFOLD"));
+        // mesh_scaffold.prepare_for_use();
+        // mesh_ptrs.emplace_back(&mesh_scaffold);
+        // part_names.emplace_back(input_db->getString("MESH_SCAFFOLD"));
 
-        Mesh mesh_valve(init.comm(), NDIM);
-        mesh_valve.read(input_db->getString("MESH_VALVE"));
-        mesh_valve.prepare_for_use();
-        mesh_ptrs.emplace_back(&mesh_valve);
-        part_names.emplace_back(input_db->getString("MESH_VALVE"));
+        // Mesh mesh_valve(init.comm(), NDIM);
+        // mesh_valve.read(input_db->getString("MESH_VALVE"));
+        // mesh_valve.prepare_for_use();
+        // mesh_ptrs.emplace_back(&mesh_valve);
+        // part_names.emplace_back(input_db->getString("MESH_VALVE"));
 
         // Create major algorithm and data objects that comprise the
         // application.  These objects are configured from the input database
@@ -276,12 +340,23 @@ int main(int argc, char** argv)
         // Configure the IBFE solver.
         IBFEMethod::PK1StressFcnData PK1_dev_stress_data(PK1_dev_stress_function);
         IBFEMethod::PK1StressFcnData PK1_dil_stress_data(PK1_dil_stress_function);
+
+        // added tether 
+        IBFEMethod::LagBodyForceFcnData tether_force_data(tether_force_function);
+        ib_method_ops->registerLagBodyForceFunction(tether_force_data, 0);
+
         PK1_dev_stress_data.quad_order =
             Utility::string_to_enum<libMesh::Order>(input_db->getStringWithDefault("PK1_DEV_QUAD_ORDER", "THIRD"));
         PK1_dil_stress_data.quad_order =
             Utility::string_to_enum<libMesh::Order>(input_db->getStringWithDefault("PK1_DIL_QUAD_ORDER", "FIRST"));
-        ib_method_ops->registerPK1StressFunction(PK1_dev_stress_data);
-        ib_method_ops->registerPK1StressFunction(PK1_dil_stress_data);
+        
+        // added part here 
+        ib_method_ops->registerPK1StressFunction(PK1_dev_stress_data, 0);
+        ib_method_ops->registerPK1StressFunction(PK1_dil_stress_data, 0);
+
+        // added tether 
+        ib_method_ops->registerLagBodyForceFunction(tether_force_data, 0);
+
         if (input_db->getBoolWithDefault("ELIMINATE_PRESSURE_JUMPS", false))
         {
             ib_method_ops->registerStressNormalizationPart();
@@ -328,6 +403,8 @@ int main(int argc, char** argv)
         ib_post_processor->registerInterpolatedScalarEulerianVariable(
             "p_f", LAGRANGE, FIRST, p_var, p_current_ctx, p_ghostfill, p_interp_spec);
 
+        pout << "to boundary and initial condition creation\n" ; 
+
         // Create Eulerian initial condition specification objects.
         if (input_db->keyExists("VelocityInitialConditions"))
         {
@@ -343,41 +420,188 @@ int main(int argc, char** argv)
             navier_stokes_integrator->registerPressureInitialConditions(p_init);
         }
 
-        // Create Eulerian boundary condition specification objects (when necessary).
-        const IntVector<NDIM>& periodic_shift = grid_geometry->getPeriodicShift();
-        vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM);
-        if (periodic_shift.min() > 0)
-        {
-            for (unsigned int d = 0; d < NDIM; ++d)
-            {
-                u_bc_coefs[d] = NULL;
+        // This is needed to pull variables later
+        VariableDatabase<NDIM>* var_db = VariableDatabase<NDIM>::getDatabase();
+
+        #ifndef USE_CIRC_MODEL_AORTA
+            // Create Eulerian boundary condition specification objects (when necessary).
+            vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM, static_cast<RobinBcCoefStrategy<NDIM>*>(NULL));        
+            const bool periodic_domain = grid_geometry->getPeriodicShift().min() > 0;
+            if (!periodic_domain)
+            {   
+                pout << "Using b.c. from file, no series for boundary conditions (body force may still have series).\n";
+                for (unsigned int d = 0; d < NDIM; ++d)
+                {
+                    ostringstream bc_coefs_name_stream;
+                    bc_coefs_name_stream << "u_bc_coefs_" << d;
+                    const string bc_coefs_name = bc_coefs_name_stream.str();
+                    ostringstream bc_coefs_db_name_stream;
+                    bc_coefs_db_name_stream << "VelocityBcCoefs_" << d;
+                    const string bc_coefs_db_name = bc_coefs_db_name_stream.str();
+                    u_bc_coefs[d] = new muParserRobinBcCoefs(
+                        bc_coefs_name, app_initializer->getComponentDatabase(bc_coefs_db_name), grid_geometry);
+                }
+                navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
+             
+                if (solver_type == "STAGGERED" && input_db->keyExists("BoundaryStabilization"))
+                {
+                    time_integrator->registerBodyForceFunction(new StaggeredStokesOpenBoundaryStabilizer(
+                        "BoundaryStabilization",
+                        app_initializer->getComponentDatabase("BoundaryStabilization"),
+                        navier_stokes_integrator,
+                        grid_geometry));
+                }
             }
-        }
-        else
-        {
-            for (unsigned int d = 0; d < NDIM; ++d)
+        #endif
+
+
+        #ifdef USE_CIRC_MODEL_AORTA
+
+            bool damping_outside = true; 
+             
+            dt = input_db->getDouble("DT");
+
+            // End systolic / beginning diastolic PA pressure
+            double P_aorta_0;
+            if (input_db->keyExists("P_aorta_0_MMHG")){
+                P_aorta_0 = input_db->getDouble("P_aorta_0_MMHG") * MMHG_TO_CGS;
+            }
+            else{
+                P_aorta_0 = 100.0 * MMHG_TO_CGS;
+            }
+
+            std::string fourier_coeffs_name_rv; 
+            if (input_db->keyExists("FOURIER_COEFFS_FILENAME_VENTRICLE")){
+                fourier_coeffs_name_rv = input_db->getString("FOURIER_COEFFS_FILENAME_VENTRICLE");
+            }
+            else {
+                fourier_coeffs_name_rv = "fourier_coeffs_ventricle.txt"; 
+            }
+            pout << "attempting to build series with from file: " << fourier_coeffs_name_rv << "\n"; 
+            fourier_series_data *fourier_series_ventricle = new fourier_series_data(fourier_coeffs_name_rv.c_str(), dt);
+
+            // boundary vertex files 
+            std::string ventricle_vertices_file_name; 
+            if (input_db->keyExists("BOUNDARY_FILENAME_VENTRICLE")){
+                ventricle_vertices_file_name = input_db->getString("BOUNDARY_FILENAME_VENTRICLE");
+            }
+            else {
+                ventricle_vertices_file_name = "ventricle_bdry.vertex"; 
+            }
+
+            std::string aorta_vertices_file_name; 
+            if (input_db->keyExists("BOUNDARY_FILENAME_AORTA")){
+                aorta_vertices_file_name = input_db->getString("BOUNDARY_FILENAME_AORTA");
+            }
+            else {
+                aorta_vertices_file_name = "aorta_bdry.vertex"; 
+            }
+
+            std::string vessel_file_name; 
+            if (input_db->keyExists("VESSEL_FILENAME")){
+                vessel_file_name = input_db->getString("VESSEL_FILENAME");
+            }
+            else {
+                pout << "VESSEL_FILENAME not found, damping_outside vessel is off\n"; 
+                damping_outside = false; 
+                vessel_file_name = ""; 
+            }
+
+            // scaled cycle length for this patient 
+            double t_cycle_length = input_db->getDouble("CYCLE_DURATION");
+
+            // start this far into the Fourier series 
+            double t_offset_start_bcs_unscaled; 
+            if (input_db->keyExists("T_OFFSET_START_BCS_UNSCALED"))
             {
-                ostringstream bc_coefs_name_stream;
-                bc_coefs_name_stream << "u_bc_coefs_" << d;
-                const string bc_coefs_name = bc_coefs_name_stream.str();
+                t_offset_start_bcs_unscaled = input_db->getDouble("T_OFFSET_START_BCS_UNSCALED"); // starts this 
+            }
+            else {
+                t_offset_start_bcs_unscaled = 0.0; 
+            }
 
-                ostringstream bc_coefs_db_name_stream;
-                bc_coefs_db_name_stream << "VelocityBcCoefs_" << d;
-                const string bc_coefs_db_name = bc_coefs_db_name_stream.str();
+            double rcr_on_time; 
+            if (input_db->keyExists("RCR_ON_TIME")){
+                rcr_on_time = input_db->getDouble("RCR_ON_TIME"); // starts this 
+            }
+            else {
+                rcr_on_time = 0.2; 
+            }
 
-                u_bc_coefs[d] = new muParserRobinBcCoefs(
-                    bc_coefs_name, app_initializer->getComponentDatabase(bc_coefs_db_name), grid_geometry);
+            // start in physical time with relation to Fourier series 
+            double t_offeset_start = t_offset_start_bcs_unscaled * (t_cycle_length / fourier_series_ventricle->L);
+
+            bool rcr_bcs_on = true;
+
+            bool ventricle_0D_on = input_db->getBoolWithDefault("VENTRICLE_0D_ON", false);
+
+            // start with a linear ramp up in pressure 
+            bool P_initial_aorta_equal_to_ventricle = true; 
+            // double rcr_on_time = 0.2; 
+
+            CirculationModel_aorta *circ_model_aorta = new CirculationModel_aorta(input_db,
+                                                                             fourier_series_ventricle, 
+                                                                             ventricle_vertices_file_name,
+                                                                             aorta_vertices_file_name,
+                                                                             t_cycle_length,
+                                                                             t_offset_start_bcs_unscaled, 
+                                                                             time_integrator->getIntegratorTime(), 
+                                                                             P_aorta_0,
+                                                                             rcr_bcs_on, 
+                                                                             ventricle_0D_on,
+                                                                             P_initial_aorta_equal_to_ventricle, 
+                                                                             rcr_on_time); 
+
+            // Create Eulerian boundary condition specification objects.
+            vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM);
+            for (int d = 0; d < NDIM; ++d){
+                u_bc_coefs[d] = new VelocityBcCoefs_aorta(d, circ_model_aorta);
             }
             navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
-        }
+
+            // flow straightener at boundary 
+            Pointer<FeedbackForcer> feedback_forcer = new FeedbackForcer(navier_stokes_integrator, patch_hierarchy, NULL, NULL, circ_model_aorta, damping_outside, vessel_file_name, aorta_vertices_file_name);
+            time_integrator->registerBodyForceFunction(feedback_forcer);
+
+
+        #endif // #ifdef USE_CIRC_MODEL_AORTA
+
+
+        // // Create Eulerian boundary condition specification objects (when necessary).
+        // const IntVector<NDIM>& periodic_shift = grid_geometry->getPeriodicShift();
+        // vector<RobinBcCoefStrategy<NDIM>*> u_bc_coefs(NDIM);
+        // if (periodic_shift.min() > 0)
+        // {
+        //     for (unsigned int d = 0; d < NDIM; ++d)
+        //     {
+        //         u_bc_coefs[d] = NULL;
+        //     }
+        // }
+        // else
+        // {
+        //     for (unsigned int d = 0; d < NDIM; ++d)
+        //     {
+        //         ostringstream bc_coefs_name_stream;
+        //         bc_coefs_name_stream << "u_bc_coefs_" << d;
+        //         const string bc_coefs_name = bc_coefs_name_stream.str();
+
+        //         ostringstream bc_coefs_db_name_stream;
+        //         bc_coefs_db_name_stream << "VelocityBcCoefs_" << d;
+        //         const string bc_coefs_db_name = bc_coefs_db_name_stream.str();
+
+        //         u_bc_coefs[d] = new muParserRobinBcCoefs(
+        //             bc_coefs_name, app_initializer->getComponentDatabase(bc_coefs_db_name), grid_geometry);
+        //     }
+        //     navier_stokes_integrator->registerPhysicalBoundaryConditions(u_bc_coefs);
+        // }
 
         // Create Eulerian body force function specification objects.
-        if (input_db->keyExists("ForcingFunction"))
-        {
-            Pointer<CartGridFunction> f_fcn = new muParserCartGridFunction(
-                "f_fcn", app_initializer->getComponentDatabase("ForcingFunction"), grid_geometry);
-            time_integrator->registerBodyForceFunction(f_fcn);
-        }
+        // if (input_db->keyExists("ForcingFunction"))
+        // {
+        //     Pointer<CartGridFunction> f_fcn = new muParserCartGridFunction(
+        //         "f_fcn", app_initializer->getComponentDatabase("ForcingFunction"), grid_geometry);
+        //     time_integrator->registerBodyForceFunction(f_fcn);
+        // }
 
         // Set up visualization plot file writers.
         Pointer<VisItDataWriter<NDIM> > visit_data_writer = app_initializer->getVisItDataWriter();
@@ -397,7 +621,9 @@ int main(int argc, char** argv)
         // Initialize hierarchy configuration and data on all patches.
         ib_method_ops->initializeFEData();
         if (ib_post_processor) ib_post_processor->initializeFEData();
+        pout << "before initializePatchHierarchy\n" ; 
         time_integrator->initializePatchHierarchy(patch_hierarchy, gridding_algorithm);
+        pout << "passed initializePatchHierarchy\n" ; 
 
         // Deallocate initialization objects.
         app_initializer.setNull();
@@ -429,16 +655,25 @@ int main(int argc, char** argv)
             }
         }
 
-        // Open streams to save volume of structure.
-        ofstream volume_stream;
-        if (SAMRAI_MPI::getRank() == 0)
-        {
-            volume_stream.open("volume.curve", ios_base::out | ios_base::trunc);
-        }
+        // // Open streams to save volume of structure.
+        // ofstream volume_stream;
+        // if (SAMRAI_MPI::getRank() == 0)
+        // {
+        //     volume_stream.open("volume.curve", ios_base::out | ios_base::trunc);
+        // }
 
         // Main time step loop.
         double loop_time_end = time_integrator->getEndTime();
-        double dt = 0.0;
+        // double dt = 0.0;
+
+        get_timestamp(&time2_total);
+        double total_init_time = timestamp_diff_in_seconds(time1_total, time2_total);
+        pout << "\n\nTotal initialization time = " << total_init_time << "\n\n"; 
+        
+        // add some timers         
+        get_timestamp(&time1_total); 
+        // double step_time; 
+
         while (!MathUtilities<double>::equalEps(loop_time, loop_time_end) && time_integrator->stepsRemaining())
         {
 
@@ -491,6 +726,22 @@ int main(int argc, char** argv)
                     }
                 }
             }
+
+            // Update the circulation model if used 
+            #ifdef USE_CIRC_MODEL_AORTA
+                {
+                    Pointer<hier::Variable<NDIM> > U_var = navier_stokes_integrator->getVelocityVariable();
+                    Pointer<hier::Variable<NDIM> > P_var = navier_stokes_integrator->getPressureVariable();
+                    Pointer<VariableContext> current_ctx = navier_stokes_integrator->getCurrentContext();
+                    const int U_current_idx = var_db->mapVariableAndContextToIndex(U_var, current_ctx);
+                    const int P_current_idx = var_db->mapVariableAndContextToIndex(P_var, current_ctx);
+                    Pointer<HierarchyMathOps> hier_math_ops = navier_stokes_integrator->getHierarchyMathOps();
+                    const int wgt_cc_idx = hier_math_ops->getCellWeightPatchDescriptorIndex();
+                    const int wgt_sc_idx = hier_math_ops->getSideWeightPatchDescriptorIndex();
+                    circ_model_aorta->advanceTimeDependentData(dt, patch_hierarchy, U_current_idx, P_current_idx, wgt_cc_idx, wgt_sc_idx);
+                }
+            #endif
+
             if (dump_restart_data && (iteration_num % restart_dump_interval == 0 || last_step))
             {
                 pout << "\nWriting restart files...\n\n";
@@ -514,10 +765,25 @@ int main(int argc, char** argv)
 
         } 
 
+        get_timestamp(&time2_total); 
+        double total_time = timestamp_diff_in_seconds(time1_total, time2_total); 
+        double average_time = total_time / ((double) iteration_num); 
+        
+        pout << "total run time = " << total_time << " s. \n" ; 
+        pout << "average run time = " << average_time << " s. \n" ;
+                
+        #ifdef USE_CIRC_MODEL_AORTA
+            circ_model_aorta->write_plot_code(); 
+        #endif 
+
         // Close the logging streams.
         if (SAMRAI_MPI::getRank() == 0)
         {
-            volume_stream.close();
+            // volume_stream.close();
+            std::ofstream done_stream;
+            done_stream.open("done.txt", ios_base::out | ios_base::trunc);
+            done_stream << "done\n" ;
+            done_stream.close(); 
         }
 
         // Cleanup Eulerian boundary condition specification objects (when
@@ -527,7 +793,8 @@ int main(int argc, char** argv)
     } // cleanup dynamically allocated objects prior to shutdown
 
     SAMRAIManager::shutdown();
-    return 1;
+    PetscFinalize();
+    return 0;
 } // run_example
 
 void
