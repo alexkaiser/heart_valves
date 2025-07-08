@@ -166,16 +166,16 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
             TBOX_ERROR("More than one coordinate is flat");
         }
 
-        d_ventricle_side = 0;
+        d_ventricle_axis = 0;
 
         // checks whether in quarter of domain in normal direction 
         double tol_domain_x = (input_db->getDouble("X_HIGH") - input_db->getDouble("X_LOW"))/4.0;
 
         if (fabs(x_prev - input_db->getDouble("X_LOW")) < tol_domain_x){
-            d_ventricle_axis = 0;
+            d_ventricle_side = 0;
         }
         else if (fabs(x_prev - input_db->getDouble("X_HIGH")) < tol_domain_x){
-            d_ventricle_axis = 1;
+            d_ventricle_side = 1;
         }
         else{
             TBOX_ERROR("Flat coodidinate not near boundary");
@@ -192,16 +192,16 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
             TBOX_ERROR("More than one coordinate is flat");
         }
 
-        d_ventricle_side = 1;        
+        d_ventricle_axis = 1;        
 
         // checks whether in quarter of domain in normal direction 
         double tol_domain_y = (input_db->getDouble("Y_HIGH") - input_db->getDouble("Y_LOW"))/4.0;
 
         if (fabs(y_prev - input_db->getDouble("Y_LOW")) < tol_domain_y){
-            d_ventricle_axis = 0;
+            d_ventricle_side = 0;
         }
         else if (fabs(y_prev - input_db->getDouble("Y_HIGH")) < tol_domain_y){
-            d_ventricle_axis = 1;
+            d_ventricle_side = 1;
         }
         else{
             TBOX_ERROR("Flat coodidinate not near boundary");
@@ -218,16 +218,16 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
             TBOX_ERROR("More than one coordinate is flat");
         }
 
-        d_ventricle_side = 2;        
+        d_ventricle_axis = 2;        
 
         // checks whether in quarter of domain in normal direction 
         double tol_domain_z = (input_db->getDouble("Z_HIGH") - input_db->getDouble("Z_LOW"))/4.0;
         
         if (fabs(z_prev - input_db->getDouble("Z_LOW")) < tol_domain_z){
-            d_ventricle_axis = 0;
+            d_ventricle_side = 0;
         }
         else if (fabs(z_prev - input_db->getDouble("Z_HIGH")) < tol_domain_z){
-            d_ventricle_axis = 1;
+            d_ventricle_side = 1;
         }
         else{
             TBOX_ERROR("Flat coodidinate not near boundary");
@@ -296,13 +296,13 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
             TBOX_ERROR("More than one coordinate is flat");
         }
 
-        d_aorta_side = 0;
+        d_aorta_axis = 0;
 
         if (fabs(x_prev - input_db->getDouble("X_LOW")) < tol){
-            d_aorta_axis = 0;
+            d_aorta_side = 0;
         }
         else if (fabs(x_prev - input_db->getDouble("X_HIGH")) < tol){
-            d_aorta_axis = 1;
+            d_aorta_side = 1;
         }
         else{
             TBOX_ERROR("Flat coodidinate not near boundary");
@@ -319,13 +319,13 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
             TBOX_ERROR("More than one coordinate is flat");
         }
 
-        d_aorta_side = 1;        
+        d_aorta_axis = 1;        
 
         if (fabs(y_prev - input_db->getDouble("Y_LOW")) < tol){
-            d_aorta_axis = 0;
+            d_aorta_side = 0;
         }
         else if (fabs(y_prev - input_db->getDouble("Y_HIGH")) < tol){
-            d_aorta_axis = 1;
+            d_aorta_side = 1;
         }
         else{
             TBOX_ERROR("Flat coodidinate not near boundary");
@@ -342,13 +342,13 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
             TBOX_ERROR("More than one coordinate is flat");
         }
 
-        d_aorta_side = 2;        
+        d_aorta_axis = 2;        
         
         if (fabs(z_prev - input_db->getDouble("Z_LOW")) < tol){
-            d_aorta_axis = 0;
+            d_aorta_side = 0;
         }
         else if (fabs(z_prev - input_db->getDouble("Z_HIGH")) < tol){
-            d_aorta_axis     = 1;
+            d_aorta_side = 1;
         }
         else{
             TBOX_ERROR("Flat coodidinate not near boundary");
