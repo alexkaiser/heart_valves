@@ -112,7 +112,8 @@ namespace ModelData
         double mu_s = 1e7; 
 
         PP.zero();
-        PP = mu_s * fast_pow_n23(J) * (FF - (1.0 / 3.0) * I1 * FF_inv_trans);
+        //PP = mu_s * fast_pow_n23(J) * (FF - (1.0 / 3.0) * I1 * FF_inv_trans);
+        PP = mu_s * FF;
 
         return;
     } // PK1_dev_stress_function
@@ -134,7 +135,7 @@ namespace ModelData
 
         PP.zero();
 
-        double beta_s = 1.410e9;
+        double beta_s = 0.0; // 1.410e9;
 
         // W(J) = beta_s*(J * log(J) - J + 1)
         PP += beta_s * J * log(J) * FF_inv_trans;
@@ -359,6 +360,16 @@ int main(int argc, char** argv)
         PK1_dil_stress_data.quad_order =
             Utility::string_to_enum<libMesh::Order>(input_db->getStringWithDefault("PK1_DIL_QUAD_ORDER", "FIRST"));
         
+        PK1_dev_stress_data_scaffold.quad_order =
+            Utility::string_to_enum<libMesh::Order>(input_db->getStringWithDefault("PK1_DEV_QUAD_ORDER", "THIRD"));
+        PK1_dil_stress_data_scaffold.quad_order =
+            Utility::string_to_enum<libMesh::Order>(input_db->getStringWithDefault("PK1_DIL_QUAD_ORDER", "FIRST"));
+
+        PK1_dev_stress_data_valve.quad_order =
+            Utility::string_to_enum<libMesh::Order>(input_db->getStringWithDefault("PK1_DEV_QUAD_ORDER", "THIRD"));
+        PK1_dil_stress_data_valve.quad_order =
+            Utility::string_to_enum<libMesh::Order>(input_db->getStringWithDefault("PK1_DIL_QUAD_ORDER", "FIRST"));
+
         // added part here 
         ib_method_ops->registerPK1StressFunction(PK1_dev_stress_data, 0);
         ib_method_ops->registerPK1StressFunction(PK1_dil_stress_data, 0);
