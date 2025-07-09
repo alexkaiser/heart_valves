@@ -2052,10 +2052,10 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
         axis equal 
     end 
     
-    points = zeros(3,N_theta,N_r,N_z);
+    points = zeros(3,N_r,N_theta,N_z);
     
     % just keep a list of valid indices, mark NAN if out of physical bounds 
-    indices_global = zeros(N_theta,N_r,N_z);     
+    indices_global = zeros(N_r,N_theta,N_z);     
     
     % always linear springs 
     function_idx = 0; 
@@ -2127,9 +2127,9 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
                 end 
                                 
                 if valid
-                    points(:,theta_idx,r_idx,z_idx) = [x_coord, y_coord, z_coord]; 
-                    indices_global(theta_idx,r_idx,z_idx) = params.global_idx; 
-                    params.vertices(:,params.global_idx + 1) = points(:,theta_idx,r_idx,z_idx);
+                    points(:,r_idx,theta_idx,z_idx) = [x_coord, y_coord, z_coord]; 
+                    indices_global(r_idx,theta_idx,z_idx) = params.global_idx; 
+                    params.vertices(:,params.global_idx + 1) = points(:,r_idx,theta_idx,z_idx);
 
                     % every valid vertex is a target point here 
                     if exist('eta', 'var') && eta > 0 
@@ -2140,7 +2140,7 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
 
                     params.global_idx = params.global_idx + 1; 
                 else 
-                    indices_global(theta_idx,r_idx,z_idx) = nan; 
+                    indices_global(r_idx,theta_idx,z_idx) = nan; 
                 end 
                 
                 if cylinder_bdry_file
@@ -2170,12 +2170,12 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
     for z_idx=1:N_z
         for r_idx=1:N_r
             for theta_idx=1:N_theta  
-                if ~isnan(indices_global(theta_idx,r_idx,z_idx))
+                if ~isnan(indices_global(r_idx,theta_idx,z_idx))
 
                     output = true; 
 
                     last_idx = idx; 
-                    idx = indices_global(theta_idx,r_idx,z_idx); 
+                    idx = indices_global(r_idx,theta_idx,z_idx); 
                 
                     if last_idx >= idx
                         error('should always be placing points in order, something wrong'); 
@@ -2183,9 +2183,9 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
 
                     % check up directions for springs 
                     if theta_idx < N_theta
-                        rest_len = norm(points(:,theta_idx,r_idx,z_idx) - points(:,theta_idx+1,r_idx,z_idx)); 
+                        rest_len = norm(points(:,r_idx,theta_idx,z_idx) - points(:,r_idx,theta_idx+1,z_idx)); 
                         k_abs = k_rel / rest_len;
-                        nbr_idx = indices_global(theta_idx+1,r_idx,z_idx); 
+                        nbr_idx = indices_global(r_idx,theta_idx+1,z_idx); 
                         if ~isnan(nbr_idx)
                             min_idx = min(idx,nbr_idx); 
                             max_idx = max(idx,nbr_idx); 
@@ -2195,9 +2195,9 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
 
                     % periodic wrap 
                     if theta_idx == N_theta
-                        rest_len = norm(points(:,theta_idx,r_idx,z_idx) - points(:,1,r_idx,z_idx)); 
+                        rest_len = norm(points(:,r_idx,theta_idx,z_idx) - points(:,r_idx,1,z_idx)); 
                         k_abs = k_rel / rest_len;
-                        nbr_idx = indices_global(1,r_idx,z_idx); 
+                        nbr_idx = indices_global(r_idx,1,z_idx); 
                         if ~isnan(nbr_idx)
                             min_idx = min(idx,nbr_idx); 
                             max_idx = max(idx,nbr_idx); 
@@ -2206,9 +2206,9 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
                     end
 
                     if r_idx < N_r
-                        rest_len = norm(points(:,theta_idx,r_idx,z_idx) - points(:,theta_idx,r_idx+1,z_idx)); 
+                        rest_len = norm(points(:,r_idx,theta_idx,z_idx) - points(:,r_idx+1,theta_idx,z_idx)); 
                         k_abs = k_rel / rest_len;
-                        nbr_idx = indices_global(theta_idx,r_idx+1,z_idx);
+                        nbr_idx = indices_global(r_idx+1,theta_idx,z_idx);
                         if ~isnan(nbr_idx)
                             min_idx = min(idx,nbr_idx); 
                             max_idx = max(idx,nbr_idx); 
@@ -2217,9 +2217,9 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
                     end
 
                     if z_idx < N_z
-                        rest_len = norm(points(:,theta_idx,r_idx,z_idx) - points(:,theta_idx,r_idx,z_idx+1)); 
+                        rest_len = norm(points(:,r_idx,theta_idx,z_idx) - points(:,r_idx,theta_idx,z_idx+1)); 
                         k_abs = k_rel / rest_len;
-                        nbr_idx = indices_global(theta_idx,r_idx,z_idx+1); 
+                        nbr_idx = indices_global(r_idx,theta_idx,z_idx+1); 
                         if ~isnan(nbr_idx)
                             min_idx = min(idx,nbr_idx); 
                             max_idx = max(idx,nbr_idx); 
@@ -2250,14 +2250,23 @@ function params = place_cylinder(params, leaflet, r, ds, z_min, z_max, n_layers,
                         error('should be impossible')
                     end 
 
-                    cell_indices(1) = indices_global(theta_idx    , r_idx    , z_idx    );
-                    cell_indices(2) = indices_global(theta_nbr_idx, r_idx    , z_idx    );
-                    cell_indices(3) = indices_global(theta_nbr_idx, r_idx + 1, z_idx    );
-                    cell_indices(4) = indices_global(theta_idx    , r_idx + 1, z_idx    );
-                    cell_indices(5) = indices_global(theta_idx    , r_idx    , z_idx + 1);
-                    cell_indices(6) = indices_global(theta_nbr_idx, r_idx    , z_idx + 1);
-                    cell_indices(7) = indices_global(theta_nbr_idx, r_idx + 1, z_idx + 1);
-                    cell_indices(8) = indices_global(theta_idx    , r_idx + 1, z_idx + 1);
+                    cell_indices(1) = indices_global(r_idx    , theta_idx    , z_idx    );
+                    cell_indices(2) = indices_global(r_idx + 1, theta_idx    , z_idx    );
+                    cell_indices(3) = indices_global(r_idx + 1, theta_nbr_idx, z_idx    );
+                    cell_indices(4) = indices_global(r_idx    , theta_nbr_idx, z_idx    );
+                    cell_indices(5) = indices_global(r_idx    , theta_idx    , z_idx + 1);
+                    cell_indices(6) = indices_global(r_idx + 1, theta_idx    , z_idx + 1);
+                    cell_indices(7) = indices_global(r_idx + 1, theta_nbr_idx, z_idx + 1);
+                    cell_indices(8) = indices_global(r_idx    , theta_nbr_idx, z_idx + 1);
+
+                    % cell_indices(1) = indices_global(theta_idx    , r_idx    , z_idx    );
+                    % cell_indices(2) = indices_global(theta_nbr_idx, r_idx    , z_idx    );
+                    % cell_indices(3) = indices_global(theta_nbr_idx, r_idx + 1, z_idx    );
+                    % cell_indices(4) = indices_global(theta_idx    , r_idx + 1, z_idx    );
+                    % cell_indices(5) = indices_global(theta_idx    , r_idx    , z_idx + 1);
+                    % cell_indices(6) = indices_global(theta_nbr_idx, r_idx    , z_idx + 1);
+                    % cell_indices(7) = indices_global(theta_nbr_idx, r_idx + 1, z_idx + 1);
+                    % cell_indices(8) = indices_global(theta_idx    , r_idx + 1, z_idx + 1);
 
 
                     if ~any(isnan(cell_indices))
