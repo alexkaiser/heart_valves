@@ -136,8 +136,8 @@ namespace ModelData
 
         double beta_s = 1e6;
 
-        // W(J) = 0.5 * beta_s * (J - 1)^2
-        PP += beta_s * J * (J - 1.0) * FF_inv_trans;
+        // W(J) = beta_s*(J * log(J) - J + 1)
+        PP += beta_s * J * log(J) * FF_inv_trans;
 
         return;
     } // PK1_dil_stress_function
@@ -276,17 +276,17 @@ int main(int argc, char** argv)
         mesh_ptrs.emplace_back(&mesh_vessel);
         part_names.emplace_back(input_db->getString("MESH_VESSEL"));
 
-        // Mesh mesh_scaffold(init.comm(), NDIM);
-        // mesh_scaffold.read(input_db->getString("MESH_SCAFFOLD"));
-        // mesh_scaffold.prepare_for_use();
-        // mesh_ptrs.emplace_back(&mesh_scaffold);
-        // part_names.emplace_back(input_db->getString("MESH_SCAFFOLD"));
+        Mesh mesh_scaffold(init.comm(), NDIM);
+        mesh_scaffold.read(input_db->getString("MESH_SCAFFOLD"));
+        mesh_scaffold.prepare_for_use();
+        mesh_ptrs.emplace_back(&mesh_scaffold);
+        part_names.emplace_back(input_db->getString("MESH_SCAFFOLD"));
 
-        // Mesh mesh_valve(init.comm(), NDIM);
-        // mesh_valve.read(input_db->getString("MESH_VALVE"));
-        // mesh_valve.prepare_for_use();
-        // mesh_ptrs.emplace_back(&mesh_valve);
-        // part_names.emplace_back(input_db->getString("MESH_VALVE"));
+        Mesh mesh_valve(init.comm(), NDIM);
+        mesh_valve.read(input_db->getString("MESH_VALVE"));
+        mesh_valve.prepare_for_use();
+        mesh_ptrs.emplace_back(&mesh_valve);
+        part_names.emplace_back(input_db->getString("MESH_VALVE"));
 
         // Create major algorithm and data objects that comprise the
         // application.  These objects are configured from the input database
@@ -341,9 +341,18 @@ int main(int argc, char** argv)
         IBFEMethod::PK1StressFcnData PK1_dev_stress_data(PK1_dev_stress_function);
         IBFEMethod::PK1StressFcnData PK1_dil_stress_data(PK1_dil_stress_function);
 
+        IBFEMethod::PK1StressFcnData PK1_dev_stress_data_scaffold(PK1_dev_stress_function);
+        IBFEMethod::PK1StressFcnData PK1_dil_stress_data_scaffold(PK1_dil_stress_function);
+
+        IBFEMethod::PK1StressFcnData PK1_dev_stress_data_valve(PK1_dev_stress_function);
+        IBFEMethod::PK1StressFcnData PK1_dil_stress_data_valve(PK1_dil_stress_function);
+
         // added tether 
         IBFEMethod::LagBodyForceFcnData tether_force_data(tether_force_function);
         ib_method_ops->registerLagBodyForceFunction(tether_force_data, 0);
+
+        IBFEMethod::LagBodyForceFcnData tether_force_data_scaffold(tether_force_function);
+        ib_method_ops->registerLagBodyForceFunction(tether_force_data_scaffold, 1);
 
         PK1_dev_stress_data.quad_order =
             Utility::string_to_enum<libMesh::Order>(input_db->getStringWithDefault("PK1_DEV_QUAD_ORDER", "THIRD"));
@@ -354,8 +363,15 @@ int main(int argc, char** argv)
         ib_method_ops->registerPK1StressFunction(PK1_dev_stress_data, 0);
         ib_method_ops->registerPK1StressFunction(PK1_dil_stress_data, 0);
 
+        ib_method_ops->registerPK1StressFunction(PK1_dev_stress_data_scaffold, 1);
+        ib_method_ops->registerPK1StressFunction(PK1_dil_stress_data_scaffold, 1);
+
+        ib_method_ops->registerPK1StressFunction(PK1_dev_stress_data_valve, 2);
+        ib_method_ops->registerPK1StressFunction(PK1_dil_stress_data_valve, 2);
+
         // added tether 
         ib_method_ops->registerLagBodyForceFunction(tether_force_data, 0);
+        ib_method_ops->registerLagBodyForceFunction(tether_force_data_scaffold, 1);
 
         if (input_db->getBoolWithDefault("ELIMINATE_PRESSURE_JUMPS", false))
         {
