@@ -109,7 +109,7 @@ namespace ModelData
         const double J = FF.det();
         const double I1 = CC.tr();
 
-        double mu_s = 1e6; 
+        double mu_s = 1e7; 
 
         PP.zero();
         PP = mu_s * fast_pow_n23(J) * (FF - (1.0 / 3.0) * I1 * FF_inv_trans);
