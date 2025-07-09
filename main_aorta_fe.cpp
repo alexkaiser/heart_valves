@@ -143,7 +143,7 @@ namespace ModelData
     } // PK1_dil_stress_function
 
     // Tether (penalty) force function
-    double kappa_s = 1.0e5;
+    double kappa_s = 1.0e4;
     void tether_force_function(VectorValue<double>& F,
                                 const TensorValue<double>& /*FF*/,
                                 const libMesh::Point& X,
