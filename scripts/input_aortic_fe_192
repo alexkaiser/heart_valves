@@ -41,7 +41,7 @@ VESSEL_FILENAME = "aorta_192.vertex"
 
 MESH_VESSEL = "aorta_192_pt05cm.e"
 MESH_SCAFFOLD = "aortic_no_partition_192_cylinder.e"
-MESH_VALVE = "aortic_no_partition_384.e"
+MESH_VALVE = "aortic_no_partition_192.e"
 
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_zero.txt"
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_aorta_minus_ventricle.txt"
