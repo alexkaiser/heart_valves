@@ -134,7 +134,7 @@ namespace ModelData
 
         PP.zero();
 
-        double beta_s = 1e8;
+        double beta_s = 1.410e9;
 
         // W(J) = beta_s*(J * log(J) - J + 1)
         PP += beta_s * J * log(J) * FF_inv_trans;
