@@ -77,6 +77,9 @@
 #define CGS_TO_MMHG 0.000750061683
 #define MPa_TO_CGS 1.0e7
 
+// #define SCAFFOLD_ON
+// #define VALVE_ON
+
 
 // Elasticity model data.
 namespace ModelData
@@ -277,17 +280,21 @@ int main(int argc, char** argv)
         mesh_ptrs.emplace_back(&mesh_vessel);
         part_names.emplace_back(input_db->getString("MESH_VESSEL"));
 
-        // Mesh mesh_scaffold(init.comm(), NDIM);
-        // mesh_scaffold.read(input_db->getString("MESH_SCAFFOLD"));
-        // mesh_scaffold.prepare_for_use();
-        // mesh_ptrs.emplace_back(&mesh_scaffold);
-        // part_names.emplace_back(input_db->getString("MESH_SCAFFOLD"));
+        #ifdef SCAFFOLD_ON
+            Mesh mesh_scaffold(init.comm(), NDIM);
+            mesh_scaffold.read(input_db->getString("MESH_SCAFFOLD"));
+            mesh_scaffold.prepare_for_use();
+            mesh_ptrs.emplace_back(&mesh_scaffold);
+            part_names.emplace_back(input_db->getString("MESH_SCAFFOLD"));
+        #endif
 
-        // Mesh mesh_valve(init.comm(), NDIM);
-        // mesh_valve.read(input_db->getString("MESH_VALVE"));
-        // mesh_valve.prepare_for_use();
-        // mesh_ptrs.emplace_back(&mesh_valve);
-        // part_names.emplace_back(input_db->getString("MESH_VALVE"));
+        #ifdef VALVE_ON
+            Mesh mesh_valve(init.comm(), NDIM);
+            mesh_valve.read(input_db->getString("MESH_VALVE"));
+            mesh_valve.prepare_for_use();
+            mesh_ptrs.emplace_back(&mesh_valve);
+            part_names.emplace_back(input_db->getString("MESH_VALVE"));
+        #endif 
 
         // Create major algorithm and data objects that comprise the
         // application.  These objects are configured from the input database
@@ -342,47 +349,51 @@ int main(int argc, char** argv)
         IBFEMethod::PK1StressFcnData PK1_dev_stress_data(PK1_dev_stress_function);
         IBFEMethod::PK1StressFcnData PK1_dil_stress_data(PK1_dil_stress_function);
 
-        IBFEMethod::PK1StressFcnData PK1_dev_stress_data_scaffold(PK1_dev_stress_function);
-        IBFEMethod::PK1StressFcnData PK1_dil_stress_data_scaffold(PK1_dil_stress_function);
-
-        IBFEMethod::PK1StressFcnData PK1_dev_stress_data_valve(PK1_dev_stress_function);
-        IBFEMethod::PK1StressFcnData PK1_dil_stress_data_valve(PK1_dil_stress_function);
-
-        // added tether 
-        IBFEMethod::LagBodyForceFcnData tether_force_data(tether_force_function);
-        ib_method_ops->registerLagBodyForceFunction(tether_force_data, 0);
-
-        IBFEMethod::LagBodyForceFcnData tether_force_data_scaffold(tether_force_function);
-        ib_method_ops->registerLagBodyForceFunction(tether_force_data_scaffold, 1);
-
         PK1_dev_stress_data.quad_order =
             Utility::string_to_enum<libMesh::Order>(input_db->getStringWithDefault("PK1_DEV_QUAD_ORDER", "THIRD"));
         PK1_dil_stress_data.quad_order =
-            Utility::string_to_enum<libMesh::Order>(input_db->getStringWithDefault("PK1_DIL_QUAD_ORDER", "FIRST"));
-        
-        PK1_dev_stress_data_scaffold.quad_order =
-            Utility::string_to_enum<libMesh::Order>(input_db->getStringWithDefault("PK1_DEV_QUAD_ORDER", "THIRD"));
-        PK1_dil_stress_data_scaffold.quad_order =
-            Utility::string_to_enum<libMesh::Order>(input_db->getStringWithDefault("PK1_DIL_QUAD_ORDER", "FIRST"));
-
-        PK1_dev_stress_data_valve.quad_order =
-            Utility::string_to_enum<libMesh::Order>(input_db->getStringWithDefault("PK1_DEV_QUAD_ORDER", "THIRD"));
-        PK1_dil_stress_data_valve.quad_order =
             Utility::string_to_enum<libMesh::Order>(input_db->getStringWithDefault("PK1_DIL_QUAD_ORDER", "FIRST"));
 
         // added part here 
         ib_method_ops->registerPK1StressFunction(PK1_dev_stress_data, 0);
         ib_method_ops->registerPK1StressFunction(PK1_dil_stress_data, 0);
 
-        ib_method_ops->registerPK1StressFunction(PK1_dev_stress_data_scaffold, 1);
-        ib_method_ops->registerPK1StressFunction(PK1_dil_stress_data_scaffold, 1);
-
-        ib_method_ops->registerPK1StressFunction(PK1_dev_stress_data_valve, 2);
-        ib_method_ops->registerPK1StressFunction(PK1_dil_stress_data_valve, 2);
-
         // added tether 
+        IBFEMethod::LagBodyForceFcnData tether_force_data(tether_force_function);
         ib_method_ops->registerLagBodyForceFunction(tether_force_data, 0);
-        ib_method_ops->registerLagBodyForceFunction(tether_force_data_scaffold, 1);
+
+
+        #ifdef SCAFFOLD_ON
+            IBFEMethod::PK1StressFcnData PK1_dev_stress_data_scaffold(PK1_dev_stress_function);
+            IBFEMethod::PK1StressFcnData PK1_dil_stress_data_scaffold(PK1_dil_stress_function);
+
+            PK1_dev_stress_data_scaffold.quad_order =
+                Utility::string_to_enum<libMesh::Order>(input_db->getStringWithDefault("PK1_DEV_QUAD_ORDER", "THIRD"));
+            PK1_dil_stress_data_scaffold.quad_order =
+                Utility::string_to_enum<libMesh::Order>(input_db->getStringWithDefault("PK1_DIL_QUAD_ORDER", "FIRST"));
+
+            ib_method_ops->registerPK1StressFunction(PK1_dev_stress_data_scaffold, 1);
+            ib_method_ops->registerPK1StressFunction(PK1_dil_stress_data_scaffold, 1);
+
+            IBFEMethod::LagBodyForceFcnData tether_force_data_scaffold(tether_force_function);
+            ib_method_ops->registerLagBodyForceFunction(tether_force_data_scaffold, 1);
+
+        #endif 
+
+
+        #ifdef VALVE_ON
+            IBFEMethod::PK1StressFcnData PK1_dev_stress_data_valve(PK1_dev_stress_function);
+            IBFEMethod::PK1StressFcnData PK1_dil_stress_data_valve(PK1_dil_stress_function);
+
+            PK1_dev_stress_data_valve.quad_order =
+                Utility::string_to_enum<libMesh::Order>(input_db->getStringWithDefault("PK1_DEV_QUAD_ORDER", "THIRD"));
+            PK1_dil_stress_data_valve.quad_order =
+                Utility::string_to_enum<libMesh::Order>(input_db->getStringWithDefault("PK1_DIL_QUAD_ORDER", "FIRST"));
+
+            ib_method_ops->registerPK1StressFunction(PK1_dev_stress_data_valve, 2);
+            ib_method_ops->registerPK1StressFunction(PK1_dil_stress_data_valve, 2);
+        #endif 
+
 
         if (input_db->getBoolWithDefault("ELIMINATE_PRESSURE_JUMPS", false))
         {
