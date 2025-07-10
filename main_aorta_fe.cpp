@@ -115,8 +115,7 @@ namespace ModelData
         double mu_s = 1e6; 
 
         PP.zero();
-        //PP = mu_s * fast_pow_n23(J) * (FF - (1.0 / 3.0) * I1 * FF_inv_trans);
-        PP = mu_s * FF;
+        PP = mu_s * fast_pow_n23(J) * (FF - (1.0 / 3.0) * I1 * FF_inv_trans);
 
         return;
     } // PK1_dev_stress_function
