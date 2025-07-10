@@ -277,17 +277,17 @@ int main(int argc, char** argv)
         mesh_ptrs.emplace_back(&mesh_vessel);
         part_names.emplace_back(input_db->getString("MESH_VESSEL"));
 
-        Mesh mesh_scaffold(init.comm(), NDIM);
-        mesh_scaffold.read(input_db->getString("MESH_SCAFFOLD"));
-        mesh_scaffold.prepare_for_use();
-        mesh_ptrs.emplace_back(&mesh_scaffold);
-        part_names.emplace_back(input_db->getString("MESH_SCAFFOLD"));
+        // Mesh mesh_scaffold(init.comm(), NDIM);
+        // mesh_scaffold.read(input_db->getString("MESH_SCAFFOLD"));
+        // mesh_scaffold.prepare_for_use();
+        // mesh_ptrs.emplace_back(&mesh_scaffold);
+        // part_names.emplace_back(input_db->getString("MESH_SCAFFOLD"));
 
-        Mesh mesh_valve(init.comm(), NDIM);
-        mesh_valve.read(input_db->getString("MESH_VALVE"));
-        mesh_valve.prepare_for_use();
-        mesh_ptrs.emplace_back(&mesh_valve);
-        part_names.emplace_back(input_db->getString("MESH_VALVE"));
+        // Mesh mesh_valve(init.comm(), NDIM);
+        // mesh_valve.read(input_db->getString("MESH_VALVE"));
+        // mesh_valve.prepare_for_use();
+        // mesh_ptrs.emplace_back(&mesh_valve);
+        // part_names.emplace_back(input_db->getString("MESH_VALVE"));
 
         // Create major algorithm and data objects that comprise the
         // application.  These objects are configured from the input database
