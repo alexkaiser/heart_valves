@@ -22,8 +22,9 @@ P_aorta_0_MMHG = 90.22995737938673
 
 FOURIER_COEFFS_FILENAME_VENTRICLE = "fourier_coeffs_ventricle.txt"
 
-BOUNDARY_FILENAME_VENTRICLE = "lvot_bdry_384.vertex"
-BOUNDARY_FILENAME_AORTA = "aorta_bdry_384.vertex"
+BOUNDARY_FILENAME_VENTRICLE = "lvot_fe_bdry_192.vertex"
+BOUNDARY_FILENAME_AORTA = "aorta_fe_bdry_192.vertex"
+
 
 // ventricle LPN 
 VENTRICLE_0D_ON = TRUE
@@ -42,6 +43,10 @@ VESSEL_FILENAME = "aorta_192.vertex"
 MESH_VESSEL = "aorta_192_pt05cm.e"
 MESH_SCAFFOLD = "aortic_no_partition_192_cylinder.e"
 MESH_VALVE = "aortic_no_partition_192.e"
+
+MU_S = 1.0e7
+BETA_S = 1.e6
+KAPPA_S = 1.0e9
 
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_zero.txt"
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_aorta_minus_ventricle.txt"
@@ -85,8 +90,8 @@ DX = 0.1
 EXTRA_BDRY = 1.0e-6
 
 // computed from scans 
-X_HIGH =   6.615370273590088 + EXTRA_BDRY
-Z_HIGH = -15.069658279418945 + EXTRA_BDRY
+X_HIGH = 6.623659773775831 + EXTRA_BDRY   //  6.615370273590088 + EXTRA_BDRY
+Z_HIGH = -15.069701194763184 + EXTRA_BDRY // -15.069658279418945 + EXTRA_BDRY
 Y_MID = -18.4862
 
 // number points 
@@ -239,7 +244,7 @@ Main {
 
 // visualization dump parameters
    viz_writer                  = "VisIt","Silo"
-   viz_dump_interval           = int(1.0/(DT*600.0))       // output at 600 fps, 10x slow motion at 60 fps
+   viz_dump_interval           = 5 // int(1.0/(DT*600.0))       // output at 600 fps, 10x slow motion at 60 fps
    viz_dump_dirname            = "viz_IB3d_tree_cycle_256"
    visit_number_procs_per_file = 1
 

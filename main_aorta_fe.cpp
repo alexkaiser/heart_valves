@@ -85,6 +85,8 @@
 namespace ModelData
 {
 
+    static double mu_s, beta_s, kappa_s;
+
     // helper function that is much faster than std::pow(a, -2.0/3.0). std::pow
     // has trouble with some arguments which results in calling slowpow. Since we
     // only call this function on values near 1 (Jacobians) we can be a bit more
@@ -112,7 +114,7 @@ namespace ModelData
         const double J = FF.det();
         const double I1 = CC.tr();
 
-        double mu_s = 1e6; 
+        // double mu_s = 1e7; 
 
         PP.zero();
         PP = mu_s * fast_pow_n23(J) * (FF - (1.0 / 3.0) * I1 * FF_inv_trans);
@@ -137,7 +139,7 @@ namespace ModelData
 
         PP.zero();
 
-        double beta_s = 0.0; // 1.410e9;
+        // double beta_s = 0.0; // 1.410e9;
 
         // W(J) = beta_s*(J * log(J) - J + 1)
         PP += beta_s * J * log(J) * FF_inv_trans;
@@ -146,7 +148,7 @@ namespace ModelData
     } // PK1_dil_stress_function
 
     // Tether (penalty) force function
-    double kappa_s = 1.0e4;
+    // double kappa_s = 1.0e5;
     void tether_force_function(VectorValue<double>& F,
                                 const TensorValue<double>& /*FF*/,
                                 const libMesh::Point& X,
@@ -294,6 +296,10 @@ int main(int argc, char** argv)
             mesh_ptrs.emplace_back(&mesh_valve);
             part_names.emplace_back(input_db->getString("MESH_VALVE"));
         #endif 
+
+        mu_s = input_db->getDouble("MU_S");
+        beta_s = input_db->getDouble("BETA_S");
+        kappa_s = input_db->getDouble("KAPPA_S");
 
         // Create major algorithm and data objects that comprise the
         // application.  These objects are configured from the input database
