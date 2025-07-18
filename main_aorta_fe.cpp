@@ -301,6 +301,11 @@ int main(int argc, char** argv)
         beta_s = input_db->getDouble("BETA_S");
         kappa_s = input_db->getDouble("KAPPA_S");
 
+        for(auto mesh_pt : mesh_ptrs)
+        {
+            mesh_pt->all_second_order();
+        }
+
         // Create major algorithm and data objects that comprise the
         // application.  These objects are configured from the input database
         // and, if this is a restarted run, from the restart database.
