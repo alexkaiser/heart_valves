@@ -60,6 +60,7 @@ public:
 
     bool d_rcr_bcs_on; 
     bool d_ventricle_0D_on; 
+    bool d_lv_systolic_on;
 
     // const fourier_series_data *d_fourier_aorta;
     int     d_n_pts_aorta;

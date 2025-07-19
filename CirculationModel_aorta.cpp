@@ -76,7 +76,8 @@ CirculationModel_aorta::CirculationModel_aorta(Pointer<Database> input_db,
       d_rcr_bcs_on(rcr_bcs_on), 
       d_ventricle_0D_on(ventricle_0D_on),
       d_P_initial_aorta_equal_to_ventricle(P_initial_aorta_equal_to_ventricle), 
-      d_rcr_on_time(rcr_on_time)
+      d_rcr_on_time(rcr_on_time),
+      d_lv_systolic_on(false)
 {
     
     if (d_registered_for_restart)
@@ -621,7 +622,30 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
         // actual Q_ventricle gets negative
         d_ventricle_0D->advanceTimeDependentData(dt, d_time, -d_Q_ventricle);
         // local ventricle pressure copied from lv circ model 
-        d_ventricle_P = d_ventricle_0D->d_P_ventricle; 
+
+        // once condition passes, lpn is on 
+        if (d_lv_systolic_on){
+            d_ventricle_P = d_ventricle_0D->d_P_ventricle;     
+        }
+        else{
+            // systolic pressure not yet determined by lpn 
+            // initialization phase use normal LV pressure 
+            if (d_time < (d_p_equal_fraction*d_rcr_on_time)){
+                d_ventricle_P = d_ventricle_0D->d_P_ventricle;     
+            }
+            else{
+                // use the aortic pressure 
+                d_ventricle_P = d_aorta_P; 
+
+                // exist the ventricular pressure equal to aortic phase 
+                // turn the ventricular lpn on 
+                if (d_ventricle_0D->d_P_ventricle > d_aorta_P){
+                    d_lv_systolic_on = true;
+                }
+
+            }            
+        }
+
 
     }
     else{
