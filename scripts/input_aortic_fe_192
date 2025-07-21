@@ -59,6 +59,7 @@ CYCLE_DURATION = 0.8
 // solver parameters
 
 IB_DELTA_FUNCTION          = "BSPLINE_3"       // the type of smoothed delta function to use for Lagrangian-Eulerian interaction
+SPLIT_FORCES               = FALSE
 SPLIT_TANGENTIAL_FORCE     = FALSE             // whether to split interior and boundary forces
 SPLIT_NORMAL_FORCE         = FALSE
 USE_JUMP_CONDITIONS        = FALSE             // whether to impose pressure jumps at fluid-structure interfaces
