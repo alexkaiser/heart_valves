@@ -59,7 +59,6 @@ CYCLE_DURATION = 0.8
 // solver parameters
 
 IB_DELTA_FUNCTION          = "BSPLINE_3"       // the type of smoothed delta function to use for Lagrangian-Eulerian interaction
-SPLIT_FORCES               = FALSE
 SPLIT_TANGENTIAL_FORCE     = FALSE             // whether to split interior and boundary forces
 SPLIT_NORMAL_FORCE         = FALSE
 USE_JUMP_CONDITIONS        = FALSE             // whether to impose pressure jumps at fluid-structure interfaces
@@ -209,7 +208,8 @@ IBHierarchyIntegrator {
 
 IBFEMethod {
    IB_delta_fcn               = IB_DELTA_FUNCTION
-   split_forces               = SPLIT_FORCES
+   split_tangential_force     = SPLIT_TANGENTIAL_FORCE
+   split_normal_force         = SPLIT_NORMAL_FORCE
    use_jump_conditions        = USE_JUMP_CONDITIONS
    use_consistent_mass_matrix = USE_CONSISTENT_MASS_MATRIX
    IB_point_density           = IB_POINT_DENSITY
