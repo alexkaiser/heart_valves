@@ -38,7 +38,7 @@ E_MAX = 2758.1890465134265
 R_LVOT = 5.732861824000000
 INDUCTANCE = 0.0
 
-VESSEL_FILENAME = "aorta_192.vertex"
+// VESSEL_FILENAME = "aorta_192.vertex"
 
 MESH_VESSEL = "aorta_192_pt05cm.e"
 MESH_SCAFFOLD = "aortic_no_partition_192_cylinder.e"
