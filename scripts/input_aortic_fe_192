@@ -45,7 +45,7 @@ MESH_SCAFFOLD = "aortic_no_partition_192_cylinder.e"
 MESH_VALVE = "aortic_no_partition_192.e"
 
 MU_S = 1.0e7
-BETA_S = 1.e7
+BETA_S = 1.0e7
 KAPPA_S = 1.0e10
 
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_zero.txt"
@@ -62,8 +62,8 @@ IB_DELTA_FUNCTION          = "BSPLINE_3"       // the type of smoothed delta fun
 SPLIT_TANGENTIAL_FORCE     = FALSE             // whether to split interior and boundary forces
 SPLIT_NORMAL_FORCE         = FALSE
 USE_JUMP_CONDITIONS        = FALSE             // whether to impose pressure jumps at fluid-structure interfaces
-USE_CONSISTENT_MASS_MATRIX = FALSE              // whether to use a consistent or lumped mass matrix
-USE_NODAL_QUADRATURE       = TRUE
+USE_CONSISTENT_MASS_MATRIX = TRUE              // whether to use a consistent or lumped mass matrix
+USE_NODAL_QUADRATURE       = FALSE
 IB_POINT_DENSITY           = 0.9               // approximate density of IB quadrature points for Lagrangian-Eulerian interaction
 SOLVER_TYPE         = "STAGGERED"         // the fluid solver to use (STAGGERED or COLLOCATED)
 START_TIME          = 0.0e0               // initial simulation time
