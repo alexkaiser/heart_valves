@@ -40,9 +40,13 @@ INDUCTANCE = 0.0
 
 // VESSEL_FILENAME = "aorta_192.vertex"
 
-MESH_VESSEL = "aorta_192_pt05cm.e"
-MESH_SCAFFOLD = "aortic_no_partition_192_cylinder.e"
-MESH_VALVE = "aortic_no_partition_192.e"
+//MESH_VESSEL = "aorta_192_pt05cm.e"
+//MESH_SCAFFOLD = "aortic_no_partition_192_cylinder.e"
+//MESH_VALVE = "aortic_no_partition_192.e"
+
+MESH_VESSEL = "aorta_192_1pt5mm.e"
+MESH_SCAFFOLD = "aortic_no_partition_192_cylinder_1pt5mm.e"
+MESH_VALVE = "aortic_no_partition_192_1pt5mm.e"
 
 MU_S = 1.0e7
 BETA_S = 1.0e7
