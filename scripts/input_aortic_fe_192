@@ -40,16 +40,12 @@ INDUCTANCE = 0.0
 
 // VESSEL_FILENAME = "aorta_192.vertex"
 
-//MESH_VESSEL = "aorta_192_pt05cm.e"
-//MESH_SCAFFOLD = "aortic_no_partition_192_cylinder.e"
-//MESH_VALVE = "aortic_no_partition_192.e"
-
-MESH_VESSEL = "aorta_192_1pt5mm.e"
-MESH_SCAFFOLD = "aortic_no_partition_192_cylinder_1pt5mm.e"
-MESH_VALVE = "aortic_no_partition_192_1pt5mm.e"
+MESH_VESSEL = "aorta_192_pt05cm.e"
+MESH_SCAFFOLD = "aortic_no_partition_192_cylinder.e"
+MESH_VALVE = "aortic_no_partition_192.e"
 
 MU_S = 1.0e7
-BETA_S = 1.0e7
+BETA_S = 1.e7
 KAPPA_S = 1.0e10
 
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_zero.txt"
@@ -62,7 +58,7 @@ CYCLE_DURATION = 0.8
 
 // solver parameters
 
-IB_DELTA_FUNCTION          = "BSPLINE_3"       // the type of smoothed delta function to use for Lagrangian-Eulerian interaction
+IB_DELTA_FUNCTION          = "IB_5"       // the type of smoothed delta function to use for Lagrangian-Eulerian interaction
 SPLIT_TANGENTIAL_FORCE     = FALSE             // whether to split interior and boundary forces
 SPLIT_NORMAL_FORCE         = FALSE
 USE_JUMP_CONDITIONS        = FALSE             // whether to impose pressure jumps at fluid-structure interfaces
