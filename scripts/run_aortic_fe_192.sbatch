@@ -74,5 +74,5 @@ then
     source ~/.bash_profile
     visit -cli -nowin -s ~/heart_valves/scripts/run_parallel_convert_visit_to_paraview.py $TOTAL_TASKS $TOTAL_TASKS
 
-    # sbatch ~/heart_valves/scripts/post_process_aorta.sh 
+    sbatch ~/copies_scripts/post_process_aorta_fe.sh 
 fi
