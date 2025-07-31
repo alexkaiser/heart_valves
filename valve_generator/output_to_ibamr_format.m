@@ -1466,11 +1466,6 @@ end
 
 
 function params = place_cross_layer_beams_aortic(params, leaflet, leaflet_number)
-
-    if params.num_copies ~= 3
-        warning('must use three copies for cross layer beams'); 
-        return
-    end 
     
     if ~exist('leaflet_number', 'var')
         warning("Using default leaflet 1 only in place_cross_layer_springs_aortic")
@@ -1481,16 +1476,18 @@ function params = place_cross_layer_beams_aortic(params, leaflet, leaflet_number
     
     j_max = leaflet.j_max; 
     k_max = leaflet.k_max; 
-    
-    for j=1:j_max
-        for k=1:k_max
-            idx_minus = params.layer_indices(1,leaflet_number).indices_global(j,k); 
-            idx       = params.layer_indices(2,leaflet_number).indices_global(j,k);  
-            idx_plus  = params.layer_indices(3,leaflet_number).indices_global(j,k); 
 
-            params = beam_string(params, idx_minus, idx, idx_plus, k_bend_cross_layer);
-            
-        end
+    for layer_num = 1:(params.num_copies - 2)
+        for j = 1:j_max
+            for k = 1:k_max
+                idx_minus = params.layer_indices(layer_num    , leaflet_number).indices_global(j,k);
+                idx       = params.layer_indices(layer_num + 1, leaflet_number).indices_global(j,k);
+                idx_plus  = params.layer_indices(layer_num + 2, leaflet_number).indices_global(j,k);
+
+                params = beam_string(params, idx_minus, idx, idx_plus, k_bend_cross_layer);
+
+            end
+        end 
     end 
     
 end 
