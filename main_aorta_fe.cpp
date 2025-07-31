@@ -78,7 +78,7 @@
 #define MPa_TO_CGS 1.0e7
 
 #define SCAFFOLD_ON
-//#define VALVE_ON
+#define VALVE_ON
 
 
 // Elasticity model data.
