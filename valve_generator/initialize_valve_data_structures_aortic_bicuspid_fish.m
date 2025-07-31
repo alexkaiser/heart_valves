@@ -112,16 +112,6 @@ valve.num_copies = 3;
 valve.annulus_points_even_spacing = true; 
 
 
-% add flags to spring files 
-% to view and output with a stride 
-
-valve.output.leaflets       = [1;1;1]; 
-valve.output.stride_leaflet = max(1,N/128); 
-valve.output.mesh           = [1;0;0]; 
-valve.output.cartesian_mesh = [0;0;0]; 
-valve.output.stride_mesh    = N/32; 
-
-
 valve.dirichlet_free_edge = false; 
 
 valve.dirichlet_free_edge_with_ref_only = true; 
