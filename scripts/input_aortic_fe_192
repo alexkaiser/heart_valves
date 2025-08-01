@@ -46,7 +46,7 @@ MESH_VALVE = "aortic_no_partition_192.e"
 
 MU_S = 3.31e5 
 BETA_S = 0.0
-KAPPA_S = 8.52e9
+KAPPA_S = 1e5
 
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_zero.txt"
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_aorta_minus_ventricle.txt"
