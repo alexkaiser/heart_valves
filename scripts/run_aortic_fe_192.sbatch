@@ -20,12 +20,14 @@ TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_7180a6e_aorta_valve_on
+RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_7180a6e_aorta_
 mkdir $RUNDIR
 
 # set up run info 
-BASE_NAME=aortic_no_partition_192
-BASE_NAME_VESSEL=aorta_192_
+# BASE_NAME=aortic_no_partition_192.e
+# BASE_NAME_SCAFFOLD=aortic_no_partition_192_cylinder.e
+BASE_NAME_VESSEL=aorta_192.e
+BASE_NAME_=aorta_192_
 INPUT_NAME=input_aortic_fe_192
 RUN_LINE="srun main_aorta_fe"
 OPTIONS="-velocity_ksp_type cg -velocity_pc_type none -velocity_ksp_max_it 1 -velocity_ksp_norm_type none > output.txt 2>&1"
@@ -36,8 +38,9 @@ pwd
 
 # move stuff the the run directory 
 cd $SRCDIR
-cp $BASE_NAME*.e                             $RUNDIR
-cp $BASE_NAME_VESSEL*.e                      $RUNDIR
+# cp $BASE_NAME                                $RUNDIR
+# cp $BASE_NAME_SCAFFOLD                       $RUNDIR
+cp $BASE_NAME_VESSEL                         $RUNDIR
 cp lvot_fe_bdry_192.vertex                   $RUNDIR
 cp aorta_fe_bdry_192.vertex                  $RUNDIR
 cp $INPUT_NAME                               $RUNDIR

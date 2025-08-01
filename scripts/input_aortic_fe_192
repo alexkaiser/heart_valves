@@ -40,13 +40,13 @@ INDUCTANCE = 0.0
 
 // VESSEL_FILENAME = "aorta_192.vertex"
 
-MESH_VESSEL = "aorta_192_pt05cm.e"
+MESH_VESSEL = "aorta_192.e"
 MESH_SCAFFOLD = "aortic_no_partition_192_cylinder.e"
 MESH_VALVE = "aortic_no_partition_192.e"
 
-MU_S = 1.0e7
-BETA_S = 1.e7
-KAPPA_S = 1.0e8
+MU_S = 3.31e5 
+BETA_S = 0.0
+KAPPA_S = 8.52e9
 
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_zero.txt"
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_aorta_minus_ventricle.txt"
@@ -64,7 +64,8 @@ SPLIT_NORMAL_FORCE         = FALSE
 USE_JUMP_CONDITIONS        = FALSE             // whether to impose pressure jumps at fluid-structure interfaces
 USE_CONSISTENT_MASS_MATRIX = FALSE              // whether to use a consistent or lumped mass matrix
 USE_NODAL_QUADRATURE       = TRUE
-IB_POINT_DENSITY           = 0.9               // approximate density of IB quadrature points for Lagrangian-Eulerian interaction
+// no effect with nodal quadrature 
+// IB_POINT_DENSITY           = 0.9               // approximate density of IB quadrature points for Lagrangian-Eulerian interaction
 SOLVER_TYPE         = "STAGGERED"         // the fluid solver to use (STAGGERED or COLLOCATED)
 START_TIME          = 0.0e0               // initial simulation time
 END_TIME            = 1.0*CYCLE_DURATION    // final simulation time
@@ -212,7 +213,48 @@ IBFEMethod {
    split_normal_force         = SPLIT_NORMAL_FORCE
    use_jump_conditions        = USE_JUMP_CONDITIONS
    use_consistent_mass_matrix = USE_CONSISTENT_MASS_MATRIX
-   IB_point_density           = IB_POINT_DENSITY
+   // IB_point_density           = IB_POINT_DENSITY
+   enable_logging             = TRUE
+   workload_quad_point_weight = 1.0
+   
+   use_scratch_hierarchy = TRUE
+
+   GriddingAlgorithm
+   {
+       max_levels = MAX_LEVELS
+       ratio_to_coarser
+       {
+           level_1 = REF_RATIO,REF_RATIO,REF_RATIO
+           level_2 = REF_RATIO,REF_RATIO,REF_RATIO
+           level_3 = REF_RATIO,REF_RATIO,REF_RATIO
+           level_4 = REF_RATIO,REF_RATIO,REF_RATIO
+           level_5 = REF_RATIO,REF_RATIO,REF_RATIO
+       }
+
+       largest_patch_size
+       {
+           level_0 = 512,512,512
+       }
+
+       smallest_patch_size
+       {
+           level_0 = 16,16,16
+       }
+
+       efficiency_tolerance = 0.1e0  // min % of tag cells in new patch level
+       combine_efficiency   = 0.1e0  // chop box if sum of volumes of smaller boxes < efficiency * vol of large box
+
+       coalesce_boxes = TRUE
+   }
+
+   LoadBalancer
+   {
+      type                = "MERGING"
+      bin_pack_method     = "GREEDY"
+      max_workload_factor = 0.75
+   }
+
+
 }
 
 
@@ -271,37 +313,43 @@ x_up =  X_HIGH, Y_HIGH, Z_HIGH
    periodic_dimension = 0,0,0
 }
 
-GriddingAlgorithm {
-   max_levels = MAX_LEVELS
-   ratio_to_coarser {
-      level_1 = REF_RATIO,REF_RATIO,REF_RATIO
-      level_2 = REF_RATIO,REF_RATIO,REF_RATIO
-      level_3 = REF_RATIO,REF_RATIO,REF_RATIO
-      level_4 = REF_RATIO,REF_RATIO,REF_RATIO
-      level_5 = REF_RATIO,REF_RATIO,REF_RATIO
-      level_6 = REF_RATIO,REF_RATIO,REF_RATIO
-      level_7 = REF_RATIO,REF_RATIO,REF_RATIO
-   }
-   largest_patch_size {
-      level_0 = 512,512,512  // all finer levels will use same values as level_0
-   }
-   smallest_patch_size {
-      level_0 =   16, 16, 16  // all finer levels will use same values as level_0
-   }
-   efficiency_tolerance = 0.65e0  // min % of tag cells in new patch level
-   combine_efficiency   = 0.65e0  // chop box if sum of volumes of smaller boxes < efficiency * vol of large box
-   allow_patches_smaller_than_ghostwidth = TRUE
-   allow_patches_smaller_than_minimum_size_to_prevent_overlaps = TRUE
-   extend_tags_to_bdry = TRUE
+GriddingAlgorithm
+{
+    max_levels = MAX_LEVELS
+    ratio_to_coarser
+    {
+        level_1 = REF_RATIO,REF_RATIO,REF_RATIO
+        level_2 = REF_RATIO,REF_RATIO,REF_RATIO
+        level_3 = REF_RATIO,REF_RATIO,REF_RATIO
+        level_4 = REF_RATIO,REF_RATIO,REF_RATIO
+        level_5 = REF_RATIO,REF_RATIO,REF_RATIO
+    }
+
+    largest_patch_size
+    {
+        level_0 = 512,512,512
+    }
+
+    smallest_patch_size
+    {
+        level_0 = 16,16,16
+    }
+
+    efficiency_tolerance = 0.1e0  // min % of tag cells in new patch level
+    combine_efficiency   = 0.1e0  // chop box if sum of volumes of smaller boxes < efficiency * vol of large box
+
+    coalesce_boxes = TRUE
 }
 
 StandardTagAndInitialize {
    tagging_method = "GRADIENT_DETECTOR"
 }
 
-LoadBalancer {
-   bin_pack_method     = "SPATIAL"
-   max_workload_factor = 1
+LoadBalancer
+{
+   type                = "MERGING"
+   bin_pack_method     = "GREEDY"
+   max_workload_factor = 0.75
 }
 
 TimerManager{
