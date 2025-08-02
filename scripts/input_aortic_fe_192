@@ -20,7 +20,7 @@ R_distal =  1287.64596307
 
 P_aorta_0_MMHG = 90.22995737938673
 
-FOURIER_COEFFS_FILENAME_VENTRICLE = "fourier_coeffs_ventricle.txt"
+// FOURIER_COEFFS_FILENAME_VENTRICLE = "fourier_coeffs_ventricle.txt"
 
 BOUNDARY_FILENAME_VENTRICLE = "lvot_fe_bdry_192.vertex"
 BOUNDARY_FILENAME_AORTA = "aorta_fe_bdry_192.vertex"
