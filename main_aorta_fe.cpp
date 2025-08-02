@@ -519,14 +519,16 @@ int main(int argc, char** argv)
             }
 
             std::string fourier_coeffs_name_rv; 
+            fourier_series_data *fourier_series_ventricle;
             if (input_db->keyExists("FOURIER_COEFFS_FILENAME_VENTRICLE")){
                 fourier_coeffs_name_rv = input_db->getString("FOURIER_COEFFS_FILENAME_VENTRICLE");
+                pout << "attempting to build series with from file: " << fourier_coeffs_name_rv << "\n"; 
+                fourier_series_ventricle = new fourier_series_data(fourier_coeffs_name_rv.c_str(), dt);
             }
             else {
-                fourier_coeffs_name_rv = "fourier_coeffs_ventricle.txt"; 
+                fourier_series_ventricle = NULL;
             }
-            pout << "attempting to build series with from file: " << fourier_coeffs_name_rv << "\n"; 
-            fourier_series_data *fourier_series_ventricle = new fourier_series_data(fourier_coeffs_name_rv.c_str(), dt);
+
 
             // boundary vertex files 
             std::string ventricle_vertices_file_name; 
