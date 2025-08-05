@@ -44,9 +44,9 @@ MESH_VESSEL = "aorta_192.e"
 MESH_SCAFFOLD = "aortic_no_partition_192_cylinder.e"
 MESH_VALVE = "aortic_no_partition_192.e"
 
-MU_S = 3.31e5 
-BETA_S = 0.0
-KAPPA_S = 1e5
+MU_S = 1.0e7
+BETA_S = 1.e7
+KAPPA_S = 1.0e9
 
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_zero.txt"
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_aorta_minus_ventricle.txt"
@@ -68,7 +68,7 @@ USE_NODAL_QUADRATURE       = TRUE
 // IB_POINT_DENSITY           = 0.9               // approximate density of IB quadrature points for Lagrangian-Eulerian interaction
 SOLVER_TYPE         = "STAGGERED"         // the fluid solver to use (STAGGERED or COLLOCATED)
 START_TIME          = 0.0e0               // initial simulation time
-END_TIME            = 1.0*CYCLE_DURATION    // final simulation time
+END_TIME            = 0.4    // final simulation time
 GROW_DT             = 2.0e0               // growth factor for timesteps
 NUM_CYCLES          = 1                   // number of cycles of fixed-point iteration
 CONVECTIVE_TS_TYPE = "ADAMS_BASHFORTH"    // convective time stepping type

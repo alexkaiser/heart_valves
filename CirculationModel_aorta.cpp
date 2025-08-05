@@ -652,7 +652,9 @@ void CirculationModel_aorta::advanceTimeDependentData(const double dt,
         // }        
     }
 
-
+    double max_p_mmHg = 130.0; 
+    d_aorta_P     = std::min(max_p_mmHg * MMHG_TO_CGS * (d_time/0.2), max_p_mmHg * MMHG_TO_CGS); 
+    d_ventricle_P = std::min(max_p_mmHg * MMHG_TO_CGS * (d_time/0.2), max_p_mmHg * MMHG_TO_CGS); 
 
 
     writeDataFile(); 
