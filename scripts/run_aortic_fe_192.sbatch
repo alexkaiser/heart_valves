@@ -6,8 +6,9 @@
 #SBATCH --job-name=aortic_1
 #SBATCH --mail-user=adkaiser@gmail.com
 #SBATCH --mail-type=ALL
-#SBATCH --exclude=sh03-08n[17-20]
+#SBATCH -C CPU_GEN:SKX
 #SBATCH --partition=amarsden
+#SBATCH --exclusive
 # #SBATCH --exclude=sh-107-[59-64]
 
 module purge
@@ -20,7 +21,7 @@ TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_7180a6e_aorta_
+RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_7180a6e_aorta_mu4e5_beta0_kappa_1e5_new_input
 mkdir $RUNDIR
 
 # set up run info 
