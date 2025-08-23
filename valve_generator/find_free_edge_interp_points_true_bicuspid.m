@@ -13,9 +13,9 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
         error("must provide N_leaflets")
     end 
 
-    if N_leaflets ~= 2
-        error("N_leaflets must be equal to 2")
-    end 
+%     if N_leaflets ~= 2
+%         error("N_leaflets must be equal to 2")
+%     end 
 
     k_range = 2:k_max; 
 
@@ -69,17 +69,40 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
 
         options = optimset('Display','off','TolFun',1e-16);
 
+        % compute original midpoint of chord
+        % in xy plane 
+        % bounds relative to this position 
+        chord_midpoint = 0.5 * (X(1:2,1,k_max) + X(1:2,j_max,k_max));
+        norm_midpoint = norm(chord_midpoint);
+        
 
         % do not go lower than threshold 
         % can be close in the middle 
         % originally tuned for r = 1.25 cm valve, scale relative to this 
         r_basic = 1.25; 
-        y_max_from_center_min = (r/r_basic) * 0.4;
-        % but keep farther from the outside 
-        y_max_from_center_max_thresh = (r/r_basic) * (r_basic - 0.4);
+                
+        if N_leaflets == 2
+            % for two leaflets away from center more 
+            y_max_from_center_min = (r/r_basic) * 0.4;
+            % and keep away from from the outside 
+            y_max_from_center_max_thresh = (r/r_basic) * (r_basic - 0.4);
+            % place on radius in two leaflet case 
+            y_max_from_center_initial_guess = 1.0 * (r/r_basic); 
+        else 
+            % 3 or more leaflets 
+            
+            % allow to go fairly far in 
+            y_max_from_center_min = (r/r_basic) * 0.2;
+            % and keep away from from the outside 
+            y_max_from_center_max_thresh = (r/r_basic) * (r_basic - 0.4);
+            
+            % start at center 
+            y_max_from_center_initial_guess = -r;
+        end 
 
-        y_max_from_center_initial_guess = 1.0 * (r/r_basic); 
-
+        min_bound = y_max_from_center_min - norm_midpoint;
+        max_bound = y_max_from_center_max_thresh - norm_midpoint;
+        
         use_fsolve = false; 
         use_fmincon = true; 
 
@@ -87,7 +110,8 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
             y_max_from_center = fsolve(free_edge_len_minus_rest,y_max_from_center_initial_guess,options); 
             y_max_from_center = max(y_max_from_center, y_max_from_center_min); 
         elseif use_fmincon
-            y_max_from_center = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],y_max_from_center_min,y_max_from_center_max_thresh,[],options)
+%             y_max_from_center = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],y_max_from_center_min,y_max_from_center_max_thresh,[],options)
+            y_max_from_center = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],min_bound,max_bound,[],options)
         else 
             y_max_from_center = r/2; 
         end 
@@ -176,17 +200,24 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
 
         fprintf('Power %f through strain loop, pass_equal_strain = %d\n', power, pass_equal_strain);
         
-        if all(free_edge_interp_points(2,2:N_each) > 0)
-            pass_y_gt_0_constraint = true; 
-            fprintf('Power %f passed nonzero y constraint\n', power);
-            break; 
-        else 
-            % pass this constraint already false 
-            % pass_y_gt_0_constraint = false; 
-            fprintf('Found negative in free_edge_interp_points with power %f\n', power);
+        if N_leaflets == 2
+            if all(free_edge_interp_points(2,2:N_each) > 0)
+                pass_y_gt_0_constraint = true; 
+                fprintf('Power %f passed nonzero y constraint\n', power);
+                break; 
+            else 
+                % pass this constraint already false 
+                % pass_y_gt_0_constraint = false; 
+                fprintf('Found negative in free_edge_interp_points with power %f\n', power);
+            end 
+        end 
+    
+        if N_leaflets > 2
+            if pass_equal_strain
+                break; 
+            end 
         end 
         
-    
     end % power outer loop
     
    

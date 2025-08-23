@@ -46,10 +46,10 @@ is_bc = leaflet.is_bc;
 linear_idx_offset = zeros(j_max, k_max); 
 point_idx_with_bc = zeros(j_max, k_max); 
 
-
-if N_leaflets == 2 
-    free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(leaflet, extra_stretch_radial, extra_stretch_circ); 
-end 
+free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(leaflet, extra_stretch_radial, extra_stretch_circ); 
+% if N_leaflets == 2 
+%     free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(leaflet, extra_stretch_radial, extra_stretch_circ); 
+% end 
 
 
 dj_interp = 1/N_each; 
@@ -67,12 +67,13 @@ for j=2:N_each
         % total radial rest length of this radial fiber 
         total_rest_length = sum(R_v(j, 1:(k-1))); 
 
-        if N_leaflets == 2 
-            comm_interp_point = free_edge_interp_points(:,j); 
-        else 
-            comm_interp_point = (1 - (j-1)*dj_interp) * comm_prev ...
-                                   + (j-1)*dj_interp  * comm_next; 
-        end 
+        comm_interp_point = free_edge_interp_points(:,j); 
+%         if N_leaflets == 2 
+%             comm_interp_point = free_edge_interp_points(:,j); 
+%         else 
+%             comm_interp_point = (1 - (j-1)*dj_interp) * comm_prev ...
+%                                    + (j-1)*dj_interp  * comm_next; 
+%         end 
 
 
         tangent = (comm_interp_point - ring_point); 
