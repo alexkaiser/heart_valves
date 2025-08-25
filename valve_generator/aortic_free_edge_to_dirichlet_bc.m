@@ -1,4 +1,3 @@
-
 function leaflet = aortic_free_edge_to_dirichlet_bc(leaflet, extra_stretch_radial, extra_stretch_circ)
 
 j_max  = leaflet.j_max; 
@@ -46,18 +45,19 @@ is_bc = leaflet.is_bc;
 linear_idx_offset = zeros(j_max, k_max); 
 point_idx_with_bc = zeros(j_max, k_max); 
 
-free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(leaflet, extra_stretch_radial, extra_stretch_circ); 
-% if N_leaflets == 2 
-%     free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(leaflet, extra_stretch_radial, extra_stretch_circ); 
-% end 
 
+free_edge_equalization = true; 
 
-dj_interp = 1/N_each; 
+if free_edge_equalization
+    free_edge_interp_points = find_free_edge_interp_points_aortic(leaflet, extra_stretch_radial, extra_stretch_circ); 
+else 
+    dj_interp = 1/N_each; 
 
+    % always boundaries 
+    comm_prev = X(:,1,k_max); 
+    comm_next = X(:,j_max,k_max); 
+end 
 
-% always boundaries 
-comm_prev = X(:,1,k_max); 
-comm_next = X(:,j_max,k_max); 
 
 for j=2:N_each
     for k=k_range
@@ -67,18 +67,17 @@ for j=2:N_each
         % total radial rest length of this radial fiber 
         total_rest_length = sum(R_v(j, 1:(k-1))); 
 
-        comm_interp_point = free_edge_interp_points(:,j); 
-%         if N_leaflets == 2 
-%             comm_interp_point = free_edge_interp_points(:,j); 
-%         else 
-%             comm_interp_point = (1 - (j-1)*dj_interp) * comm_prev ...
-%                                    + (j-1)*dj_interp  * comm_next; 
-%         end 
+        if free_edge_equalization
+            comm_interp_point = free_edge_interp_points(:,j); 
+        else 
+            % old interpolation style on chord 
+            comm_interp_point = (1 - (j-1)*dj_interp) * comm_prev ...
+                                   + (j-1)*dj_interp  * comm_next; 
 
+        end 
 
         tangent = (comm_interp_point - ring_point); 
         tangent = tangent / norm(tangent); 
-
 
         % based on the rest length 
         X(:,j,k) = total_rest_length * tangent * extra_stretch_radial + ring_point; 
@@ -104,12 +103,6 @@ end
 
 
 leaflet.X = X; 
-
-% for j=1:j_max 
-%     if ~is_bc(j,k)
-%         error('did not set all bcs')
-%     end 
-% end 
 
 if debug 
     figure; 

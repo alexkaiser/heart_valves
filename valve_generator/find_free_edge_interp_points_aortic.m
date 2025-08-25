@@ -1,4 +1,4 @@
-function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(leaflet, extra_stretch_radial, extra_stretch_circ)
+function free_edge_interp_points = find_free_edge_interp_points_aortic(leaflet, extra_stretch_radial, extra_stretch_circ)
 
     j_max  = leaflet.j_max; 
     k_max  = leaflet.k_max; 
@@ -13,10 +13,7 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
         error("must provide N_leaflets")
     end 
 
-%     if N_leaflets ~= 2
-%         error("N_leaflets must be equal to 2")
-%     end 
-
+    
     k_range = 2:k_max; 
 
     if ~exist('extra_stretch_radial', 'var')
@@ -52,7 +49,7 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
         debug_lengths = false; 
 
         % for debug info 
-        [free_edge_length_single_loaded, free_edge_length_single_rest] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths); 
+        [~, free_edge_length_single_rest] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths); 
 
         % use the intercomm radius
         r = leaflet.skeleton.r_commissure; 
@@ -83,46 +80,38 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
                 
         if N_leaflets == 2
             % for two leaflets away from center more 
-            y_max_from_center_min = (r/r_basic) * 0.4;
+            center_adjust_min = (r/r_basic) * 0.4;
             % and keep away from from the outside 
-            y_max_from_center_max_thresh = (r/r_basic) * (r_basic - 0.4);
+            center_adjust_max = (r/r_basic) * (r_basic - 0.4);
             % place on radius in two leaflet case 
-            y_max_from_center_initial_guess = 1.0 * (r/r_basic); 
+            center_adjust_initial_guess = 1.0 * (r/r_basic); 
         else 
             % 3 or more leaflets 
             
             % allow to go fairly far in 
-            y_max_from_center_min = (r/r_basic) * 0.2;
+            center_adjust_min = (r/r_basic) * 0.2;
             % and keep away from from the outside 
-            y_max_from_center_max_thresh = (r/r_basic) * (r_basic - 0.4);
+            center_adjust_max = (r/r_basic) * (r_basic - 0.2);
             
             % start at center 
-            y_max_from_center_initial_guess = -r;
+            center_adjust_initial_guess = -r;
         end 
 
-        min_bound = y_max_from_center_min - norm_midpoint;
-        max_bound = y_max_from_center_max_thresh - norm_midpoint;
+        min_bound = center_adjust_min - norm_midpoint;
+        max_bound = center_adjust_max - norm_midpoint;
         
         use_fsolve = false; 
         use_fmincon = true; 
 
         if use_fsolve 
-            y_max_from_center = fsolve(free_edge_len_minus_rest,y_max_from_center_initial_guess,options); 
-            y_max_from_center = max(y_max_from_center, y_max_from_center_min); 
+            center_adjust = fsolve(free_edge_len_minus_rest,center_adjust_initial_guess,options); 
+            center_adjust = max(center_adjust, center_adjust_min); 
         elseif use_fmincon
-%             y_max_from_center = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],y_max_from_center_min,y_max_from_center_max_thresh,[],options)
-            y_max_from_center = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],min_bound,max_bound,[],options)
+            center_adjust = fmincon(free_edge_len_minus_rest, center_adjust_initial_guess,[],[],[],[],min_bound,max_bound,[],options);
         else 
-            y_max_from_center = r/2; 
+            center_adjust = r/2; 
         end 
 
-        r
-        y_max_from_center
-
-    %     y_max_from_center_fsolve = fsolve(free_edge_len_minus_rest,y_max_from_center_initial_guess,options)
-    %     y_max_from_center_fmincon_unconstrained = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],[],[],[],options) 
-    %     y_max_from_center_fmincon = fmincon(free_edge_len_minus_rest, y_max_from_center_initial_guess,[],[],[],[],y_max_from_center_min,y_max_from_center_max_thresh,[],options) 
-    %     
 
         debug_plots = false; 
         if debug_plots
@@ -141,7 +130,7 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
 
 
         % compute the resulting values 
-        [free_edge_len_temp, free_edge_interp_points] = run_temp_free_edge_interp(leaflet, extra_stretch_radial, y_max_from_center, power);
+        [~, free_edge_interp_points] = run_temp_free_edge_interp(leaflet, extra_stretch_radial, center_adjust, power);
 
         pass_equal_strain = false; 
 
@@ -168,7 +157,7 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
 
             % get free edge lengths 
             % 'after sin^2 interpolation'
-            [free_edge_length_single_loaded, free_edge_length_single_rest, portion_of_current_edge, portion_of_free_edge] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
+            [~, ~, portion_of_current_edge, portion_of_free_edge] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
             % free_edge_length_single_loaded, free_edge_length_single_rest; 
 
             X_free_edge_leaflet_1 = X(:,:,k_max); 
@@ -184,7 +173,7 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
             X(:,:,k_max) = free_edge_interp_points; 
 
             % 'after respacing free edge interp points'
-            [free_edge_length_single_loaded, free_edge_length_single_rest, ~, ~, strains] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
+            [~, ~, ~, ~, strains] = get_circ_edge_lengths(leaflet, N_each, k_max, X, R_u, debug_lengths);
             % free_edge_length_single_loaded, free_edge_length_single_rest
 
             mean_strain = mean(strains); 
@@ -200,22 +189,20 @@ function free_edge_interp_points = find_free_edge_interp_points_true_bicuspid(le
 
         fprintf('Power %f through strain loop, pass_equal_strain = %d\n', power, pass_equal_strain);
         
-        if N_leaflets == 2
-            if all(free_edge_interp_points(2,2:N_each) > 0)
-                pass_y_gt_0_constraint = true; 
-                fprintf('Power %f passed nonzero y constraint\n', power);
-                break; 
-            else 
-                % pass this constraint already false 
-                % pass_y_gt_0_constraint = false; 
-                fprintf('Found negative in free_edge_interp_points with power %f\n', power);
-            end 
-        end 
-    
         if N_leaflets > 2
-            if pass_equal_strain
-                break; 
+            if ~((X(2,1,k_max) == 0) && (X(2,j_max,k_max) > 0))
+                warning('Constraint check assumes first commissure is on x axis and second comm above x axis. Other behavior undefined');
             end 
+        end  
+        
+        if all(free_edge_interp_points(2,2:N_each) > 0)
+            pass_y_gt_0_constraint = true; 
+            fprintf('Power %f passed nonzero y constraint\n', power);
+            break; 
+        else 
+            % pass this constraint already false 
+            % pass_y_gt_0_constraint = false; 
+            fprintf('Found negative in free_edge_interp_points with power %f\n', power);
         end 
         
     end % power outer loop

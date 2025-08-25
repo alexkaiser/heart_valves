@@ -10,15 +10,6 @@ N_each = leaflet.N_each;
 R_u    = leaflet.R_u; 
 R_v    = leaflet.R_v; 
 
-if isfield(leaflet, 'N_leaflets')
-    N_leaflets = leaflet.N_leaflets; 
-else 
-    error("must provide N_leaflets")
-end 
-
-% if N_leaflets ~= 2
-%     error("N_leaflets must be equal to 2")
-% end 
 
 if ~exist('extra_stretch_radial', 'var')
     extra_stretch_radial = 1.0; 
@@ -68,23 +59,9 @@ if coord_transform
     X = X + translation_center_on_y;
     
     if abs(comm_1(1) + comm_2(1)) > tol
-        error('x components not centered on y')
+        error('x components not centered on y');
     end 
-        
-    if debug_transform
-%         figure; 
-%         x_component = squeeze(X(1,:,:)); 
-%         y_component = squeeze(X(2,:,:)); 
-%         z_component = squeeze(X(3,:,:)); 
-% 
-%         width = 1.0; 
-%         surf(x_component, y_component, z_component, 'LineWidth',width);
-% 
-%         axis equal 
-%         axis auto 
-%         hold on 
-    end 
-    
+            
 end 
 
 
