@@ -142,7 +142,7 @@ def remove_eulerian_space(basename,
                           nsteps, 
                           label='_restricted_cells', 
                           extension='vtu', 
-                          point_data=False, 
+                          convert_to_point_data=True, 
                           NX=None, 
                           NY=None, 
                           NZ=None, 
@@ -159,16 +159,22 @@ def remove_eulerian_space(basename,
             # read distributed vtr 
             mesh = read_distributed_vtr(dir_name)
 
-            if point_data:
+            # if there is cell data convert it 
+            if convert_to_point_data:
 
-                if (NX is None) or (NY is None) or (NZ is None):
-                    raise ValueError("Must provide values for NX,NY,NZ when calling points")
+                if ('U' in mesh.cell_data) and ('P' in mesh.cell_data):
 
-                mesh_point_data = convert_mesh_to_center_points(mesh, NX, NY, NZ)
-                selected = mesh_point_data.select_enclosed_points(boundary_mesh, tolerance=1.0e-10, inside_out=False, check_surface=True)
+                    if (NX is None) or (NY is None) or (NZ is None):
+                        raise ValueError("Must provide values for NX,NY,NZ when converting cell to point data")
 
-            else:
-                selected = mesh.select_enclosed_points(boundary_mesh, tolerance=1.0e-10, inside_out=False, check_surface=True)
+                    mesh = convert_mesh_to_center_points(mesh, NX, NY, NZ)
+
+                # check that there is point data if there was no cell data to convert 
+                elif not (('U' in mesh.point_data) and ('P' in mesh.point_data)):
+                    raise ValueError('Could not find U and P in cell or point data, point data requested')
+
+
+            selected = mesh.select_enclosed_points(boundary_mesh, tolerance=1.0e-10, inside_out=False, check_surface=True)
 
             # remove the exterior 
             # all_scalars=True keeps cells that intersect boundary 
@@ -319,6 +325,9 @@ if __name__ == '__main__':
         basename = "eulerian_vars"
         nsteps = len(times)
 
+        convert_to_point_data = True
+
+        point_data = True 
         if point_data:
             label = '_restricted_points'
         else: 
@@ -350,7 +359,7 @@ if __name__ == '__main__':
                                                                                 nsteps, 
                                                                                 label, 
                                                                                 extension,
-                                                                                point_data, 
+                                                                                convert_to_point_data, 
                                                                                 NX,
                                                                                 NY, 
                                                                                 NZ, 

@@ -29,10 +29,6 @@
 
 // Modified 2019, Alexander D. Kaiser
 
-// Config files
-#include <IBAMR_config.h>
-#include <IBTK_config.h>
-#include <SAMRAI_config.h>
 
 // Headers for basic PETSc functions
 #include <petscsys.h>
@@ -81,10 +77,6 @@
      #include <ibamr/IBImplicitStaggeredHierarchyIntegrator.h>
 #endif
 
-
-#if defined(IBAMR_HAVE_SILO)
-#include <silo.h>
-#endif
 
 
 typedef struct{

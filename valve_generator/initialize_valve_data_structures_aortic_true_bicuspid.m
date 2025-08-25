@@ -167,15 +167,6 @@ valve.annulus_flattened_normalized = [
    1.000000000000000   1.000000000000000];
 
 
-% add flags to spring files 
-% to view and output with a stride 
-
-valve.output.leaflets       = [1;1;1]; 
-valve.output.stride_leaflet = max(1,N/128); 
-valve.output.mesh           = [1;0;0]; 
-valve.output.cartesian_mesh = [0;0;0]; 
-valve.output.stride_mesh    = N/32; 
-
 
 valve.dirichlet_free_edge = false; 
 
