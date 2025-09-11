@@ -281,21 +281,28 @@ int main(int argc, char** argv)
         mesh_ptrs.emplace_back(&mesh_vessel);
         part_names.emplace_back(input_db->getString("MESH_VESSEL"));
 
-        #ifdef SCAFFOLD_ON
-            Mesh mesh_scaffold(init.comm(), NDIM);
+
+        bool scaffold_on = input_db->keyExists("MESH_SCAFFOLD"); 
+        bool valve_on = input_db->keyExists("MESH_VALVE"); 
+
+        Mesh mesh_scaffold(init.comm(), NDIM);
+        if (scaffold_on)
+        {   
             mesh_scaffold.read(input_db->getString("MESH_SCAFFOLD"));
             mesh_scaffold.prepare_for_use();
             mesh_ptrs.emplace_back(&mesh_scaffold);
             part_names.emplace_back(input_db->getString("MESH_SCAFFOLD"));
-        #endif
+        }    
 
-        #ifdef VALVE_ON
-            Mesh mesh_valve(init.comm(), NDIM);
+        Mesh mesh_valve(init.comm(), NDIM);
+        if (valve_on)
+        {
+        
             mesh_valve.read(input_db->getString("MESH_VALVE"));
             mesh_valve.prepare_for_use();
             mesh_ptrs.emplace_back(&mesh_valve);
             part_names.emplace_back(input_db->getString("MESH_VALVE"));
-        #endif 
+        }
 
         mu_s = input_db->getDouble("MU_S");
         beta_s = input_db->getDouble("BETA_S");
@@ -373,7 +380,7 @@ int main(int argc, char** argv)
         ib_method_ops->registerLagBodyForceFunction(tether_force_data, 0);
 
 
-        #ifdef SCAFFOLD_ON
+        if (scaffold_on){
             IBFEMethod::PK1StressFcnData PK1_dev_stress_data_scaffold(PK1_dev_stress_function);
             IBFEMethod::PK1StressFcnData PK1_dil_stress_data_scaffold(PK1_dil_stress_function);
 
@@ -385,13 +392,12 @@ int main(int argc, char** argv)
             ib_method_ops->registerPK1StressFunction(PK1_dev_stress_data_scaffold, 1);
             ib_method_ops->registerPK1StressFunction(PK1_dil_stress_data_scaffold, 1);
 
-            IBFEMethod::LagBodyForceFcnData tether_force_data_scaffold(tether_force_function);
-            ib_method_ops->registerLagBodyForceFunction(tether_force_data_scaffold, 1);
+            // IBFEMethod::LagBodyForceFcnData tether_force_data_scaffold(tether_force_function);
+            // ib_method_ops->registerLagBodyForceFunction(tether_force_data_scaffold, 1);
+        }
 
-        #endif 
 
-
-        #ifdef VALVE_ON
+        if (valve_on){
             IBFEMethod::PK1StressFcnData PK1_dev_stress_data_valve(PK1_dev_stress_function);
             IBFEMethod::PK1StressFcnData PK1_dil_stress_data_valve(PK1_dil_stress_function);
 
@@ -402,7 +408,7 @@ int main(int argc, char** argv)
 
             ib_method_ops->registerPK1StressFunction(PK1_dev_stress_data_valve, 2);
             ib_method_ops->registerPK1StressFunction(PK1_dil_stress_data_valve, 2);
-        #endif 
+        }
 
 
         if (input_db->getBoolWithDefault("ELIMINATE_PRESSURE_JUMPS", false))
