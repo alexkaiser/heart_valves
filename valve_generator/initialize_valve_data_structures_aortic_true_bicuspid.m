@@ -218,8 +218,8 @@ valve.p_final_fixed_comm = 0.1 * MMHG_TO_CGS;
 
 valve.L = 2.25; 
 
-r_stj = 2.5/2; % 25 mm valve 
-r_temp = 2.5/2; % vbr radius
+r_stj = 1.67 / 2;
+r_temp = 1.93 / 2; % vbr radius
 hc = 0.5 * r_stj; 
 h1 = 1.4 * r_stj - hc; 
 r_commissure = r_stj; 
@@ -263,8 +263,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 3.34;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.99;  % radial
+tension_coeffs.c_circ_dec       = 3.16;  % circumferential 
+tension_coeffs.c_rad_dec        = 1.18;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.91;
 
