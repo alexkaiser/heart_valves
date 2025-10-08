@@ -1,4 +1,4 @@
-function [a_0 a_n b_n Series times linear_interp_vals_one_cycle Series_derivative] = series_and_smooth(points_one_cycle, dt, bump_radius, n_fourier_coeffs, plots)
+function [a_0 a_n b_n Series times linear_interp_vals_one_cycle Series_derivative] = series_and_smooth(points_one_cycle, dt, bump_radius, n_fourier_coeffs, plots, time_offset)
 % 
 % Takes data, computes piecewise linear interpolant, 
 % smooths with convolution with cosine squared bump,
@@ -55,6 +55,18 @@ end
 times_three_cycle = [times; times+cycle_length; times+(2*cycle_length)]; 
 vals_three_cycle = [vals; vals; vals]; 
 
+idx_offset = 0;
+if exist('time_offset', 'var')
+    
+    if (time_offset >= cycle_length)
+        error('time_offset larger than cycle_length')        
+    end
+    
+    idx_offset = find(times > time_offset,1);
+end 
+
+
+
 % fig = figure; 
 % plot(times_three_cycle, vals_three_cycle)
 % title('three cycle')
@@ -82,7 +94,8 @@ end
 
 smoothed = dt*conv(vals_three_cycle, bump_vals, 'same'); 
 
-smoothed_one_cycle = smoothed( (n_times+1) : (2*n_times)); 
+smoothed_one_cycle = smoothed( (n_times+1) + idx_offset : (2*n_times) + idx_offset); 
+
 
 if plots
     fig = figure; 

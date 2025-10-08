@@ -9,15 +9,35 @@ end
 
 MMHG_TO_CGS = 1333.22368;
 
-cycle_duration = 0.8; 
 
-Q_goal_L_per_min = 5.6; 
-Q_goal_ml_per_s = Q_goal_L_per_min * 1e3 / 60; 
-Q_goal_ml_per_cycle = Q_goal_ml_per_s * cycle_duration; 
 
-ejection_fraction_goal = 0.70;
-end_diastolic_volume = Q_goal_ml_per_cycle / ejection_fraction_goal
-ventricular_volume_initial = end_diastolic_volume - Q_goal_ml_per_cycle
+
+historical_3 = false;
+if historical_3
+    
+    SV = 71.70;
+    LVESV = 56.9; 
+    
+else    
+    % basic case  
+    cycle_duration = 0.8;
+    Q_goal_L_per_min = 5.6; 
+    ejection_fraction_goal = 0.70;
+    
+    Q_goal_ml_per_s = Q_goal_L_per_min * 1e3 / 60; 
+    Q_goal_ml_per_cycle = Q_goal_ml_per_s * cycle_duration; 
+
+
+    end_diastolic_volume = Q_goal_ml_per_cycle / ejection_fraction_goal
+    ventricular_volume_initial = end_diastolic_volume - Q_goal_ml_per_cycle
+    
+    % permutes values to start at this time 
+    % time arrays still start at zero  
+    start_time_in_cycle = 0.15;
+end 
+    
+
+
 
 % Poiseuille flow estimate on vessel 
 L = 7; % cm 
@@ -141,8 +161,9 @@ t_mesh_one_cycle = 0:dt:cycle_duration;
 t = 0:dt:cycle_duration; 
 % t = 0:dt:(cycle_duration*2); 
 
+
 [a_0_pressure_lv, a_n_pressure_lv, b_n_pressure_lv, Series_pressure_lv, ~, ~, Series_pressure_lv_derivative] = ... 
-    series_and_smooth([times_pressures_adjusted, pressures_lv_raw], dt, bump_radius, n_fourier_coeffs, plots); 
+    series_and_smooth([times_pressures_adjusted, pressures_lv_raw], dt, bump_radius, n_fourier_coeffs, plots, start_time_in_cycle); 
 
 vals_series_pressure_lv = Series_pressure_lv(t); 
 vals_series_pressure_lv_derivative = Series_pressure_lv_derivative(t); 
@@ -162,7 +183,7 @@ if check_derivatives
 end 
 
 [a_0_activation_two_hill, a_n_activation_two_hill, b_n_activation_two_hill, Series_activation_two_hill] = ... 
-    series_and_smooth([t', two_hill_function(t)'], dt, bump_radius, n_fourier_coeffs, plots); 
+    series_and_smooth([t', two_hill_function(t)'], dt, bump_radius, n_fourier_coeffs, plots, start_time_in_cycle); 
 
 vals_series_activation_two_hill = Series_activation_two_hill(t);
 
@@ -179,7 +200,7 @@ activation_data_unscaled = (pressures_lv_raw > p_lv_activation_threshold) .* pre
 activation_data = activation_data_unscaled / max(activation_data_unscaled);
 
 [a_0_activation, a_n_activation, b_n_activation, Series_activation] = ... 
-    series_and_smooth([times_pressures_adjusted, activation_data], dt, bump_radius, n_fourier_coeffs, plots); 
+    series_and_smooth([times_pressures_adjusted, activation_data], dt, bump_radius, n_fourier_coeffs, plots, start_time_in_cycle); 
 
 vals_series_activation = Series_activation(t);
 
@@ -189,7 +210,7 @@ file_name = strcat(base_name, suffix, '.txt');
 output_series_coeffs_to_txt(a_0_activation, a_n_activation, b_n_activation, n_fourier_coeffs, cycle_duration, file_name); 
 
 [a_0_pressure_aorta, a_n_pressure_aorta, b_n_pressure_aorta, Series_pressure_aorta, ~, ~, Series_pressure_aorta_derivative] = ...
-    series_and_smooth([times_pressures_adjusted, pressures_aorta_raw], dt, bump_radius, n_fourier_coeffs, plots); 
+    series_and_smooth([times_pressures_adjusted, pressures_aorta_raw], dt, bump_radius, n_fourier_coeffs, plots, start_time_in_cycle); 
 
 vals_series_pressure_aorta = Series_pressure_aorta(t); 
 vals_series_pressure_aorta_derivative = Series_pressure_aorta_derivative(t); 
@@ -203,7 +224,7 @@ times_q_mitral_adjusted = times_q_mitral - times_q_mitral(1);
 times_q_mitral_adjusted = times_q_mitral_adjusted * cycle_duration / times_q_mitral_adjusted(end);
 
 [a_0_q_mitral, a_n_q_mitral, b_n_q_mitral, Series_q_mitral, ~, ~, Series_q_mitral_derivative] = ...
-    series_and_smooth([times_q_mitral_adjusted, q_mitral_raw], dt, bump_radius, n_fourier_coeffs, plots); 
+    series_and_smooth([times_q_mitral_adjusted, q_mitral_raw], dt, bump_radius, n_fourier_coeffs, plots, start_time_in_cycle); 
 
 
 vals_series_q_mitral = Series_q_mitral(t);
@@ -217,7 +238,7 @@ times_q_aorta_adjusted = times_q_aorta - times_q_aorta(1);
 times_q_aorta_adjusted = times_q_aorta_adjusted * cycle_duration / times_q_aorta_adjusted(end);
 
 [a_0_q_aorta, a_n_q_aorta, b_n_q_aorta, Series_q_aorta, ~, ~, Series_q_aorta_derivative] = ...
-    series_and_smooth([times_q_aorta_adjusted, q_aorta_raw], dt, bump_radius, n_fourier_coeffs, plots); 
+    series_and_smooth([times_q_aorta_adjusted, q_aorta_raw], dt, bump_radius, n_fourier_coeffs, plots, start_time_in_cycle); 
 
 vals_series_q_aorta = Series_q_aorta(t);
 vals_series_q_aorta_derivative = Series_q_aorta_derivative(t);
@@ -279,7 +300,7 @@ for j=1:length(vals_ventricular_volume)
     vals_ventricular_volume_deriv(j) = vals_series_q_mitral_scaled(j) - vals_series_q_aorta_scaled(j); 
 end 
 
-series_plots = false; 
+series_plots = true; 
 
 if series_plots
     figure; 
@@ -299,15 +320,15 @@ if series_plots
     subplot(4,1,4);
     plot(t, vals_series_activation);
 
-    figure; 
-    plot(t, vals_series_pressure_lv_derivative)
-    hold on 
-    plot(t, vals_series_pressure_aorta_derivative)
-    plot(t, vals_series_q_mitral_derivative_scaled)
-    plot(t, vals_series_q_aorta_derivative_scaled)
-    plot(t, vals_ventricular_volume_deriv)
-    title('derivatives')
-    legend('p lv derivative', 'p aorta derivative', 'q mi derivative', 'q_ao_derivative', 'lv derivative')
+    %     figure; 
+    %     plot(t, vals_series_pressure_lv_derivative)
+    %     hold on 
+    %     plot(t, vals_series_pressure_aorta_derivative)
+    %     plot(t, vals_series_q_mitral_derivative_scaled)
+    %     plot(t, vals_series_q_aorta_derivative_scaled)
+    %     plot(t, vals_ventricular_volume_deriv)
+    %     title('derivatives')
+    %     legend('p lv derivative', 'p aorta derivative', 'q mi derivative', 'q_ao_derivative', 'lv derivative')
 end 
 
 
