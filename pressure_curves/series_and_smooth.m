@@ -101,6 +101,9 @@ if plots
     fig = figure; 
     plot(times, smoothed_one_cycle ); 
     title('After convolution, one cycle')
+    
+    fig = figure; 
+    plot(times_three_cycle, smoothed)
 end 
 
 [a_0 a_n b_n Series Series_derivative] = fourier_series_uniform(times, smoothed_one_cycle, cycle_length, n_fourier_coeffs, dt); 

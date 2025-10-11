@@ -81,6 +81,8 @@ graft_tester_geometry = false;
 dilate_graft = false; 
 dilation_dist = 0.0; 
 
+historical_3 = true; 
+
 fused_commissure = false; 
 
 % name 
@@ -98,10 +100,21 @@ if valve.in_heart
         % valve.initial_rotation_aortic = rotation_matrix_z(pi/4); 
 
         % for normal_3
-        th = 2*pi/3; 
-        valve.initial_translation_aortic = -0.05 * [cos(th); sin(th); 0]; 
-        valve.initial_rotation_aortic = rotation_matrix_z(pi/3 + pi/12 + pi/48);
-        valve.transformation_vertex_file = 'aortic_annulus.vertex';
+
+        if exist('historical_3', 'var') && historical_3
+            
+            th = 2*pi/3; 
+            valve.initial_translation_aortic = 0.1 * [cos(th); sin(th); 0]; 
+            valve.initial_translation_aortic = valve.initial_translation_aortic  + 0.1 * [1; 0; 0]; 
+            valve.initial_rotation_aortic = rotation_matrix_z(pi/3 + pi/6 + pi/12);
+            valve.transformation_vertex_file = 'historical_3_vbr.vertex';
+        else 
+            
+            th = 2*pi/3; 
+            valve.initial_translation_aortic = -0.05 * [cos(th); sin(th); 0]; 
+            valve.initial_rotation_aortic = rotation_matrix_z(pi/3 + pi/12 + pi/48);
+            valve.transformation_vertex_file = 'aortic_annulus.vertex';
+        end 
     end 
 else 
     valve.base_name = sprintf('aortic_%d', N); 
@@ -218,10 +231,10 @@ valve.p_final_fixed_comm = 0.1 * MMHG_TO_CGS;
 
 valve.L = 2.25; 
 
-r_stj = 1.67 / 2;
-r_temp = 1.93 / 2; % vbr radius
+r_stj = 2.3 / 2;
+r_temp = 2.3 / 2; % vbr radius
 hc = 0.5 * r_stj; 
-h1 = 1.4 * r_stj - hc; 
+h1 = 0.87 * 2 * r_stj - hc; % 1.4 * r_stj - hc; 
 r_commissure = r_stj; 
 % place the post only if not using the full annulus geometry 
 place_vertical_post = ~valve.annulus_to_comm;
@@ -347,6 +360,10 @@ if valve.in_heart
 
         % if min radius lower than 2.5cm, increase ring thickness accordingly 
         thickness_cylinder = 0.3 + (2.5/2 - valve.r); 
+        if exist('historical_3') && historical_3
+            thickness_cylinder = thickness_cylinder + 0.1;
+        end 
+        
         valve.n_layers_cylinder = ceil(thickness_cylinder/valve.ds) + 1; 
 
         h_scaffold_min = -0.05;

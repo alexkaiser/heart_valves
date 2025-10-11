@@ -422,152 +422,407 @@ def process_ring_to_vertex(mesh, base_name_out, scaling=1.0):
 
     vertex_file.close()
 
+def print_boundary_info(mesh, DX, extra_bdry_min=0.25, multiple=8):
+
+    x_min = mesh.bounds[0]
+    x_max = mesh.bounds[1]
+    y_min = mesh.bounds[2]
+    y_max = mesh.bounds[3]
+    z_min = mesh.bounds[4]
+    z_max = mesh.bounds[5]
+
+    NX_temp = (x_max - x_min)/DX
+    NY_temp = (y_max - y_min)/DX
+    NZ_temp = (z_max - z_min)/DX
+
+    # ensure all are muliples of prescribed number for multigrid
+    NX = multiple * math.ceil(NX_temp/multiple)
+    NY = multiple * math.ceil(NY_temp/multiple)
+    NZ = multiple * math.ceil(NZ_temp/multiple)
+
+    X_HIGH = x_max
+    Y_MID  = 0.5 * (y_max + y_min)
+    Y_HIGH = Y_MID + (NY*DX)/2.0
+    Z_HIGH = z_max
+
+    X_LOW = X_HIGH - DX*NX
+    Y_LOW = Y_HIGH - DX*NY
+    Z_LOW = Z_HIGH - DX*NZ
+
+    print("bounds = ", mesh.bounds)
+    print("computed boundary = ", X_LOW, " ", X_HIGH, " ", Y_LOW, " ", Y_HIGH, " ", Z_LOW, " ", Z_HIGH)
+    print("NX NY NZ = ", NX, " ", NY, " ", NZ)
+
+    print("Before:")
+    print("x extra = ", x_min - X_LOW)
+    print("y extra bottom = ", y_min - Y_LOW)
+    print("y extra top    = ", Y_HIGH - y_max)
+    print("z extra        = ", z_min - Z_LOW)
+
+    if (x_min - X_LOW) < extra_bdry_min:
+        NX += multiple
+        X_LOW = X_HIGH - DX*NX
+        if (x_min - X_LOW) < extra_bdry_min:
+            raise ValueError('did not fix minimum boundary')
+
+    if (y_min - Y_LOW) < extra_bdry_min:
+        NY += multiple
+        Y_HIGH = Y_MID + (NY*DX)/2.0
+        Y_LOW = Y_HIGH - DX*NY
+        if (y_min - Y_LOW) < extra_bdry_min:
+            raise ValueError('did not fix minimum boundary')
+
+    if (Y_HIGH - y_max) < extra_bdry_min:
+        NY += multiple
+        Y_HIGH = Y_MID + (NY*DX)/2.0
+        Y_LOW = Y_HIGH - DX*NY
+        if (Y_HIGH - y_max) < extra_bdry_min:
+            raise ValueError('did not fix maximum boundary')
+
+    if (z_min - Z_LOW) < extra_bdry_min:
+        NZ += multiple
+        Z_LOW = Z_HIGH - DX*NZ
+        if (z_min - Z_LOW) < extra_bdry_min:
+            raise ValueError('did not fix minimum boundary')
+    
+    print("After:")
+    print("x extra = ", x_min - X_LOW)
+    print("y extra bottom = ", y_min - Y_LOW)
+    print("y extra top    = ", Y_HIGH - y_max)
+    print("z extra        = ", z_min - Z_LOW)
+
+    print("computed boundary = ", X_LOW, " ", X_HIGH, " ", Y_LOW, " ", Y_HIGH, " ", Z_LOW, " ", Z_HIGH)
+    print("NX NY NZ = ", NX, " ", NY, " ", NZ)
+
+    
+
+    print(f"X_HIGH = {X_HIGH:.14f}")
+    print(f"Z_HIGH = {Z_HIGH:.14f}")
+    print(f"Y_MID  = {Y_MID:.14f}")
+
+    print("NX = ", NX)
+    print("NY = ", NY)
+    print("NZ = ", NZ)
 
 
 if __name__== "__main__":
     
+    example = False 
+    if example:
 
-    fname_in = "2_aorta_lv_extender.stl"
-    fname_out = "3_aorta_lv_extender_layers.stl"
+        fname_in = "2_aorta_lv_extender.stl"
+        fname_out = "3_aorta_lv_extender_layers.stl"
 
-    n_layers_full = 3
-    n_layers_extenders = 2
+        n_layers_full = 3
+        n_layers_extenders = 2
 
-    # extrude length in mm 
-    ds = 0.5        
+        # extrude length in mm 
+        ds = 0.5        
 
-    mesh = pyvista.read(fname_in)
-
-
-    extender_direction_idx = [0,2] # extra mesh layers at inlet and outlet 
-    extender_top = True
-    extender_width = [30.0, 10.0]
-    extract_edge_layer = 2
-
-    mesh_combined, edges = expand_mesh(mesh,
-                                       ds, 
-                                       n_layers_full, 
-                                       n_layers_extenders, 
-                                       extender_direction_idx,
-                                       extender_top,
-                                       extender_width,
-                                       extract_edge_layer)
-
-    boundary_meshes = find_boundary_meshes(mesh_combined, edges)
-
-    # for idx, bdry_mesh in enumerate(boundary_meshes):
-    #     bdry_mesh.save('boundary_mesh' + str(idx).zfill(4) + '.vtu')
-
-    # 
-    mesh = mesh_combined
-    mesh_boundary = boundary_meshes[0]
-    mesh_boundary_aorta = boundary_meshes[1]
-
-    # x direction 
-    normal_direction = 0
-
-    # mesh in mm
-    masking_width = 15.0
-
-    # if true, adjusts x component to be exactly equal to this value 
-    enforce_flat_bdry = True
-    flat_bdry_tolerance = 1.0e-3
-
-    # 1 mm out at the ends 
-    extension_value = 5.0
-
-    cos_interpolation = True
-
-    mesh_adjusted = morph_extender(mesh, 
-                                   mesh_boundary, 
-                                   normal_direction, 
-                                   extension_value,
-                                   masking_width, 
-                                   enforce_flat_bdry, 
-                                   flat_bdry_tolerance, 
-                                   cos_interpolation)
-
-    # pyvista.plot(mesh_adjusted)
-
-    mesh_boundary_copy = mesh_boundary
-
-    mesh_boundary_adjusted = morph_extender(mesh_boundary_copy, 
-                                            mesh_boundary, 
-                                            normal_direction, 
-                                            extension_value,
-                                            masking_width,
-                                            enforce_flat_bdry, 
-                                            flat_bdry_tolerance,
-                                            cos_interpolation)
-
-    # pyvista.plot(mesh_boundary_adjusted)
-
-    # aorta side 
-    normal_direction = 2
-    masking_width = 15.0
-    mesh_adjusted = morph_extender(mesh_adjusted, 
-                                   mesh_boundary_aorta, 
-                                   normal_direction, 
-                                   extension_value,
-                                   masking_width, 
-                                   enforce_flat_bdry, 
-                                   flat_bdry_tolerance, 
-                                   cos_interpolation)        
-
-    mesh_aorta_boundary_adjusted = morph_extender(mesh_boundary_aorta, 
-                                            mesh_boundary_aorta, 
-                                            normal_direction, 
-                                            extension_value,
-                                            masking_width,
-                                            enforce_flat_bdry, 
-                                            flat_bdry_tolerance,
-                                            cos_interpolation)    
+        mesh = pyvista.read(fname_in)
 
 
-    mesh_adjusted.save("vessel_post_morph.stl")
-    mesh_boundary_adjusted.save("lvot_bdry_morph.vtu")
-    mesh_aorta_boundary_adjusted.save("aorta_bdry_morph.vtu")
+        extender_direction_idx = [0,2] # extra mesh layers at inlet and outlet 
+        extender_top = True
+        extender_width = [30.0, 10.0]
+        extract_edge_layer = 2
+
+        mesh_combined, edges = expand_mesh(mesh,
+                                           ds, 
+                                           n_layers_full, 
+                                           n_layers_extenders, 
+                                           extender_direction_idx,
+                                           extender_top,
+                                           extender_width,
+                                           extract_edge_layer)
+
+        boundary_meshes = find_boundary_meshes(mesh_combined, edges)
+
+        # for idx, bdry_mesh in enumerate(boundary_meshes):
+        #     bdry_mesh.save('boundary_mesh' + str(idx).zfill(4) + '.vtu')
+
+        # 
+        mesh = mesh_combined
+        mesh_boundary = boundary_meshes[0]
+        mesh_boundary_aorta = boundary_meshes[1]
+
+        # x direction 
+        normal_direction = 0
+
+        # mesh in mm
+        masking_width = 15.0
+
+        # if true, adjusts x component to be exactly equal to this value 
+        enforce_flat_bdry = True
+        flat_bdry_tolerance = 1.0e-3
+
+        # 1 mm out at the ends 
+        extension_value = 5.0
+
+        cos_interpolation = True
+
+        mesh_adjusted = morph_extender(mesh, 
+                                       mesh_boundary, 
+                                       normal_direction, 
+                                       extension_value,
+                                       masking_width, 
+                                       enforce_flat_bdry, 
+                                       flat_bdry_tolerance, 
+                                       cos_interpolation)
+
+        # pyvista.plot(mesh_adjusted)
+
+        mesh_boundary_copy = mesh_boundary
+
+        mesh_boundary_adjusted = morph_extender(mesh_boundary_copy, 
+                                                mesh_boundary, 
+                                                normal_direction, 
+                                                extension_value,
+                                                masking_width,
+                                                enforce_flat_bdry, 
+                                                flat_bdry_tolerance,
+                                                cos_interpolation)
+
+        # pyvista.plot(mesh_boundary_adjusted)
+
+        # aorta side 
+        normal_direction = 2
+        masking_width = 15.0
+        mesh_adjusted = morph_extender(mesh_adjusted, 
+                                       mesh_boundary_aorta, 
+                                       normal_direction, 
+                                       extension_value,
+                                       masking_width, 
+                                       enforce_flat_bdry, 
+                                       flat_bdry_tolerance, 
+                                       cos_interpolation)        
+
+        mesh_aorta_boundary_adjusted = morph_extender(mesh_boundary_aorta, 
+                                                mesh_boundary_aorta, 
+                                                normal_direction, 
+                                                extension_value,
+                                                masking_width,
+                                                enforce_flat_bdry, 
+                                                flat_bdry_tolerance,
+                                                cos_interpolation)    
 
 
-    # this is in mm 
-    scaling = 0.1
-
-    # target strength aortic_384
-    target_strength = 2.0 * 58229.54577218728809
-
-    # absolute spring const for cross layer springs of length 
-    ds_extrude = 0.025
-
-    # abs spring constant from cylinder mesh 
-    # scale this down by 2, and down by 2 again with ds
-    # if a single spring is split its kappa_abs goes down by two 
-    # but there are more of them, if not in a regular way 
-    # could turn down by 4 if needed for stability
-    kappa_abs = 0.01 * 543733.53989471553359 / 2  
-    
-    kappa_rel = kappa_abs * ds_extrude
-    zero_springs = True
-
-    # damping off 
-    damping_strength = 0.0
-
-    base_name_out = "aorta_384"
-
-    process_mesh_to_vertex_spring_target(mesh_adjusted, base_name_out, kappa_rel, target_strength, damping_strength, scaling, zero_springs)
+        mesh_adjusted.save("vessel_post_morph.stl")
+        mesh_boundary_adjusted.save("lvot_bdry_morph.vtu")
+        mesh_aorta_boundary_adjusted.save("aorta_bdry_morph.vtu")
 
 
-    scaling = 0.1
+        # this is in mm 
+        scaling = 0.1
 
-    base_name_out = "aorta_bdry_384"
-    process_ring_to_vertex(mesh_aorta_boundary_adjusted, base_name_out, scaling)
+        # target strength aortic_384
+        target_strength = 2.0 * 58229.54577218728809
 
-    base_name_out = "lvot_bdry_384"
-    process_ring_to_vertex(mesh_boundary_adjusted, base_name_out, scaling)
+        # absolute spring const for cross layer springs of length 
+        ds_extrude = 0.025
+
+        # abs spring constant from cylinder mesh 
+        # scale this down by 2, and down by 2 again with ds
+        # if a single spring is split its kappa_abs goes down by two 
+        # but there are more of them, if not in a regular way 
+        # could turn down by 4 if needed for stability
+        kappa_abs = 0.01 * 543733.53989471553359 / 2  
+        
+        kappa_rel = kappa_abs * ds_extrude
+        zero_springs = True
+
+        # damping off 
+        damping_strength = 0.0
+
+        base_name_out = "aorta_384"
+
+        process_mesh_to_vertex_spring_target(mesh_adjusted, base_name_out, kappa_rel, target_strength, damping_strength, scaling, zero_springs)
+
+
+        scaling = 0.1
+
+        base_name_out = "aorta_bdry_384"
+        process_ring_to_vertex(mesh_aorta_boundary_adjusted, base_name_out, scaling)
+
+        base_name_out = "lvot_bdry_384"
+        process_ring_to_vertex(mesh_boundary_adjusted, base_name_out, scaling)
+
+
+    historical_3 = False 
+    if historical_3:
+
+        fine_res = False
+        if fine_res:
+            fname_in = "2_aorta_native_original_cropped_pt25.stl"
+            fname_out = "aorta_native_hist3_pt25mm_384.stl"
+            aorta_name = "aorta_native_hist3_pt25mm_384"
+            ao_boundary_name = "aorta_native_hist3_bdry_384"
+            lvot_boundary_name = "lvot_native_hist3_bdry_384"
+
+            # target strength aortic_384
+            target_strength = 2.0 * 58229.54577218728809
+
+            # absolute spring const for cross layer springs of length 
+            ds_extrude = 0.025
+
+            # abs spring constant from cylinder mesh 
+            # scale this down by 2, and down by 2 again with ds
+            # if a single spring is split its kappa_abs goes down by two 
+            # but there are more of them, if not in a regular way 
+            # could turn down by 4 if needed for stability
+            kappa_abs = 0.01 * 543733.53989471553359 / 2  
+
+            # extrude length in mm 
+            ds = 0.25        
+
+        else:
+            fname_in = "4_aorta_native_original_cropped_pt5.stl"
+            fname_out = "aorta_native_hist3_pt5mm.stl"
+            aorta_name = "aorta_native_hist3_pt5mm_192"
+            ao_boundary_name = "aorta_native_hist3_bdry_192"
+            lvot_boundary_name = "lvot_native_hist3_bdry_192"
+
+            # target strength aortic_192
+            target_strength = 232918.18308874915238
+
+            # absolute spring const for cross layer springs of length 
+            ds_extrude = 0.05
+            kappa_abs = 0.01 * 543733.53989471553359  # abs spring constant from cylinder mesh 
+
+            # extrude length in mm 
+            ds = 0.5        
+
+        n_layers_full = 3
+        n_layers_extenders = 2
+
+        scaling = 0.1
+
+
+        mesh = pyvista.read(fname_in)
+
+        extender_direction_idx = [0,2] # extra mesh layers at inlet and outlet 
+        extender_top = True
+        extender_width = [30.0, 30.0]
+        extract_edge_layer = 2
+
+        mesh_combined, edges = expand_mesh(mesh,
+                                           ds, 
+                                           n_layers_full, 
+                                           n_layers_extenders, 
+                                           extender_direction_idx,
+                                           extender_top,
+                                           extender_width,
+                                           extract_edge_layer)
+
+        boundary_meshes = find_boundary_meshes(mesh_combined, edges)
+
+        print("boundary_meshes = ", boundary_meshes)
+
+        # for idx, bdry_mesh in enumerate(boundary_meshes):
+        #     bdry_mesh.save('boundary_mesh' + str(idx).zfill(4) + '.vtu')
+
+        # 
+        mesh = mesh_combined
+        mesh_boundary = boundary_meshes[0]
+        mesh_boundary_aorta = boundary_meshes[1]
+
+        # x direction 
+        normal_direction = 0
+
+        # mesh in mm
+        masking_width = 15.0
+
+        # if true, adjusts x component to be exactly equal to this value 
+        enforce_flat_bdry = True
+        flat_bdry_tolerance = 1.0e-3
+
+        # 1 mm out at the ends 
+        extension_value = 5.0
+
+        cos_interpolation = True
+
+        mesh_adjusted = morph_extender(mesh, 
+                                       mesh_boundary, 
+                                       normal_direction, 
+                                       extension_value,
+                                       masking_width, 
+                                       enforce_flat_bdry, 
+                                       flat_bdry_tolerance, 
+                                       cos_interpolation)
+
+        # pyvista.plot(mesh_adjusted)
+
+        mesh_boundary_copy = mesh_boundary
+
+        mesh_boundary_adjusted = morph_extender(mesh_boundary_copy, 
+                                                mesh_boundary, 
+                                                normal_direction, 
+                                                extension_value,
+                                                masking_width,
+                                                enforce_flat_bdry, 
+                                                flat_bdry_tolerance,
+                                                cos_interpolation)
+
+        # pyvista.plot(mesh_boundary_adjusted)
+
+        # aorta side 
+        normal_direction = 2
+        mesh_adjusted = morph_extender(mesh_adjusted, 
+                                       mesh_boundary_aorta, 
+                                       normal_direction, 
+                                       extension_value,
+                                       masking_width, 
+                                       enforce_flat_bdry, 
+                                       flat_bdry_tolerance, 
+                                       cos_interpolation)        
+
+        mesh_aorta_boundary_adjusted = morph_extender(mesh_boundary_aorta, 
+                                                mesh_boundary_aorta, 
+                                                normal_direction, 
+                                                extension_value,
+                                                masking_width,
+                                                enforce_flat_bdry, 
+                                                flat_bdry_tolerance,
+                                                cos_interpolation)    
+
+        mesh_adjusted.points *= scaling
+        mesh_boundary_adjusted.points *= scaling
+        mesh_aorta_boundary_adjusted.points *= scaling
+
+        mesh_adjusted.save(fname_out)
+        mesh_boundary_adjusted.save(lvot_boundary_name + ".vtu")
+        mesh_aorta_boundary_adjusted.save(ao_boundary_name + ".vtu")
+
+        
+        kappa_rel = kappa_abs * ds_extrude
+        zero_springs = True
+
+        # damping off 
+        damping_strength = 0.0
+
+
+        process_mesh_to_vertex_spring_target(mesh_adjusted, aorta_name, kappa_rel, target_strength, damping_strength)
+        process_ring_to_vertex(mesh_aorta_boundary_adjusted, ao_boundary_name)
+        process_ring_to_vertex(mesh_boundary_adjusted, lvot_boundary_name)
+
+
+        dx = 2 * ds * scaling 
+        print_boundary_info(mesh_adjusted, dx, extra_bdry_min=0.25, multiple=16)
+
+
+    test_bounds = True
+    if test_bounds:
+        mesh = pyvista.read("aorta_native_hist3_pt25mm_384.stl")
+
+        ds = 0.025        
+        dx = 2*ds 
+        print_boundary_info(mesh, dx, extra_bdry_min=dx*2.5, multiple=8)
 
 
 
 
 
+        
 
 
 
