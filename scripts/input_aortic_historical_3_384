@@ -11,7 +11,7 @@ N_FLUID = 48 // fluid mesh width
 MAX_LEVELS = 1                            // maximum number of levels in locally refined grid
 REF_RATIO  = 4                            // refinement ratio between levels
 
-NAME = "aortic_192"
+NAME = "aortic_384"
 MAX_RESTART_TO_WRITE = 20
 
 R_proximal = 72.83465182234593 
@@ -22,8 +22,8 @@ P_aorta_0_MMHG = 81.2049051716774
 
 // FOURIER_COEFFS_FILENAME_VENTRICLE = "fourier_coeffs_ventricle.txt"
 
-BOUNDARY_FILENAME_VENTRICLE = "lvot_native_hist3_bdry_192.vertex"
-BOUNDARY_FILENAME_AORTA = "aorta_native_hist3_bdry_192.vertex"
+BOUNDARY_FILENAME_VENTRICLE = "lvot_native_hist3_bdry_384.vertex"
+BOUNDARY_FILENAME_AORTA = "aorta_native_hist3_bdry_384.vertex"
 
 // ventricle LPN 
 VENTRICLE_0D_ON = TRUE
@@ -38,7 +38,7 @@ R_LVOT = 5.732861824000000
 INDUCTANCE = 0.0
 
 
-VESSEL_FILENAME = "aorta_native_hist3_pt5mm_192.vertex"
+VESSEL_FILENAME = "aorta_native_hist3_pt25mm_384.vertex"
 
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_zero.txt"
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_aorta_minus_ventricle.txt"
@@ -61,7 +61,7 @@ CONVECTIVE_OP_TYPE  = "PPM"               // convective differencing discretizat
 CONVECTIVE_FORM     = "ADVECTIVE"         // how to compute the convective terms
 NORMALIZE_PRESSURE  = FALSE               // whether to explicitly force the pressure to have mean zero
 CFL_MAX             = 0.3                 // maximum CFL number
-DT                  = 1.5e-05             // maximum timestep size
+DT                  = 5.0e-06             // maximum timestep size
 ERROR_ON_DT_CHANGE  = TRUE                // whether to emit an error message if the time step size changes
 VORTICITY_TAGGING   = TRUE                // whether to tag cells for refinement based on vorticity thresholds
 TAG_BUFFER          = 2                   // size of tag buffer used by grid generation algorithm
@@ -73,12 +73,12 @@ OUTPUT_OMEGA        = TRUE
 OUTPUT_DIV_U        = FALSE
 ENABLE_LOGGING      = TRUE
 
-N=192 
+N=384 
 
 // cm 
 DX = 0.1 * (192.0/N)
 
-EXTRA_BDRY = 1.0e-2
+EXTRA_BDRY = 1.0e-6
 
 // computed from scans 
 X_HIGH = 5.33374166488647 + EXTRA_BDRY
@@ -86,9 +86,10 @@ Z_HIGH = -14.76194190979004 + EXTRA_BDRY
 
 Y_MID  = -6.54543280601501
 
-NX =  104 // 208
-NY =  44 // 88
-NZ =  116 // 232
+NX =  208
+NY =  88
+NZ =  232
+
 
 Y_HIGH = Y_MID + (NY*DX)/2.0 // put points centered 
 
@@ -262,14 +263,14 @@ IBMethod {
 
 IBStandardInitializer {
    max_levels      = MAX_LEVELS
-   structure_names = "aortic_no_partition_192", "aortic_no_partition_192_cylinder", "aorta_native_hist3_pt5mm_192"
-   aortic_no_partition_192 {
+   structure_names = "aortic_no_partition_384", "aortic_no_partition_384_cylinder", "aorta_native_hist3_pt25mm_384"
+   aortic_no_partition_384 {
       level_number = MAX_LEVELS - 1
    }
-   aortic_no_partition_192_cylinder {
+   aortic_no_partition_384_cylinder {
       level_number = MAX_LEVELS - 1
    }
-   aorta_native_hist3_pt5mm_192 {
+   aorta_native_hist3_pt25mm_384 {
       level_number = MAX_LEVELS - 1
    }
 

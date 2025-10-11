@@ -233,8 +233,8 @@ valve.L = 2.25;
 
 r_stj = 2.3 / 2;
 r_temp = 2.3 / 2; % vbr radius
-hc = 0.5 * r_stj; 
-h1 = 0.87 * 2 * r_stj - hc; % 1.4 * r_stj - hc; 
+hc = 0.5 * r_temp; % 0.5 * r_stj; 
+h1 = 0.87 * 2 * r_temp - hc; % 1.4 * r_stj - hc; 
 r_commissure = r_stj; 
 % place the post only if not using the full annulus geometry 
 place_vertical_post = ~valve.annulus_to_comm;
@@ -276,8 +276,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 3.16;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.18;  % radial
+tension_coeffs.c_circ_dec       = 3.36;  % circumferential 
+tension_coeffs.c_rad_dec        = 0.99;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 1.91;
 
