@@ -70,6 +70,8 @@ end
 % commissure points stay fixed 
 free_edge_interp_points = X(:,:,k_max); 
 
+r_commissure = leaflet.skeleton.r_commissure; 
+dx = 1/N_each;
 
 for j=2:N_each
 
@@ -89,15 +91,18 @@ for j=2:N_each
     % y_free_edge_end = y_max_from_center * ring_point(2);
     % y_free_edge_end = 0; 
     % this would put the two free edges exactly coinciding 
-
+    
+    x_free_edge_end = r_commissure * (1 - 2 * (j-1) * dx)
+       
     % if using exact x 
     % then (y_diff^2 + height^2) = strained_len_total^2 
     % so height is given as 
-    interp_height = sqrt(strained_len_total^2 - (ring_point(2) - y_free_edge_end)^2) ; 
+    interp_height = sqrt(strained_len_total^2 - (ring_point(2) - y_free_edge_end)^2 - (ring_point(1) - x_free_edge_end)^2) ; 
 
     % comm_interp_point = [ring_point(1) ; (r/2) * sin(th); comm_prev(3)];                 
-    free_edge_interp_points(:,j) = [ring_point(1) ; y_free_edge_end; interp_height + ring_point(3)]; 
-
+    % free_edge_interp_points(:,j) = [ring_point(1) ; y_free_edge_end; interp_height + ring_point(3)]; 
+    free_edge_interp_points(:,j) = [x_free_edge_end; y_free_edge_end; interp_height + ring_point(3)]; 
+    
     % total radial rest length of this radial fiber 
     total_rest_length = sum(R_v(j, 1:(k-1))); 
 
