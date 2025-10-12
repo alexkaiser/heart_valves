@@ -92,7 +92,7 @@ for j=2:N_each
     % y_free_edge_end = 0; 
     % this would put the two free edges exactly coinciding 
     
-    x_free_edge_end = r_commissure * (1 - 2 * (j-1) * dx)
+    x_free_edge_end = r_commissure * (1 - 2 * (j-1) * dx);
        
     % if using exact x 
     % then (y_diff^2 + height^2) = strained_len_total^2 
