@@ -648,16 +648,34 @@ if __name__== "__main__":
         process_ring_to_vertex(mesh_boundary_adjusted, base_name_out, scaling)
 
 
-    historical_3 = False 
+    historical_3 = True 
     if historical_3:
 
-        fine_res = False
+        fine_res = True
         if fine_res:
-            fname_in = "2_aorta_native_original_cropped_pt25.stl"
-            fname_out = "aorta_native_hist3_pt25mm_384.stl"
-            aorta_name = "aorta_native_hist3_pt25mm_384"
-            ao_boundary_name = "aorta_native_hist3_bdry_384"
-            lvot_boundary_name = "lvot_native_hist3_bdry_384"
+
+            native = False 
+            z_zero = True 
+            z_minus_two = False 
+
+            if native:
+                fname_in = "2_aorta_native_original_cropped_pt25.stl"
+                fname_out = "aorta_native_hist3_pt25mm_384.stl"
+                aorta_name = "aorta_native_hist3_pt25mm_384"
+                ao_boundary_name = "aorta_native_hist3_bdry_384"
+                lvot_boundary_name = "lvot_native_hist3_bdry_384"
+            elif z_zero:
+                fname_in = "6_aorta_1pt98_original_cropped_pt25.stl"
+                fname_out = "aorta_1pt98_hist3_pt25mm_384.stl"
+                aorta_name = "aorta_1pt98_hist3_pt25mm_384"
+                ao_boundary_name = "aorta_1pt98_hist3_bdry_384"
+                lvot_boundary_name = "lvot_1pt98_hist3_bdry_384"
+            elif z_minus_two:
+                fname_in = "8_aorta_1pt7_original_cropped_pt25.stl"
+                fname_out = "aorta_1pt7_hist3_pt25mm_384.stl"
+                aorta_name = "aorta_1pt7_hist3_pt25mm_384"
+                ao_boundary_name = "aorta_1pt7_hist3_bdry_384"
+                lvot_boundary_name = "lvot_1pt7_hist3_bdry_384"
 
             # target strength aortic_384
             target_strength = 2.0 * 58229.54577218728809

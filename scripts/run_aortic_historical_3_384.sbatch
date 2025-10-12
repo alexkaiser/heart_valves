@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --nodes=1
+#SBATCH --nodes=2
 #SBATCH --ntasks-per-node=24
-#SBATCH --time=24:00:00
+#SBATCH --time=72:00:00
 #SBATCH --mem=185GB
 #SBATCH --job-name=aortic_1
 #SBATCH --mail-user=adkaiser@gmail.com
@@ -20,12 +20,12 @@ TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_384_0e527c_hist3_native_stj_23_c1pt57d
+RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_384_6807ff2_hist3_native_stj_23_c1pt57d
 mkdir $RUNDIR
 
 # set up run info 
 BASE_NAME=aortic_no_partition_384
-BASE_NAME_VESSEL=aorta_native_hist3_pt25mm_384
+BASE_NAME_VESSEL=aorta_1pt7_hist3_pt25mm_384
 INPUT_NAME=input_aortic_historical_3_384
 RUN_LINE="srun main_aorta"
 OPTIONS="-velocity_ksp_type cg -velocity_pc_type none -velocity_ksp_max_it 1 -velocity_ksp_norm_type none > output.txt 2>&1"
