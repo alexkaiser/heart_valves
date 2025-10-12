@@ -38,7 +38,7 @@ R_LVOT = 5.732861824000000
 INDUCTANCE = 0.0
 
 
-VESSEL_FILENAME = "aorta_1pt98_hist3_pt25mm_384.vertex"
+VESSEL_FILENAME = "aorta_1pt7_hist3_pt25mm_384.vertex"
 
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_zero.txt"
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_aorta_minus_ventricle.txt"
@@ -263,14 +263,14 @@ IBMethod {
 
 IBStandardInitializer {
    max_levels      = MAX_LEVELS
-   structure_names = "aortic_no_partition_384", "aortic_no_partition_384_cylinder", "aorta_1pt98_hist3_pt25mm_384"
+   structure_names = "aortic_no_partition_384", "aortic_no_partition_384_cylinder", "aorta_1pt7_hist3_pt25mm_384"
    aortic_no_partition_384 {
       level_number = MAX_LEVELS - 1
    }
    aortic_no_partition_384_cylinder {
       level_number = MAX_LEVELS - 1
    }
-   aorta_1pt98_hist3_pt25mm_384 {
+   aorta_1pt7_hist3_pt25mm_384 {
       level_number = MAX_LEVELS - 1
    }
 

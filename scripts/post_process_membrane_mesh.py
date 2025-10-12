@@ -655,8 +655,8 @@ if __name__== "__main__":
         if fine_res:
 
             native = False 
-            z_zero = True 
-            z_minus_two = False 
+            z_zero = False 
+            z_minus_two = True 
 
             if native:
                 fname_in = "2_aorta_native_original_cropped_pt25.stl"
