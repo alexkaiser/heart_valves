@@ -33,26 +33,31 @@ if __name__ == '__main__':
     # aorta default 
     else: 
 
-        
-        base_name = 'aorta_384'
-
-        if os.path.isfile(base_name + '.vtu'):
-            print("file found")
-            mesh_with_faces_name = base_name + '.vtu'
-        elif os.path.isfile('../' + base_name + '.vtu'):
-            print("file found one dir")
-            shutil.copy('../' + base_name + '.vtu', '.') 
-            mesh_with_faces_name = base_name + '.vtu'
+        if len(sys.argv) >= 3:
+            base_name = sys.argv[1]
+            mesh_with_faces_name = sys.argv[2]
         else: 
-            mesh_with_faces_name = "4_aorta_remeshed_pt25mm_3cm_extender_layers_constriction.vtu"
+            base_name = 'aorta_384'
 
-        if "_192_" in os.getcwd():
-            mesh_with_faces_name = '6_aorta_remeshed_pt5mm_2cm_extender_layers_constriction.vtu'
-            base_name = 'aorta_192'
+            if os.path.isfile(base_name + '.vtu'):
+                print("file found")
+                mesh_with_faces_name = base_name + '.vtu'
+            elif os.path.isfile('../' + base_name + '.vtu'):
+                print("file found one dir")
+                shutil.copy('../' + base_name + '.vtu', '.') 
+                mesh_with_faces_name = base_name + '.vtu'
+            else: 
+                mesh_with_faces_name = "4_aorta_remeshed_pt25mm_3cm_extender_layers_constriction.vtu"
+
+            if "_192_" in os.getcwd():
+                mesh_with_faces_name = '6_aorta_remeshed_pt5mm_2cm_extender_layers_constriction.vtu'
+                base_name = 'aorta_192'
 
 
     if not os.path.isfile(mesh_with_faces_name):
-        if os.path.isfile(os.path.expanduser('~') + '/heart_valves/' + mesh_with_faces_name):
+        if os.path.isfile('../' + mesh_with_faces_name):
+            shutil.copy('../' + mesh_with_faces_name, '.') 
+        elif os.path.isfile(os.path.expanduser('~') + '/heart_valves/' + mesh_with_faces_name):
             shutil.copy(os.path.expanduser('~') + '/heart_valves/' + mesh_with_faces_name, '.') 
         else: 
             raise FileNotFoundError("cannot find mesh_with_faces_name file = ", mesh_with_faces_name)
