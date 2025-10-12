@@ -214,10 +214,19 @@ if check_derivatives
     
 end 
 
+% no time shift here, two hill includes the time shift from optimizer
 [a_0_activation_two_hill, a_n_activation_two_hill, b_n_activation_two_hill, Series_activation_two_hill] = ... 
-    series_and_smooth([t', two_hill_function(t)'], dt, bump_radius, n_fourier_coeffs, plots, start_time_in_cycle); 
+    series_and_smooth([t', two_hill_function(t)'], dt, bump_radius, n_fourier_coeffs, plots); 
 
 vals_series_activation_two_hill = Series_activation_two_hill(t);
+
+figure; 
+plot(t, vals_series_activation_two_hill)
+hold on 
+plot(t', two_hill_function(t)', 'k--')
+legend('series', 'inputs')
+
+title('two hill act from series in lv exp data process')
 
 suffix = '_lv_activation_two_hill'
 file_name = strcat(base_name, suffix, '.txt'); 
