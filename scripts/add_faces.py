@@ -8,12 +8,13 @@ import multiprocessing
 def add_faces(mesh_with_faces, file_name):
 
     base_name = file_name.rsplit('.', 1)[0]
-    file_name_copy = base_name + "_orig_copy.vtu"
-    shutil.copyfile(file_name, file_name_copy)
+    # file_name_copy = base_name + "_orig_copy.vtu"
+    # shutil.copyfile(file_name, file_name_copy)
 
     mesh = pyvista.read(file_name)
     mesh_with_faces.points = mesh.points
-    mesh_with_faces.save(file_name)
+    mesh_unstructured = pyvista.UnstructuredGrid(mesh_with_faces)
+    mesh_unstructured.save(base_name + '_faces.vtu')
 
 
 if __name__ == '__main__':
@@ -72,7 +73,7 @@ if __name__ == '__main__':
 
         for f in os.listdir('.'):
             if f.startswith(base_name) and f.endswith('.vtu'):
-                if (not "_orig_copy" in f) and (mesh_with_faces_name not in f):
+                if (not "_faces" in f) and (mesh_with_faces_name not in f):
                     print("procssing file ", f)
                     
                     p = multiprocessing.Process(target=add_faces, args=(mesh_with_faces, f))

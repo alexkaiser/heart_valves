@@ -230,9 +230,12 @@ def get_hex_pair_list():
 
 def process_mesh_to_vertex_spring_target(mesh, base_name_out, spring_strength_rel, target_strength, damping_strength=0.0, scaling=1.0, zero_springs=False):
 
+    print("meah.n_points = ", mesh.n_points)
 
     mesh_unst = pyvista.UnstructuredGrid(mesh)
     # mesh_unst.save(base_name_out + ".vtu")
+
+    print("mesh_unst.n_points = ", mesh_unst.n_points)
 
     vertex_file = open(base_name_out + '.vertex', 'w')
 
@@ -661,18 +664,21 @@ if __name__== "__main__":
             if native:
                 fname_in = "2_aorta_native_original_cropped_pt25.stl"
                 fname_out = "aorta_native_hist3_pt25mm_384.stl"
+                fname_out_unstructured = "aorta_native_hist3_pt25mm_384.vtu"
                 aorta_name = "aorta_native_hist3_pt25mm_384"
                 ao_boundary_name = "aorta_native_hist3_bdry_384"
                 lvot_boundary_name = "lvot_native_hist3_bdry_384"
             elif z_zero:
                 fname_in = "6_aorta_1pt98_original_cropped_pt25.stl"
                 fname_out = "aorta_1pt98_hist3_pt25mm_384.stl"
+                fname_out_unstructured = "aorta_1pt98_hist3_pt25mm_384.vtu"
                 aorta_name = "aorta_1pt98_hist3_pt25mm_384"
                 ao_boundary_name = "aorta_1pt98_hist3_bdry_384"
                 lvot_boundary_name = "lvot_1pt98_hist3_bdry_384"
             elif z_minus_two:
                 fname_in = "8_aorta_1pt7_original_cropped_pt25.stl"
                 fname_out = "aorta_1pt7_hist3_pt25mm_384.stl"
+                fname_out_unstructured = "aorta_1pt7_hist3_pt25mm_384.vtu"
                 aorta_name = "aorta_1pt7_hist3_pt25mm_384"
                 ao_boundary_name = "aorta_1pt7_hist3_bdry_384"
                 lvot_boundary_name = "lvot_1pt7_hist3_bdry_384"
@@ -732,6 +738,8 @@ if __name__== "__main__":
                                            extender_width,
                                            extract_edge_layer)
 
+        print("mesh_combined.n_points = ", mesh_combined.n_points)
+
         boundary_meshes = find_boundary_meshes(mesh_combined, edges)
 
         print("boundary_meshes = ", boundary_meshes)
@@ -767,6 +775,8 @@ if __name__== "__main__":
                                        enforce_flat_bdry, 
                                        flat_bdry_tolerance, 
                                        cos_interpolation)
+
+        print("mesh_adjusted.n_points = ", mesh_adjusted.n_points)
 
         # pyvista.plot(mesh_adjusted)
 
@@ -807,7 +817,13 @@ if __name__== "__main__":
         mesh_boundary_adjusted.points *= scaling
         mesh_aorta_boundary_adjusted.points *= scaling
 
+        print("before stl save mesh_adjusted.n_points = ", mesh_adjusted.n_points)
         mesh_adjusted.save(fname_out)
+
+        mesh_adjusted_unst = pyvista.UnstructuredGrid(mesh_adjusted)
+        print("mesh_adjusted_unst.n_points = ", mesh_adjusted_unst.n_points)
+        mesh_adjusted_unst.save(fname_out_unstructured)
+
         mesh_boundary_adjusted.save(lvot_boundary_name + ".vtu")
         mesh_aorta_boundary_adjusted.save(ao_boundary_name + ".vtu")
 

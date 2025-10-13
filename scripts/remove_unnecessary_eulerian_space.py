@@ -8,7 +8,7 @@ import multiprocessing
 import pdb
 import numpy as np 
 import re
-
+import shutil
 
 def write_pvd(basename, dt, nsteps, extension, nprocs_sim=1):
 
@@ -286,6 +286,14 @@ if __name__ == '__main__':
         # compute masks for all 
         else:
             boundary_mesh_name = '2_aorta_remeshed_pt5mm_capped.vtp'
+
+        if not os.path.isfile(boundary_mesh_name):
+            if os.path.isfile('../' + boundary_mesh_name):
+                shutil.copy('../' + boundary_mesh_name, '.') 
+            elif os.path.isfile(os.path.expanduser('~') + '/heart_valves/' + boundary_mesh_name):
+                shutil.copy(os.path.expanduser('~') + '/heart_valves/' + boundary_mesh_name, '.') 
+            else: 
+                raise FileNotFoundError("cannot find boundary_mesh_name file = ", boundary_mesh_name)
 
         # first make sure there is a times file 
         if not os.path.isfile('times.txt'):

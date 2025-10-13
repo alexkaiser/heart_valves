@@ -26,7 +26,7 @@ file_list = dir('aortic_*.csv');
 
 add_mechanics = false;
 
-for i = 1:length(file_list)
+parfor i = 1:length(file_list)
     
     file_name = file_list(i).name; 
     
