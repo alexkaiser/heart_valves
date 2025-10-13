@@ -92,9 +92,7 @@ if __name__ == '__main__':
     script_dir = "~/heart_valves/scripts/"
     # script_dir = "~/heart_valves/scripts/"
 
-    # lag_name_base_to_check = ['aortic', 'vessel', 'aorta_384.', 'aorta_192.', 'aorta']
-
-    lag_name_base_to_check = ['aorta']
+    lag_name_base_to_check = ['aortic', 'vessel', 'aorta_384.', 'aorta_192.', 'aorta']
 
     if os.path.isfile('done.txt'):
         
@@ -121,10 +119,10 @@ if __name__ == '__main__':
                     raise InputError("Must specify n_procs")
                 n_procs = int(sys.argv[2])
 
-                # call_str_base = 'visit -cli -nowin -s ' + script_dir + 'export_eulerian_visit_to_vtk.py '
-                # call_str_base += " eulerian_vars vtr " + str(n_procs_sim) + " "
+                call_str_base = 'visit -cli -nowin -s ' + script_dir + 'export_eulerian_visit_to_vtk.py '
+                call_str_base += " eulerian_vars vtr " + str(n_procs_sim) + " "
 
-                # run_command_parallel(call_str_base, n_procs)
+                run_command_parallel(call_str_base, n_procs)
 
                 for lag_file in os.listdir('..'):
                     if lag_file.endswith('.vertex'):
