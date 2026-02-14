@@ -101,6 +101,8 @@ j_range_right_comm = leaflet.j_range_right_comm;
 j_range_posterior  = leaflet.j_range_posterior; 
 j_range_left_comm  = leaflet.j_range_left_comm; 
 
+printing_figure = true; 
+line_width = 2; 
 
 
 if isfield(leaflet, 'periodic_j')
@@ -150,7 +152,7 @@ if exist('fiber_output', 'var') && fiber_output
 end 
 
 if (~circ) && (~rad)
-    error('Have to plot at least one fiber family for this function to do anything')
+    % error('Have to plot at least one fiber family for this function to do anything')
 end 
 
 
@@ -163,6 +165,11 @@ else
     if anterior 
         j_range    = j_range_anterior; 
         tree_range = 1:n_trees_anterior; 
+    
+        if printing_figure
+            tree_range = [1:6,7,14];
+        end 
+
     else 
         j_range = [j_range_right_comm, j_range_posterior, j_range_left_comm]; 
         tree_range = (n_trees_anterior+1):num_trees; 
@@ -356,7 +363,11 @@ for j=j_range
 %                     end 
                     
                     if output_tmp_j && circ 
-                        plot3(x_vals,y_vals,z_vals,'k'); 
+                        if printing_figure
+                            plot3(x_vals,y_vals,z_vals, 'r', 'LineWidth', line_width);
+                        else 
+                            plot3(x_vals,y_vals,z_vals,'k');
+                        end 
                     end 
 
                     F_tmp = F_tmp + du * tension * (X_nbr-X)/norm(X_nbr-X); 
@@ -418,7 +429,11 @@ for j=j_range
 
                     % plot local fiber if included 
                     if output_tmp_k && rad 
-                        plot3(x_vals,y_vals,z_vals,'k'); 
+                        if printing_figure
+                            plot3(x_vals,y_vals,z_vals, 'r', 'LineWidth', line_width);
+                        else 
+                            plot3(x_vals,y_vals,z_vals,'k'); 
+                        end 
                     end 
                     
                 end 
@@ -517,7 +532,11 @@ for j=j_range
                     color_idx = n_colors; 
                 end 
 
-                plot3(x_vals,y_vals,z_vals,'color',cmap(color_idx,:)); 
+                if printing_figure
+                    plot3(x_vals,y_vals,z_vals,'color','r');
+                else 
+                    plot3(x_vals,y_vals,z_vals,'color',cmap(color_idx,:));
+                end 
                 
                 F_tmp = F_tmp + tension * (X_nbr-X)/norm(X_nbr-X); 
 
@@ -558,7 +577,11 @@ y_component = squeeze(X_copy(2,j_range,:));
 z_component = squeeze(X_copy(3,j_range,:)); 
 colors_local = colors(j_range,:,:); 
 width = 1.0; 
-surf(x_component, y_component, z_component, colors_local, 'edgecolor', 'none');
+if printing_figure
+    surf(x_component, y_component, z_component, 'FaceColor', [.7 .7 .7], 'edgecolor', 'none', 'LineWidth', line_width);        
+else 
+    surf(x_component, y_component, z_component, colors_local, 'edgecolor', 'none');
+end 
 
 if both_leaflets
     % periodic patch 
@@ -628,7 +651,11 @@ for tree_idx = tree_range
                 color_idx = n_colors; 
             end 
 
-            plot3(x_vals,y_vals,z_vals,'color',cmap(color_idx,:)); 
+            if printing_figure
+                plot3(x_vals,y_vals,z_vals,'r', 'LineWidth', line_width);
+            else 
+                plot3(x_vals,y_vals,z_vals,'color',cmap(color_idx,:));
+            end 
             
             tension_by_tangent = tension * (nbr - C(:,i)) / norm(nbr - C(:,i));  
 

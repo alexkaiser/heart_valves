@@ -609,3 +609,47 @@ if tension_plots_surf
 
 end 
 
+skeleton_schematic = true 
+if skeleton_schematic
+    
+    n = 512;
+    
+    base_dir  = '/Users/alex/mitral_fully_discrete/valve_generator/meshes/plot_meshes/two_leaflet_8_connector_b7a6aed/'
+    file_name = ['mitral_tree_', int2str(n), '_final_data.mat']
+    
+    load([base_dir, file_name])
+    
+    annulus = valve.leaflets(1).X(:,:,end);
+
+    % periodic wrap 
+    annulus = [annulus, annulus(:,1,1)];
+    
+    annulus_x = squeeze(annulus(1,:,:));
+    annulus_y = squeeze(annulus(2,:,:));
+    annulus_z = squeeze(annulus(3,:,:));
+    
+    line_width = 5.0;
+
+    fig = figure; 
+    plot3(annulus_x, annulus_y, annulus_z, 'k', 'LineWidth', line_width)
+    hold on 
+    
+    papillary = valve.leaflets.papillary; 
+
+    papillary_x = squeeze(papillary(1,:,:));
+    papillary_y = squeeze(papillary(2,:,:));
+    papillary_z = squeeze(papillary(3,:,:));
+    
+    axis equal 
+    grid off 
+    axis off 
+    
+    marker_size = 20.0;
+    plot3(papillary_x, papillary_y, papillary_z, 'k.',  'MarkerSize', marker_size)
+    
+    printfig(fig, 'valve_skeleton_schematic_thesis_paper')
+    
+end 
+
+
+
