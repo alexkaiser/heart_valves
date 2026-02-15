@@ -91,7 +91,8 @@ function free_edge_interp_points = find_free_edge_interp_points_aortic(leaflet, 
             % allow to go fairly far in 
             center_adjust_min = (r/r_basic) * 0.2;
             % and keep away from from the outside 
-            center_adjust_max = (r/r_basic) * (r_basic - 0.2);
+            % center_adjust_max = (r/r_basic) * (r_basic - 0.2);
+            center_adjust_max = norm_midpoint;
             
             % start at center 
             center_adjust_initial_guess = -r;
@@ -116,7 +117,7 @@ function free_edge_interp_points = find_free_edge_interp_points_aortic(leaflet, 
         debug_plots = false; 
         if debug_plots
             figure; 
-            y_range = linspace(0,r,1000); 
+            y_range = linspace(-r,r,1000); 
 
             vals = zeros(size(y_range)); 
 

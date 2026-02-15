@@ -70,7 +70,10 @@ end
 % commissure points stay fixed 
 free_edge_interp_points = X(:,:,k_max); 
 
-r_commissure = leaflet.skeleton.r_commissure; 
+% r_commissure = leaflet.skeleton.r_commissure
+chord_length = norm(X(:,1,k_max) - X(:,j_max,k_max)); 
+chord_radius = chord_length / 2; 
+
 dx = 1/N_each;
 
 for j=2:N_each
@@ -92,7 +95,7 @@ for j=2:N_each
     % y_free_edge_end = 0; 
     % this would put the two free edges exactly coinciding 
     
-    x_free_edge_end = r_commissure * (1 - 2 * (j-1) * dx);
+    x_free_edge_end = chord_radius * (1 - 2 * (j-1) * dx);
        
     % if using exact x 
     % then (y_diff^2 + height^2) = strained_len_total^2 
