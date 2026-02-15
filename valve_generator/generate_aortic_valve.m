@@ -49,7 +49,7 @@ for N_each = N_each_range
     pulm = false; 
     true_bicuspid = false;
     fish = false;
-    quad = false; 
+    quad = true; 
     pent = false; 
     
     if pulm
