@@ -27,9 +27,13 @@ function free_edge_interp_points = find_free_edge_interp_points_aortic(leaflet, 
     % search down in power to find as flat a leaflet as possible by the comms 
     % but without intersection 
     % power_search_list = [4,3,2,1.75,1.5,1.25,1];
-    % power_search_list = [2,1.75,1.5,1.25,1];
-    power_search_list = [1];
-    
+    if N_leaflets == 2
+        % power_search_list = [2,1.75,1.5,1.25,1];
+        power_search_list = [1.5,1.25,1];
+    else 
+        power_search_list = [1];
+    end 
+
     pass_y_gt_0_constraint = false; 
     
     for power = power_search_list
