@@ -52,6 +52,21 @@ elseif isfield(leaflet, 'variety') && strcmp(leaflet.variety, 'pent')
     end         
     N_each = N/5;
     N_leaflets = 5;     
+elseif isfield(leaflet, 'variety') && strcmp(leaflet.variety, 'arbitrary') 
+    % divide by (about) five but make sure it is even 
+    
+    if isfield(valve, 'N_leaflets') 
+        N_leaflets = valve.N_leaflets; 
+    else 
+        error('Must provide valve.N_leaflets if variety is arbitrary')
+    end 
+    
+    if mod(N,N_leaflets) ~= 0
+        error('arbitrary requires multiple of N_leaflets');
+    end         
+    N_each = N/N_leaflets;
+
+
 else 
     % number for each leaflet 
     N_each = N/3; 

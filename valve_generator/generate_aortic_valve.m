@@ -31,7 +31,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N_each_range = 2^7; %2.^(6:7); 
+N_each_range = 2^5; %2.^(6:7); 
 
 for N_each = N_each_range
 
@@ -47,10 +47,11 @@ for N_each = N_each_range
     % Many parameters are in this script 
 
     pulm = false; 
-    true_bicuspid = true;
+    true_bicuspid = false;
     fish = false;
     quad = false; 
     pent = false; 
+    arbitrary = true;
     
     if pulm
         valve = initialize_valve_data_structures_pulm_mri_box(N); 
@@ -62,6 +63,8 @@ for N_each = N_each_range
         valve = initialize_valve_data_structures_aortic_quad(N); 
     elseif pent
         valve = initialize_valve_data_structures_aortic_pentaleaflet(N); 
+    elseif arbitrary
+        valve = initialize_valve_data_structures_aortic_arbitrary(N); 
     else 
         valve = initialize_valve_data_structures_aortic_generic(N); 
     end 
