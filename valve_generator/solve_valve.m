@@ -257,7 +257,7 @@ if interactive && pass_all
                             fig_dissection_plot = dissection_plot_rest_height(valve, fig_dissection_plot); 
                         end 
                         % update aortic tension plots 
-                        if isfield(valve, 'name') && strcmp(valve.name, 'aortic') 
+                        if false % isfield(valve, 'name') && strcmp(valve.name, 'aortic') 
                             
                             if ~exist('fig_ratio', 'var')
                                 fig_ratio = figure; 

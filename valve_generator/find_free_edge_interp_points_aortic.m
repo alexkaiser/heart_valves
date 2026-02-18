@@ -16,7 +16,7 @@ function free_edge_interp_points = find_free_edge_interp_points_aortic(leaflet, 
     
     k_range = 2:k_max; 
 
-    if ~exist('extra_stretch_radial', 'var')
+    if ~exist('extra_stretch_radial', 'var') 
         extra_stretch_radial = 1.0; 
     end
 
@@ -30,6 +30,8 @@ function free_edge_interp_points = find_free_edge_interp_points_aortic(leaflet, 
     if N_leaflets == 2
         % power_search_list = [2,1.75,1.5,1.25,1];
         power_search_list = [1.5,1.25,1];
+    elseif N_leaflets >= 6
+        power_search_list = [0.75];
     else 
         power_search_list = [1];
     end 
@@ -118,7 +120,7 @@ function free_edge_interp_points = find_free_edge_interp_points_aortic(leaflet, 
         end 
 
 
-        debug_plots = false; 
+        debug_plots = true; 
         if debug_plots
             figure; 
             y_range = linspace(-r,r,1000); 
