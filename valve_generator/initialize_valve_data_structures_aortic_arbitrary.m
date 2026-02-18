@@ -43,7 +43,7 @@ N_output_name = N;
 
 variety= 'arbitrary'; 
 valve.variety = variety; 
-N_leaflets = 7;
+N_leaflets = 8;
 valve.N_leaflets = N_leaflets; 
 
 
