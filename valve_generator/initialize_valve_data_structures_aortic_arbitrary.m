@@ -43,7 +43,7 @@ N_output_name = N;
 
 variety= 'arbitrary'; 
 valve.variety = variety; 
-N_leaflets = 6;
+N_leaflets = 7;
 valve.N_leaflets = N_leaflets; 
 
 
@@ -120,7 +120,7 @@ MMHG_TO_CGS     = 1333.22368;
 
 % make sure this is a multiple of five
 % but keep naming above
-valve.N = 5*ceil(valve.N/5); 
+valve.N = N_leaflets*ceil(valve.N/N_leaflets); 
 
 % number of lagrangian tracers in each dimension 
 % arranged in a mesh near the origin
@@ -288,8 +288,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 11.3;  % circumferential 
-tension_coeffs.c_rad_dec        = 4.3;  % radial
+tension_coeffs.c_circ_dec       = 15.7;  % circumferential 
+tension_coeffs.c_rad_dec        = 8;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 3.0;
 
