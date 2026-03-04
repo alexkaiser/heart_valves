@@ -1,4 +1,4 @@
-function [valve] = initialize_valve_data_structures_aortic_pentaleaflet(N)
+function [valve] = initialize_valve_data_structures_aortic_arbitrary(N)
 % 
 % Initializes data structures for full solve.  
 % 
@@ -43,7 +43,7 @@ N_output_name = N;
 
 variety= 'arbitrary'; 
 valve.variety = variety; 
-N_leaflets = 8;
+N_leaflets = 4;
 valve.N_leaflets = N_leaflets; 
 
 
@@ -244,7 +244,7 @@ r_stj = 2.5/2; % 25 mm valve
 r_temp = 2.5/2; % vbr radius
 % keep same proportions of attachment 
 % add 
-comm_scaling = (1.5/1.75);
+comm_scaling = 1; %(1.5/1.75);
 hc = comm_scaling *  0.5 * r_stj; 
 h1 = comm_scaling * (1.4 * r_stj - 0.5 * r_stj); 
 r_commissure = r_stj; 
@@ -288,8 +288,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 18;  % circumferential 
-tension_coeffs.c_rad_dec        = 20;  % radial
+tension_coeffs.c_circ_dec       = 5.31;  % circumferential 
+tension_coeffs.c_rad_dec        = 1.07;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 3.0;
 
