@@ -43,7 +43,7 @@ N_output_name = N;
 
 variety= 'arbitrary'; 
 valve.variety = variety; 
-N_leaflets = 8;
+N_leaflets = 10;
 valve.N_leaflets = N_leaflets; 
 
 
@@ -288,8 +288,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 21.2;  % circumferential 
-tension_coeffs.c_rad_dec        = 23;  % radial
+tension_coeffs.c_circ_dec       = 35;  % circumferential 
+tension_coeffs.c_rad_dec        = 60;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 3.0;
 
