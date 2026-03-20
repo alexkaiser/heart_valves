@@ -1,4 +1,4 @@
-function [vertices normal centroid R] = coordinate_transformation_vertices(vertices, ring_boundary_file, R_0, T_0, apply_inverse)
+function [vertices, normal, centroid, R] = coordinate_transformation_vertices(vertices, ring_boundary_file, R_0, T_0, apply_inverse, normal, centroid)
 % 
 % takes file containing ring points 
 % applies rigid translations and rotations that takes the unit circle to 
@@ -12,35 +12,39 @@ if ~exist('apply_inverse', 'var')
     apply_inverse = false; 
 end 
 
-f = fopen(ring_boundary_file, 'r'); 
-vertices_ring_bdry = fscanf(f, '%f'); 
-fclose(f); 
-
-% first is number of vertices 
-n_pts_ring_from_file = vertices_ring_bdry(1); 
-
-% crop to keep just this 
-vertices_ring_bdry = vertices_ring_bdry(2:end); 
-
-vertices_ring_bdry = reshape(vertices_ring_bdry, 3, []); 
-[~, n_pts_ring] = size(vertices_ring_bdry); 
-
-if n_pts_ring ~= n_pts_ring_from_file
-    error('inconsistent number of points from header and array size'); 
+if exist('normal', 'var') && exist('centroid', 'var')
+    % use them 
+else 
+    % read from file default 
+    f = fopen(ring_boundary_file, 'r'); 
+    vertices_ring_bdry = fscanf(f, '%f'); 
+    fclose(f); 
+    
+    % first is number of vertices 
+    n_pts_ring_from_file = vertices_ring_bdry(1); 
+    
+    % crop to keep just this 
+    vertices_ring_bdry = vertices_ring_bdry(2:end); 
+    
+    vertices_ring_bdry = reshape(vertices_ring_bdry, 3, []); 
+    [~, n_pts_ring] = size(vertices_ring_bdry); 
+    
+    if n_pts_ring ~= n_pts_ring_from_file
+        error('inconsistent number of points from header and array size'); 
+    end 
+    
+    centroid = zeros(3,1); 
+    for i=1:3
+        centroid(i) = mean(vertices_ring_bdry(i,:)); 
+    end 
+    
+    normal = cross(vertices_ring_bdry(:,1) - centroid, vertices_ring_bdry(:, floor(n_pts_ring/4)) - centroid); 
+    % take the z direction up normal 
+    if normal(3) < 0
+        normal = -normal; 
+    end 
+    normal = normal / norm(normal); 
 end 
-
-centroid = zeros(3,1); 
-for i=1:3
-    centroid(i) = mean(vertices_ring_bdry(i,:)); 
-end 
-
-normal = cross(vertices_ring_bdry(:,1) - centroid, vertices_ring_bdry(:, floor(n_pts_ring/4)) - centroid); 
-% take the z direction up normal 
-if normal(3) < 0
-    normal = -normal; 
-end 
-normal = normal / norm(normal); 
-
 
 % check inverse rotation first 
 % rotate normal so it has zero y component 

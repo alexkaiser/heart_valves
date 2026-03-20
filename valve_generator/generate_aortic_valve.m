@@ -31,7 +31,7 @@
 % Size parameter
 % Number of points on free edge of each leaflet 
 % 
-N_each_range = 2^7; %2.^(6:7); 
+N_each_range = 2^5; %2.^(6:7); 
 
 for N_each = N_each_range
 
@@ -49,8 +49,9 @@ for N_each = N_each_range
     pulm = false; 
     true_bicuspid = false;
     fish = false;
-    arbitrary = true;
-    
+    arbitrary = false;
+    hist_3 = true;
+
     if pulm
         valve = initialize_valve_data_structures_pulm_mri_box(N); 
     elseif true_bicuspid
@@ -59,6 +60,8 @@ for N_each = N_each_range
         valve = initialize_valve_data_structures_aortic_bicuspid_fish(N);     
     elseif arbitrary
         valve = initialize_valve_data_structures_aortic_arbitrary(N); 
+    elseif hist_3 
+        valve = init_aortic_historical_3(N); 
     else 
         valve = initialize_valve_data_structures_aortic_generic(N); 
     end 
