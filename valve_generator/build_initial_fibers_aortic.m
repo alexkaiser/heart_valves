@@ -51,8 +51,11 @@ debug = true;
 if isfield(valve.skeleton, 'valve_ring_pts')
     % use whatever points are measured for valve ring 
  
-    [pts, commissure_points, center] = interpolate_valve_ring_pts_aortic(valve, N_each, N_leaflets); 
-    X(:,:,1) = pts; 
+    if ~isfield(valve.skeleton, 'height_min_comm')
+        error('Must provide height_min_comm for interpolating valve ring');
+    end
+
+    [X, commissure_points, center, comm_position_set] = interpolate_valve_ring_pts_aortic(leaflet, valve.skeleton.valve_ring_pts, valve.skeleton.height_min_comm); 
     % error('arbitrary skeleton not implemented for aortic')
 else
 
@@ -264,7 +267,7 @@ else
         end 
                          
         
-        debug_spacing = true; 
+        debug_spacing = false; 
         if debug_spacing
             figure; 
 
