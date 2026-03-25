@@ -102,8 +102,8 @@ ring_pts_Non_cusp_model_coords = R_extra_z * ring_pts_Non_cusp_model_coords;
 % inverse of sim to model coordinate map 
 skeleton.inverse_transformation_initial_condition = @(x) R * R_extra_z' * x + midpoint_comms; 
 
-ring_pts_LR_cusp_sim_coords_transformed = skeleton.inverse_transformation_initial_condition(ring_pts_LR_cusp_model_coords)
-ring_pts_Non_cusp_sim_coords_transformed = skeleton.inverse_transformation_initial_condition(ring_pts_Non_cusp_model_coords)
+ring_pts_LR_cusp_sim_coords_transformed = skeleton.inverse_transformation_initial_condition(ring_pts_LR_cusp_model_coords);
+ring_pts_Non_cusp_sim_coords_transformed = skeleton.inverse_transformation_initial_condition(ring_pts_Non_cusp_model_coords);
 
 skeleton.r = norm(comm_1 - comm_2)/2;
 skeleton.r_commissure = skeleton.r; 
@@ -113,13 +113,13 @@ skeleton.ring_pts_Non_cusp_model_coords = ring_pts_Non_cusp_model_coords;
 % scale comm height proportional to STJ radius 
 r_stj = skeleton.r; % 1.67 / 2;
 % r_temp = 2.3 / 2; % vbr radius
-hc = 0.5 * r_stj; 
+hc = 0.8 * r_stj; % 0.5 * r_stj; 
 h1 = 0.87 * 2 * r_stj - hc; % 1.4 * r_stj - hc; 
 
 skeleton.height_min_comm = h1; 
 
 
-debug_plots = true;
+debug_plots = false;
 if debug_plots
     plot3(ring_pts_raw_LR_cusp(1,:), ring_pts_raw_LR_cusp(2,:), ring_pts_raw_LR_cusp(3,:),'*-');
     hold on 
