@@ -95,7 +95,16 @@ function params = output_to_ibamr_format(valve)
     params.vertex        = fopen(strcat(base_name, '.vertex'), 'w'); 
     params.spring        = fopen(strcat(base_name, '.spring'), 'w'); 
     params.target        = fopen(strcat(base_name, '.target'), 'w'); 
-    params.inst          = fopen(strcat(base_name, '.inst'), 'w'); 
+
+    % default to true 
+    params.inst_on = true; 
+    if isfield(valve, 'inst_file_ring') 
+        params.inst_on = valve.inst_file_ring;
+    end 
+    if params.inst_on 
+        params.inst          = fopen(strcat(base_name, '.inst'), 'w'); 
+    end 
+
     if ~strcmp(params.type, 'aortic') 
         params.papillary     = fopen(strcat(base_name, '.papillary'), 'w'); 
     end 
@@ -444,29 +453,30 @@ function params = output_to_ibamr_format(valve)
             end 
             
         else             
-            % pass L=r to get only one ring placed 
-            hoop_springs = true; 
-
-            if isfield(valve, 'extra_radius_hoops')
-                extra_radius_hoops = valve.extra_radius_hoops; 
-            else 
-                extra_radius_hoops = 0; 
-            end 
-
-            if strcmp(params.type, 'aortic') 
-                % only place on the first copy here 
-                if copy == 1 
+            if params.inst_on
+                % pass L=r to get only one ring placed 
+                hoop_springs = true; 
+    
+                if isfield(valve, 'extra_radius_hoops')
+                    extra_radius_hoops = valve.extra_radius_hoops; 
+                else 
+                    extra_radius_hoops = 0; 
+                end 
+    
+                if strcmp(params.type, 'aortic') 
+                    % only place on the first copy here 
+                    if copy == 1 
+                        params = place_net(params, valve.leaflets(i), ds, r, r + extra_radius_hoops, k_rel, k_target_net, ref_frac_net, eta_net, hoop_springs); 
+                    end 
+                else
                     params = place_net(params, valve.leaflets(i), ds, r, r + extra_radius_hoops, k_rel, k_target_net, ref_frac_net, eta_net, hoop_springs); 
                 end 
-            else
-                params = place_net(params, valve.leaflets(i), ds, r, r + extra_radius_hoops, k_rel, k_target_net, ref_frac_net, eta_net, hoop_springs); 
+    
+                if extra_radius_hoops > 0.0
+                    max_to_place = max(0,floor(extra_radius_hoops / ds) - 1);
+                    params = place_rays(params, valve.leaflets(i), ds, r + extra_radius_hoops, k_rel, k_target_net, ref_frac_net, eta_net, max_to_place);
+                end 
             end 
-
-            if extra_radius_hoops > 0.0
-                max_to_place = max(0,floor(extra_radius_hoops / ds) - 1);
-                params = place_rays(params, valve.leaflets(i), ds, r + extra_radius_hoops, k_rel, k_target_net, ref_frac_net, eta_net, max_to_place);
-            end 
-                
              
         end 
         
@@ -673,7 +683,7 @@ function params = output_to_ibamr_format(valve)
         
         params.vertices = coordinate_transformation_vertices(params.vertices, valve.transformation_vertex_file, R_0, T_0); 
     elseif valve.in_heart && isfield(valve.skeleton, 'inverse_transformation_initial_condition')
-        params.vertices = valve.skeleton.inverse_transformation_initial_condition(params.vertices) 
+        params.vertices = valve.skeleton.inverse_transformation_initial_condition(params.vertices); 
     else 
 
         if isfield(valve, 'initial_translation_aortic')
@@ -695,7 +705,9 @@ function params = output_to_ibamr_format(valve)
     fclose(params.vertex   ); 
     fclose(params.spring   ); 
     fclose(params.target   ); 
-    fclose(params.inst     ); 
+    if params.inst_on
+        fclose(params.inst     );
+    end 
     if ~strcmp(params.type, 'aortic') 
         fclose(params.papillary); 
     end 
@@ -1908,12 +1920,13 @@ function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac
         
     end 
 
-    
-    % write the instrument file header here 
-    fprintf(params.inst, '1   # num meters in file\n'); 
-    fprintf(params.inst, 'meter_0   # name\n'); 
-    fprintf(params.inst, '%d  # number of meter points\n', j_max); 
-    
+    if params.inst_on
+        % write the instrument file header here 
+        fprintf(params.inst, '1   # num meters in file\n'); 
+        fprintf(params.inst, 'meter_0   # name\n'); 
+        fprintf(params.inst, '%d  # number of meter points\n', j_max); 
+    end 
+        
     % below the first possible point 
     idx = -1; 
     
@@ -1934,7 +1947,7 @@ function params = place_net(params, leaflet, ds, r, L, k_rel, k_target, ref_frac
                 idx = indices_global(j,k); 
                 
                 % instrument file on 
-                if k == 1
+                if params.inst_on && (k == 1)
                     fprintf(params.inst, '%d \t0 \t %d\n', idx, instrument_idx); 
                     instrument_idx = instrument_idx + 1; 
                 end 

@@ -43,11 +43,17 @@ end
 
 % rotations made in paraview for axis alignment 
 % scan coordinates to simulation coordinates 
-rot_1_x = deg2rad( 34);
-rot_2_y = deg2rad(-15);
-rot_3_z = deg2rad(-45);
+% rot_1_x = deg2rad( 34);
+% rot_2_y = deg2rad(-15);
+% rot_3_z = deg2rad(-45);
+% 
+% R = rotation_matrix_z(rot_3_z) * rotation_matrix_y(rot_2_y) * rotation_matrix_x(rot_1_x); 
 
+rot_1_x = deg2rad(34);
+rot_2_y = deg2rad(15); % required sign swap for this component only 
+rot_3_z = deg2rad(-45);
 R = rotation_matrix_z(rot_3_z) * rotation_matrix_y(rot_2_y) * rotation_matrix_x(rot_1_x); 
+
 
 % simulation coordinates 
 ring_pts_LR_cusp_sim_coords = R * ring_pts_LR_cusp; 
@@ -87,6 +93,7 @@ apply_inverse = true;
 [ring_pts_Non_cusp_model_coords, ~, ~, R] = coordinate_transformation_vertices(ring_pts_Non_cusp_sim_coords, [], R_0_temp, T_0_temp, apply_inverse, normal, midpoint_comms);
 
 % put comm_2  to the y axis     
+
 R_extra_z = rotation_matrix_z(pi - atan2(ring_pts_LR_cusp_model_coords(2,end), ring_pts_LR_cusp_model_coords(1,end)));
 
 ring_pts_LR_cusp_model_coords  = R_extra_z * ring_pts_LR_cusp_model_coords; 
@@ -113,22 +120,26 @@ skeleton.ring_pts_Non_cusp_model_coords = ring_pts_Non_cusp_model_coords;
 % scale comm height proportional to STJ radius 
 r_stj = skeleton.r; % 1.67 / 2;
 % r_temp = 2.3 / 2; % vbr radius
-hc = 0.8 * r_stj; % 0.5 * r_stj; 
+hc = 1 * r_stj; % 0.5 * r_stj; 
 h1 = 0.87 * 2 * r_stj - hc; % 1.4 * r_stj - hc; 
 
 skeleton.height_min_comm = h1; 
 
 
-debug_plots = false;
+debug_plots = true;
 if debug_plots
-    plot3(ring_pts_raw_LR_cusp(1,:), ring_pts_raw_LR_cusp(2,:), ring_pts_raw_LR_cusp(3,:),'*-');
-    hold on 
-    plot3(ring_pts_raw_Non_cusp(1,:), ring_pts_raw_Non_cusp(2,:), ring_pts_raw_Non_cusp(3,:),'*-');
+    
+    figure; 
+    hold on; 
+
+    % plot3(ring_pts_raw_LR_cusp(1,:), ring_pts_raw_LR_cusp(2,:), ring_pts_raw_LR_cusp(3,:),'*-');
+    % plot3(ring_pts_raw_Non_cusp(1,:), ring_pts_raw_Non_cusp(2,:), ring_pts_raw_Non_cusp(3,:),'*-');
+
     plot3(ring_pts_LR_cusp_sim_coords(1,:), ring_pts_LR_cusp_sim_coords(2,:), ring_pts_LR_cusp_sim_coords(3,:),'*-');
     plot3(ring_pts_Non_cusp_sim_coords(1,:), ring_pts_Non_cusp_sim_coords(2,:), ring_pts_Non_cusp_sim_coords(3,:),'*-');
 
-    plot3(ring_pts_LR_cusp_model_coords(1,:), ring_pts_LR_cusp_model_coords(2,:), ring_pts_LR_cusp_model_coords(3,:),'*-');
-    plot3(ring_pts_Non_cusp_model_coords(1,:), ring_pts_Non_cusp_model_coords(2,:), ring_pts_Non_cusp_model_coords(3,:),'*-');
+    % plot3(ring_pts_LR_cusp_model_coords(1,:), ring_pts_LR_cusp_model_coords(2,:), ring_pts_LR_cusp_model_coords(3,:),'*-');
+    % plot3(ring_pts_Non_cusp_model_coords(1,:), ring_pts_Non_cusp_model_coords(2,:), ring_pts_Non_cusp_model_coords(3,:),'*-');
 
     plot3(ring_pts_LR_cusp_sim_coords_transformed(1,:), ring_pts_LR_cusp_sim_coords_transformed(2,:), ring_pts_LR_cusp_sim_coords_transformed(3,:),'o-');
     plot3(ring_pts_Non_cusp_sim_coords_transformed(1,:), ring_pts_Non_cusp_sim_coords_transformed(2,:), ring_pts_Non_cusp_sim_coords_transformed(3,:),'o-');
