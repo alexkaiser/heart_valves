@@ -45,7 +45,7 @@ else
 end 
 X = NaN * zeros(3,j_max,k_max); 
 
-debug = true; 
+debug = false; 
 
 
 if isfield(leaflet, 'valve_ring_pts')

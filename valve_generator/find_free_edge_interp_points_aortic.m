@@ -120,7 +120,7 @@ function free_edge_interp_points = find_free_edge_interp_points_aortic(leaflet, 
         end 
 
 
-        debug_plots = true; 
+        debug_plots = false; 
         if debug_plots
             figure; 
             y_range = linspace(-r,r,1000); 

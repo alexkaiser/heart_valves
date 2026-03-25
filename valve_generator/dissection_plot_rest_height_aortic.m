@@ -157,7 +157,7 @@ for k=1:k_max
     hold on 
 end 
     
-radial_leaflet_height = positions_y(center_leaflet_idx,k_max) - positions_y(center_leaflet_idx,1)
+radial_leaflet_height = positions_y(center_leaflet_idx,k_max) - positions_y(center_leaflet_idx,1);
 
 % figure; 
 height_percentage_ref_aortic = cumsum(R_v(center_leaflet_idx,:)) / sum(R_v(center_leaflet_idx,:)); 
@@ -173,9 +173,9 @@ height_value_ref_aortic = cumsum(R_v(center_leaflet_idx,:));
 % xlabel('k')
 % ylabel('height so far (absolute)')
 
-coaptation_height_goal = 0.17*2*radius 
-coaptation_zone_start_index = find(height_value_ref_aortic > (radial_leaflet_height - coaptation_height_goal),1)
-coaptation_zone_start_fraction = coaptation_zone_start_index/k_max 
+coaptation_height_goal = 0.17*2*radius;
+coaptation_zone_start_index = find(height_value_ref_aortic > (radial_leaflet_height - coaptation_height_goal),1);
+coaptation_zone_start_fraction = coaptation_zone_start_index/k_max;
 
 % r = d/2 (clearly)
 % h = 0.71d = 1.42r, height to commissure 
