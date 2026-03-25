@@ -223,22 +223,35 @@ valve.n_layers_cylinder = 3;
 % Base constants, individual pieces are tuned relative to these values
 
 % tension coefficients structure 
-tension_coeffs.pressure_tension_ratio = 0.00477; 
 
-tension_coeffs.dec_tension_coeff_base = 20.0; 
+% LR leaflet 
+tension_coeffs_lr.pressure_tension_ratio = 0.00477; 
+tension_coeffs_lr.dec_tension_coeff_base = 20.0; 
 
 % max tensions in leaflets 
-tension_coeffs.alpha = 1.6;   % circumferential 
-tension_coeffs.beta  = 0.055;   % radial
+tension_coeffs_lr.alpha = 1.6;   % circumferential 
+tension_coeffs_lr.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 3.198;  % circumferential 
-tension_coeffs.c_rad_dec        = 1.145;  % radial
+tension_coeffs_lr.c_circ_dec       = 2.4;  % circumferential 
+tension_coeffs_lr.c_rad_dec        = 0.9;  % radial
+tension_coeffs_lr.c_circ_dec_annulus = 1.91;
+tension_coeffs_lr.c_circ_dec_free_edge_percentage = 0.0;
 
-tension_coeffs.c_circ_dec_annulus = 1.91;
+% non coronary leaflet
+tension_coeffs_non.pressure_tension_ratio = 0.00477; 
+tension_coeffs_non.dec_tension_coeff_base = 20.0; 
 
-% tension_coeffs.c_circ_dec_free_edge = 5.0;
-tension_coeffs.c_circ_dec_free_edge_percentage = 0.0;
+% max tensions in leaflets 
+tension_coeffs_non.alpha = 1.6;   % circumferential 
+tension_coeffs_non.beta  = 0.055;   % radial
+
+% decreasing tension coefficients 
+tension_coeffs_non.c_circ_dec       = 2.4;  % circumferential 
+tension_coeffs_non.c_rad_dec        = 0.9;  % radial
+tension_coeffs_non.c_circ_dec_annulus = 1.91;
+tension_coeffs_non.c_circ_dec_free_edge_percentage = 0.0;
+
 
 % scaling for target points 
 % note that this does not include copies 
@@ -291,16 +304,31 @@ valve.k_bend_cross_layer = 1e4 * 192/N;
 % If any spring is placed at more than double this length an extra vertex is placed
 valve.ds = 2*pi*valve.skeleton.r / N; 
 
-[leaflet valve] = initialize_leaflet_aortic(name,                                ... 
+[leaflet_lr valve] = initialize_leaflet_aortic(name,                             ... 
                                             N,                                   ...
-                                            tension_coeffs,                      ... 
+                                            tension_coeffs_lr,                   ... 
                                             p_0,                                 ... 
-                                            valve);  
+                                            valve,                               ...
+                                            valve.skeleton.ring_pts_LR_cusp_model_coords);  
 
-valve.leaflets(1) = leaflet; 
+valve.leaflets(1) = leaflet_lr;
+
+
+[leaflet_non valve] = initialize_leaflet_aortic(name,                            ... 
+                                            N,                                   ...
+                                            tension_coeffs_non,                  ... 
+                                            p_0,                                 ... 
+                                            valve,                               ...
+                                            valve.skeleton.ring_pts_Non_cusp_model_coords);  
+
+valve.leaflets(2) = leaflet_non;
+
+
 
 if isfield(valve, 'extrusion_out') 
-    valve.leaflets(1).extrusion_out = valve.extrusion_out; 
+    for leaflet_idx = 1:length(valve.leaflets)
+        valve.leaflets(leaflet_idx).extrusion_out = valve.extrusion_out; 
+    end 
 end
 
 

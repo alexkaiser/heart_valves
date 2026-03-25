@@ -1659,8 +1659,6 @@ function params = add_beams(params, leaflet, k_bend_radial, k_bend_circ, ...
     
     if ~exist('k_bend_radial_free_edge_percentage', 'var')
         k_bend_radial_free_edge_percentage = 0; 
-    elseif ~exist('k_bend_radial_free_edge_percentage', 'var')
-        k_bend_radial_free_edge_percentage = 0; 
     end 
     
     if exist('k_bend_radial_interp_pts', 'var')

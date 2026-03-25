@@ -32,11 +32,10 @@ function [valve valve_with_reference pass_all] = solve_valve(valve, interactive,
 % OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 % OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-pass_all = true; 
+n_leaflets = length(valve.leaflets); 
 
-if length(valve.leaflets) ~= 1
-    error('running with single leaflet assumption for now'); 
-end 
+pass_all = true; 
+pass_this_leaflet = true(n_leaflets,1);
 
 if ~exist('from_history', 'var')
     from_history = false; 
@@ -58,6 +57,11 @@ max_total_fails       = valve.max_total_fails;
 
 
 if from_history
+
+    if length(valve.leaflets) > 1
+        error('from history mode not implmented for more than one lealfet');
+    end 
+
     if ~isfield(valve, 'tension_coeff_history')
         error('Must provide history to solve from history'); 
     end 
@@ -76,9 +80,9 @@ for i=1:length(valve.leaflets)
     p_goal    = leaflet.p_0; 
     goal_first = false; 
     
-    [valve.leaflets(i) pass err] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_continuations, p_easy, p_goal, max_consecutive_fails, max_total_fails, goal_first); 
+    [valve.leaflets(i), pass_this_leaflet(i), err] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_continuations, p_easy, p_goal, max_consecutive_fails, max_total_fails, goal_first); 
 
-    if pass
+    if pass_this_leaflet(i) 
         fprintf('Global solve passed, err = %e\n\n', err); 
     else 
         fprintf('Global solve failed, err = %e\n\n', err); 
@@ -87,13 +91,19 @@ for i=1:length(valve.leaflets)
 %     fig = figure; 
 %     surf_plot(valve.leaflets(i), fig); 
 %     pause(0.01);
+
     
-    pass_all = pass_all && pass; 
+    
+    pass_all = pass_all && pass_this_leaflet(i); 
     
 end 
 
 
 if from_history
+
+    if length(valve.leaflets) > 1
+        error('from history mode not implmented for more than one lealfet');
+    end 
     
     fig = figure; 
     valve_plot(valve, fig); 
@@ -130,7 +140,8 @@ end
 
 
 if interactive && pass_all
-    fprintf('Solve passed, interactive mode enabled.\n'); 
+    
+    fprintf('Solve passed, interactive mode enabled.\n\n'); 
     
     num_passed = 1; 
     if from_history
@@ -142,13 +153,7 @@ if interactive && pass_all
     valve_plot(valve, fig); 
     title('Valve in interactive mode'); 
     
-    fig_dissection_plot = figure; 
-    if isfield(valve, 'name') && strcmp(valve.name, 'aortic') 
-        fig_dissection_plot = dissection_plot_rest_height_aortic(valve, fig_dissection_plot); 
-    else
-        fig_dissection_plot = dissection_plot_rest_height(valve, fig_dissection_plot); 
-    end 
-    
+
 %     if isfield(valve, 'name') && strcmp(valve.name, 'aortic')        
 %         fiber_output    = true; 
 %         fiber_stride    = 4; 
@@ -162,137 +167,150 @@ if interactive && pass_all
 %         total_tension_surf_plot_aortic(valve.leaflets(1), fiber_output, fiber_stride, stride_offset_j, circ, rad, ratio, height_plot, fig_ratio)
 %         title('ratio circ/radial tension')
 %     end 
-    
-    while true 
-    
-        fprintf('Current tension_coeffs struct, which includes all valid variables:\n')
-        fprintf('tension_coeffs = \n\n')
-        disp(valve.leaflets(1).tension_coeffs)
+    for i=1:length(valve.leaflets)
 
-        if isfield(valve, 'name') && strcmp(valve.name, 'aortic')
-            % nothing 
+        fprintf('Leaflet %d\n',i);
+
+        fig_dissection_plot(i) = figure; 
+        if isfield(valve, 'name') && strcmp(valve.name, 'aortic') 
+            fig_dissection_plot = dissection_plot_rest_height_aortic(valve, fig_dissection_plot, i); 
         else
-            % default mitral 
-            fprintf('Current array variables:\n\n')
-            fprintf('k_0_1 = \n\n')
-            disp(valve.leaflets(1).tension_coeffs.k_0_1)
-            fprintf('k_root = \n\n')
-            disp(valve.leaflets(1).tension_coeffs.k_root)
-            fprintf('c_dec_chordae_leaf = \n\n')
-            disp(valve.leaflets(1).tension_coeffs.c_dec_chordae_leaf)
-            fprintf('c_dec_chordae_root = \n\n')
-            disp(valve.leaflets(1).tension_coeffs.c_dec_chordae_root)
-            fprintf('\n\n'); 
+            fig_dissection_plot = dissection_plot_rest_height(valve, fig_dissection_plot); 
         end 
+    
         
-        try 
-            var_name = input('Enter the name of variable to change as a string (no quotes or whitespace, must match exactly):\n', 's'); 
-
-            if ~ischar(var_name)
-                fprintf('Must input a valid string for variable name.\n'); 
-                continue; 
-            end 
-
-            if isempty(var_name)
-                var_name = input('No variable name entered. Enter empty string again to leave interactive mode.\n', 's'); 
-                if isempty(var_name)
-                    break; 
-                end 
-            end 
-
-            if isfield(valve.leaflets(1).tension_coeffs, var_name)
-
-                tension_coeffs_current = valve.leaflets(1).tension_coeffs; 
-                
-                if length(tension_coeffs_current.(var_name)) > 1
-                    fprintf('Found valid variable %s. You have selected an array variable. Contents of array are:', var_name);
-                    tension_coeffs_current.(var_name)
-                    idx = input('Enter the index you would like to change, ranges okay:\n');  
-                    value = input('Input new value:\n'); 
-                    tension_coeffs_current.(var_name)(idx) = value;
-                else                    
-                    value_old = tension_coeffs_current.(var_name);
-                    fprintf('Found valid variable %s with old value %f.\n', var_name, value_old); 
-                    value = input('Input new value:\n'); 
-                    tension_coeffs_current.(var_name) = value;
-                end 
-                
-                [leaflet_current valve_current] = set_tension_coeffs(valve.leaflets(1), valve, tension_coeffs_current); 
-
-                try
-                    [leaflet_current pass err] = newton_solve_valve(leaflet_current, tol_global, max_it, max_consecutive_fails, max_total_fails);  
-
-                    if pass 
-                        
-                        % copy data from new version 
-                        valve             = valve_current; 
-                        valve.leaflets(1) = leaflet_current; 
-                        
-                        % save history 
-                        num_passed = num_passed + 1; 
-                        valve.tension_coeff_history(num_passed) = valve.leaflets(1).tension_coeffs; 
-                        times = clock; 
-                        save_name = sprintf('%s_tension_history_%d_%d_%d_%d.%d.%d.mat', valve.base_name, times(1), times(2), times(3), times(4), times(5), round(times(6))); 
-                        history_tmp = valve.tension_coeff_history; 
-                        save(save_name, 'history_tmp'); 
-
-                        % update plot 
-                        % if we do not have a figure add one 
-                        if ~ishandle(fig)
-                            fig = figure; 
-                        end
-                        set(0, 'CurrentFigure', fig)
-                        [az el] = view;
-                        clf(fig); 
-                        valve_plot(valve, fig);
-                        view(az,el);
-                        
-                        if ~ishandle(fig_dissection_plot)
-                            fig_dissection_plot = figure; 
-                        end
-                        set(0, 'CurrentFigure', fig_dissection_plot)
-                        if isfield(valve, 'name') && strcmp(valve.name, 'aortic') 
-                            fig_dissection_plot = dissection_plot_rest_height_aortic(valve, fig_dissection_plot); 
-                        else
-                            fig_dissection_plot = dissection_plot_rest_height(valve, fig_dissection_plot); 
-                        end 
-                        % update aortic tension plots 
-                        if false % isfield(valve, 'name') && strcmp(valve.name, 'aortic') 
-                            
-                            if ~exist('fig_ratio', 'var')
-                                fig_ratio = figure; 
-                            end
-                            fiber_output    = true; 
-                            fiber_stride    = 8; 
-                            stride_offset_j = 4; 
-                            circ = false; 
-                            rad = false; 
-                            ratio = true; 
-                            height_plot = false; 
-                            set(0, 'CurrentFigure', fig_ratio)
-                            [az el] = view;
-                            clf(fig_ratio); 
-                            total_tension_surf_plot_aortic(valve.leaflets(1), fiber_output, fiber_stride, stride_offset_j, circ, rad, ratio, height_plot, fig_ratio);
-                            title('ratio circ/radial tension'); 
-                            view(az,el);
-                        end 
-                        
-                    else 
-                        fprintf('New parameters failed. Keeping old tension structure. No pass flag.\n'); 
-                    end
-                catch e %e is an MException struct                    
-                    fprintf(1,'The identifier was: %s\n',e.identifier);
-                    fprintf(1,'There was an error! The message was: %s\n',e.message);
-                    fprintf('New parameters failed. Keeping old tension structure. Catch block, error called in Newton solve.\n'); 
-                end 
-
-            else 
-                fprintf('Variable not found.\n'); 
+        % interactive on each leaflet
+        while true 
+        
+            fprintf('Current tension_coeffs struct, which includes all valid variables:\n')
+            fprintf('tension_coeffs = \n\n')
+            disp(valve.leaflets(i).tension_coeffs)
+    
+            if isfield(valve, 'name') && strcmp(valve.name, 'aortic')
+                % nothing 
+            else
+                % default mitral 
+                fprintf('Current array variables:\n\n')
+                fprintf('k_0_1 = \n\n')
+                disp(valve.leaflets(i).tension_coeffs.k_0_1)
+                fprintf('k_root = \n\n')
+                disp(valve.leaflets(i).tension_coeffs.k_root)
+                fprintf('c_dec_chordae_leaf = \n\n')
+                disp(valve.leaflets(i).tension_coeffs.c_dec_chordae_leaf)
+                fprintf('c_dec_chordae_root = \n\n')
+                disp(valve.leaflets(i).tension_coeffs.c_dec_chordae_root)
+                fprintf('\n\n'); 
             end 
             
-         catch 
-             fprintf('Error in interactive loop of some kind, restart loop.\n'); 
-         end 
+            try 
+                var_name = input('Enter the name of variable to change as a string (no quotes or whitespace, must match exactly):\n', 's'); 
+    
+                if ~ischar(var_name)
+                    fprintf('Must input a valid string for variable name.\n'); 
+                    continue; 
+                end 
+    
+                if isempty(var_name)
+                    var_name = input('No variable name entered. Enter empty string again to leave interactive mode.\n', 's'); 
+                    if isempty(var_name)
+                        break; 
+                    end 
+                end 
+    
+                if isfield(valve.leaflets(i).tension_coeffs, var_name)
+    
+                    tension_coeffs_current = valve.leaflets(i).tension_coeffs; 
+                    
+                    if length(tension_coeffs_current.(var_name)) > 1
+                        fprintf('Found valid variable %s. You have selected an array variable. Contents of array are:', var_name);
+                        tension_coeffs_current.(var_name)
+                        idx = input('Enter the index you would like to change, ranges okay:\n');  
+                        value = input('Input new value:\n'); 
+                        tension_coeffs_current.(var_name)(idx) = value;
+                    else                    
+                        value_old = tension_coeffs_current.(var_name);
+                        fprintf('Found valid variable %s with old value %f.\n', var_name, value_old); 
+                        value = input('Input new value:\n'); 
+                        tension_coeffs_current.(var_name) = value;
+                    end 
+                    
+                    [leaflet_current valve_current] = set_tension_coeffs(valve.leaflets(i), valve, tension_coeffs_current); 
+    
+                    try
+                        [leaflet_current pass_this_leaflet(i) err] = newton_solve_valve(leaflet_current, tol_global, max_it, max_consecutive_fails, max_total_fails);  
+    
+                        if pass_this_leaflet(i) 
+                            
+                            % copy data from new version 
+                            valve             = valve_current; 
+                            valve.leaflets(i) = leaflet_current; 
+                            
+                            % save history 
+                            num_passed = num_passed + 1; 
+                            valve.tension_coeff_history(num_passed) = valve.leaflets(i).tension_coeffs; 
+                            times = clock; 
+                            save_name = sprintf('%s_tension_history_%d_%d_%d_%d.%d.%d.mat', valve.base_name, times(1), times(2), times(3), times(4), times(5), round(times(6))); 
+                            history_tmp = valve.tension_coeff_history; 
+                            save(save_name, 'history_tmp'); 
+    
+                            % update plot 
+                            % if we do not have a figure add one 
+                            if ~ishandle(fig)
+                                fig = figure; 
+                            end
+                            set(0, 'CurrentFigure', fig)
+                            [az el] = view;
+                            clf(fig); 
+                            valve_plot(valve, fig);
+                            view(az,el);
+                            
+                            if ~ishandle(fig_dissection_plot(i))
+                                fig_dissection_plot(i) = figure; 
+                            end
+                            set(0, 'CurrentFigure', fig_dissection_plot(i))
+                            if isfield(valve, 'name') && strcmp(valve.name, 'aortic') 
+                                fig_dissection_plot(i) = dissection_plot_rest_height_aortic(valve, fig_dissection_plot(i), i); 
+                            else
+                                fig_dissection_plot = dissection_plot_rest_height(valve, fig_dissection_plot); 
+                            end 
+                            % update aortic tension plots 
+                            if false % isfield(valve, 'name') && strcmp(valve.name, 'aortic') 
+                                
+                                if ~exist('fig_ratio', 'var')
+                                    fig_ratio = figure; 
+                                end
+                                fiber_output    = true; 
+                                fiber_stride    = 8; 
+                                stride_offset_j = 4; 
+                                circ = false; 
+                                rad = false; 
+                                ratio = true; 
+                                height_plot = false; 
+                                set(0, 'CurrentFigure', fig_ratio)
+                                [az el] = view;
+                                clf(fig_ratio); 
+                                total_tension_surf_plot_aortic(valve.leaflets(i), fiber_output, fiber_stride, stride_offset_j, circ, rad, ratio, height_plot, fig_ratio);
+                                title('ratio circ/radial tension'); 
+                                view(az,el);
+                            end 
+                            
+                        else 
+                            fprintf('New parameters failed. Keeping old tension structure. No pass flag.\n'); 
+                        end
+                    catch e %e is an MException struct                    
+                        fprintf(1,'The identifier was: %s\n',e.identifier);
+                        fprintf(1,'There was an error! The message was: %s\n',e.message);
+                        fprintf('New parameters failed. Keeping old tension structure. Catch block, error called in Newton solve.\n'); 
+                    end 
+    
+                else 
+                    fprintf('Variable not found.\n'); 
+                end 
+                
+             catch 
+                 fprintf('Error in interactive loop of some kind, restart loop.\n'); 
+             end 
+        end 
     end 
 end 
 
@@ -307,33 +325,37 @@ if build_reference
     % which makes matlab complain about assigning it to a structure array 
     valve_with_reference = rmfield(valve_with_reference, 'leaflets'); 
 
+    % just as an allocation statement for the "dissimilar structures" assignment in array problem 
+    leaflets_with_reference(n_leaflets) = set_rest_lengths_and_constants_aortic(valve.leaflets(n_leaflets), valve); 
+
     for i=1:length(valve.leaflets)
 
         if isfield(valve, 'name') && strcmp(valve.name, 'aortic')
-            valve_with_reference.leaflets(i) = set_rest_lengths_and_constants_aortic(valve.leaflets(i), valve); 
-            
-            plots = false; 
-            fig = figure; 
-            [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, ~, ...
-            stress_circ, stress_rad, stress_circ_mean, stress_rad_mean, k_u_stress_mean, k_v_stress_mean] ...
-                = estimate_tangent_modulus_aortic_with_reference(valve_with_reference.leaflets(i), valve.normal_thickness, fig);
-            valve_with_reference.leaflets(i).sigma_circ = sigma_circ; 
-            valve_with_reference.leaflets(i).sigma_rad = sigma_rad; 
-            valve_with_reference.leaflets(i).sigma_circ_mean = sigma_circ_mean;  
-            valve_with_reference.leaflets(i).sigma_rad_mean = sigma_rad_mean;                
-            valve_with_reference.leaflets(i).stress_circ = stress_circ; 
-            valve_with_reference.leaflets(i).stress_rad = stress_rad; 
-            valve_with_reference.leaflets(i).stress_circ_mean = stress_circ_mean;  
-            valve_with_reference.leaflets(i).stress_rad_mean = stress_rad_mean;                         
-            valve_with_reference.leaflets(i).k_u_stress_mean = k_u_stress_mean;  
-            valve_with_reference.leaflets(i).k_v_stress_mean = k_v_stress_mean; 
-            sigma_circ_mean  
-            sigma_rad_mean
-            fprintf('\n')
-            
-            if ~plots
-                close(fig); 
-            end 
+            leaflets_with_reference(i) = set_rest_lengths_and_constants_aortic(valve.leaflets(i), valve); 
+                        
+
+            % plots = false; 
+            % fig = figure; 
+            % [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, ~, ...
+            % stress_circ, stress_rad, stress_circ_mean, stress_rad_mean, k_u_stress_mean, k_v_stress_mean] ...
+            %     = estimate_tangent_modulus_aortic_with_reference(leaflets_with_reference(i), valve.normal_thickness, fig);
+            % leaflets_with_reference(i).sigma_circ = sigma_circ; 
+            % leaflets_with_reference(i).sigma_rad = sigma_rad; 
+            % leaflets_with_reference(i).sigma_circ_mean = sigma_circ_mean;  
+            % leaflets_with_reference(i).sigma_rad_mean = sigma_rad_mean;                
+            % leaflets_with_reference(i).stress_circ = stress_circ; 
+            % leaflets_with_reference(i).stress_rad = stress_rad; 
+            % leaflets_with_reference(i).stress_circ_mean = stress_circ_mean;  
+            % leaflets_with_reference(i).stress_rad_mean = stress_rad_mean;                         
+            % leaflets_with_reference(i).k_u_stress_mean = k_u_stress_mean;  
+            % leaflets_with_reference(i).k_v_stress_mean = k_v_stress_mean; 
+            % sigma_circ_mean  
+            % sigma_rad_mean
+            % fprintf('\n')
+            % 
+            % if ~plots
+            %     close(fig); 
+            % end 
             
             if isfield(valve_with_reference, 'dilate_graft') && valve_with_reference.dilate_graft
                 if isfield(valve_with_reference, 'dilation_dist')
@@ -369,9 +391,9 @@ if build_reference
                     extra_stretch_radial = valve.strain_rad + 1.0; 
                 end 
                 
-                leaflets_copy = aortic_free_edge_fuse_commissure(valve_with_reference.leaflets(i), extra_stretch_radial, leaflet.fused_comm_idx); 
+                leaflets_copy = aortic_free_edge_fuse_commissure(leaflets_with_reference(i), extra_stretch_radial, leaflet.fused_comm_idx); 
                 valve_with_reference = rmfield(valve_with_reference, 'leaflets'); 
-                valve_with_reference.leaflets(1) = leaflets_copy; 
+                leaflets_with_reference(1) = leaflets_copy; 
             
             elseif isfield(leaflet, 'pinch_commissure') && leaflet.pinch_commissure                     
                 if ~isfield(leaflet, 'N_to_pinch')
@@ -384,10 +406,10 @@ if build_reference
                     extra_stretch_radial = valve.strain_rad + 1.0; 
                 end
                 
-                valve_with_reference.leaflets(i) = aortic_free_edge_pinch_comms(valve_with_reference.leaflets(i), extra_stretch_radial, leaflet.N_to_pinch);
-%                 leaflets_copy = aortic_free_edge_pinch_comms(valve_with_reference.leaflets(i), extra_stretch_radial, leaflet.N_to_pinch); 
+                leaflets_with_reference(i) = aortic_free_edge_pinch_comms(leaflets_with_reference(i), extra_stretch_radial, leaflet.N_to_pinch);
+%                 leaflets_copy = aortic_free_edge_pinch_comms(leaflets_with_reference(i), extra_stretch_radial, leaflet.N_to_pinch); 
 %                 valve_with_reference = rmfield(valve_with_reference, 'leaflets'); 
-%                 valve_with_reference.leaflets(1) = leaflets_copy;    
+%                 leaflets_with_reference(1) = leaflets_copy;    
                 
             elseif isfield(valve, 'dirichlet_free_edge_with_ref_only') && valve.dirichlet_free_edge_with_ref_only
                 % multiplicative stretch for setting aortic valve initial condition 
@@ -402,27 +424,27 @@ if build_reference
                 else
                     extra_stretch_circ = 1.0; 
                 end 
-                valve_with_reference.leaflets(i) = aortic_free_edge_to_dirichlet_bc(valve_with_reference.leaflets(i), extra_stretch_radial, extra_stretch_circ); 
+                leaflets_with_reference(i) = aortic_free_edge_to_dirichlet_bc(leaflets_with_reference(i), extra_stretch_radial, extra_stretch_circ); 
 
             end 
             
         else
             % mitral default 
-            valve_with_reference.leaflets(i) = set_rest_lengths_and_constants(valve.leaflets(i), valve); 
+            leaflets_with_reference(i) = set_rest_lengths_and_constants(valve.leaflets(i), valve); 
         end 
 
         % leave here to compute annulus force at systolic pressure, valve.p_physical 
         % comment to log diastolic or rest pressure 
         if isfield(valve_with_reference, 'log_annulus_force') && valve_with_reference.log_annulus_force
             if isfield(valve_with_reference, 'force_log_name') 
-                [annulus_positions, forces_annulus] = compute_annulus_force(valve_with_reference.leaflets(i), valve_with_reference.force_log_name); 
+                [annulus_positions, forces_annulus] = compute_annulus_force(leaflets_with_reference(i), valve_with_reference.force_log_name); 
             else 
-                [annulus_positions, forces_annulus] = compute_annulus_force(valve_with_reference.leaflets(i)); 
+                [annulus_positions, forces_annulus] = compute_annulus_force(leaflets_with_reference(i)); 
             end 
         end 
 
 
-        leaflet = valve_with_reference.leaflets(i); 
+        leaflet = leaflets_with_reference(i); 
 
         p_easy = leaflet.p_0/10; 
 
@@ -435,7 +457,7 @@ if build_reference
         max_continuations_relaxed = 6; 
 
         fprintf('\n\nRefernece configuration initial solve:\n')
-        [valve_with_reference.leaflets(i) pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails); 
+        [leaflets_with_reference(i) pass_this_leaflet(i) err any_passed] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails); 
 
 
         if isfield(valve, 'dirichlet_free_edge_comm_ref_only') && valve.dirichlet_free_edge_comm_ref_only
@@ -457,15 +479,15 @@ if build_reference
             p_easy = p_goal; 
             p_goal = valve.p_final_fixed_comm; 
                         
-            leaflet = aortic_comm_to_dirichlet_bc(valve_with_reference.leaflets(i), valve.n_fixed_comm);
+            leaflet = aortic_comm_to_dirichlet_bc(leaflets_with_reference(i), valve.n_fixed_comm);
 
             fprintf("\n\nRefernece config solve with fixed free edge near comm:\n")
-            [valve_with_reference.leaflets(i) pass err any_passed] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails);             
+            [leaflets_with_reference(i) pass_this_leaflet(i) err any_passed] = solve_valve_pressure_auto_continuation(leaflet, tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails);             
         end 
         
         % pre_extrude leaflet before  
         % this should probably be in a function 
-        if isfield(valve_with_reference.leaflets(i), 'pre_extrude') && valve_with_reference.leaflets(i).pre_extrude
+        if isfield(leaflets_with_reference(i), 'pre_extrude') && leaflets_with_reference(i).pre_extrude
             
             ds_extrude = valve_with_reference.normal_thickness / (valve_with_reference.num_copies-1); 
             
@@ -483,7 +505,7 @@ if build_reference
                     extrude_length = (copy - 1) * ds_extrude; 
                 end 
 
-                leaflet_temp = valve_with_reference.leaflets(i); 
+                leaflet_temp = leaflets_with_reference(i); 
                 
                 leaflet_temp.X = normal_extrude_aortic(leaflet_temp, extrude_length); 
             
@@ -499,7 +521,7 @@ if build_reference
                     
                 end 
                  
-                valve_with_reference.leaflets_pre_extruded(copy) = leaflet_temp; 
+                leaflets_with_reference_pre_extruded(copy) = leaflet_temp; 
                 
                 fig = figure; 
                 surf_plot(leaflet_temp, fig); 
@@ -513,11 +535,11 @@ if build_reference
         % reset the free edges of the aortic to neumann bc for final output 
         if isfield(valve, 'name') && strcmp(valve.name, 'aortic')
             if isfield(valve, 'dirichlet_free_edge_with_ref_only') && valve.dirichlet_free_edge_with_ref_only
-                valve_with_reference.leaflets(i) = aortic_free_edge_to_neumann_bc(valve_with_reference.leaflets(i)); 
+                leaflets_with_reference(i) = aortic_free_edge_to_neumann_bc(leaflets_with_reference(i)); 
                 
                 neumann_visual_check = false; 
                 if neumann_visual_check
-                    leaflets_neumann = solve_valve_pressure_auto_continuation(valve_with_reference.leaflets(i), tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails); 
+                    leaflets_neumann = solve_valve_pressure_auto_continuation(leaflets_with_reference(i), tol_global, max_it, max_continuations_relaxed, p_easy, p_goal, max_consecutive_fails, max_total_fails); 
                     surf_plot(leaflets_neumann); 
                     title('neumann bc with reference, not used')
                 end 
@@ -528,21 +550,25 @@ if build_reference
         % uncomment to compute annulus force at diastolic pressure, valve.p_final
 %         if isfield(valve_with_reference, 'log_annulus_force') && valve_with_reference.log_annulus_force
 %             if isfield(valve_with_reference, 'force_log_name') 
-%                 [annulus_positions, forces_annulus] = compute_annulus_force(valve_with_reference.leaflets(i), valve_with_reference.force_log_name); 
+%                 [annulus_positions, forces_annulus] = compute_annulus_force(leaflets_with_reference(i), valve_with_reference.force_log_name); 
 %             else 
-%                 [annulus_positions, forces_annulus] = compute_annulus_force(valve_with_reference.leaflets(i)); 
+%                 [annulus_positions, forces_annulus] = compute_annulus_force(leaflets_with_reference(i)); 
 %             end 
 %         end 
         
-        if isfield(valve, 'rotate_identical_leaflets') && valve.rotate_identical_leaflets 
+        if isfield(valve, 'rotate_identical_leaflets') && valve.rotate_identical_leaflets
+            if n_leaflets > 1
+                error('cannot rotate identical leaflets with more than one leaflet');
+            end 
+
             valve_with_reference = add_rotated_leaflets_aortic(valve_with_reference);
         end 
         
-        if pass
+        if pass_this_leaflet(i)
             fprintf('Global solve passed, err = %e\n\n', err); 
         else 
             if any_passed
-                fprintf('Global solve passed but with pressure %e, err = %e\n\n', valve_with_reference.leaflets(i).p_0, err); 
+                fprintf('Global solve passed but with pressure %e, err = %e\n\n', leaflets_with_reference(i).p_0, err); 
             else 
                 fprintf('Global solve failed, err = %e\n\n', err); 
             end 
@@ -552,10 +578,12 @@ if build_reference
     %     surf_plot(valve.leaflets(i), fig); 
     %     pause(0.01);
 
-        pass_all = pass_all && pass; 
+        pass_all = pass_all && pass_this_leaflet(i); 
 
     end 
     
+    valve_with_reference.leaflets = leaflets_with_reference;
+
 else 
     valve_with_reference = []; 
 

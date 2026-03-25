@@ -48,14 +48,14 @@ X = NaN * zeros(3,j_max,k_max);
 debug = true; 
 
 
-if isfield(valve.skeleton, 'valve_ring_pts')
+if isfield(leaflet, 'valve_ring_pts')
     % use whatever points are measured for valve ring 
  
     if ~isfield(valve.skeleton, 'height_min_comm')
         error('Must provide height_min_comm for interpolating valve ring');
     end
 
-    [X, commissure_points, center, comm_position_set] = interpolate_valve_ring_pts_aortic(leaflet, valve.skeleton.valve_ring_pts, valve.skeleton.height_min_comm); 
+    [X, commissure_points, center, comm_position_set] = interpolate_valve_ring_pts_aortic(leaflet, leaflet.valve_ring_pts, valve.skeleton.height_min_comm); 
     % error('arbitrary skeleton not implemented for aortic')
 else
 

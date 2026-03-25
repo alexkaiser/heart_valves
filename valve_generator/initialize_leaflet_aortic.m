@@ -2,7 +2,8 @@ function [leaflet valve] = initialize_leaflet_aortic(name,                      
                                                      N,                            ...
                                                      tension_coeffs,               ...
                                                      p_0,                          ...
-                                                     valve)
+                                                     valve,                        ...
+                                                     valve_ring_pts)
 %
 % Builds leaflet data structures 
 % 
@@ -86,6 +87,9 @@ if mod(N,3) ~= 0
     error('Aortic valve N must be a multiple of three'); 
 end 
 
+if exist('valve_ring_pts', 'var')
+    leaflet.valve_ring_pts = valve_ring_pts;
+end 
 
 leaflet.du = 1/N; 
 

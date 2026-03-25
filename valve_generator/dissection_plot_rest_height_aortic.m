@@ -1,4 +1,4 @@
-function fig = dissection_plot_rest_height_aortic(valve, fig)
+function fig = dissection_plot_rest_height_aortic(valve, fig, leaflet_idx)
 
 if ~exist('fig', 'var')
     fig = figure; 
@@ -11,8 +11,12 @@ if ~isfield(valve, 'name') || ~strcmp(valve.name, 'aortic')
     return; 
 end 
 
+if ~exist("leaflet_idx", "var")
+    leaflet_idx = 1; 
+end 
+
 % loaded (current configuration) lengths
-leaflet = valve.leaflets(1); 
+leaflet = valve.leaflets(leaflet_idx); 
 X_current              = leaflet.X; 
 j_max                  = leaflet.j_max; 
 k_max                  = leaflet.k_max; 
@@ -61,9 +65,9 @@ end
 
 valve_with_reference = valve; 
 valve_with_reference = rmfield(valve_with_reference, 'leaflets'); 
-valve_with_reference.leaflets(1) = set_rest_lengths_and_constants_aortic(valve.leaflets(1), valve); 
+valve_with_reference.leaflets(leaflet_idx) = set_rest_lengths_and_constants_aortic(valve.leaflets(leaflet_idx), valve); 
 
-leaflet = valve_with_reference.leaflets(1); 
+leaflet = valve_with_reference.leaflets(leaflet_idx); 
 
 r_commissure = valve.skeleton.r_commissure; 
 radius = valve.skeleton.r; 
@@ -122,7 +126,8 @@ plot(positions_x, positions_y, 'k.');
 axis equal
 xlabel('circumferential (cm)')
 ylabel('radial (cm)')
-title('aortic, radial height only')
+title_str = sprintf('aortic, radial height only, leaflet %d', leaflet_idx); 
+title(title_str);
 
 
 

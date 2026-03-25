@@ -20,7 +20,7 @@ function X_extruded = const_extrude_aortic(leaflet, extrude_length)
     idx_comm_above = j_max; 
 
 
-    chord = X(:,idx_comm_above,1) - X(:,idx_comm_below,1); 
+    chord = X(:,idx_comm_above,k_max) - X(:,idx_comm_below,k_max); 
 
     if abs(chord(3)) > tol 
         error('chord not horizontal'); 

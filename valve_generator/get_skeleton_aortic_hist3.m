@@ -83,8 +83,8 @@ R_0_temp = eye(3);
 T_0_temp = zeros(3,1);
 % fwd transformation goes 
 apply_inverse = true; 
-[ring_pts_LR_cusp_model_coords, normal, centroid, R] = coordinate_transformation_vertices(ring_pts_LR_cusp_sim_coords, [], R_0_temp, T_0_temp, apply_inverse, normal, midpoint_comms);
-[ring_pts_Non_cusp_model_coords, normal, centroid, R] = coordinate_transformation_vertices(ring_pts_Non_cusp_sim_coords, [], R_0_temp, T_0_temp, apply_inverse, normal, midpoint_comms);
+[ring_pts_LR_cusp_model_coords, ~, ~, R] = coordinate_transformation_vertices(ring_pts_LR_cusp_sim_coords, [], R_0_temp, T_0_temp, apply_inverse, normal, midpoint_comms);
+[ring_pts_Non_cusp_model_coords, ~, ~, R] = coordinate_transformation_vertices(ring_pts_Non_cusp_sim_coords, [], R_0_temp, T_0_temp, apply_inverse, normal, midpoint_comms);
 
 % put comm_2  to the y axis     
 R_extra_z = rotation_matrix_z(pi - atan2(ring_pts_LR_cusp_model_coords(2,end), ring_pts_LR_cusp_model_coords(1,end)));
@@ -92,11 +92,23 @@ R_extra_z = rotation_matrix_z(pi - atan2(ring_pts_LR_cusp_model_coords(2,end), r
 ring_pts_LR_cusp_model_coords  = R_extra_z * ring_pts_LR_cusp_model_coords; 
 ring_pts_Non_cusp_model_coords = R_extra_z * ring_pts_Non_cusp_model_coords; 
 
+% skeleton.normal = midpoint_comms; 
+% skeleton.centroid = midpoint_comms;
+% 
+% skeleton.initial_rotation_aortic = R_extra_z; 
+% skeleton.initial_translation_aortic = T_0_temp; 
 
-skeleton.centroid = midpoint_comms; 
+% this function applied at end 
+% inverse of sim to model coordinate map 
+skeleton.inverse_transformation_initial_condition = @(x) R * R_extra_z' * x + midpoint_comms; 
+
+ring_pts_LR_cusp_sim_coords_transformed = skeleton.inverse_transformation_initial_condition(ring_pts_LR_cusp_model_coords)
+ring_pts_Non_cusp_sim_coords_transformed = skeleton.inverse_transformation_initial_condition(ring_pts_Non_cusp_model_coords)
+
 skeleton.r = norm(comm_1 - comm_2)/2;
 skeleton.r_commissure = skeleton.r; 
-skeleton.valve_ring_pts = ring_pts_LR_cusp_model_coords; 
+skeleton.ring_pts_LR_cusp_model_coords = ring_pts_LR_cusp_model_coords; 
+skeleton.ring_pts_Non_cusp_model_coords = ring_pts_Non_cusp_model_coords; 
 
 % scale comm height proportional to STJ radius 
 r_stj = skeleton.r; % 1.67 / 2;
@@ -117,6 +129,9 @@ if debug_plots
 
     plot3(ring_pts_LR_cusp_model_coords(1,:), ring_pts_LR_cusp_model_coords(2,:), ring_pts_LR_cusp_model_coords(3,:),'*-');
     plot3(ring_pts_Non_cusp_model_coords(1,:), ring_pts_Non_cusp_model_coords(2,:), ring_pts_Non_cusp_model_coords(3,:),'*-');
+
+    plot3(ring_pts_LR_cusp_sim_coords_transformed(1,:), ring_pts_LR_cusp_sim_coords_transformed(2,:), ring_pts_LR_cusp_sim_coords_transformed(3,:),'o-');
+    plot3(ring_pts_Non_cusp_sim_coords_transformed(1,:), ring_pts_Non_cusp_sim_coords_transformed(2,:), ring_pts_Non_cusp_sim_coords_transformed(3,:),'o-');
     axis equal
 end 
 
