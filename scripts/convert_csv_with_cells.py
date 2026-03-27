@@ -82,13 +82,15 @@ def convert_csv(basename, suffix='_faces', vertex_ext='_vertices.csv', cells_ext
 
 if __name__ == '__main__':
 
+    if len(sys.argv) >= 1:
+        run_mechanics = sys.argv[1]
+    else: 
+        run_mechanics = False
 
-    run_all = True 
-    if run_all:
-        lag_name_base_to_check = ['aortic']
+    if run_mechanics:
+        lag_name_base_to_check = ['aortic_no_partition_3840662']
 
         for lag_base in lag_name_base_to_check: 
-
             suffix='_faces'
             vertex_ext = '_vertices.csv'
             extension_out = '.vtu'
@@ -106,43 +108,69 @@ if __name__ == '__main__':
                     else:
                         mechanics_ext = None    
 
-                    convert_csv(basename, suffix, vertex_ext=vertex_ext, ext_out=extension_out, mechanics_ext=mechanics_ext)                    
+                    convert_csv(basename, suffix, vertex_ext=vertex_ext, ext_out=extension_out, mechanics_ext=mechanics_ext) 
 
-    run_cylinder = True
-    if run_cylinder:
-        lag_base = 'cylinder'
+    else: 
+        run_all = True 
+        if run_all:
+            lag_name_base_to_check = ['aortic']
 
-        suffix='_faces'
-        vertex_ext = '.csv'
-        extension_out = '.vtu'
+            for lag_base in lag_name_base_to_check: 
 
-        file_list = glob.glob('*' + lag_base + '*' + vertex_ext)
-        print("file_list = ", file_list)
+                suffix='_faces'
+                vertex_ext = '_vertices.csv'
+                extension_out = '.vtu'
 
-        for name_full in file_list:
-            if not "cells" in name_full:
-                try:
-                    basename = name_full.rsplit(vertex_ext)[0]
-                    convert_csv(basename, suffix, vertex_ext=vertex_ext, ext_out=extension_out)                    
-                except FileNotFoundError:
-                    print("FileNotFoundError in cylinder, proceeding")
-                    break 
+                file_list = glob.glob(lag_base + '*' + vertex_ext)
+                print("lag_base = ", lag_base)
+                print("file_list = ", file_list)
+
+                for name_full in file_list:
+                    if (not 'cylinder' in name_full) and (not 'cells' in name_full):
+                        basename = name_full.rsplit(vertex_ext)[0]
+
+                        if os.path.isfile(basename + '_mechanics.mat'):
+                            mechanics_ext = '_mechanics.mat'
+                        else:
+                            mechanics_ext = None    
+
+                        convert_csv(basename, suffix, vertex_ext=vertex_ext, ext_out=extension_out, mechanics_ext=mechanics_ext)                    
+
+        run_cylinder = True
+        if run_cylinder:
+            lag_base = 'cylinder'
+
+            suffix='_faces'
+            vertex_ext = '.csv'
+            extension_out = '.vtu'
+
+            file_list = glob.glob('*' + lag_base + '*' + vertex_ext)
+            print("file_list = ", file_list)
+
+            for name_full in file_list:
+                if not "cells" in name_full:
+                    try:
+                        basename = name_full.rsplit(vertex_ext)[0]
+                        convert_csv(basename, suffix, vertex_ext=vertex_ext, ext_out=extension_out)                    
+                    except FileNotFoundError:
+                        print("FileNotFoundError in cylinder, proceeding")
+                        break 
 
 
-    run_basic = False
-    if run_basic:
+        run_basic = False
+        if run_basic:
 
-        basename_no_frame = 'aortic_no_partition_384'
-        suffix='_faces'
-        vertex_ext = '_vertices.csv'
-        extension_out = '.vtu'
+            basename_no_frame = 'aortic_no_partition_384'
+            suffix='_faces'
+            vertex_ext = '_vertices.csv'
+            extension_out = '.vtu'
 
-        file_list = glob.glob(basename_no_frame + '*' + vertex_ext)
+            file_list = glob.glob(basename_no_frame + '*' + vertex_ext)
 
-        for name_full in file_list:
+            for name_full in file_list:
 
-            basename = name_full.rsplit(vertex_ext)[0]
-            convert_csv(basename, suffix, vertex_ext=vertex_ext, ext_out=extension_out)
+                basename = name_full.rsplit(vertex_ext)[0]
+                convert_csv(basename, suffix, vertex_ext=vertex_ext, ext_out=extension_out)
 
 
 
