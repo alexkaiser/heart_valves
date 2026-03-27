@@ -67,7 +67,7 @@ layout1.AssignView(2, renderView2)
 # layout1.SetSize(1340, 1527)
 x_width = 750
 
-include_colorbar = True
+include_colorbar = False
 if include_colorbar:
     x_width = 1340
 
