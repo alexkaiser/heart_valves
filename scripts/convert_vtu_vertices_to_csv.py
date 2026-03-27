@@ -30,32 +30,39 @@ if __name__ == '__main__':
 
     # basename += resolution_string
 
-    # first make sure there is a times file 
-    if not os.path.isfile('times.txt'):
-        subprocess.call('visit -cli -nowin -s ~/heart_valves/scripts/write_times_file_visit.py', shell=True)
+    temp_hist_3 = False
+    if temp_hist_3:
+        basename = 'aortic_no_partition_3840243_faces.vtu'
+        mesh = pyvista.read(basename)
+        np.savetxt('aortic_no_partition_3840243_faces.csv', mesh.points, delimiter=', ')
 
-    times = []
-    times_file = open('times.txt', 'r')
-    for line in times_file:
-        times.append(float(line)) 
-    nsteps = len(times)
+    else: 
+        # first make sure there is a times file 
+        if not os.path.isfile('times.txt'):
+            subprocess.call('visit -cli -nowin -s ~/heart_valves/scripts/write_times_file_visit.py', shell=True)
 
-    frame_number = 444 
+        times = []
+        times_file = open('times.txt', 'r')
+        for line in times_file:
+            times.append(float(line)) 
+        nsteps = len(times)
 
-    lag_name_base_to_check = ['aortic']
+        frame_number = 444 
 
-    for lag_file in os.listdir('..'):
-        for lag_base in lag_name_base_to_check: 
-            if lag_file.startswith(lag_base) and lag_file.endswith('.vertex'):
+        lag_name_base_to_check = ['aortic']
 
-                basename = lag_file.rsplit('.', 1)[0]
-                # convert_csv(basename, frame_number)
+        for lag_file in os.listdir('..'):
+            for lag_base in lag_name_base_to_check: 
+                if lag_file.startswith(lag_base) and lag_file.endswith('.vertex'):
 
-                pool = multiprocessing.Pool() #use all available cores, otherwise specify the number you want as an argument
-                for i in range(nsteps):
-                    pool.apply_async(convert_csv, args=(basename, i))
-                pool.close()
-                pool.join()
+                    basename = lag_file.rsplit('.', 1)[0]
+                    # convert_csv(basename, frame_number)
+
+                    pool = multiprocessing.Pool() #use all available cores, otherwise specify the number you want as an argument
+                    for i in range(nsteps):
+                        pool.apply_async(convert_csv, args=(basename, i))
+                    pool.close()
+                    pool.join()
 
 
 
