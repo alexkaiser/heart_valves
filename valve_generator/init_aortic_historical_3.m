@@ -75,6 +75,8 @@ valve.variety = variety;
 % does not place partition
 valve.in_heart = true; 
 
+valve.inst_file_ring = false; 
+
 valve.base_name = sprintf('aortic_no_partition_%d', N); 
 valve.extra_radius_hoops = 0.0; % adds points out the partition up to this amount 
 
