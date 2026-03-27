@@ -82,7 +82,7 @@ def convert_csv(basename, suffix='_faces', vertex_ext='_vertices.csv', cells_ext
 
 if __name__ == '__main__':
 
-    if len(sys.argv) >= 1:
+    if len(sys.argv) >= 2:
         run_mechanics = sys.argv[1]
     else: 
         run_mechanics = False
