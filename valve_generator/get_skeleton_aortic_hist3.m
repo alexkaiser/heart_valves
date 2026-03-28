@@ -1,6 +1,6 @@
 function skeleton = get_skeleton_aortic_hist3()
 
-low_comms = true; 
+low_comms = false; 
 
 if low_comms
     % scan is in mm
