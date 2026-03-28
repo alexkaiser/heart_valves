@@ -555,15 +555,7 @@ if build_reference
 %                 [annulus_positions, forces_annulus] = compute_annulus_force(leaflets_with_reference(i)); 
 %             end 
 %         end 
-        
-        if isfield(valve, 'rotate_identical_leaflets') && valve.rotate_identical_leaflets
-            if n_leaflets > 1
-                error('cannot rotate identical leaflets with more than one leaflet');
-            end 
-
-            valve_with_reference = add_rotated_leaflets_aortic(valve_with_reference);
-        end 
-        
+                
         if pass_this_leaflet(i)
             fprintf('Global solve passed, err = %e\n\n', err); 
         else 
@@ -583,6 +575,14 @@ if build_reference
     end 
     
     valve_with_reference.leaflets = leaflets_with_reference;
+
+    if isfield(valve, 'rotate_identical_leaflets') && valve.rotate_identical_leaflets
+        if n_leaflets > 1
+            error('cannot rotate identical leaflets with more than one leaflet');
+        end 
+
+        valve_with_reference = add_rotated_leaflets_aortic(valve_with_reference);
+    end 
 
 else 
     valve_with_reference = []; 
