@@ -115,7 +115,7 @@ if valve.in_heart
         % valve.initial_rotation_aortic = rotation_matrix_z(pi/3 + pi/12 + pi/48);
 
         % align to LR 
-        valve.initial_rotation_aortic = rotation_matrix_z(-pi/3 + pi/12 + pi/48);
+        valve.initial_rotation_aortic = rotation_matrix_z(-pi/3 + pi/12 + pi/48 + deg2rad(10));
         
         valve.transformation_vertex_file = 'aortic_annulus.vertex';
     end 
