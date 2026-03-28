@@ -110,7 +110,13 @@ if valve.in_heart
         % for normal_3
         th = 2*pi/3; 
         valve.initial_translation_aortic = -0.05 * [cos(th); sin(th); 0]; 
-        valve.initial_rotation_aortic = rotation_matrix_z(pi/3 + pi/12 + pi/48);
+        
+        % aligns first comm at LN
+        % valve.initial_rotation_aortic = rotation_matrix_z(pi/3 + pi/12 + pi/48);
+
+        % align to LR 
+        valve.initial_rotation_aortic = rotation_matrix_z(-pi/3 + pi/12 + pi/48);
+        
         valve.transformation_vertex_file = 'aortic_annulus.vertex';
     end 
 else 
