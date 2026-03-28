@@ -43,7 +43,7 @@ N_output_name = N;
 
 variety= 'arbitrary'; 
 valve.variety = variety; 
-N_leaflets = 4;
+N_leaflets = 5;
 valve.N_leaflets = N_leaflets; 
 
 
@@ -112,10 +112,10 @@ if valve.in_heart
         valve.initial_translation_aortic = -0.05 * [cos(th); sin(th); 0]; 
         
         % aligns first comm at LN
-        % valve.initial_rotation_aortic = rotation_matrix_z(pi/3 + pi/12 + pi/48);
+        valve.initial_rotation_aortic = rotation_matrix_z(pi/3 + pi/12 + pi/48);
 
         % align to LR 
-        valve.initial_rotation_aortic = rotation_matrix_z(-pi/3 + pi/12 + pi/48 + deg2rad(10));
+        % valve.initial_rotation_aortic = rotation_matrix_z(-pi/3 + pi/12 + pi/48 + deg2rad(10));
         
         valve.transformation_vertex_file = 'aortic_annulus.vertex';
     end 
@@ -294,8 +294,8 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 5.95;  % circumferential 
-tension_coeffs.c_rad_dec        = 2.9;  % radial
+tension_coeffs.c_circ_dec       = 10.0;  % circumferential 
+tension_coeffs.c_rad_dec        = 6.4;  % radial
 
 tension_coeffs.c_circ_dec_annulus = 2.0;
 
