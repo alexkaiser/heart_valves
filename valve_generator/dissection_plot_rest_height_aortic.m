@@ -46,20 +46,28 @@ for k=1:(k_max-1)
 end 
 
 free_edge_length_single_loaded = 0; 
+annulus_circ_bc_fiber_length = 0;
 for j=1:N_each
-    k=k_max; 
-    
-    j_nbr_tmp = j+1; 
-    k_nbr_tmp = k; 
-    [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
-    if ~valid 
-        error('trying to compute lengths with an invalid rest length')
-    end
-    
-    X = X_current(:,j,k);
-    X_nbr = X_current(:,j_nbr,k_nbr); 
-    
-    free_edge_length_single_loaded = free_edge_length_single_loaded + norm(X - X_nbr);
+    for k = [1,k_max] 
+   
+        j_nbr_tmp = j+1; 
+        k_nbr_tmp = k; 
+        [valid j_nbr k_nbr j_spr k_spr] = get_indices(leaflet, j, k, j_nbr_tmp, k_nbr_tmp); 
+        if ~valid 
+            error('trying to compute lengths with an invalid rest length')
+        end
+        
+        X = X_current(:,j,k);
+        X_nbr = X_current(:,j_nbr,k_nbr); 
+        
+        if k == 1
+            annulus_circ_bc_fiber_length = annulus_circ_bc_fiber_length + norm(X - X_nbr);
+        else 
+            free_edge_length_single_loaded = free_edge_length_single_loaded + norm(X - X_nbr);
+        end 
+
+    end 
+
 end 
 
 
@@ -161,8 +169,19 @@ for k=1:k_max
     x = length_one_leaflet_free_edge(k)/2 * [-1, 1]; 
     plot(x,y,'k'); 
     hold on 
+    
+    if k==k_max 
+        ylim([-positions_y(j,k)/10, positions_y(j,k) * 1.05]);
+    end 
+
 end 
     
+y = [0 0]; 
+x = (1/(1 + valve.strain_circ)) * annulus_circ_bc_fiber_length/2 * [-1, 1]; 
+plot(x,y,'k');
+
+
+
 radial_leaflet_height = positions_y(center_leaflet_idx,k_max) - positions_y(center_leaflet_idx,1);
 
 % figure; 
@@ -229,6 +248,8 @@ else
     fprintf("Free edge rest target        = %f\n", 2*1.24*radius / stretch_circ); 
     fprintf("Circ free edge loaded length = %f\t", free_edge_length_single_loaded); 
     fprintf("Circ free edge rest length   = %f\n", length_one_leaflet_free_edge(k_max));
+    fprintf("Circ annulus bc loaded       = %f\t", annulus_circ_bc_fiber_length);
+    fprintf("Circ annulus bc rest length  = %f\n", 1/(1 + valve.strain_circ) * annulus_circ_bc_fiber_length);
     fprintf("Leaflet height target        = %f\t", 1.4*radius); 
     fprintf("Leaflet height rest target   = %f\n", 1.4*radius / stretch_rad); 
     fprintf("Radial height loaded length  = %f\t", radial_leaflet_height_loaded); 
