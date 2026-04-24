@@ -469,12 +469,21 @@ if __name__== "__main__":
         if opt_parameters:            
             fwd_sim_file = "chamber_elastance_valve_rcr_hisotical_3_tune_opt.json"
         else:
-            fwd_sim_file = "chamber_elastance_valve_rcr_hisotical_3_tune.json"
+            fwd_sim_file = "chamber_elastance_valve_rcr_hisotical_3_tune_peak_1.json"
 
         calibration_data_file = fwd_sim_file
 
-        var_to_opt = ["flow:ventricle:valve1", "pressure:ventricle:valve1", "pressure:vessel:OUTLET"]    
-        plot_vars = ["flow:ventricle:valve1", "pressure:ventricle:valve1", "pressure:vessel:OUTLET"]    
+        test_run = True 
+        if test_run:
+            solver = pysvzerod.Solver(fwd_sim_file)
+            solver.run()
+            results = solver.get_full_result()
+            print(results)
+            print('test complete')
+
+
+        var_to_opt = ["flow:lvot:valve1", "pressure:lvot:valve1", "pressure:vessel:OUTLET"]    
+        plot_vars = ["flow:lvot:valve1", "pressure:lvot:valve1", "pressure:vessel:OUTLET"]    
 
         targets_all = ['Emax', 'Emin', 't_shift', 'tau_1', 'tau_2', 'm1', 'm2', 'C', 'Rd', 'Rp']
 
@@ -508,28 +517,30 @@ if __name__== "__main__":
 
 
         targets = ['Emax', 'Emin', 't_shift', 'tau_1', 'tau_2', 'm1', 'm2']
-        optimizer.variables_to_opt = ["flow:ventricle:valve1", "pressure:ventricle:valve1"]
+        optimizer.variables_to_opt = ["flow:lvot:valve1", "pressure:lvot:valve1"]
         result = run_optimization(optimizer, targets)    
         print("result = ", result)    
         optimizer.print_summary(targets_all)
         optimizer.plot('after chamber')
 
         targets = ['C', 'Rd', 'Rp']
-        optimizer.variables_to_opt = ["flow:ventricle:valve1", "pressure:vessel:OUTLET"]    
+        optimizer.variables_to_opt = ["flow:lvot:valve1", "pressure:vessel:OUTLET"]    
         result = run_optimization(optimizer, targets)    
         print("result = ", result)    
         optimizer.print_summary(targets_all)        
         optimizer.plot('after rcr')
 
         # combined not working well 
-        # optimizer.variables_to_opt = ["flow:ventricle:valve1", "pressure:ventricle:valve1", "pressure:vessel:OUTLET"]    
-        # result = run_optimization(optimizer, targets_all)    
-        # print("result = ", result)    
-        # optimizer.print_summary(targets_all)                
+        optimizer.variables_to_opt = ["flow:lvot:valve1", "pressure:lvot:valve1", "pressure:vessel:OUTLET"]    
+        result = run_optimization(optimizer, targets_all)    
+        print("result = ", result)    
+        optimizer.print_summary(targets_all)                
 
-        # optimizer.plot('after')
+        optimizer.plot('after')
+
+        plt.show()
 
         optimizer.output_mat("chamber_elastance_two_hill_valve_rcr_historical_3_results.mat")
 
-        plt.show()
+        
 

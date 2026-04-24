@@ -169,7 +169,16 @@ if __name__== "__main__":
     historical_3_aortic = True 
     if historical_3_aortic: 
 
-        beat_time = 0.8
+        HR = 85;
+        
+        cycle_duration = 60/HR
+        
+        LVEDV = 121.7 
+        LVESV = 56.9
+
+        SV = LVEDV - LVESV
+
+        beat_time = 60/HR
         diastolic_time = .6 * beat_time
         systolic_time = beat_time - diastolic_time
 
@@ -186,9 +195,6 @@ if __name__== "__main__":
         P_mean = systolic_time_fraction*P_systolic + diastolic_time_fraction*(P_min)
 
         print ("P_mean = ", P_mean)
-
-        HR = 91 
-        SV = 71.70
 
         # 5.6 L/min
         cardiac_output_ml_per_min = HR * SV

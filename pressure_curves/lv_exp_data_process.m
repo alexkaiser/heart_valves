@@ -15,13 +15,18 @@ MMHG_TO_CGS = 1333.22368;
 historical_3 = true;
 if historical_3
     
-    HR = 91;
+    HR = 85;
     
     cycle_duration = 60/HR
     
-    SV = 71.70;
-    LVESV = 56.9; 
+    % VTI version 
+    % SV = 71.70;
     
+    LVEDV = 121.7 
+    LVESV = 56.9
+
+    SV = LVEDV - LVESV
+
     % use clinical value 
     Q_goal_ml_per_cycle = SV; 
 
@@ -30,8 +35,8 @@ if historical_3
     start_time_in_cycle = 0.1;
     
     % scales the waveform to these values 
-    p_systolic_scaling = 113;
-    p_diastolic_scaling = 76;
+    p_systolic_scaling = 105;
+    p_diastolic_scaling = 65;
     
     basename_suffix = '_hist_3';
     
@@ -90,11 +95,11 @@ if two_hill
 %     m2 = 21.5683
 
     if historical_3
-        t_shift =  0.23385192232843832
-        tau_1 =  0.6593406592937011
-        tau_2 =  0.3113109205435497
-        m1 =  1.1218639970157647
-        m2 =  18.375052673173577
+        t_shift =  5.266689438543291e-10;
+        tau_1 =  0.3330977307939297;
+        tau_2 =  0.5849325396265926;
+        m1 =  11.417917549790278;
+        m2 =  28.21808826585498;
     else 
         t_shift =  0.4080694895094201
         tau_1 =  0.7999999995665112
@@ -319,9 +324,12 @@ if exist('p_systolic_scaling', 'var') && exist('p_diastolic_scaling', 'var')
     a_0_pressure_lv = a_0_pressure_lv_adjust;
     a_n_pressure_lv = a_n_pressure_lv_adjust;
     b_n_pressure_lv = b_n_pressure_lv_adjust;
-    Series_pressure_lv_adjust = Series_pressure_lv;
+    Series_pressure_lv = Series_pressure_lv_adjust;
     
-    
+    vals_series_pressure_aorta = vals_series_pressure_aorta_adjust;
+    vals_series_pressure_lv = vals_series_pressure_lv_adjust;
+
+
 end 
 
 
@@ -555,7 +563,8 @@ if run_matlab_zerod
 end
 
 
-
+p_ao_mean_mmHg = mean(vals_series_pressure_aorta)
+p_ao_mean_cgs  = mean(vals_series_pressure_aorta_cgs)
 
 
 
@@ -587,6 +596,21 @@ if output_to_sv0d
     print_var_string(f,t,'Vc:ventricle', vals_ventricular_volume);
 
     fprintf(f, '    },\n');
+
+    plot_pressure_checks = true; 
+    if plot_pressure_checks
+        figure; 
+        hold on; 
+        plot(t, vals_series_pressure_lv)
+        plot(t, vals_series_pressure_lv_cgs/MMHG_TO_CGS)
+
+        plot(t, vals_series_pressure_aorta)
+        plot(t, vals_series_pressure_aorta_cgs/MMHG_TO_CGS)
+
+        legend('lv mmHg', 'lv converted', 'ao mmHg', 'ao converted')
+
+    end 
+
 
 %     fprintf(f, '    "dy": {\n');
 %     print_var_string(f,t,'flow:ventricle:valve1', vals_series_q_aorta_derivative_scaled)

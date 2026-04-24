@@ -14,11 +14,11 @@ REF_RATIO  = 4                            // refinement ratio between levels
 NAME = "aortic_384"
 MAX_RESTART_TO_WRITE = 20
 
-R_proximal = 72.83465182234593 
-C = 0.0018758543005083278
-R_distal = 1068.7034639765907
+R_proximal =  80.4595420442015
+C =  0.0015699576902411718
+R_distal =  1238.2410041867354
 
-P_aorta_0_MMHG = 81.2049051716774
+P_aorta_0_MMHG = 70.26819370793635
 
 // FOURIER_COEFFS_FILENAME_VENTRICLE = "fourier_coeffs_ventricle.txt"
 
@@ -29,11 +29,11 @@ BOUNDARY_FILENAME_AORTA = "aorta_native_hist3_bdry_384.vertex"
 VENTRICLE_0D_ON = TRUE
 FOURIER_COEFFS_Q_IN = "fourier_coeffs_hist_3_Q_mi.txt"
 FOURIER_COEFFS_ACT = "fourier_coeffs_hist_3_lv_activation_two_hill.txt"
-V_INITIAL = 62.761321232811326
+V_INITIAL = 202.317859487937
 V_REST_DIASTOLE = 0.0
 V_REST_SYSTOLE = 0.0
-E_MIN = 41.77123867065689
-E_MAX = 2973.9979564925247 
+E_MIN = 9.313072628449735
+E_MAX = 709.4109378920352
 R_LVOT = 5.732861824000000
 INDUCTANCE = 0.0
 
@@ -46,7 +46,7 @@ VESSEL_FILENAME = "aorta_native_hist3_pt25mm_384.vertex"
 
 // FOURIER_COEFFS_FILENAME = "fourier_coeffs_aorta_minus_ventricle.txt"
 
-HR = 91 
+HR = 85 
 CYCLE_DURATION = 60.0/HR
 
 // solver parameters
