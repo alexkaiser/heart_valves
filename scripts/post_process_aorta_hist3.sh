@@ -86,7 +86,7 @@ wait
 
 # renders movie 
 # assumes located in main sim directory 
-# cd .. 
+cd .. 
 
 SESSION_NAME_PARAVIEW="~/heart_valves/scripts/annulus_slice_multivalve_2.py"
 python ~/heart_valves/scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $TOTAL_TASKS
