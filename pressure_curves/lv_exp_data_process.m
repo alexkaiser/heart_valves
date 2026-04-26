@@ -27,11 +27,16 @@ if historical_3
 
     SV = LVEDV - LVESV
 
+    % from echo 
+    EF_echo = .58 
+    EF_computed = SV / LVEDV
+
     % use clinical value 
     Q_goal_ml_per_cycle = SV; 
 
     ventricular_volume_initial = LVESV;
     
+    adjust_venctricular_volume_by_start = true; 
     start_time_in_cycle = 0.1;
     
     % scales the waveform to these values 
@@ -95,11 +100,11 @@ if two_hill
 %     m2 = 21.5683
 
     if historical_3
-        t_shift =  5.266689438543291e-10;
-        tau_1 =  0.3330977307939297;
-        tau_2 =  0.5849325396265926;
-        m1 =  11.417917549790278;
-        m2 =  28.21808826585498;
+        t_shift =  0.26143455794854686
+        tau_1 =  0.14686286007309335
+        tau_2 =  0.3249871932028192
+        m1 =  1.528121739559455
+        m2 =  18.263114283577124
     else 
         t_shift =  0.4080694895094201
         tau_1 =  0.7999999995665112
@@ -393,6 +398,17 @@ file_name = strcat(base_name, suffix, '.txt');
 output_series_coeffs_to_txt(scaling_q_mitral * a_0_q_mitral, scaling_q_mitral * a_n_q_mitral, scaling_q_mitral * b_n_q_mitral, n_fourier_coeffs, cycle_duration, file_name); 
 
 
+if exist('adjust_venctricular_volume_by_start', 'var') && adjust_venctricular_volume_by_start
+    % adds fraction of Q_mi that occurs during the shift to the initial ventricular volume 
+
+    t_final_adjust = t(end);
+    t_start_adjust = t_final_adjust - start_time_in_cycle;
+    min_idx = find(t >= t_start_adjust,1);
+    adjust_volume = dt * trapz(vals_series_q_mitral_scaled(min_idx:end))
+    ventricular_volume_initial = ventricular_volume_initial + adjust_volume
+end 
+
+
 
 % cgs units for pressure
 Series_pressure_lv_cgs = @(t) MMHG_TO_CGS * Series_pressure_lv(t);
@@ -565,6 +581,18 @@ end
 
 p_ao_mean_mmHg = mean(vals_series_pressure_aorta)
 p_ao_mean_cgs  = mean(vals_series_pressure_aorta_cgs)
+
+
+
+% % estimate linear pressure volume relation 
+% t_0 = 0; 
+% t_1 = .2; 
+% 
+% t_0_idx = find(times >= t_0, 1);
+% t_1_idx = find(times >= t_1, 1);
+% 
+% vol_0 = vals_ser
+
 
 
 

@@ -43,19 +43,16 @@ class optimizer_class():
         self.maxit = maxit
 
         # dictionary of all values used in optimization 
-        self.values = {}
-        for var_name in variables_to_opt:
-            self.values[var_name] = None
+        # self.values = {}
+        # for var_name in variables_to_opt:
+        #     self.values[var_name] = None
 
         self.bounds_all = bounds_all
 
 
 
     def run_and_update(self):
-
         self.solver.run()
-        for var_name in self.variables_to_opt:
-            self.values[var_name] = np.array(self.solver.get_single_result(var_name))
 
 
     def objective_function(self):
@@ -65,7 +62,7 @@ class optimizer_class():
         for var_name in self.variables_to_opt:
 
             # time values for one cycle normalized for solver data 
-            n_time_values = len(self.values[var_name])
+            n_time_values = len(self.solver.get_single_result(var_name))
             query_pts = np.linspace(0.0, self.cycle_duration, n_time_values)
 
             # time values for one cycle normalized for observation data 
@@ -75,8 +72,8 @@ class optimizer_class():
             # linearly interpolated obs data
             data_interpolated = np.interp(query_pts, observation_pts, np.array(self.calibration_data['y'][var_name]))
 
-            diffs = abs(self.values[var_name] - data_interpolated)
-            # diffs = abs(self.values[var_name] - np.array(calibration_data_file['y'][var_name]))
+            diffs = abs(self.solver.get_single_result(var_name) - data_interpolated)
+            # diffs = abs(self.solver.get_single_result(var_name) - np.array(calibration_data_file['y'][var_name]))
 
             # no integration weights needed because cancel 
             diffs_two_norm_squared = (diffs ** 2).sum()
@@ -91,7 +88,7 @@ class optimizer_class():
             # plot
             # fig, ax = plt.subplots()
 
-            # ax.plot(query_pts, self.values[var_name], 'x', markeredgewidth=2)
+            # ax.plot(query_pts, self.solver.get_single_result(var_name), 'x', markeredgewidth=2)
             # ax.plot(query_pts, data_interpolated, linewidth=2.0)
             # plt.show()
 
@@ -116,7 +113,7 @@ class optimizer_class():
                 scaling = 1.0
 
             # time values for one cycle normalized for solver data 
-            n_time_values = len(self.values[var_name])
+            n_time_values = len(self.solver.get_single_result(var_name))
             query_pts = np.linspace(0.0, self.cycle_duration, n_time_values)
 
             # time values for one cycle normalized for observation data 
@@ -125,8 +122,8 @@ class optimizer_class():
 
             # linearly interpolated obs data
             data_interpolated = np.interp(query_pts, observation_pts, np.array(self.calibration_data['y'][var_name]))
-
-            axs[idx].plot(query_pts, scaling * self.values[var_name], 'x', markeredgewidth=2)
+            
+            axs[idx].plot(query_pts, scaling * self.solver.get_single_result(var_name), 'x', markeredgewidth=2)
             axs[idx].plot(query_pts, scaling * data_interpolated, linewidth=2.0)            
             axs[idx].set_title(var_name)
 
@@ -461,7 +458,7 @@ if __name__== "__main__":
     run_historical_3 = True
     if run_historical_3:
 
-        HR = 91
+        HR = 85
         cycle_duration = 60/HR
         maxit = 10000
 
@@ -482,8 +479,8 @@ if __name__== "__main__":
             print('test complete')
 
 
-        var_to_opt = ["flow:lvot:valve1", "pressure:lvot:valve1", "pressure:vessel:OUTLET"]    
-        plot_vars = ["flow:lvot:valve1", "pressure:lvot:valve1", "pressure:vessel:OUTLET"]    
+        var_to_opt = ["flow:lvot:valve1", "pressure:lvot:valve1", "pressure:vessel:OUTLET", "Vc:ventricle"]    
+        plot_vars = ["flow:lvot:valve1", "pressure:lvot:valve1", "pressure:vessel:OUTLET", "Vc:ventricle"]    
 
         targets_all = ['Emax', 'Emin', 't_shift', 'tau_1', 'tau_2', 'm1', 'm2', 'C', 'Rd', 'Rp']
 
@@ -512,26 +509,27 @@ if __name__== "__main__":
 
         optimizer.run_and_update()
         obj_val_1 = optimizer.objective_function()
+        optimizer.print_summary(targets_all)
         optimizer.plot('before')
         print("obj_val_1 = ", obj_val_1)
 
 
         targets = ['Emax', 'Emin', 't_shift', 'tau_1', 'tau_2', 'm1', 'm2']
-        optimizer.variables_to_opt = ["flow:lvot:valve1", "pressure:lvot:valve1"]
+        optimizer.variables_to_opt = ["flow:lvot:valve1", "pressure:lvot:valve1", "Vc:ventricle"]
         result = run_optimization(optimizer, targets)    
         print("result = ", result)    
         optimizer.print_summary(targets_all)
         optimizer.plot('after chamber')
 
         targets = ['C', 'Rd', 'Rp']
-        optimizer.variables_to_opt = ["flow:lvot:valve1", "pressure:vessel:OUTLET"]    
+        optimizer.variables_to_opt = ["flow:lvot:valve1", "pressure:vessel:OUTLET", "Vc:ventricle"]    
         result = run_optimization(optimizer, targets)    
         print("result = ", result)    
         optimizer.print_summary(targets_all)        
         optimizer.plot('after rcr')
 
         # combined not working well 
-        optimizer.variables_to_opt = ["flow:lvot:valve1", "pressure:lvot:valve1", "pressure:vessel:OUTLET"]    
+        optimizer.variables_to_opt = ["flow:lvot:valve1", "pressure:lvot:valve1", "pressure:vessel:OUTLET", "Vc:ventricle"]    
         result = run_optimization(optimizer, targets_all)    
         print("result = ", result)    
         optimizer.print_summary(targets_all)                
