@@ -170,15 +170,15 @@ for k=1:k_max
     plot(x,y,'k'); 
     hold on 
     
-    % if k==k_max 
-    %     ylim([-positions_y(j,k)/10, positions_y(j,k) * 1.05]);
-    % end 
+    if k==k_max 
+        ylim([-positions_y(j,k)/10, positions_y(j,k) * 1.05]);
+    end 
 
 end 
     
-% y = [0 0]; 
-% x = (1/(1 + valve.strain_circ)) * annulus_circ_bc_fiber_length/2 * [-1, 1]; 
-% plot(x,y,'k');
+y = [0 0]; 
+x = (1/(1 + valve.strain_circ)) * annulus_circ_bc_fiber_length/2 * [-1, 1]; 
+plot(x,y,'k');
 
 
 

@@ -34,7 +34,7 @@ function free_edge_interp_points = find_free_edge_interp_points_aortic(leaflet, 
     elseif N_leaflets >= 6
         power_search_list = [0.75];
     else 
-        power_search_list = [1];
+        power_search_list = [2];
     end 
 
     pass_y_gt_0_constraint = false; 
