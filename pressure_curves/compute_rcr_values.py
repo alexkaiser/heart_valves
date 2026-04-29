@@ -188,8 +188,8 @@ if __name__== "__main__":
         print ("diastolic_time_fraction = ", diastolic_time_fraction)
         print ("systolic_time_fraction = ", systolic_time_fraction)
 
-        P_systolic = 113.0
-        P_min = 76.0
+        P_systolic = 105.0
+        P_min = 65.0
         P_max_diastolic = 0.5 * (P_systolic + P_min)
 
         P_mean = systolic_time_fraction*P_systolic + diastolic_time_fraction*(P_min)
