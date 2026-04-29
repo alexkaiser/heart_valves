@@ -29,12 +29,11 @@ function free_edge_interp_points = find_free_edge_interp_points_aortic(leaflet, 
     % power_search_list = [4,3,2,1.75,1.5,1.25,1];
     if N_leaflets == 2
         % power_search_list = [2,1.75,1.5,1.25,1];
-        % power_search_list = [1.5,1.25,1];
-        power_search_list = [2];
+        power_search_list = [1.5,1.25,1];
     elseif N_leaflets >= 6
         power_search_list = [0.75];
     else 
-        power_search_list = [2];
+        power_search_list = [1];
     end 
 
     pass_y_gt_0_constraint = false; 
@@ -89,7 +88,7 @@ function free_edge_interp_points = find_free_edge_interp_points_aortic(leaflet, 
             % for two leaflets away from center more 
             center_adjust_min = (r/r_basic) * 0.4;
             % and keep away from from the outside 
-            center_adjust_max = (r/r_basic) * (r_basic - 0.5);
+            center_adjust_max = (r/r_basic) * (r_basic - 0.4);
             % place on radius in two leaflet case 
             center_adjust_initial_guess = 1.0 * (r/r_basic); 
         else 
@@ -121,7 +120,7 @@ function free_edge_interp_points = find_free_edge_interp_points_aortic(leaflet, 
         end 
 
 
-        debug_plots = false; 
+        debug_plots = true; 
         if debug_plots
             figure; 
             y_range = linspace(-r,r,1000); 

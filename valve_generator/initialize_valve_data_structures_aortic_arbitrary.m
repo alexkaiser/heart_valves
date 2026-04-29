@@ -43,7 +43,7 @@ N_output_name = N;
 
 variety= 'arbitrary'; 
 valve.variety = variety; 
-N_leaflets = 5;
+N_leaflets = 4;
 valve.N_leaflets = N_leaflets; 
 
 
@@ -110,13 +110,7 @@ if valve.in_heart
         % for normal_3
         th = 2*pi/3; 
         valve.initial_translation_aortic = -0.05 * [cos(th); sin(th); 0]; 
-        
-        % aligns first comm at LN
         valve.initial_rotation_aortic = rotation_matrix_z(pi/3 + pi/12 + pi/48);
-
-        % align to LR 
-        % valve.initial_rotation_aortic = rotation_matrix_z(-pi/3 + pi/12 + pi/48 + deg2rad(10));
-        
         valve.transformation_vertex_file = 'aortic_annulus.vertex';
     end 
 else 
@@ -126,7 +120,7 @@ MMHG_TO_CGS     = 1333.22368;
 
 % make sure this is a multiple of five
 % but keep naming above
-valve.N = N_leaflets*ceil(valve.N/N_leaflets); 
+valve.N = 5*ceil(valve.N/5); 
 
 % number of lagrangian tracers in each dimension 
 % arranged in a mesh near the origin
@@ -294,10 +288,10 @@ tension_coeffs.alpha = 1.6;   % circumferential
 tension_coeffs.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs.c_circ_dec       = 10.0;  % circumferential 
-tension_coeffs.c_rad_dec        = 6.4;  % radial
+tension_coeffs.c_circ_dec       = 5.142;  % circumferential 
+tension_coeffs.c_rad_dec        = 1.01;  % radial
 
-tension_coeffs.c_circ_dec_annulus = 2.0;
+tension_coeffs.c_circ_dec_annulus = 3.0;
 
 % tension_coeffs.c_circ_dec_free_edge = 5.0;
 tension_coeffs.c_circ_dec_free_edge_percentage = 0.0;
