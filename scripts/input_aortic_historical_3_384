@@ -14,11 +14,11 @@ REF_RATIO  = 4                            // refinement ratio between levels
 NAME = "aortic_384"
 MAX_RESTART_TO_WRITE = 20
 
-R_proximal =  63.98516545543639
-C = 0.0023798843554357916
-R_distal = 1103.1480331290863
+R_proximal = 82.60386442952202
+C = 0.002115003274324313
+R_distal = 1188.4973804218444
 
-P_aorta_0_MMHG = 72.6325104611156
+P_aorta_0_MMHG = 72.07134356133696
 
 // FOURIER_COEFFS_FILENAME_VENTRICLE = "fourier_coeffs_ventricle.txt"
 
@@ -29,11 +29,11 @@ BOUNDARY_FILENAME_AORTA = "aorta_native_hist3_bdry_384.vertex"
 VENTRICLE_0D_ON = TRUE
 FOURIER_COEFFS_Q_IN = "fourier_coeffs_hist_3_Q_mi.txt"
 FOURIER_COEFFS_ACT = "fourier_coeffs_hist_3_lv_activation_two_hill.txt"
-V_INITIAL = 62.72702140929908
+V_INITIAL = 68.16548750677299
 V_REST_DIASTOLE = 0.0
 V_REST_SYSTOLE = 0.0
-E_MIN = 37.12475034759326
-E_MAX = 2590.408296704225
+E_MIN = 34.81787085470353
+E_MAX = 2181.075227579482
 R_LVOT = 5.732861824000000
 INDUCTANCE = 0.0
 
@@ -68,8 +68,8 @@ TAG_BUFFER          = 2                   // size of tag buffer used by grid gen
 REGRID_CFL_INTERVAL = 0.5                 // regrid whenever any material point could have moved 0.5 meshwidths since previous regrid
 OUTPUT_U            = TRUE
 OUTPUT_P            = TRUE
-OUTPUT_F            = TRUE
-OUTPUT_OMEGA        = TRUE
+OUTPUT_F            = FALSE
+OUTPUT_OMEGA        = FALSE
 OUTPUT_DIV_U        = FALSE
 ENABLE_LOGGING      = TRUE
 

@@ -25,7 +25,8 @@ if historical_3
     LVEDV = 121.7 
     LVESV = 56.9
 
-    SV = LVEDV - LVESV
+    % SV = LVEDV - LVESV
+    SV = 60
 
     % from echo 
     EF_echo = .58 
@@ -74,11 +75,11 @@ base_name = strcat('fourier_coeffs', basename_suffix);
 L = 7; % cm 
 radius = 1.25; % cm 
 mu = 0.04; 
-resistance_vessel = 1 / (8 * mu * L / (pi * radius^4))
+resistance_vessel = 1 / (8 * mu * L / (pi * radius^4));
 
 % resistance mmHg 
 resistance_lvot_mmHg = 0.0043; 
-resistance_lvot = MMHG_TO_CGS * resistance_lvot_mmHg 
+resistance_lvot = MMHG_TO_CGS * resistance_lvot_mmHg;
 
 % estimate R ao via flow field differences at approximate peak 
 % quite coarse but should not matter 
@@ -86,7 +87,7 @@ delta_p_av_mmHg = 7;
 q_av_est = 450; % ml/s
 delta_p_av_dynescm2 = delta_p_av_mmHg * MMHG_TO_CGS; 
 
-r_av = delta_p_av_dynescm2 / q_av_est
+r_av = delta_p_av_dynescm2 / q_av_est;
 
 
 two_hill = true; 
@@ -100,17 +101,17 @@ if two_hill
 %     m2 = 21.5683
 
     if historical_3
-        t_shift =  0.25825360072675096
-        tau_1 =  0.1196986061189439
-        tau_2 =  0.3221286862065595
-        m1 =  2.006037476330199
-        m2 =  18.929547432119648
+        t_shift =  0.2592964132032478;
+        tau_1 =  0.13421838866217944;
+        tau_2 =  0.327400222418779;
+        m1 =  1.6204463203333281;
+        m2 =  18.37110863697137;
     else 
-        t_shift =  0.4080694895094201
-        tau_1 =  0.7999999995665112
-        tau_2 =  0.37189471760890913
-        m1 =  1.0916763390925226
-        m2 =  18.491969573464523
+        t_shift =  0.4080694895094201;
+        tau_1 =  0.7999999995665112;
+        tau_2 =  0.37189471760890913;
+        m1 =  1.0916763390925226;
+        m2 =  18.491969573464523;
 
     end 
 
@@ -238,26 +239,27 @@ legend('series', 'inputs')
 
 title('two hill act from series in lv exp data process')
 
-suffix = '_lv_activation_two_hill'
+suffix = '_lv_activation_two_hill';
 file_name = strcat(base_name, suffix, '.txt'); 
 output_series_coeffs_to_txt(a_0_activation_two_hill, a_n_activation_two_hill, b_n_activation_two_hill, n_fourier_coeffs, cycle_duration, file_name); 
 
 
 
 % activation pressure proportional to ventricular pressure 
-p_lv_activation_threshold = 20; 
-activation_data_unscaled = (pressures_lv_raw > p_lv_activation_threshold) .* pressures_lv_raw;
-activation_data = activation_data_unscaled / max(activation_data_unscaled);
-
-[a_0_activation, a_n_activation, b_n_activation, Series_activation] = ... 
-    series_and_smooth([times_pressures_adjusted, activation_data], dt, bump_radius, n_fourier_coeffs, plots, start_time_in_cycle); 
-
-vals_series_activation = Series_activation(t);
-
-
-suffix = '_lv_activation'
-file_name = strcat(base_name, suffix, '.txt'); 
-output_series_coeffs_to_txt(a_0_activation, a_n_activation, b_n_activation, n_fourier_coeffs, cycle_duration, file_name); 
+% turn this off 
+% p_lv_activation_threshold = 20; 
+% activation_data_unscaled = (pressures_lv_raw > p_lv_activation_threshold) .* pressures_lv_raw;
+% activation_data = activation_data_unscaled / max(activation_data_unscaled);
+% 
+% [a_0_activation, a_n_activation, b_n_activation, Series_activation] = ... 
+%     series_and_smooth([times_pressures_adjusted, activation_data], dt, bump_radius, n_fourier_coeffs, plots, start_time_in_cycle); 
+% 
+% vals_series_activation = Series_activation(t);
+% 
+% 
+% suffix = '_lv_activation'
+% file_name = strcat(base_name, suffix, '.txt'); 
+% output_series_coeffs_to_txt(a_0_activation, a_n_activation, b_n_activation, n_fourier_coeffs, cycle_duration, file_name); 
 
 [a_0_pressure_aorta, a_n_pressure_aorta, b_n_pressure_aorta, Series_pressure_aorta, ~, ~, Series_pressure_aorta_derivative] = ...
     series_and_smooth([times_pressures_adjusted, pressures_aorta_raw], dt, bump_radius, n_fourier_coeffs, plots, start_time_in_cycle); 
@@ -267,14 +269,14 @@ vals_series_pressure_aorta_derivative = Series_pressure_aorta_derivative(t);
 
 if exist('p_systolic_scaling', 'var') && exist('p_diastolic_scaling', 'var') 
     
-    p_sys_orig = max(vals_series_pressure_aorta)
-    p_dia_orig = min(vals_series_pressure_aorta)
+    p_sys_orig = max(vals_series_pressure_aorta);
+    p_dia_orig = min(vals_series_pressure_aorta);
     
-    pulse_pressure_orig = p_sys_orig - p_dia_orig
+    pulse_pressure_orig = p_sys_orig - p_dia_orig;
     
-    pulse_pressure_goal = p_systolic_scaling - p_diastolic_scaling
+    pulse_pressure_goal = p_systolic_scaling - p_diastolic_scaling;
     
-    pressure_scaling_ao = pulse_pressure_goal / pulse_pressure_orig
+    pressure_scaling_ao = pulse_pressure_goal / pulse_pressure_orig;
     
     pressure_shift_mean = pressure_scaling_ao * p_dia_orig - p_diastolic_scaling;
     
@@ -289,13 +291,13 @@ if exist('p_systolic_scaling', 'var') && exist('p_diastolic_scaling', 'var')
     
     vals_series_pressure_aorta_adjust = Series_pressure_aorta_adjust(t);
 
-    p_sys_adjust = max(vals_series_pressure_aorta_adjust)
-    p_dia_adjust = min(vals_series_pressure_aorta_adjust)
+    p_sys_adjust = max(vals_series_pressure_aorta_adjust);
+    p_dia_adjust = min(vals_series_pressure_aorta_adjust);
     
-    pulse_pressure_adjust = p_sys_adjust - p_dia_adjust
+    pulse_pressure_adjust = p_sys_adjust - p_dia_adjust;
     
     % scale by multiple of aortic systolic pressure 
-    pressure_scaling_lv = p_sys_adjust / p_sys_orig
+    pressure_scaling_lv = p_sys_adjust / p_sys_orig;
     
     a_0_pressure_lv_adjust = pressure_scaling_lv * a_0_pressure_lv; 
     a_n_pressure_lv_adjust = pressure_scaling_lv * a_n_pressure_lv;
@@ -315,10 +317,10 @@ if exist('p_systolic_scaling', 'var') && exist('p_diastolic_scaling', 'var')
     plot(t, vals_series_pressure_lv)
     plot(t, vals_series_pressure_lv_adjust)
         
-    p_lv_max = max(vals_series_pressure_lv)
-    p_lv_min = min(vals_series_pressure_lv)
-    p_lv_max_adjust = max(vals_series_pressure_lv_adjust)
-    p_lv_min_adjust = min(vals_series_pressure_lv_adjust)
+    p_lv_max = max(vals_series_pressure_lv);
+    p_lv_min = min(vals_series_pressure_lv);
+    p_lv_max_adjust = max(vals_series_pressure_lv_adjust);
+    p_lv_min_adjust = min(vals_series_pressure_lv_adjust);
 
     % just reset the arrays 
     a_0_pressure_aorta = a_0_pressure_aorta_adjust;
@@ -369,8 +371,8 @@ vals_series_q_aorta_derivative = Series_q_aorta_derivative(t);
 
 % normalize flow rate integrals 
 % to be equal and to desired target
-q_mitral_cumulative = dt * trapz(vals_series_q_mitral)
-q_aorta_cumulative = dt * trapz(vals_series_q_aorta)
+q_mitral_cumulative = dt * trapz(vals_series_q_mitral);
+q_aorta_cumulative = dt * trapz(vals_series_q_aorta);
 
 scaling_q_mitral = Q_goal_ml_per_cycle / q_mitral_cumulative;
 scaling_q_aorta = Q_goal_ml_per_cycle / q_aorta_cumulative;
@@ -393,7 +395,7 @@ q_aorta_cumulative_scaled = dt * trapz(vals_series_q_aorta_scaled)
 
 
 
-suffix = '_Q_mi'
+suffix = '_Q_mi';
 file_name = strcat(base_name, suffix, '.txt'); 
 output_series_coeffs_to_txt(scaling_q_mitral * a_0_q_mitral, scaling_q_mitral * a_n_q_mitral, scaling_q_mitral * b_n_q_mitral, n_fourier_coeffs, cycle_duration, file_name); 
 
@@ -452,7 +454,7 @@ if series_plots
     plot(t, vals_ventricular_volume)
 
     subplot(4,1,4);
-    plot(t, vals_series_activation);
+    plot(t, vals_series_activation_two_hill);
 
     %     figure; 
     %     plot(t, vals_series_pressure_lv_derivative)
@@ -581,6 +583,10 @@ end
 
 p_ao_mean_mmHg = mean(vals_series_pressure_aorta)
 p_ao_mean_cgs  = mean(vals_series_pressure_aorta_cgs)
+
+p_ao_initial_mmHg = vals_series_pressure_aorta(1)
+p_ao_initial_cgs  = vals_series_pressure_aorta_cgs(1)
+
 
 
 

@@ -466,7 +466,7 @@ if __name__== "__main__":
         if opt_parameters:            
             fwd_sim_file = "chamber_elastance_valve_rcr_hisotical_3_tune_opt.json"
         else:
-            fwd_sim_file = "chamber_elastance_valve_rcr_hisotical_3_tune_accelerating.json"
+            fwd_sim_file = "chamber_elastance_valve_rcr_hisotical_3_tune_peak_1.json"
 
         calibration_data_file = fwd_sim_file
 
@@ -515,14 +515,14 @@ if __name__== "__main__":
 
 
         targets = ['Emax', 'Emin', 't_shift', 'tau_1', 'tau_2', 'm1', 'm2']
-        optimizer.variables_to_opt = ["flow:lvot:valve1", "pressure:lvot:valve1", "pressure:vessel:OUTLET", "Vc:ventricle"]
+        optimizer.variables_to_opt = ["flow:lvot:valve1", "pressure:lvot:valve1", "Vc:ventricle"]
         result = run_optimization(optimizer, targets)    
         print("result = ", result)    
         optimizer.print_summary(targets_all)
         optimizer.plot('after chamber')
 
         targets = ['C', 'Rd', 'Rp']
-        optimizer.variables_to_opt = ["flow:lvot:valve1", "pressure:lvot:valve1", "pressure:vessel:OUTLET", "Vc:ventricle"]    
+        optimizer.variables_to_opt = ["flow:lvot:valve1", "pressure:vessel:OUTLET", "Vc:ventricle"]    
         result = run_optimization(optimizer, targets)    
         print("result = ", result)    
         optimizer.print_summary(targets_all)        
