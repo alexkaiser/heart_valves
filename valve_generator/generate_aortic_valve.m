@@ -50,7 +50,7 @@ for N_each = N_each_range
     true_bicuspid = false;
     fish = false;
     arbitrary = false;
-    hist_3 = false;
+    hist_3 = true;
 
     if pulm
         valve = initialize_valve_data_structures_pulm_mri_box(N); 

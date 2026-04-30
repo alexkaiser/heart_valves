@@ -333,6 +333,10 @@ if isfield(valve, 'extrusion_out')
     end 
 end
 
+power_search_list = [2]; 
+for leaflet_idx = 1:length(valve.leaflets)
+    valve.leaflets(leaflet_idx).power_search_list = power_search_list; 
+end 
 
 % viscoelastic damping coefficients springs 
 % eta, damping coeff here, is multiplied by the coefficient on the 
