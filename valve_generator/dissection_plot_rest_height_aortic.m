@@ -170,15 +170,15 @@ for k=1:k_max
     plot(x,y,'k'); 
     hold on 
     
-    if k==k_max 
-        ylim([-positions_y(j,k)/10, positions_y(j,k) * 1.05]);
-    end 
+    % if k==k_max 
+    %     ylim([-positions_y(j,k)/10, positions_y(j,k) * 1.05]);
+    % end 
 
 end 
     
-y = [0 0]; 
-x = (1/(1 + valve.strain_circ)) * annulus_circ_bc_fiber_length/2 * [-1, 1]; 
-plot(x,y,'k');
+% y = [0 0]; 
+% x = (1/(1 + valve.strain_circ)) * annulus_circ_bc_fiber_length/2 * [-1, 1]; 
+% plot(x,y,'k');
 
 
 
@@ -248,8 +248,8 @@ else
     fprintf("Free edge rest target        = %f\n", 2*1.24*radius / stretch_circ); 
     fprintf("Circ free edge loaded length = %f\t", free_edge_length_single_loaded); 
     fprintf("Circ free edge rest length   = %f\n", length_one_leaflet_free_edge(k_max));
-    fprintf("Circ annulus bc loaded       = %f\t", annulus_circ_bc_fiber_length);
-    fprintf("Circ annulus bc rest length  = %f\n", 1/(1 + valve.strain_circ) * annulus_circ_bc_fiber_length);
+    % fprintf("Circ annulus bc loaded       = %f\t", annulus_circ_bc_fiber_length);
+    % fprintf("Circ annulus bc rest length  = %f\n", 1/(1 + valve.strain_circ) * annulus_circ_bc_fiber_length);
     fprintf("Leaflet height target        = %f\t", 1.4*radius); 
     fprintf("Leaflet height rest target   = %f\n", 1.4*radius / stretch_rad); 
     fprintf("Radial height loaded length  = %f\t", radial_leaflet_height_loaded); 
