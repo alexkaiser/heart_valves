@@ -62,7 +62,7 @@ env | grep -v '{' | grep -v '}' | grep -v '()' | grep -v _= > $env_log
 # call python script which controls and watches the run 
 python watchdog_job_restart.py "$RUN_LINE" "$INPUT_NAME" "$OPTIONS" 
 
-# touch done.txt
+touch done.txt
 
 if [ -e done.txt ]
 then

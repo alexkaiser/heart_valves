@@ -67,8 +67,8 @@ TAG_BUFFER          = 2                   // size of tag buffer used by grid gen
 REGRID_CFL_INTERVAL = 0.5                 // regrid whenever any material point could have moved 0.5 meshwidths since previous regrid
 OUTPUT_U            = TRUE
 OUTPUT_P            = TRUE
-OUTPUT_F            = TRUE
-OUTPUT_OMEGA        = TRUE
+OUTPUT_F            = FALSE
+OUTPUT_OMEGA        = FALSE
 OUTPUT_DIV_U        = FALSE
 ENABLE_LOGGING      = TRUE
 
