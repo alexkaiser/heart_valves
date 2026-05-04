@@ -147,7 +147,7 @@ valve.tol_global = 1e-3;
 
 % commissural tree version 
 % but without explicit commissural leaflets 
-valve.p_physical = 30 * MMHG_TO_CGS; 
+valve.p_physical = 60 * MMHG_TO_CGS; 
 
 % Pressure on each leaflet is constant, negative since normal is outward facing 
 p_0 = -valve.p_physical; 
@@ -163,7 +163,13 @@ valve.p_final_fixed_comm = 0.1 * MMHG_TO_CGS;
 valve.L = 2.25; 
 
 
-valve.skeleton = get_skeleton_aortic_ross1();
+% standard trileaflet values 
+% hc = 0.5 * r_stj; 
+% h1 = 1.4 * r_stj - hc; 
+
+% here just pass the scaling, r_stj computed in the skeleton function
+hc_coefficient = 0.5; 
+valve.skeleton = get_skeleton_aortic_ross1(hc_coefficient);
 valve.r = valve.skeleton.r; 
 
 
@@ -189,9 +195,9 @@ tension_coeffs_l.alpha = 1.6;   % circumferential
 tension_coeffs_l.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs_l.c_circ_dec       = 3.04;  % circumferential 
-tension_coeffs_l.c_rad_dec        = 0.84;  % radial
-tension_coeffs_l.c_circ_dec_annulus = 1.91;
+tension_coeffs_l.c_circ_dec       = 3.15;  % circumferential 
+tension_coeffs_l.c_rad_dec        = 1.515;  % radial
+tension_coeffs_l.c_circ_dec_annulus = 1.8;
 tension_coeffs_l.c_circ_dec_free_edge_percentage = 0.0;
 
 % non coronary leaflet
@@ -203,9 +209,9 @@ tension_coeffs_non.alpha = 1.6;   % circumferential
 tension_coeffs_non.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs_non.c_circ_dec       = 3.07;  % circumferential 
-tension_coeffs_non.c_rad_dec        = 0.77;  % radial
-tension_coeffs_non.c_circ_dec_annulus = 1.91;
+tension_coeffs_non.c_circ_dec       = 3.16;  % circumferential 
+tension_coeffs_non.c_rad_dec        = 1.5;  % radial
+tension_coeffs_non.c_circ_dec_annulus = 1.8;
 tension_coeffs_non.c_circ_dec_free_edge_percentage = 0.0;
 
 
@@ -218,9 +224,9 @@ tension_coeffs_r.alpha = 1.6;   % circumferential
 tension_coeffs_r.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs_r.c_circ_dec       = 3.04;  % circumferential 
-tension_coeffs_r.c_rad_dec        = 0.84;  % radial
-tension_coeffs_r.c_circ_dec_annulus = 1.91;
+tension_coeffs_r.c_circ_dec       = 3.08;  % circumferential 
+tension_coeffs_r.c_rad_dec        = 1.485;  % radial
+tension_coeffs_r.c_circ_dec_annulus = 1.8;
 tension_coeffs_r.c_circ_dec_free_edge_percentage = 0.0;
 
 
@@ -300,7 +306,7 @@ if isfield(valve, 'extrusion_out')
     end 
 end
 
-power_search_list = [1]; 
+power_search_list = [1.5]; 
 for leaflet_idx = 1:length(valve.leaflets)
     valve.leaflets(leaflet_idx).power_search_list = power_search_list; 
 end 

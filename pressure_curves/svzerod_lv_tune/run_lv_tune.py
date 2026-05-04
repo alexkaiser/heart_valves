@@ -455,7 +455,7 @@ if __name__== "__main__":
         plt.show()
 
 
-    run_historical_3 = True
+    run_historical_3 = False
     if run_historical_3:
 
         HR = 85
@@ -541,4 +541,81 @@ if __name__== "__main__":
         optimizer.output_mat("chamber_elastance_two_hill_valve_rcr_historical_3_results.mat")
 
         
+    run_ross_1 = True
+    if run_ross_1:
+
+        HR = 80
+        cycle_duration = 60/HR
+        maxit = 10000
+
+        fwd_sim_file = "chamber_elastance_valve_rcr_ross_1.json"
+
+        calibration_data_file = fwd_sim_file
+
+        var_to_opt = ["flow:ventricle:valve1", "pressure:ventricle:valve1", "pressure:vessel:OUTLET", "Vc:ventricle"]    
+        plot_vars = ["flow:ventricle:valve1", "pressure:ventricle:valve1", "pressure:vessel:OUTLET", "Vc:ventricle"]    
+
+        targets_all = ['Emax', 'Emin', 't_shift', 'tau_1', 'tau_2', 'm1', 'm2', 'C', 'Rd', 'Rp']
+
+        bounds_all = {'Emax'    : [0.0, 1e4], 
+                      'Emin'    : [0.0, 1e3], 
+                      't_shift' : [0.0, cycle_duration], 
+                      'tau_1'   : [0.0, cycle_duration], 
+                      'tau_2'   : [0.0, cycle_duration], 
+                      'm1'      : [0.0, 40.0], 
+                      'm2'      : [0.0, 40.0],
+                      'C'       : [0.0, 0.01],
+                      'Rd'      : [0.0, 4000.0],
+                      'Rp'      : [0.0, 500.0]
+                      }
+
+
+
+        optimizer = optimizer_class(fwd_sim_file, 
+                                    calibration_data_file, 
+                                    var_to_opt, 
+                                    bounds_all,
+                                    cycle_duration, 
+                                    maxit,
+                                    plot_vars)
+
+
+        optimizer.run_and_update()
+        obj_val_1 = optimizer.objective_function()
+        optimizer.plot('before')
+        print("obj_val_1 = ", obj_val_1)
+
+        targets = ['Emax', 'Emin', 't_shift', 'tau_1', 'tau_2', 'm1', 'm2']
+        optimizer.variables_to_opt = ["flow:ventricle:valve1", "pressure:ventricle:valve1", "Vc:ventricle"]
+        result = run_optimization(optimizer, targets)    
+        print("result = ", result)    
+        optimizer.print_summary(targets_all)
+        optimizer.plot('after chamber')
+
+        targets = ['C', 'Rd', 'Rp']
+        optimizer.variables_to_opt = ["flow:ventricle:valve1", "pressure:vessel:OUTLET", "Vc:ventricle"]    
+        result = run_optimization(optimizer, targets)    
+        print("result = ", result)    
+        optimizer.print_summary(targets_all)        
+        optimizer.plot('after rcr')
+
+        optimizer.variables_to_opt = ["flow:ventricle:valve1", "pressure:ventricle:valve1", "pressure:vessel:OUTLET", "Vc:ventricle"]    
+        result = run_optimization(optimizer, targets_all)    
+        print("result = ", result)    
+        optimizer.print_summary(targets_all)                
+
+
+        # print("resulting Emax = ", optimizer.fwd_sim_obj['chambers'][0]['values']['Emax'])
+        # optimizer.run_and_update()
+        # for target_name in targets:
+        #     if target_name in optimizer.fwd_sim_obj['chambers'][0]['values']:
+        #         print(target_name, "= ", optimizer.fwd_sim_obj['chambers'][0]['values'][target_name])
+        #     elif target_name in optimizer.fwd_sim_obj['boundary_conditions'][1]['bc_values']:
+        #         print(target_name, "= ", optimizer.fwd_sim_obj['boundary_conditions'][1]['bc_values'][target_name])
+
+        optimizer.plot('after')
+
+        optimizer.output_mat("chamber_elastance_two_hill_valve_rcr_optimized_results.mat")
+
+        plt.show()
 

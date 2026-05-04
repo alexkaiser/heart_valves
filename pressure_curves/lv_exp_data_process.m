@@ -12,7 +12,8 @@ MMHG_TO_CGS = 1333.22368;
 
 
 
-historical_3 = true;
+historical_3 = false;
+ross_1 = true; 
 if historical_3
     
     HR = 85;
@@ -45,7 +46,38 @@ if historical_3
     p_diastolic_scaling = 65;
     
     basename_suffix = '_hist_3';
+
+elseif ross_1
+
+    HR = 75;    
+    cycle_duration = 60/HR
     
+    % LVEDV = 121.7 
+    LVESV = 50
+
+    % SV = LVEDV - LVESV
+    SV = 70
+
+    % % from echo 
+    % EF_echo = .54 
+    % EF_computed = SV / LVEDV
+
+    % use clinical value 
+    Q_goal_ml_per_cycle = SV; 
+
+    ventricular_volume_initial = LVESV;
+    
+    adjust_venctricular_volume_by_start = true; 
+    start_time_in_cycle = 0.1;
+    
+    % scales the waveform to these values 
+    p_systolic_scaling = 120;
+    p_diastolic_scaling = 80;
+    
+    basename_suffix = '_ross_1';
+
+
+
 else    
     % basic case  
     cycle_duration = 0.8;
@@ -106,6 +138,12 @@ if two_hill
         tau_2 =  0.327400222418779;
         m1 =  1.6204463203333281;
         m2 =  18.37110863697137;
+    elseif ross_1
+        t_shift =  0.3213886276500142
+        tau_1 =  0.7499999999359297
+        tau_2 =  0.3572473582351061
+        m1 =  0.9461821928650456
+        m2 =  18.868040313751372
     else 
         t_shift =  0.4080694895094201;
         tau_1 =  0.7999999995665112;
