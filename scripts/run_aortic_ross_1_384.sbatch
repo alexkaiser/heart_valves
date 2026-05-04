@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=1
+#SBATCH --nodes=2
 #SBATCH --ntasks-per-node=24
 #SBATCH --time=24:00:00
 #SBATCH --mem=185GB
@@ -20,13 +20,13 @@ TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_ross_f169383_c2_r2pt2
+RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_384_ross_4062aa5_c2_r2pt2
 mkdir $RUNDIR
 
 # set up run info 
-BASE_NAME=aortic_no_partition_192
-BASE_NAME_VESSEL=aorta_ross_1_pt5mm_192
-INPUT_NAME=input_aortic_ross_1_192
+BASE_NAME=aortic_no_partition_384
+BASE_NAME_VESSEL=aorta_ross_1_pt25mm_384
+INPUT_NAME=input_aortic_ross_1_384
 RUN_LINE="srun main_aorta"
 OPTIONS="-velocity_ksp_type cg -velocity_pc_type none -velocity_ksp_max_it 1 -velocity_ksp_norm_type none > output.txt 2>&1"
 
@@ -36,8 +36,8 @@ pwd
 cd $SRCDIR
 cp $BASE_NAME*                                       $RUNDIR
 cp $BASE_NAME_VESSEL*                                $RUNDIR
-cp lvot_ross_1_bdry_192.vertex                       $RUNDIR
-cp aorta_ross_1_bdry_192.vertex                      $RUNDIR
+cp lvot_ross_1_bdry_384.vertex                       $RUNDIR
+cp aorta_ross_1_bdry_384.vertex                      $RUNDIR
 cp $INPUT_NAME                                       $RUNDIR
 cp *.cpp                                             $RUNDIR
 cp main_aorta                                        $RUNDIR
@@ -46,7 +46,7 @@ cp fourier_coeffs_ross_1_Q_mi.txt                    $RUNDIR
 cp fourier_coeffs_ross_1_lv_activation_two_hill.txt  $RUNDIR
 cp watchdog_job_restart.py                           $RUNDIR
 cp kill_all_mpi.sh                                   $RUNDIR
-cp run_aortic_ross_1_192.sbatch                      $RUNDIR
+cp run_aortic_ross_1_384.sbatch                      $RUNDIR
 cp run_parallel_movie.py                             $RUNDIR
 
 # go to the run directory before running anything 
