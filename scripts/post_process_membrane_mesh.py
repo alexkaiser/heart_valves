@@ -925,8 +925,8 @@ if __name__== "__main__":
 
         # 
         mesh = mesh_combined
-        mesh_boundary = boundary_meshes[0]
-        mesh_boundary_aorta = boundary_meshes[1]
+        mesh_boundary = boundary_meshes[1]
+        mesh_boundary_aorta = boundary_meshes[0]
 
         # x direction 
         normal_direction = 0

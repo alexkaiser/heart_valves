@@ -20,7 +20,7 @@ TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_ross
+RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_192_ross_f169383_c2_r2pt2
 mkdir $RUNDIR
 
 # set up run info 
@@ -36,8 +36,8 @@ pwd
 cd $SRCDIR
 cp $BASE_NAME*                                       $RUNDIR
 cp $BASE_NAME_VESSEL*                                $RUNDIR
-cp lvot_native_hist3_bdry_192.vertex                 $RUNDIR
-cp aorta_native_hist3_bdry_192.vertex                $RUNDIR
+cp lvot_ross_1_bdry_192.vertex                       $RUNDIR
+cp aorta_ross_1_bdry_192.vertex                      $RUNDIR
 cp $INPUT_NAME                                       $RUNDIR
 cp *.cpp                                             $RUNDIR
 cp main_aorta                                        $RUNDIR
