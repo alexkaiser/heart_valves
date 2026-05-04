@@ -94,7 +94,9 @@ function params = output_to_ibamr_format(valve)
     
     params.vertex        = fopen(strcat(base_name, '.vertex'), 'w'); 
     params.spring        = fopen(strcat(base_name, '.spring'), 'w'); 
-    params.target        = fopen(strcat(base_name, '.target'), 'w'); 
+    if (target_net > 0) || (target_papillary > 0)
+        params.target        = fopen(strcat(base_name, '.target'), 'w'); 
+    end 
 
     % default to true 
     params.inst_on = true; 
@@ -704,7 +706,9 @@ function params = output_to_ibamr_format(valve)
     % and clean up files with totals 
     fclose(params.vertex   ); 
     fclose(params.spring   ); 
-    fclose(params.target   ); 
+    if (target_net > 0) || (target_papillary > 0)
+        fclose(params.target   ); 
+    end 
     if params.inst_on
         fclose(params.inst     );
     end 
@@ -716,8 +720,10 @@ function params = output_to_ibamr_format(valve)
     end 
     
     prepend_line_with_int(strcat(base_name, '.vertex'), params.total_vertices); 
-    prepend_line_with_int(strcat(base_name, '.spring'), params.total_springs); 
-    prepend_line_with_int(strcat(base_name, '.target'), params.total_targets); 
+    prepend_line_with_int(strcat(base_name, '.spring'), params.total_springs);     
+    if (target_net > 0) || (target_papillary > 0)
+        prepend_line_with_int(strcat(base_name, '.target'), params.total_targets); 
+    end
     if ~strcmp(params.type, 'aortic') 
         prepend_line_with_int(strcat(base_name, '.papillary'), params.total_papillary); 
     end 
@@ -1056,7 +1062,7 @@ function [params leaflet] = assign_indices_vertex_target(params, leaflet, k_targ
                 leaflet.indices_global(j,k) = params.global_idx; 
 
                 % if on boundary, this is a target point 
-                if is_bc(j,k)
+                if is_bc(j,k) && (k_target_net > 0)
                     if exist('eta_net', 'var')
                         params = target_string(params, params.global_idx, k_target_net, eta_net);     
                     else

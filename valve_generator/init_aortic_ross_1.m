@@ -236,10 +236,10 @@ tension_coeffs_r.c_circ_dec_free_edge_percentage = 0.0;
 % and scaling for copies is handled by the output routine 
 
 % scales for by mesh width for consistant total mesh force on ring 
-valve.target_net_unscaled       = (8 / valve.N) * (192/N); 
+valve.target_net_unscaled       = 0; (8 / valve.N) * (192/N); 
 
 % does not scale since total number of points is constant 
-valve.target_papillary_unscaled = 2 * 40/128; 
+valve.target_papillary_unscaled = 0; 2 * 40/128; 
 
 % viscoelastic damping coefficients for net, does not include copies 
 valve.eta_net_unscaled = 0; % 1e-5 * valve.target_net_unscaled; 
