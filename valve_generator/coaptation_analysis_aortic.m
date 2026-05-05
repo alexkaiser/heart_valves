@@ -32,43 +32,43 @@ else
         end         
     end 
 
-    if n_leaflets ~= 2
-        warning('not implmented, two leaflets required');     
-    end
+    min_distances = 2 * ones(n_leaflets,j_max,k_max);
+
+    for leaflet_idx = 1:n_leaflets
+        for leaflet_comparison_idx = 1:n_leaflets
+            if leaflet_comparison_idx ~= leaflet_idx
+
+                % twod arrays 
+                x_comp_comparison = leaflets(layer_idx_ventricular, leaflet_comparison_idx).X(1,2:(j_max-1), :); 
+                y_comp_comparison = leaflets(layer_idx_ventricular, leaflet_comparison_idx).X(2,2:(j_max-1), :); 
+                z_comp_comparison = leaflets(layer_idx_ventricular, leaflet_comparison_idx).X(3,2:(j_max-1), :); 
+        
+                % flattened 
+                x_comp_comparison = x_comp_comparison(:); 
+                y_comp_comparison = y_comp_comparison(:); 
+                z_comp_comparison = z_comp_comparison(:); 
+        
+                triangulation = delaunay(x_comp_comparison, y_comp_comparison, z_comp_comparison); 
+        
+                X_comparison_matrix = [x_comp_comparison, y_comp_comparison, z_comp_comparison]; 
+        
+           
+                for j=1:j_max
+                %    for k=1:k_max         
+                    X_row_temp = squeeze(leaflets(layer_idx_ventricular, leaflet_idx).X(:,j,:))';
+
+                    % returns a column 
+                    [~, min_distances_temp] = dsearchn(X_comparison_matrix, triangulation, X_row_temp);
+                    
+                    min_distances_copy_vector = squeeze(min_distances(leaflet_idx,j,:));
     
-    min_distances = nan(n_leaflets,j_max,k_max);
+                    % take minimum distances across all other leaflets 
+                    min_distances(leaflet_idx,j,:) = min(min_distances_copy_vector, min_distances_temp);
 
-    for leaflet_idx = 1:n_leaflets 
-        
-        if leaflet_idx == 1
-            leaflet_comparison_idx = 2;
-        else 
-            leaflet_comparison_idx = 1;
+                %    end     
+                end 
+            end 
         end 
-        
-        % twod arrays 
-        x_comp_comparison = leaflets(layer_idx_ventricular, leaflet_comparison_idx).X(1,2:(j_max-1), :); 
-        y_comp_comparison = leaflets(layer_idx_ventricular, leaflet_comparison_idx).X(2,2:(j_max-1), :); 
-        z_comp_comparison = leaflets(layer_idx_ventricular, leaflet_comparison_idx).X(3,2:(j_max-1), :); 
-
-        % flattened 
-        x_comp_comparison = x_comp_comparison(:); 
-        y_comp_comparison = y_comp_comparison(:); 
-        z_comp_comparison = z_comp_comparison(:); 
-
-        triangulation = delaunay(x_comp_comparison, y_comp_comparison, z_comp_comparison); 
-
-        X_comparison_matrix = [x_comp_comparison, y_comp_comparison, z_comp_comparison]; 
-
-
-
-        for j=1:j_max
-        %    for k=1:k_max         
-            X_row_temp = squeeze(leaflets(layer_idx_ventricular, leaflet_idx).X(:,j,:))';
-            [~, min_distances(leaflet_idx,j,:)] = dsearchn(X_comparison_matrix, triangulation, X_row_temp);                 
-        %    end     
-        end 
-
     end 
     
     coapted_points = (min_distances < threshold); 
@@ -130,7 +130,7 @@ coapt_max = leaflets(layer_idx_ventricular, leaflet_idx).X(3,center_idx_j,k_max)
 
 
 if plots
-       
+
     max_plot_cap = max(max(max(min_distances))); 
 
     n_colors = 500;
@@ -139,93 +139,99 @@ if plots
     cmap = colormap;
     n_colors = size(cmap,1); 
 
-    % plot the actual surface 
-    X_copy      = leaflets(layer_idx_ventricular, leaflet_idx).X; 
 
-    % NaN mask in the copy 
-    for j=1:j_max
-        for k=1:k_max
-            if ~(is_internal(j,k) || is_bc(j,k))
-               X_copy(:,j,k) = NaN;  
-            end
+    for leaflet_idx = 1:n_leaflets 
+
+        % plot the actual surface 
+        X_copy      = leaflets(layer_idx_ventricular, leaflet_idx).X; 
+    
+        % NaN mask in the copy 
+        for j=1:j_max
+            for k=1:k_max
+                if ~(is_internal(j,k) || is_bc(j,k))
+                   X_copy(:,j,k) = NaN;  
+                end
+            end 
+        end
+    
+        if any(any(any(isnan(X_copy))))
+            error('all points should be internal or bcs...')
         end 
-    end
-
-    if any(any(any(isnan(X_copy))))
-        error('all points should be internal or bcs...')
-    end 
-
-    outline_cleanup = true; 
-    if outline_cleanup 
-
-        % horizontal at bottom and free edge 
-        for k=[1,k_max]
-            for j=1:N_each
-
-                X = X_copy(:,j,k); 
-                X_nbr = X_copy(:,j+1,k); 
-
-                x_vals = [X(1), X_nbr(1)]; 
-                y_vals = [X(2), X_nbr(2)]; 
-                z_vals = [X(3), X_nbr(3)]; 
-
-                plot3(x_vals,y_vals,z_vals,'k'); 
+    
+        outline_cleanup = true; 
+        if outline_cleanup 
+    
+            % horizontal at bottom and free edge 
+            for k=[1,k_max]
+                for j=1:N_each
+    
+                    X = X_copy(:,j,k); 
+                    X_nbr = X_copy(:,j+1,k); 
+    
+                    x_vals = [X(1), X_nbr(1)]; 
+                    y_vals = [X(2), X_nbr(2)]; 
+                    z_vals = [X(3), X_nbr(3)]; 
+    
+                    plot3(x_vals,y_vals,z_vals,'k'); 
+                end 
+            end 
+    
+            % vertical at commissures 
+            for k=1:(k_max-1)
+                for j=[1,j_max]
+    
+                    X = X_copy(:,j,k); 
+                    X_nbr = X_copy(:,j,k+1); 
+    
+                    x_vals = [X(1), X_nbr(1)]; 
+                    y_vals = [X(2), X_nbr(2)]; 
+                    z_vals = [X(3), X_nbr(3)]; 
+    
+                    plot3(x_vals,y_vals,z_vals,'k'); 
+                end 
             end 
         end 
-
-        % vertical at commissures 
-        for k=1:(k_max-1)
-            for j=[1,j_max]
-
-                X = X_copy(:,j,k); 
-                X_nbr = X_copy(:,j,k+1); 
-
-                x_vals = [X(1), X_nbr(1)]; 
-                y_vals = [X(2), X_nbr(2)]; 
-                z_vals = [X(3), X_nbr(3)]; 
-
-                plot3(x_vals,y_vals,z_vals,'k'); 
+    
+    
+        tick_max = max_plot_cap; 
+        colors = zeros(j_max,k_max,3); 
+        for j=1:j_max
+            for k=1:k_max
+                color_idx = floor(n_colors * min_distances(leaflet_idx,j,k) / max_plot_cap); 
+                if (color_idx == 0) || (isnan(color_idx))
+                    color_idx = 1; 
+                end 
+                if color_idx > n_colors
+                    color_idx = n_colors; 
+                end         
+                colors(j,k,:) = cmap(color_idx,:); 
             end 
         end 
+    
+    %     circ_off_by_one_adjust = true; 
+    %     if (circ || ratio) && circ_off_by_one_adjust 
+    %         % colors are read from the minimum j,k index for the square 
+    %         % so shift down by one 
+    %         colors_temp = zeros(size(colors)); 
+    % 
+    %         for j=1:j_max 
+    %             for k=1:(k_max-1)
+    %                 colors_temp(j,k,:) = colors(j,k+1,:); 
+    %             end 
+    %         end 
+    % 
+    %         colors = colors_temp; 
+    %     end 
+    
+        x_component = squeeze(X_copy(1,:,:)); 
+        y_component = squeeze(X_copy(2,:,:)); 
+        z_component = squeeze(X_copy(3,:,:)); 
+        surf(x_component, y_component, z_component, colors, 'edgecolor', 'none');
+        hold on 
+        % surf(x_component, y_component, z_component, colors);
+        % colormap(make_colormap(n_colors, extended)); 
+    
     end 
-
-
-    tick_max = max_plot_cap; 
-    colors = zeros(j_max,k_max,3); 
-    for j=1:j_max
-        for k=1:k_max
-            color_idx = floor(n_colors * min_distances(leaflet_idx,j,k) / max_plot_cap); 
-            if (color_idx == 0) || (isnan(color_idx))
-                color_idx = 1; 
-            end 
-            if color_idx > n_colors
-                color_idx = n_colors; 
-            end         
-            colors(j,k,:) = cmap(color_idx,:); 
-        end 
-    end 
-
-%     circ_off_by_one_adjust = true; 
-%     if (circ || ratio) && circ_off_by_one_adjust 
-%         % colors are read from the minimum j,k index for the square 
-%         % so shift down by one 
-%         colors_temp = zeros(size(colors)); 
-% 
-%         for j=1:j_max 
-%             for k=1:(k_max-1)
-%                 colors_temp(j,k,:) = colors(j,k+1,:); 
-%             end 
-%         end 
-% 
-%         colors = colors_temp; 
-%     end 
-
-    x_component = squeeze(X_copy(1,:,:)); 
-    y_component = squeeze(X_copy(2,:,:)); 
-    z_component = squeeze(X_copy(3,:,:)); 
-    surf(x_component, y_component, z_component, colors, 'edgecolor', 'none');
-    % surf(x_component, y_component, z_component, colors);
-    % colormap(make_colormap(n_colors, extended)); 
 
     n_ticks = 5; 
     tick_array = linspace(0,1,n_ticks); 
