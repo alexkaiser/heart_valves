@@ -201,12 +201,14 @@ def morph_extender(mesh,
     return mesh_adjusted
 
 
-def spring_string(indices, vertices, spring_strength_rel, use_k_abs=False):
+def spring_string(indices, vertices, spring_strength_rel, use_k_abs=False, reduce_rest_len=None):
 
     tol = 1e-10
     v0 = np.array(vertices[indices[0]][:])
     v1 = np.array(vertices[indices[1]][:])
     rest_len = np.linalg.norm(v0 - v1)
+    if reduce_rest_len is not None: 
+        rest_len *= reduce_rest_len
     if (spring_strength_rel > 0.0) and (rest_len > tol):
         k_abs = spring_strength_rel / rest_len
     else:
@@ -241,7 +243,7 @@ def get_hex_pair_list():
 
 
 
-def process_mesh_to_vertex_spring_target(mesh, base_name_out, spring_strength_rel, target_strength, damping_strength=0.0, scaling=1.0, zero_springs=False, target_strength_extender=None):
+def process_mesh_to_vertex_spring_target(mesh, base_name_out, spring_strength_rel, target_strength, damping_strength=0.0, scaling=1.0, zero_springs=False, target_strength_extender=None, reduce_rest_len=None):
 
     print("meah.n_points = ", mesh.n_points)
 
@@ -335,7 +337,7 @@ def process_mesh_to_vertex_spring_target(mesh, base_name_out, spring_strength_re
         sprint_strings = []
         for pair in spring_idx:
             if (spring_strength_rel > 0.0) or zero_springs:
-                spring_file.write(spring_string(pair, vertices, spring_strength_rel))
+                spring_file.write(spring_string(pair, vertices, spring_strength_rel, reduce_rest_len=reduce_rest_len))
 
         spring_file.close()
 
@@ -891,6 +893,8 @@ if __name__== "__main__":
             # extrude length in mm 
             ds = 0.25        
 
+            reduce_rest_len = 0.9
+
         else:
             fname_in = "4_aorta_lv_ross_1_extenders_remesh_pt5mm.stl"
             fname_out = "aorta_ross_1_pt5mm_192.stl"
@@ -1030,7 +1034,7 @@ if __name__== "__main__":
         damping_strength = 0.0
 
 
-        process_mesh_to_vertex_spring_target(mesh_adjusted, aorta_name, kappa_rel, target_strength, damping_strength, target_strength_extender=target_strength_extender)
+        process_mesh_to_vertex_spring_target(mesh_adjusted, aorta_name, kappa_rel, target_strength, damping_strength, target_strength_extender=target_strength_extender, reduce_rest_len=reduce_rest_len)
         process_ring_to_vertex(mesh_aorta_boundary_adjusted, ao_boundary_name)
         process_ring_to_vertex(mesh_boundary_adjusted, lvot_boundary_name)
 
