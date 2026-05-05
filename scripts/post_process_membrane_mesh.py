@@ -876,14 +876,14 @@ if __name__== "__main__":
 
         else:
             fname_in = "4_aorta_lv_ross_1_extenders_remesh_pt5mm.stl"
-            fname_out = "aorta_ross_1_pt5mm.stl"
-            fname_out_unstructured = "aorta_ross_1_pt5mm.vtu"
+            fname_out = "aorta_ross_1_pt5mm_192.stl"
+            fname_out_unstructured = "aorta_ross_1_pt5mm_192.vtu"
             aorta_name = "aorta_ross_1_pt5mm_192"
             ao_boundary_name = "aorta_ross_1_bdry_192"
             lvot_boundary_name = "lvot_ross_1_bdry_192"
 
             # target strength aortic_192
-            target_strength = 232918.18308874915238
+            target_strength = 0.5 * 232918.18308874915238
 
             # absolute spring const for cross layer springs of length 
             ds_extrude = 0.05
