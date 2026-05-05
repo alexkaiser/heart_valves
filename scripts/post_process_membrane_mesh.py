@@ -875,7 +875,7 @@ if __name__== "__main__":
             lvot_boundary_name = "lvot_ross_1_bdry_384"
 
             # target strength aortic_384
-            target_strength = 0.02 * 2.0 * 58229.54577218728809
+            target_strength = 0.01 * 2.0 * 58229.54577218728809
             target_strength_extender = 0.1 * 2.0 * 58229.54577218728809
 
             # absolute spring const for cross layer springs of length 
