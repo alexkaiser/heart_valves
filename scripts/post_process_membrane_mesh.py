@@ -17,6 +17,10 @@ def expand_mesh(mesh,
 
     mesh_combined = mesh
 
+    is_extender = 0
+    is_extender_array = np.full(mesh.n_points, is_extender)
+    mesh.point_data['is_extender'] = is_extender_array
+
     edges = None  
 
     for i in range(1,n_layers_full):
@@ -25,6 +29,10 @@ def expand_mesh(mesh,
         mesh_new_layer = mesh.copy(deep=True)
 
         mesh_new_layer.points += ds * i * mesh.point_data['Normals']
+
+        is_extender = 0
+        is_extender_array = np.full(mesh_new_layer.n_points, is_extender)
+        mesh_new_layer.point_data['is_extender'] = is_extender_array
 
         # print("mesh_new_layer = ", mesh_new_layer)
 
@@ -54,6 +62,10 @@ def expand_mesh(mesh,
                 mesh_new_layer = mesh.copy(deep=True)
                 mesh_new_layer.points += ds * (i + n_layers_full) * mesh.point_data['Normals']
             
+                is_extender = 1
+                is_extender_array = np.full(mesh_new_layer.n_points, is_extender)
+                mesh_new_layer.point_data['is_extender'] = is_extender_array
+
                 # clip the layer 
                 max_val = np.max(mesh.points[:,direction])
                 crop_location = max_val - width
@@ -229,7 +241,7 @@ def get_hex_pair_list():
 
 
 
-def process_mesh_to_vertex_spring_target(mesh, base_name_out, spring_strength_rel, target_strength, damping_strength=0.0, scaling=1.0, zero_springs=False):
+def process_mesh_to_vertex_spring_target(mesh, base_name_out, spring_strength_rel, target_strength, damping_strength=0.0, scaling=1.0, zero_springs=False, target_strength_extender=None):
 
     print("meah.n_points = ", mesh.n_points)
 
@@ -262,7 +274,11 @@ def process_mesh_to_vertex_spring_target(mesh, base_name_out, spring_strength_re
         vertex_file.write('\n')
 
         if target_strength > 0.0:
-            target_str = str(pt) + ' ' + str(target_strength)
+            target_str = str(pt) + ' ' 
+            if mesh.point_data['is_extender'][pt] and (target_strength_extender is not None): 
+                target_str += str(target_strength_extender)
+            else:
+                target_str += str(target_strength)
             if damping_strength > 0.0:
                 target_str += ' ' + str(damping_strength)
             target_file.write(target_str + '\n')
@@ -883,7 +899,9 @@ if __name__== "__main__":
             lvot_boundary_name = "lvot_ross_1_bdry_192"
 
             # target strength aortic_192
-            target_strength = 0.01 * 232918.18308874915238
+            target_strength = 0.1 * 232918.18308874915238
+            # put original on extender 
+            target_strength_extender = 232918.18308874915238
 
             # absolute spring const for cross layer springs of length 
             ds_extrude = 0.05
@@ -1011,7 +1029,7 @@ if __name__== "__main__":
         damping_strength = 0.0
 
 
-        process_mesh_to_vertex_spring_target(mesh_adjusted, aorta_name, kappa_rel, target_strength, damping_strength)
+        process_mesh_to_vertex_spring_target(mesh_adjusted, aorta_name, kappa_rel, target_strength, damping_strength, target_strength_extender=target_strength_extender)
         process_ring_to_vertex(mesh_aorta_boundary_adjusted, ao_boundary_name)
         process_ring_to_vertex(mesh_boundary_adjusted, lvot_boundary_name)
 
