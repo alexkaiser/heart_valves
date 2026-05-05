@@ -88,10 +88,10 @@ wait
 # assumes located in main sim directory 
 cd .. 
 
-# PATH=/home/groups/amarsden/ParaView-5.13.3-osmesa-MPI-Linux-Python3.10-x86_64/bin:$PATH
+PATH=/home/groups/amarsden/ParaView-5.13.3-osmesa-MPI-Linux-Python3.10-x86_64/bin:$PATH
 
-# SESSION_NAME_PARAVIEW="~/heart_valves/scripts/annulus_slice_multivalve_2.py"
-# python ~/heart_valves/scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $TOTAL_TASKS
+SESSION_NAME_PARAVIEW="~/heart_valves/scripts/ross_1_multiview.py"
+python ~/heart_valves/scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW $TOTAL_TASKS
 
 # SESSION_NAME_PARAVIEW_TOP="~/heart_valves/scripts/top_view_valve_0_paper.py"
 # python ~/heart_valves/scripts/run_parallel_movie_paraview.py $SESSION_NAME_PARAVIEW_TOP $TOTAL_TASKS
