@@ -883,7 +883,7 @@ if __name__== "__main__":
             lvot_boundary_name = "lvot_ross_1_bdry_192"
 
             # target strength aortic_192
-            target_strength = 0.5 * 232918.18308874915238
+            target_strength = 0.1 * 232918.18308874915238
 
             # absolute spring const for cross layer springs of length 
             ds_extrude = 0.05
