@@ -207,14 +207,14 @@ def spring_string(indices, vertices, spring_strength_rel, use_k_abs=False, reduc
     v0 = np.array(vertices[indices[0]][:])
     v1 = np.array(vertices[indices[1]][:])
     rest_len = np.linalg.norm(v0 - v1)
-    if reduce_rest_len is not None: 
-        rest_len *= reduce_rest_len
     if (spring_strength_rel > 0.0) and (rest_len > tol):
         k_abs = spring_strength_rel / rest_len
     else:
         k_abs = 0.0
 
     # print("v0 = ", v0, "v1 = ", v1, "k_abs = ", k_abs, "rest_len = ", rest_len)
+    if reduce_rest_len is not None: 
+        rest_len *= reduce_rest_len
 
     return str(indices[0]) + ' ' + str(indices[1]) + ' ' + str(k_abs) + ' ' + str(rest_len) + '\n'
     #return f'{indices[0]:d} {indices[1]:d} {k_abs:.10f} {rest_len:.10f} \n'
