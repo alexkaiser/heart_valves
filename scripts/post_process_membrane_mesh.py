@@ -876,8 +876,14 @@ if __name__== "__main__":
             ao_boundary_name = "aorta_ross_1_bdry_384"
             lvot_boundary_name = "lvot_ross_1_bdry_384"
 
+            graft_name_in = "ross_1_graft_mm_pt25.stl"
+            graft_name_out = "ross_1_graft_mm_pt25_384.stl"
+            graft_out_unstructured = "ross_1_graft_mm_pt25_384.vtu"
+            graft_name = "ross_1_graft_mm_pt25_384"
+
+
             # target strength aortic_384
-            target_strength = 0.001 * 2.0 * 58229.54577218728809
+            target_strength = 0.01 * 2.0 * 58229.54577218728809
             target_strength_extender = 0.1 * 2.0 * 58229.54577218728809
 
             # absolute spring const for cross layer springs of length 
@@ -923,6 +929,9 @@ if __name__== "__main__":
 
         mesh = pyvista.read(fname_in)
 
+        mesh_graft = pyvista.read(graft_name_in)
+        print("mesh_graft = ", mesh_graft)
+
         extender_direction_idx = [0,2] # extra mesh layers at inlet and outlet 
         extender_top = True
         extender_width = [30.0, 30.0]
@@ -942,6 +951,14 @@ if __name__== "__main__":
         boundary_meshes = find_boundary_meshes(mesh_combined, edges, tol_edges_rel = 1.0e-2)
 
         print("boundary_meshes = ", boundary_meshes)
+
+
+        mesh_graft_combined, edges_graft = expand_mesh(mesh_graft,
+                                                       ds, 
+                                                       n_layers_full)
+
+        print("mesh_graft_combined = ", mesh_graft_combined)
+
 
         # for idx, bdry_mesh in enumerate(boundary_meshes):
         #     bdry_mesh.save('boundary_mesh' + str(idx).zfill(4) + '.vtu')
@@ -1016,12 +1033,18 @@ if __name__== "__main__":
         mesh_boundary_adjusted.points *= scaling
         mesh_aorta_boundary_adjusted.points *= scaling
 
+        mesh_graft_combined.points *= scaling
+
         print("before stl save mesh_adjusted.n_points = ", mesh_adjusted.n_points)
         mesh_adjusted.save(fname_out)
 
         mesh_adjusted_unst = pyvista.UnstructuredGrid(mesh_adjusted)
         print("mesh_adjusted_unst.n_points = ", mesh_adjusted_unst.n_points)
         mesh_adjusted_unst.save(fname_out_unstructured)
+
+        mesh_graft_combined.save(graft_name_out)
+        mesh_graft_unstructured = pyvista.UnstructuredGrid(mesh_graft_combined)
+        mesh_graft_unstructured.save(graft_out_unstructured)
 
         mesh_boundary_adjusted.save(lvot_boundary_name + ".vtu")
         mesh_aorta_boundary_adjusted.save(ao_boundary_name + ".vtu")
@@ -1035,6 +1058,9 @@ if __name__== "__main__":
 
 
         process_mesh_to_vertex_spring_target(mesh_adjusted, aorta_name, kappa_rel, target_strength, damping_strength, target_strength_extender=target_strength_extender, reduce_rest_len=reduce_rest_len)
+
+        process_mesh_to_vertex_spring_target(mesh_graft_combined, graft_name, kappa_rel, target_strength, damping_strength, target_strength_extender=target_strength_extender, reduce_rest_len=reduce_rest_len)
+
         process_ring_to_vertex(mesh_aorta_boundary_adjusted, ao_boundary_name)
         process_ring_to_vertex(mesh_boundary_adjusted, lvot_boundary_name)
 
