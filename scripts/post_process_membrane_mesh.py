@@ -877,7 +877,7 @@ if __name__== "__main__":
             lvot_boundary_name = "lvot_ross_1_bdry_384"
 
             # target strength aortic_384
-            target_strength = 0.02 * 2.0 * 58229.54577218728809
+            target_strength = 0.005 * 2.0 * 58229.54577218728809
             target_strength_extender = 0.1 * 2.0 * 58229.54577218728809
 
             # absolute spring const for cross layer springs of length 
@@ -893,7 +893,7 @@ if __name__== "__main__":
             # extrude length in mm 
             ds = 0.25        
 
-            reduce_rest_len = 0.9
+            reduce_rest_len = 0.75
 
         else:
             fname_in = "4_aorta_lv_ross_1_extenders_remesh_pt5mm.stl"
