@@ -876,7 +876,7 @@ if __name__== "__main__":
             ao_boundary_name = "aorta_ross_1_bdry_384"
             lvot_boundary_name = "lvot_ross_1_bdry_384"
 
-            graft_name_in = "ross_1_graft_mm_pt25.stl"
+            graft_name_in = "ross_1_graft_mm_pt25_sim_coords.stl"
             graft_name_out = "ross_1_graft_mm_pt25_384.stl"
             graft_out_unstructured = "ross_1_graft_mm_pt25_384.vtu"
             graft_name = "ross_1_graft_mm_pt25_384"
