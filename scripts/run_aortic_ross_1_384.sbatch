@@ -20,12 +20,13 @@ TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
 SRCDIR=$PWD
 
 # run in scratch, name with the job name
-RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_384_ross_4062aa5_c2_r2pt2
+RUNDIR=$SCRATCH/aortic_${SLURM_JOBID/.*}_384_ross_1bf174cec_target_pt01_extender_pt1_spring_2_rest_pt75_graft_on
 mkdir $RUNDIR
 
 # set up run info 
 BASE_NAME=aortic_no_partition_384
 BASE_NAME_VESSEL=aorta_ross_1_pt25mm_384
+BASE_NAME_GRAFT=ross_1_graft_mm_pt25_384
 INPUT_NAME=input_aortic_ross_1_384
 RUN_LINE="srun main_aorta"
 OPTIONS="-velocity_ksp_type cg -velocity_pc_type none -velocity_ksp_max_it 1 -velocity_ksp_norm_type none > output.txt 2>&1"
@@ -36,6 +37,7 @@ pwd
 cd $SRCDIR
 cp $BASE_NAME*                                       $RUNDIR
 cp $BASE_NAME_VESSEL*                                $RUNDIR
+cp $BASE_NAME_GRAFT*                                 $RUNDIR
 cp lvot_ross_1_bdry_384.vertex                       $RUNDIR
 cp aorta_ross_1_bdry_384.vertex                      $RUNDIR
 cp $INPUT_NAME                                       $RUNDIR
@@ -72,5 +74,5 @@ then
     source ~/.bash_profile
     visit -cli -nowin -s ~/heart_valves/scripts/run_parallel_convert_visit_to_paraview.py $TOTAL_TASKS $TOTAL_TASKS
 
-    # sbatch ~/heart_valves/scripts/post_process_aorta.sh 
+    sbatch ~/heart_valves/scripts/post_process_aorta_ross_1_384.sh 
 fi

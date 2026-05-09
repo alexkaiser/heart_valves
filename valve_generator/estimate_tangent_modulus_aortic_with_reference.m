@@ -537,9 +537,9 @@ function [sigma_circ, sigma_rad, sigma_circ_mean, sigma_rad_mean, fig, ...
 
             cbar = colorbar('Ticks', tick_array, 'TickLabels', tick_labels); 
 
-            exponent_removed 
+            exponent_removed; 
             
-            exponent = floor(log10(tick_max))
+            exponent = floor(log10(tick_max));
             
             fontsize = 28; 
             ax = gca; 

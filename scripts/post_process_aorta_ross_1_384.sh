@@ -22,6 +22,8 @@ module load matlab/R2017b
 BOUNDARY_MESH_NAME=1_aorta_lv_ross_1_extenders_remesh_pt25mm_cap_CM_UNITS.stl
 VESSEL_BASE_NAME=aorta_ross_1_pt25mm_384
 VESSEL_WITH_FACES_NAME=aorta_ross_1_pt25mm_384.vtu
+GRAFT_NAME=ross_1_graft_mm_pt25_384
+GRAFT_NAME_FACES=ross_1_graft_mm_pt25_384.vtu
 
 if [ -e $BOUNDARY_MESH_NAME ]
 then
@@ -35,6 +37,13 @@ then
     echo $VESSEL_WITH_FACES_NAME " found"
 else
     cp ~/ross1_meshes/$VESSEL_WITH_FACES_NAME . 
+fi
+
+if [ -e $GRAFT_NAME_FACES ]
+then
+    echo $GRAFT_NAME_FACES " found"
+else
+    cp ~/ross1_meshes/$GRAFT_NAME_FACES . 
 fi
 
 
@@ -54,9 +63,9 @@ TOTAL_TASKS=$(($SLURM_NTASKS_PER_NODE * $SLURM_NNODES))
 
 
 # extracts relevant portion of mesh 
-python3 ~/heart_valves/scripts/remove_unnecessary_eulerian_space.py $TOTAL_TASKS $BOUNDARY_MESH_NAME
+# python3 ~/heart_valves/scripts/remove_unnecessary_eulerian_space.py $TOTAL_TASKS $BOUNDARY_MESH_NAME
 
-wait
+# wait
 
 # run integral metrics 
 # sbatch ~/heart_valves/scripts/run_integral_metrics.sh
@@ -70,6 +79,8 @@ wait
 
 # adds face data 
 python3 ~/heart_valves/scripts/add_faces.py $VESSEL_BASE_NAME $VESSEL_WITH_FACES_NAME
+
+python3 ~/heart_valves/scripts/add_faces.py $GRAFT_NAME $GRAFT_NAME_FACES
 
 python3 ~/heart_valves/scripts/fix_pvd_files.py
 

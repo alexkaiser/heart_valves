@@ -66,7 +66,7 @@ if __name__ == '__main__':
     # names = ['eulerian_vars_restricted_points', 'aorta_384', 'aortic_no_partition_384', 'aortic_no_partition_384_cylinder']
     # names = ['aortic_no_partition_384', 'aortic_no_partition_384_cylinder']
 
-    lag_name_base_to_check = ['aortic', 'aorta']
+    lag_name_base_to_check = ['aortic', 'aorta', 'ross']
 
     for lag_file in os.listdir('..'):
         if lag_file.endswith('.vertex'):
