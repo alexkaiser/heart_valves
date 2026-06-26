@@ -1,4 +1,4 @@
-function skeleton = get_skeleton_aortic_hist3()
+function skeleton = get_skeleton_aortic_hist3(stj_type)
 
 
 from_mat_file = true; 
@@ -9,8 +9,31 @@ if from_mat_file
     % note that these are already in sim coordinates 
 
     fname = '/Users/alex/Dropbox/stanford/research_stanford/annulus_morph_2025/meshes/ring_points_hist_3_processed.mat'
-    load(fname, "ring_pts_LR_cusp_sim_coords_mm", "ring_pts_Non_cusp_sim_coords_mm")
-    
+    load(fname, "ring_pts_LR_cusp_sim_coords_mm_native", "ring_pts_Non_cusp_sim_coords_mm_native")
+    load(fname, "ring_pts_LR_cusp_sim_coords_mm_1pt98", "ring_pts_Non_cusp_sim_coords_mm_1pt98")
+    load(fname, "ring_pts_LR_cusp_sim_coords_mm_1pt7", "ring_pts_Non_cusp_sim_coords_mm_1pt7")
+
+    if ~exist('stj_type','var')
+        stj_type = 'native'; 
+    end 
+
+    if strcmp(stj_type, 'native')
+        ring_pts_LR_cusp_sim_coords_mm = ring_pts_LR_cusp_sim_coords_mm_native;
+        ring_pts_Non_cusp_sim_coords_mm = ring_pts_Non_cusp_sim_coords_mm_native;
+        skeleton.r_stj = 2.31/2; 
+    elseif strcmp(stj_type, '1pt98')
+        ring_pts_LR_cusp_sim_coords_mm = ring_pts_LR_cusp_sim_coords_mm_1pt98;   
+        ring_pts_Non_cusp_sim_coords_mm = ring_pts_Non_cusp_sim_coords_mm_1pt98;
+        skeleton.r_stj = 1.98/2; 
+    elseif strcmp(stj_type, '1pt7')
+        ring_pts_LR_cusp_sim_coords_mm = ring_pts_LR_cusp_sim_coords_mm_1pt7;
+        ring_pts_Non_cusp_sim_coords_mm = ring_pts_Non_cusp_sim_coords_mm_1pt7;
+        skeleton.r_stj = 1.7/2; 
+    else
+        error('undefined stj type'); 
+    end 
+
+
     ring_pts_LR_cusp_sim_coords  = 0.1 * ring_pts_LR_cusp_sim_coords_mm';
     ring_pts_Non_cusp_sim_coords = 0.1 * ring_pts_Non_cusp_sim_coords_mm';
 
@@ -107,6 +130,8 @@ else
     
     end 
 
+    skeleton.r_stj = 2.31/2; 
+
 end 
 
 
@@ -183,8 +208,10 @@ skeleton.inverse_transformation_initial_condition = @(x) R * R_extra_z' * x + mi
 ring_pts_LR_cusp_sim_coords_transformed = skeleton.inverse_transformation_initial_condition(ring_pts_LR_cusp_model_coords);
 ring_pts_Non_cusp_sim_coords_transformed = skeleton.inverse_transformation_initial_condition(ring_pts_Non_cusp_model_coords);
 
-skeleton.r = norm(comm_1 - comm_2)/2;
-skeleton.r_commissure = skeleton.r; 
+% vbr from paraview 
+skeleton.r = 2.3/2;
+
+skeleton.r_commissure = norm(comm_1 - comm_2)/2;
 skeleton.ring_pts_LR_cusp_model_coords = ring_pts_LR_cusp_model_coords; 
 skeleton.ring_pts_Non_cusp_model_coords = ring_pts_Non_cusp_model_coords; 
 
@@ -196,8 +223,6 @@ hc = 1.0 * r_stj_temp; % 0.5 * r_stj;
 h1 = 0.87 * 2 * r_stj_temp - hc; % 1.4 * r_stj - hc; 
 
 skeleton.height_min_comm = h1; 
-
-skeleton.r_stj = 2.31/2; 
 
 
 debug_plots = true;
