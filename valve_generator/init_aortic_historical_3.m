@@ -238,9 +238,9 @@ tension_coeffs_lr.alpha = 1.6;   % circumferential
 tension_coeffs_lr.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs_lr.c_circ_dec       = 2.54;  % circumferential 
-tension_coeffs_lr.c_rad_dec        = 0.77;  % radial
-tension_coeffs_lr.c_circ_dec_annulus = 1.91;
+tension_coeffs_lr.c_circ_dec       = 1.51;  % circumferential 
+tension_coeffs_lr.c_rad_dec        = 0.44;  % radial
+tension_coeffs_lr.c_circ_dec_annulus = 2.2;
 tension_coeffs_lr.c_circ_dec_free_edge_percentage = 0.0;
 
 % non coronary leaflet
@@ -252,9 +252,9 @@ tension_coeffs_non.alpha = 1.6;   % circumferential
 tension_coeffs_non.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs_non.c_circ_dec       = 2.48;  % circumferential 
-tension_coeffs_non.c_rad_dec        = 0.68;  % radial
-tension_coeffs_non.c_circ_dec_annulus = 1.91;
+tension_coeffs_non.c_circ_dec       = 0.7;  % circumferential 
+tension_coeffs_non.c_rad_dec        = 0.1;  % radial
+tension_coeffs_non.c_circ_dec_annulus = 3.2;
 tension_coeffs_non.c_circ_dec_free_edge_percentage = 0.0;
 
 
