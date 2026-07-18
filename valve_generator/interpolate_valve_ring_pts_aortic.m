@@ -1,4 +1,4 @@
-function [X, commissure_points, center, comm_position_set] = interpolate_valve_ring_pts_aortic(leaflet, valve_ring_pts, height_min_comm)
+function [X, commissure_points, center, comm_position_set] = interpolate_valve_ring_pts_aortic(leaflet, valve_ring_pts, comm_attachment_height)
 
 
 j_max = leaflet.j_max; 
@@ -40,9 +40,9 @@ cumulative_distance = cumsum(norm_diffs);
 total_arc_length = cumulative_distance(end);
 
 l_comm_min_range = 1; 
-l_comm_max_range = find(cumulative_distance > height_min_comm, 1, 'first');
+l_comm_max_range = find(cumulative_distance > comm_attachment_height, 1, 'first');
 
-r_comm_min_range = find(cumulative_distance > (total_arc_length - height_min_comm), 1, 'first'); 
+r_comm_min_range = find(cumulative_distance > (total_arc_length - comm_attachment_height), 1, 'first'); 
 r_romm_max_range = n_pts_upsampled;
 
 

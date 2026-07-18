@@ -1,7 +1,11 @@
-function skeleton = get_skeleton_aortic_hist3(stj_type)
+function skeleton = get_skeleton_aortic_hist3(stj_type, comm_attachment_fraction)
 
 
 from_mat_file = true; 
+
+% if ~exist("comm_attachment_coeff", "var")
+%     comm_attachment_coeff = 1.0;
+% end 
 
 
 if from_mat_file
@@ -135,6 +139,30 @@ else
 end 
 
 
+
+% compute lengths of spline interpolants 
+upsample_multiplier = 1000; 
+n_pts_upsampled_LR = n_pts_LR * upsample_multiplier;
+n_pts_upsampled_Non = n_pts_Non * upsample_multiplier;
+
+interp_points_initial_LR = linspace(0,1,n_pts_LR);
+interp_points_initial_Non = linspace(0,1,n_pts_Non);
+
+interp_points_upsampled_LR = linspace(0,1,n_pts_upsampled_LR);
+interp_points_upsampled_Non = linspace(0,1,n_pts_upsampled_Non);
+
+ring_pts_LR_cusp_sim_coords_upsampled = interp1(interp_points_initial_LR, ring_pts_LR_cusp_sim_coords', interp_points_upsampled_LR, 'pchip')'; 
+ring_pts_Non_cusp_sim_coords_upsampled = interp1(interp_points_initial_Non, ring_pts_Non_cusp_sim_coords', interp_points_upsampled_Non, 'pchip')'; 
+
+% compute cumumlative differences 
+differences_LR = ring_pts_LR_cusp_sim_coords_upsampled(:,2:end) - ring_pts_LR_cusp_sim_coords_upsampled(:,1:(end-1));
+differences_Non = ring_pts_Non_cusp_sim_coords_upsampled(:,2:end) - ring_pts_Non_cusp_sim_coords_upsampled(:,1:(end-1));
+
+total_arc_length_LR = sum(vecnorm(differences_LR))
+total_arc_length_Non = sum(vecnorm(differences_Non))
+
+
+
 % % ruler test sim coordinates back to scan 
 % paraview_ruler_sim_coords_mm = [-4.326762676239014, -59.78771209716797, -220.92550659179688
 %                                 -14.859077453613281, -66.8626937866211, -240.3558349609375]';
@@ -219,11 +247,15 @@ skeleton.ring_pts_Non_cusp_model_coords = ring_pts_Non_cusp_model_coords;
 % artifact of other scaling 
 r_stj_temp = skeleton.r; % 1.67 / 2;
 % r_temp = 2.3 / 2; % vbr radius
-hc = 1.0 * r_stj_temp; % 0.5 * r_stj; 
-h1 = 0.87 * 2 * r_stj_temp - hc; % 1.4 * r_stj - hc; 
 
-skeleton.height_min_comm = h1; 
+% hc = comm_attachment_coeff * r_stj_temp; % 0.5 * r_stj; 
+% h1 = 0.87 * 2 * r_stj_temp - hc; % 1.4 * r_stj - hc; 
+% 
+% skeleton.comm_attachment_height = h1 
 
+skeleton.comm_attachment_height = comm_attachment_fraction * total_arc_length_LR; 
+
+% comm_attachment_fraction_computed = skeleton.comm_attachment_height / total_arc_length_LR
 
 debug_plots = true;
 if debug_plots

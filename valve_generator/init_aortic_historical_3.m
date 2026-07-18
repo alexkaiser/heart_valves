@@ -84,15 +84,6 @@ valve.extra_radius_hoops = 0.0; % adds points out the partition up to this amoun
 valve.tight_cylinder = true; 
 valve.z_extra_cylinder = 0.3; 
 
-% for normal_3
-% if starting at origin 
-% th = 2*pi/3; 
-% valve.initial_translation_aortic = 0.1 * [cos(th); sin(th); 0]; 
-% valve.initial_translation_aortic = valve.initial_translation_aortic  + 0.1 * [1; 0; 0]; 
-% valve.initial_rotation_aortic = rotation_matrix_z(pi/3 + pi/6 + pi/12);
-% valve.transformation_vertex_file = 'historical_3_vbr.vertex';
-
-
 
 MMHG_TO_CGS     = 1333.22368;
 
@@ -121,12 +112,9 @@ valve.extrusion_out = true;
 % respace on annulus in 3d 
 % if false, spaced wrt theta 
 valve.annulus_points_even_spacing = true; 
-
 valve.annulus_to_comm = true; 
 
-
 valve.dirichlet_free_edge = false; 
-
 valve.dirichlet_free_edge_with_ref_only = true; 
 
 
@@ -168,65 +156,23 @@ valve.dirichlet_free_edge_comm_ref_only = false;
 valve.n_fixed_comm = max(1, floor(8*N/192));  
 valve.p_final_fixed_comm = 0.1 * MMHG_TO_CGS;  
 
-
 valve.L = 2.25; 
 
-% r_stj = 2.5/2; % 25 mm valve 
-% r_temp = r_stj; 
-% hc = 0.5 * r_stj; 
-% h1 = 1.4 * r_stj - hc; 
-% r_commissure = r_stj; 
-% % place the post only if not using the full annulus geometry 
-% place_vertical_post = ~valve.annulus_to_comm;
-% valve.skeleton = get_skeleton_aortic_generic(r_temp, h1, hc, r_commissure, place_vertical_post); 
-% % valve.skeleton = get_skeleton_aortic_generic(); 
-% valve.r = valve.skeleton.r; 
-
-% stj_type = 'native';
-stj_type = '1pt98';
+stj_type = 'native';
+% stj_type = '1pt98';
 % stj_type = '1pt7';
-valve.skeleton = get_skeleton_aortic_hist3(stj_type);
+
+comm_attachment_fraction = 0.123;
+
+valve.skeleton = get_skeleton_aortic_hist3(stj_type, comm_attachment_fraction);
 
 valve.r = valve.skeleton.r; 
 
-
-% valve_ring_pts_raw_LR_cusp = 0.1 * [ 
-% -16.983776092529297, -161.2555389404297, -163.5882568359375,
-% -13.077391624450684, -157.9479522705078, -169.11514282226563,
-% -7.8202805519104, -158.03750610351563, -173.54421997070313,
-% -2.486410140991211, -160.36691284179688, -175.14462280273438,
-% 1.3799179792404175, -165.36549377441406, -175.52175903320313,
-% -1.3226488828659058, -174.33387756347656, -178.4099578857422,
-% -9.562684544740621, -181.61004635596518, -180.93456165010247,
-% -15.33113956451416, -183.05392456054688, -179.898681640625,
-% -19.65570831298828, -183.8021697998047, -177.125,
-% -23.952800750732422, -184.1968994140625, -170.5049285888672]';
-% 
-% % these happen to be in right to left order from segmentation 
-% valve_ring_pts_raw_LR_cusp = fliplr(valve_ring_pts_raw_LR_cusp);
-
-% consider aligning before model construction 
-% R_0 = valve.initial_rotation_aortic; 
-% T_0 = valve.initial_translation_aortic; 
-% apply_inverse = true;
-% valve.skeleton.valve_ring_pts = coordinate_transformation_vertices(valve_ring_pts_raw_LR_cusp, valve.transformation_vertex_file, R_0, T_0, apply_inverse);
-% valve.skeleton.valve_ring_pts = valve_ring_pts_raw_LR_cusp;   
-% plot3(valve.skeleton.valve_ring_pts(1,:), valve.skeleton.valve_ring_pts(2,:), valve.skeleton.valve_ring_pts(3,:),'*-');
-
-
 valve.place_cylinder = false; 
-valve.z_max_cylinder = (pi/3) * valve.r; 
-valve.z_min_cylinder = 0.0; 
 
-
-valve.n_layers_cylinder = 3; 
-
-
-% comm_raise_normal_height = 0.8 * valve.skeleton.r * 2; 
 
 
 % Base constants, individual pieces are tuned relative to these values
-
 % tension coefficients structure 
 
 % LR leaflet 
@@ -238,8 +184,8 @@ tension_coeffs_lr.alpha = 1.6;   % circumferential
 tension_coeffs_lr.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs_lr.c_circ_dec       = 2.475;  % circumferential 
-tension_coeffs_lr.c_rad_dec        = 0.62;  % radial
+tension_coeffs_lr.c_circ_dec       = 3.04;  % circumferential 
+tension_coeffs_lr.c_rad_dec        = 0.845;  % radial
 tension_coeffs_lr.c_circ_dec_annulus = 1.91;
 tension_coeffs_lr.c_circ_dec_free_edge_percentage = 0.0;
 
@@ -252,8 +198,8 @@ tension_coeffs_non.alpha = 1.6;   % circumferential
 tension_coeffs_non.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs_non.c_circ_dec       = 2.22;  % circumferential 
-tension_coeffs_non.c_rad_dec        = 0.47;  % radial
+tension_coeffs_non.c_circ_dec       = 3.09;  % circumferential 
+tension_coeffs_non.c_rad_dec        = 0.78;  % radial
 tension_coeffs_non.c_circ_dec_annulus = 1.91;
 tension_coeffs_non.c_circ_dec_free_edge_percentage = 0.0;
 
@@ -287,22 +233,8 @@ valve.k_bend_radial_free_edge_percentage = 0;
 valve.k_bend_circ = 1e4 * 192/N;
 valve.k_bend_circ_free_edge = 0; 
 valve.k_bend_circ_free_edge_percentage = 0;
-
 valve.k_bend_cross_layer = 1e4 * 192/N;
 
-
-
-% coaptation height for Swanson and Clark 
-% width is the same 
-% valve.k_bend_nodule_length = 0.17*2*valve.skeleton.r;
-% valve.k_bend_nodule        = 1e5 * 192/N;
-
-% valve.k_bend_radial_interp_pts  = [0    .36  .46   1];
-
-% valve.kappa_radial_free_edge_compressive_unscaled = 1e3 / 256^2;
-% valve.kappa_radial_free_edge_compressive_percentage = 0.4;
-% valve.kappa_radial_free_edge_compressive_stretch = 1.54;
-% valve.kappa_radial_free_edge_compressive_fn_idx = 4;
 
 % Approximate Lagrangian mesh spacing at ring 
 % Used for later splitting of springs 
