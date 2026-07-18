@@ -158,11 +158,11 @@ valve.p_final_fixed_comm = 0.1 * MMHG_TO_CGS;
 
 valve.L = 2.25; 
 
-stj_type = 'native';
+% stj_type = 'native';
 % stj_type = '1pt98';
-% stj_type = '1pt7';
+stj_type = '1pt7';
 
-comm_attachment_fraction = 0.123;
+comm_attachment_fraction = 0.4;
 
 valve.skeleton = get_skeleton_aortic_hist3(stj_type, comm_attachment_fraction);
 
@@ -184,8 +184,8 @@ tension_coeffs_lr.alpha = 1.6;   % circumferential
 tension_coeffs_lr.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs_lr.c_circ_dec       = 3.04;  % circumferential 
-tension_coeffs_lr.c_rad_dec        = 0.845;  % radial
+tension_coeffs_lr.c_circ_dec       = 0.01;  % circumferential 
+tension_coeffs_lr.c_rad_dec        = 0.01;  % radial
 tension_coeffs_lr.c_circ_dec_annulus = 1.91;
 tension_coeffs_lr.c_circ_dec_free_edge_percentage = 0.0;
 
@@ -198,8 +198,8 @@ tension_coeffs_non.alpha = 1.6;   % circumferential
 tension_coeffs_non.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs_non.c_circ_dec       = 3.09;  % circumferential 
-tension_coeffs_non.c_rad_dec        = 0.78;  % radial
+tension_coeffs_non.c_circ_dec       = 0.01;  % circumferential 
+tension_coeffs_non.c_rad_dec        = 0.01;  % radial
 tension_coeffs_non.c_circ_dec_annulus = 1.91;
 tension_coeffs_non.c_circ_dec_free_edge_percentage = 0.0;
 
