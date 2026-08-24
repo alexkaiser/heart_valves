@@ -268,7 +268,7 @@ if isfield(valve, 'extrusion_out')
     end 
 end
 
-power_search_list = [2]; 
+power_search_list = [1]; 
 for leaflet_idx = 1:length(valve.leaflets)
     valve.leaflets(leaflet_idx).power_search_list = power_search_list; 
 end 
