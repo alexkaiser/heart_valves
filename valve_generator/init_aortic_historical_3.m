@@ -162,7 +162,7 @@ valve.L = 2.25;
 % stj_type = '1pt98';
 stj_type = '1pt7';
 
-comm_attachment_fraction = 0.05;
+comm_attachment_fraction = 0.1; % 0.05;
 
 valve.skeleton = get_skeleton_aortic_hist3(stj_type, comm_attachment_fraction);
 
@@ -184,7 +184,7 @@ tension_coeffs_lr.alpha = 1.6;   % circumferential
 tension_coeffs_lr.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs_lr.c_circ_dec       = 0.15;  % circumferential 
+tension_coeffs_lr.c_circ_dec       = 0.07;  % circumferential 
 tension_coeffs_lr.c_rad_dec        = 0.1;  % radial
 tension_coeffs_lr.c_circ_dec_annulus = 5.0;
 tension_coeffs_lr.c_circ_dec_free_edge_percentage = 0.0;
@@ -268,7 +268,7 @@ if isfield(valve, 'extrusion_out')
     end 
 end
 
-power_search_list = [0.5]; 
+power_search_list = [2]; 
 for leaflet_idx = 1:length(valve.leaflets)
     valve.leaflets(leaflet_idx).power_search_list = power_search_list; 
 end 
