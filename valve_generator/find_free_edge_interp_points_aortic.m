@@ -94,7 +94,7 @@ function free_edge_interp_points = find_free_edge_interp_points_aortic(leaflet, 
                 
         if N_leaflets == 2
             % for two leaflets away from center more 
-            center_adjust_min = (r/r_basic) * 0.4;
+            center_adjust_min = (r/r_basic) * 0.2;
             % and keep away from from the outside 
             center_adjust_max = (r/r_basic) * (r_basic - 0.4);
             % place on radius in two leaflet case 
