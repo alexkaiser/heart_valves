@@ -198,9 +198,9 @@ tension_coeffs_non.alpha = 1.6;   % circumferential
 tension_coeffs_non.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs_non.c_circ_dec       = 0.01;  % circumferential 
+tension_coeffs_non.c_circ_dec       = 0.13;  % circumferential 
 tension_coeffs_non.c_rad_dec        = 0.1;  % radial
-tension_coeffs_non.c_circ_dec_annulus = 6.0;
+tension_coeffs_non.c_circ_dec_annulus = 4.0;
 tension_coeffs_non.c_circ_dec_free_edge_percentage = 0.0;
 
 
@@ -257,6 +257,7 @@ valve.leaflets(1) = leaflet_lr;
                                             p_0,                                 ... 
                                             valve,                               ...
                                             valve.skeleton.ring_pts_Non_cusp_model_coords);  
+
 
 valve.leaflets(2) = leaflet_non;
 
