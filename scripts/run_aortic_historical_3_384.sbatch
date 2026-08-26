@@ -25,7 +25,7 @@ mkdir $RUNDIR
 
 # set up run info 
 BASE_NAME=aortic_no_partition_384
-BASE_NAME_VESSEL=aorta_1pt98_hist3_pt25mm_384
+BASE_NAME_VESSEL=aorta_1pt7_hist3_pt25mm_384
 INPUT_NAME=input_aortic_historical_3_384
 RUN_LINE="srun main_aorta"
 OPTIONS="-velocity_ksp_type cg -velocity_pc_type none -velocity_ksp_max_it 1 -velocity_ksp_norm_type none > output.txt 2>&1"
