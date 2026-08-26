@@ -158,8 +158,8 @@ valve.p_final_fixed_comm = 0.1 * MMHG_TO_CGS;
 
 valve.L = 2.25; 
 
-stj_type = 'native';
-% stj_type = '1pt98';
+% stj_type = 'native';
+stj_type = '1pt98';
 % stj_type = '1pt7';
 
 comm_attachment_fraction = 0.1;
@@ -184,9 +184,9 @@ tension_coeffs_lr.alpha = 1.6;   % circumferential
 tension_coeffs_lr.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs_lr.c_circ_dec       = 1.37;  % circumferential 
-tension_coeffs_lr.c_rad_dec        = 0.53;  % radial
-tension_coeffs_lr.c_circ_dec_annulus = 2.8;
+tension_coeffs_lr.c_circ_dec       = 1.82;  % circumferential 
+tension_coeffs_lr.c_rad_dec        = 0.62;  % radial
+tension_coeffs_lr.c_circ_dec_annulus = 3.5;
 tension_coeffs_lr.c_circ_dec_free_edge_percentage = 0.0;
 
 % non coronary leaflet
@@ -198,9 +198,9 @@ tension_coeffs_non.alpha = 1.6;   % circumferential
 tension_coeffs_non.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs_non.c_circ_dec       = 1.08;  % circumferential 
-tension_coeffs_non.c_rad_dec        = 0.35;  % radial
-tension_coeffs_non.c_circ_dec_annulus = 2.8;
+tension_coeffs_non.c_circ_dec       = 1.74;  % circumferential 
+tension_coeffs_non.c_rad_dec        = 0.555;  % radial
+tension_coeffs_non.c_circ_dec_annulus = 3.5;
 tension_coeffs_non.c_circ_dec_free_edge_percentage = 0.0;
 
 
@@ -269,7 +269,7 @@ if isfield(valve, 'extrusion_out')
     end 
 end
 
-power_search_list = [2]; 
+power_search_list = [1]; 
 for leaflet_idx = 1:length(valve.leaflets)
     valve.leaflets(leaflet_idx).power_search_list = power_search_list; 
 end 
