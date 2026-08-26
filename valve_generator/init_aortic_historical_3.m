@@ -159,8 +159,8 @@ valve.p_final_fixed_comm = 0.1 * MMHG_TO_CGS;
 valve.L = 2.25; 
 
 % stj_type = 'native';
-stj_type = '1pt98';
-% stj_type = '1pt7';
+% stj_type = '1pt98';
+stj_type = '1pt7';
 
 comm_attachment_fraction = 0.1;
 
@@ -184,9 +184,9 @@ tension_coeffs_lr.alpha = 1.6;   % circumferential
 tension_coeffs_lr.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs_lr.c_circ_dec       = 0.59;  % circumferential 
-tension_coeffs_lr.c_rad_dec        = 0.33;  % radial
-tension_coeffs_lr.c_circ_dec_annulus = 3.5;
+tension_coeffs_lr.c_circ_dec       = 0.76;  % circumferential 
+tension_coeffs_lr.c_rad_dec        = 0.48;  % radial
+tension_coeffs_lr.c_circ_dec_annulus = 6.0;
 tension_coeffs_lr.c_circ_dec_free_edge_percentage = 0.0;
 
 % non coronary leaflet
@@ -198,9 +198,9 @@ tension_coeffs_non.alpha = 1.6;   % circumferential
 tension_coeffs_non.beta  = 0.055;   % radial
 
 % decreasing tension coefficients 
-tension_coeffs_non.c_circ_dec       = 0.1;  % circumferential 
-tension_coeffs_non.c_rad_dec        = 0.1;  % radial
-tension_coeffs_non.c_circ_dec_annulus = 8.0;
+tension_coeffs_non.c_circ_dec       = 1.0;  % circumferential 
+tension_coeffs_non.c_rad_dec        = 0.44;  % radial
+tension_coeffs_non.c_circ_dec_annulus = 4.0;
 tension_coeffs_non.c_circ_dec_free_edge_percentage = 0.0;
 
 
