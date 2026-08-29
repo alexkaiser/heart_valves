@@ -8,27 +8,22 @@ N_each = leaflets(1,1).N_each;
 [n_layers, n_leaflets] = size(leaflets);
 
 % all on first leaflet for now, no arrays
-% Eh = zeros(N_leaflets,1); 
-% Gh = zeros(N_leaflets,1); 
-% min_height_center = zeros(N_leaflets,1); 
-% free_edge_length = zeros(N_leaflets,1);
+Eh = zeros(n_leaflets,1);
+Eh_from_minimum = zeros(n_leaflets,1);
+Gh = zeros(n_leaflets,1);
+min_height_center = zeros(n_leaflets,1);
+free_edge_length = zeros(n_leaflets,1);
 
-Eh = 0;
-Gh = 0;
-min_height_center = 0;
-free_edge_length = 0;
 
 layer_idx_ventricular = 1; 
 layer_idx_aortic = n_layers; 
 
 
-N_leaflets = 1; 
+% height
 
-% height 
+for leaflet_idx = 1:n_leaflets
 
-for leaflet_idx = 1:N_leaflets
-
-    center_idx_j = N_each/2; 
+    center_idx_j = N_each/2 + 1; 
 
     j = center_idx_j; 
     
@@ -52,14 +47,16 @@ for leaflet_idx = 1:N_leaflets
     % min_height_center(comm_idx) = min(X(3,j,:));
     
     min_height_center(leaflet_idx) = min(min(leaflets(layer_idx_ventricular, leaflet_idx).X(3,:,:)));
-    
+
+    % measured from minimum of leaflet rather than center 
+    Eh_from_minimum(leaflet_idx)  = Eh(leaflet_idx) - min_height_center(leaflet_idx); 
+
 end
 
-% measured from minimum of leaflet rather than center 
-Eh_from_minimum = Eh - min_height_center; 
+
 
 % free edge lengths 
-for leaflet_idx=1:N_leaflets
+for leaflet_idx=1:n_leaflets
     
     for j=2:j_max
         k = k_max; 
@@ -84,7 +81,7 @@ free_edge_length_total = sum(free_edge_length);
 
 
 X_free_edge_points = [];
-for leaflet_idx = 1:N_leaflets
+for leaflet_idx = 1:n_leaflets
     X_free_edge_points = [X_free_edge_points, leaflets(layer_idx_ventricular, leaflet_idx).X(:,:,k_max)];
 end 
 
