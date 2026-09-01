@@ -19,7 +19,7 @@ module load python/3.9.0
 module load matlab/R2017b
 
 
-BOUNDARY_MESH_NAME=1_aorta_native_original_cropped_cap_pt25_cm.stl
+BOUNDARY_MESH_NAME=5_aorta_1pt98_original_cropped_cap_pt25_cm.stl
 VESSEL_BASE_NAME=aorta_native_hist3_pt25mm_384
 VESSEL_WITH_FACES_NAME=aorta_native_hist3_pt25mm_384.vtu
 
