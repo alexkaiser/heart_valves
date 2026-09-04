@@ -8,6 +8,8 @@ from paraview.simple import *
 #### disable automatic camera reset on 'Show'
 paraview.simple._DisableFirstRenderCameraReset()
 
+import os, sys
+
 # ----------------------------------------------------------------
 # setup views used in the visualization
 # ----------------------------------------------------------------
@@ -121,6 +123,10 @@ SetActiveView(renderView4)
 # setup the data processing pipelines
 # ----------------------------------------------------------------
 
+
+
+
+
 # create a new 'PVD Reader'
 aortic_no_partition_384_facespvd = PVDReader(registrationName='aortic_no_partition_384_faces.pvd', FileName='aortic_no_partition_384_faces.pvd')
 
@@ -138,8 +144,24 @@ threshold1 = Threshold(registrationName='Threshold1', Input=connectivity1)
 threshold1.Scalars = ['POINTS', 'RegionId']
 threshold1.UpperThreshold = 0.76
 
+# the aorta mesh is built under one of three names, use whichever is present
+aorta_name_candidates = ['aorta_native_hist3_pt25mm_384',
+                         'aorta_1pt98_hist3_pt25mm_384',
+                         'aorta_1pt7_hist3_pt25mm_384']
+
+aorta_faces_pvd_name = None
+for aorta_name in aorta_name_candidates:
+    if os.path.isfile(aorta_name + '_faces.pvd'):
+        aorta_faces_pvd_name = aorta_name + '_faces.pvd'
+        print("using aorta mesh ", aorta_faces_pvd_name)
+        break
+
+if aorta_faces_pvd_name is None:
+    raise FileNotFoundError("no aorta mesh found in " + os.getcwd() + ", checked " + str(aorta_name_candidates))
+
 # create a new 'PVD Reader'
-aorta_native_hist3_pt25mm_384_facespvd = PVDReader(registrationName='aorta_native_hist3_pt25mm_384_faces.pvd', FileName='aorta_native_hist3_pt25mm_384_faces.pvd')
+# aorta_native_hist3_pt25mm_384_facespvd = PVDReader(registrationName='aorta_native_hist3_pt25mm_384_faces.pvd', FileName='aorta_native_hist3_pt25mm_384_faces.pvd')
+aorta_native_hist3_pt25mm_384_facespvd = PVDReader(registrationName=aorta_faces_pvd_name, FileName=aorta_faces_pvd_name)
 aorta_native_hist3_pt25mm_384_facespvd.CellArrays = ['Normals']
 aorta_native_hist3_pt25mm_384_facespvd.PointArrays = ['Normals', 'pyvistaOriginalPointIds']
 
